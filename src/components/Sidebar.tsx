@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Hash, User, LogOut, Home, Library, Globe } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Play, User, LogOut, Home, Library, Globe, Hash } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { storage, Prompt } from '@/lib/storage';
 import { toast } from 'sonner';
@@ -8,9 +8,11 @@ import AuthModal from './AuthModal';
 interface SidebarProps {
   activeView: 'my-library' | 'public-library';
   onViewChange: (view: 'my-library' | 'public-library') => void;
+  onNewPrompt?: () => void;
+  isPlaygroundActive?: boolean;
 }
 
-const Sidebar = ({ activeView, onViewChange }: SidebarProps) => {
+const Sidebar = ({ activeView, onViewChange, onNewPrompt, isPlaygroundActive }: SidebarProps) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [user, setUser] = useState(storage.getUser());
   const [allTags, setAllTags] = useState<string[]>([]);
@@ -62,7 +64,7 @@ const Sidebar = ({ activeView, onViewChange }: SidebarProps) => {
         {!isCollapsed ? (
           <>
             <h1 className="prompedia-logo">Prompedia.app</h1>
-            <p className="text-xs text-muted-foreground mt-1 font-mono">AI Prompt Manager</p>
+            <p className="text-xs text-muted-foreground mt-1 font-mono">Minimalist Prompt Library</p>
           </>
         ) : (
           <div className="flex justify-center">
@@ -76,16 +78,26 @@ const Sidebar = ({ activeView, onViewChange }: SidebarProps) => {
       {/* Main Navigation */}
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
         <div className="mb-4">
-          {!isCollapsed && (
-            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 font-mono">
-              Library
-            </h3>
+          {/* Playground Button */}
+          {onNewPrompt && (
+            <button
+              onClick={onNewPrompt}
+              className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5 rounded-md text-sm transition-all duration-200 font-mono mb-2 ${
+                isPlaygroundActive
+                  ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-sm'
+                  : 'text-sidebar-foreground hover:bg-sidebar-accent/20 hover:text-sidebar-accent-foreground'
+              }`}
+              title={isCollapsed ? 'Playground' : ''}
+            >
+              <Play className="w-4 h-4" />
+              {!isCollapsed && 'Playground'}
+            </button>
           )}
           
           <button
             onClick={() => onViewChange('my-library')}
             className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5 rounded-md text-sm transition-all duration-200 font-mono ${
-              activeView === 'my-library'
+              activeView === 'my-library' && !isPlaygroundActive
                 ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-sm'
                 : 'text-sidebar-foreground hover:bg-sidebar-accent/20 hover:text-sidebar-accent-foreground'
             }`}
@@ -98,7 +110,7 @@ const Sidebar = ({ activeView, onViewChange }: SidebarProps) => {
           <button
             onClick={() => onViewChange('public-library')}
             className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5 rounded-md text-sm transition-all duration-200 font-mono ${
-              activeView === 'public-library'
+              activeView === 'public-library' && !isPlaygroundActive
                 ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-sm'
                 : 'text-sidebar-foreground hover:bg-sidebar-accent/20 hover:text-sidebar-accent-foreground'
             }`}
