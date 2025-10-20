@@ -1,16 +1,21 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { storage } from '@/lib/storage';
 import { toast } from 'sonner';
 
-const Auth = () => {
+interface AuthModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onAuthSuccess: () => void;
+}
+
+const AuthModal = ({ isOpen, onClose, onAuthSuccess }: AuthModalProps) => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,18 +33,33 @@ const Auth = () => {
 
     storage.setUser(user);
     toast.success(isLogin ? 'Welcome back!' : 'Account created successfully!');
-    navigate('/');
+    
+    // Reset form
+    setEmail('');
+    setUsername('');
+    setPassword('');
+    
+    onAuthSuccess();
+    onClose();
+  };
+
+  const handleClose = () => {
+    // Reset form when closing
+    setEmail('');
+    setUsername('');
+    setPassword('');
+    setIsLogin(true);
+    onClose();
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="w-full max-w-md p-8 space-y-6 bg-card border border-border rounded-sm">
-        <div className="text-center space-y-2">
-          <h1 className="text-2xl font-bold text-primary">Prompedia.app</h1>
-          <p className="text-sm text-muted-foreground">
-            {isLogin ? 'Sign in to your account' : 'Create a new account'}
-          </p>
-        </div>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="text-center">
+            {isLogin ? 'Sign In' : 'Create Account'}
+          </DialogTitle>
+        </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {!isLogin && (
@@ -84,15 +104,16 @@ const Auth = () => {
 
         <div className="text-center">
           <button
+            type="button"
             onClick={() => setIsLogin(!isLogin)}
             className="text-xs text-muted-foreground hover:text-primary transition-colors"
           >
             {isLogin ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
           </button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 
-export default Auth;
+export default AuthModal;

@@ -8,44 +8,49 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 7%;
-    --foreground: 0 0% 95%;
+    --background: 0 0% 5%;
+    --foreground: 0 0% 98%;
 
-    --card: 0 0% 10%;
-    --card-foreground: 0 0% 95%;
+    --card: 0 0% 8%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 0 0% 10%;
-    --popover-foreground: 0 0% 95%;
+    --popover: 0 0% 8%;
+    --popover-foreground: 0 0% 98%;
 
-    --primary: 142 76% 36%;
+    --primary: 142 76% 40%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 15%;
+    --secondary: 0 0% 12%;
     --secondary-foreground: 0 0% 95%;
 
-    --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 60%;
+    --muted: 0 0% 12%;
+    --muted-foreground: 0 0% 65%;
 
-    --accent: 142 76% 36%;
+    --accent: 142 76% 40%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 20%;
-    --input: 0 0% 20%;
-    --ring: 142 76% 36%;
+    --border: 0 0% 15%;
+    --input: 0 0% 12%;
+    --ring: 142 76% 40%;
 
-    --radius: 0.25rem;
+    --radius: 0.375rem;
 
-    --sidebar-background: 0 0% 7%;
+    --sidebar-background: 0 0% 3%;
     --sidebar-foreground: 0 0% 95%;
-    --sidebar-primary: 142 76% 36%;
+    --sidebar-primary: 142 76% 40%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 15%;
-    --sidebar-accent-foreground: 0 0% 95%;
-    --sidebar-border: 0 0% 20%;
-    --sidebar-ring: 142 76% 36%;
+    --sidebar-accent: 142 76% 40%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 0 0% 12%;
+    --sidebar-ring: 142 76% 40%;
+
+    /* Prompedia specific colors */
+    --prompedia-green: 142 76% 40%;
+    --prompedia-green-hover: 142 76% 45%;
+    --prompedia-green-muted: 142 30% 25%;
   }
 }
 
@@ -56,5 +61,113 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground font-mono;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
+  }
+
+  /* Prompedia custom styles */
+  .prompedia-logo {
+    @apply text-2xl font-bold;
+    color: hsl(var(--prompedia-green));
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .prompedia-button {
+    @apply transition-all duration-200 ease-in-out;
+    background: hsl(var(--prompedia-green));
+    color: hsl(var(--prompedia-green) / 0.1);
+  }
+
+  .prompedia-button:hover {
+    background: hsl(var(--prompedia-green-hover));
+    transform: translateY(-1px);
+  }
+
+  .prompedia-accent {
+    color: hsl(var(--prompedia-green));
+  }
+
+  .prompedia-bg-accent {
+    background-color: hsl(var(--prompedia-green));
+  }
+
+  .prompedia-border-accent {
+    border-color: hsl(var(--prompedia-green));
+  }
+
+  /* Responsive Design Enhancements */
+  @media (max-width: 768px) {
+    /* Mobile-first responsive adjustments */
+    .sidebar-mobile {
+      position: fixed;
+      left: -100%;
+      top: 0;
+      height: 100vh;
+      z-index: 50;
+      transition: left 0.3s ease-in-out;
+    }
+    
+    .sidebar-mobile.open {
+      left: 0;
+    }
+    
+    .main-content-mobile {
+      width: 100%;
+      margin-left: 0;
+    }
+    
+    /* Adjust editor layout for mobile */
+    .editor-header-mobile {
+      flex-direction: column;
+      gap: 0.5rem;
+      padding: 1rem;
+    }
+    
+    .editor-buttons-mobile {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.5rem;
+      width: 100%;
+    }
+    
+    .editor-controls-mobile {
+      flex-direction: column;
+      gap: 0.5rem;
+      width: 100%;
+    }
+  }
+
+  @media (max-width: 640px) {
+    /* Extra small screens */
+    .editor-buttons-mobile {
+      grid-template-columns: 1fr;
+    }
+    
+    .prompt-library-grid {
+      grid-template-columns: 1fr !important;
+    }
+  }
+
+  @media (min-width: 769px) and (max-width: 1024px) {
+    /* Tablet adjustments */
+    .sidebar-tablet {
+      width: 200px;
+    }
+    
+    .prompt-library-grid {
+      grid-template-columns: repeat(2, 1fr) !important;
+    }
+  }
+
+  /* Utility classes for responsive design */
+  .responsive-text {
+    font-size: clamp(0.875rem, 2vw, 1rem);
+  }
+
+  .responsive-padding {
+    padding: clamp(1rem, 3vw, 1.5rem);
+  }
+
+  .responsive-gap {
+    gap: clamp(0.5rem, 2vw, 1rem);
   }
 }

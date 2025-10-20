@@ -18,7 +18,7 @@ const PromptLibrary = ({ prompts, onSelectPrompt, currentPromptId }: PromptLibra
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-6 prompt-library-grid">
       {prompts.map((prompt) => (
         <button
           key={prompt.id}
@@ -44,10 +44,10 @@ const PromptLibrary = ({ prompts, onSelectPrompt, currentPromptId }: PromptLibra
             )}
           </div>
 
-          <h3 className="font-semibold mb-1 truncate">{prompt.title}</h3>
+          <h3 className="font-semibold mb-1 truncate font-mono responsive-text">{prompt.title}</h3>
           
           {prompt.description && (
-            <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
+            <p className="text-xs text-muted-foreground mb-2 line-clamp-2 font-mono">
               {prompt.description}
             </p>
           )}
@@ -57,19 +57,19 @@ const PromptLibrary = ({ prompts, onSelectPrompt, currentPromptId }: PromptLibra
               <Badge
                 key={tag}
                 variant="secondary"
-                className="text-xs bg-accent/20 text-accent border-none"
+                className="text-xs bg-prompedia-green-500/20 text-prompedia-green-400 border border-prompedia-green-500/30 font-mono"
               >
                 {tag}
               </Badge>
             ))}
             {prompt.tags.length > 3 && (
-              <Badge variant="secondary" className="text-xs">
+              <Badge variant="secondary" className="text-xs font-mono">
                 +{prompt.tags.length - 3}
               </Badge>
             )}
           </div>
 
-          <div className="text-xs text-muted-foreground">
+          <div className="text-xs text-muted-foreground font-mono">
             {prompt.model} • {new Date(prompt.updatedAt).toLocaleDateString()}
           </div>
         </button>
