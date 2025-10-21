@@ -38,6 +38,30 @@ serve(async (req) => {
       })
     }
 
+    // Map model to appropriate API key
+    const getApiKeyForModel = (modelId: string): string | undefined => {
+      if (modelId.includes('llama-4-maverick') || modelId.includes('llama4')) {
+        return Deno.env.get('OPENROUTER_API_KEY_LLAMA4_MAVERICK')
+      } else if (modelId.includes('qwen3-30b')) {
+        return Deno.env.get('OPENROUTER_API_KEY_QWEN3_30B')
+      } else if (modelId.includes('deepseek')) {
+        return Deno.env.get('OPENROUTER_API_KEY_DEEPSEEK_V3')
+      } else if (modelId.includes('oss-20b')) {
+        return Deno.env.get('OPENROUTER_API_KEY_OPENAI_OSS_20B')
+      }
+      // Fallback to default key
+      return Deno.env.get('OPENROUTER_API_KEY')
+    }
+
+    const apiKey = getApiKeyForModel(model)
+    
+    if (!apiKey) {
+      return new Response(JSON.stringify({ error: `No API key configured for model: ${model}` }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
     // Optional: try to map model id to friendly name if table exists
     let modelName = model
     try {
@@ -71,7 +95,7 @@ serve(async (req) => {
     const openRouterResponse = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENROUTER_API_KEY')}`,
+        'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
         'HTTP-Referer': 'https://prompedia.ai',
         'X-Title': 'Prompedia AI'
