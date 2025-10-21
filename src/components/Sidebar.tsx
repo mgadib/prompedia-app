@@ -64,7 +64,7 @@ const Sidebar = ({ activeView, onViewChange, onNewPrompt, isPlaygroundActive }: 
         {!isCollapsed ? (
           <>
             <h1 className="prompedia-logo">Prompedia.app</h1>
-            <p className="text-xs text-muted-foreground mt-1 font-mono">Minimalist Prompt Library</p>
+            <p className="text-xs text-muted-foreground mt-1 font-mono">Prompt Engineering Lab</p>
           </>
         ) : (
           <div className="flex justify-center">

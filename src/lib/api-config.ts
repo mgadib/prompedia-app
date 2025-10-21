@@ -25,7 +25,7 @@ export const getOpenRouterConfig = (): APIConfig => {
       'Authorization': `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
       'HTTP-Referer': window.location.origin,
-      'X-Title': 'Prompedia AI'
+      'X-Title': 'Prompedia - Prompt Engineering Lab'
     }
   };
 };

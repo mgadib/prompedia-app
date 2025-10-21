@@ -1,4 +1,4 @@
-# Prompedia - AI Prompt Engineering Lab
+# Prompedia - Prompt Engineering Lab
 
 **Prompedia** adalah aplikasi web modern untuk prompt engineering yang dirancang sebagai AI Lab reflektif. Aplikasi ini memungkinkan pengguna untuk berkolaborasi dengan berbagai model AI melalui berbagai pola berpikir dan teknik prompt refinement.
 
@@ -9,7 +9,7 @@
 - **5 Quick Actions**: Refine, Expand, Reimagine, Reformat, Self-Review
 - **Real-time AI Processing**: Langsung transform content dengan berbagai model AI
 
-### 📚 Prompt Library
+### 📚 Library Management
 - **Personal Library**: Koleksi prompt pribadi dengan pencarian dan filter
 - **Public Library**: Bagikan dan temukan prompt dari komunitas
 - **Smart Organization**: Tag system dan visual indicators untuk mengelola prompt
@@ -20,7 +20,7 @@
 - **Capability-based Selection**: Pilih model berdasarkan kemampuan (Text, Image, Vision, Code, Math, dll)
 
 ### 🎨 Modern UI/UX
-- **Clean & Minimalist**: Interface tanpa clutter, fokus pada konten
+- **Engineering-Focused**: Interface yang dioptimalkan untuk workflow prompt engineering
 - **Responsive Design**: Berfungsi optimal di desktop dan mobile
 - **Intuitive Navigation**: Sidebar collapsible dengan visual cues
 - **Real-time Feedback**: Status indicators dan loading states
@@ -57,7 +57,7 @@
 1. **Clone the repository**
 ```bash
 git clone <YOUR_GIT_URL>
-cd prompedia-ai
+cd prompedia
 ```
 
 2. **Install dependencies**
@@ -178,7 +178,7 @@ VITE_OPENROUTER_API_KEY=your_production_api_key
 ## 📁 Project Structure
 
 ```
-prompedia-ai/
+prompedia/
 ├── src/
 │   ├── components/          # React components
 │   │   ├── ui/             # Reusable UI components
@@ -235,10 +235,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- **Issues**: Report bugs via [GitHub Issues](https://github.com/your-username/prompedia-ai/issues)
-- **Discussions**: Join [GitHub Discussions](https://github.com/your-username/prompedia-ai/discussions)
-- **Documentation**: Check [Wiki](https://github.com/your-username/prompedia-ai/wiki) for detailed guides
+- **Issues**: Report bugs via [GitHub Issues](https://github.com/your-username/prompedia/issues)
+- **Discussions**: Join [GitHub Discussions](https://github.com/your-username/prompedia/discussions)
+- **Documentation**: Check [Wiki](https://github.com/your-username/prompedia/wiki) for detailed guides
 
 ---
 
-**Prompedia** - Your AI Prompt Engineering Lab 🎯
+**Prompedia** - Prompt Engineering Lab 🎯
