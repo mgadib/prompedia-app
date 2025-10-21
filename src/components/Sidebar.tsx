@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Play, User, LogOut, Home, Library, Globe, Hash } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Play, User, LogOut, Lock, Users, Globe, Hash } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { storage, Prompt } from '@/lib/storage';
 import { toast } from 'sonner';
@@ -101,10 +101,10 @@ const Sidebar = ({ activeView, onViewChange, onNewPrompt, isPlaygroundActive }: 
                 ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-sm'
                 : 'text-sidebar-foreground hover:bg-sidebar-accent/20 hover:text-sidebar-accent-foreground'
             }`}
-            title={isCollapsed ? 'My Library' : ''}
+            title={isCollapsed ? 'Private Library' : ''}
           >
-            <Home className="w-4 h-4" />
-            {!isCollapsed && 'My Library'}
+            <Lock className="w-4 h-4" />
+            {!isCollapsed && 'Private Library'}
           </button>
 
           <button
@@ -116,7 +116,7 @@ const Sidebar = ({ activeView, onViewChange, onNewPrompt, isPlaygroundActive }: 
             }`}
             title={isCollapsed ? 'Public Library' : ''}
           >
-            <Library className="w-4 h-4" />
+            <Users className="w-4 h-4" />
             {!isCollapsed && 'Public Library'}
           </button>
         </div>

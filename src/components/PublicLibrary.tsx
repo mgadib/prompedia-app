@@ -258,7 +258,7 @@ const PublicLibrary = ({
                   {/* Footer with date and actions */}
                   <div className="flex items-center justify-between pt-4 border-t border-border/50">
                     <div className="text-xs text-muted-foreground font-mono">
-                      <div>Model: {prompt.model || 'GPT-4'}</div>
+                      <div>Model: {prompt.model || 'DeepSeek Chat V3'}</div>
                       <div>Updated: {new Date(prompt.updatedAt).toLocaleDateString()}</div>
                     </div>
                     
@@ -269,7 +269,7 @@ const PublicLibrary = ({
                         variant="ghost"
                         onClick={(e) => handleCopy(e, prompt)}
                         className="h-8 w-8 p-0 hover:bg-primary/20"
-                        title="Copy to my library"
+                        title="Copy to private library"
                       >
                         <Copy className="w-3 h-3" />
                       </Button>

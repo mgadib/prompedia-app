@@ -5,60 +5,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { THINKING_MODES } from '@/lib/modes';
 
 interface ModeSelectorProps {
   value: string;
   onChange: (value: string) => void;
 }
 
-const modes = [
-  {
-    value: 'zero-shot',
-    label: 'Zero-Shot'
-  },
-  {
-    value: 'one-shot',
-    label: 'One-Shot'
-  },
-  {
-    value: 'few-shot',
-    label: 'Few-Shot'
-  },
-  {
-    value: 'chain-of-thought',
-    label: 'Chain-of-Thought'
-  },
-  {
-    value: 'self-refine',
-    label: 'Self-Refine'
-  },
-  {
-    value: 'react',
-    label: 'ReAct'
-  },
-  {
-    value: 'role-prompt',
-    label: 'Role Prompt'
-  },
-  {
-    value: 'meta-prompt',
-    label: 'Meta Prompt'
-  }
-];
-
 const ModeSelector = ({ value, onChange }: ModeSelectorProps) => {
-  const selectedMode = modes.find(mode => mode.value === value) || modes[0];
+  const selectedMode = THINKING_MODES.find(mode => mode.id === value) || THINKING_MODES[5];
 
   return (
     <Select value={value} onValueChange={onChange}>
-      <SelectTrigger className="w-[200px] bg-secondary border-border text-xs">
+      <SelectTrigger className="w-[180px] bg-secondary border-border text-xs">
         <SelectValue placeholder="Select mode">
           <span>{selectedMode.label}</span>
         </SelectValue>
       </SelectTrigger>
       <SelectContent>
-        {modes.map((mode) => (
-          <SelectItem key={mode.value} value={mode.value} className="text-xs">
+        {THINKING_MODES.map((mode) => (
+          <SelectItem key={mode.id} value={mode.id} className="text-xs">
             {mode.label}
           </SelectItem>
         ))}

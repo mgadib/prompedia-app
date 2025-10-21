@@ -4,6 +4,7 @@ import PromptEditor from '@/components/PromptEditor';
 import MyLibrary from '@/components/MyLibrary';
 import PublicLibrary from '@/components/PublicLibrary';
 import { storage, Prompt } from '@/lib/storage';
+import { AVAILABLE_MODELS } from '@/lib/models';
 import { toast } from 'sonner';
 
 const AppPage = () => {
@@ -95,7 +96,7 @@ const AppPage = () => {
       userId: user.id,
       title: 'Untitled Prompt',
       content: '',
-      model: 'GPT-4',
+      model: AVAILABLE_MODELS[2].id,
       tags: [],
       isPublic: false,
       createdAt: new Date().toISOString(),

@@ -11,6 +11,7 @@ export interface Prompt {
   content: string;
   description?: string;
   model?: string;
+  mode?: string;
   tags: string[];
   color?: string;
   isPublic: boolean;

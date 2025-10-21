@@ -5,32 +5,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { AVAILABLE_MODELS } from '@/lib/models';
 
 interface ModelSelectorProps {
   value: string;
   onChange: (value: string) => void;
 }
 
-const models = [
-  'GPT-4',
-  'GPT-3.5',
-  'Claude 3.5 Sonnet',
-  'Claude 3 Opus',
-  'Gemini Pro',
-  'Mistral Large',
-  'Llama 3',
-];
-
 const ModelSelector = ({ value, onChange }: ModelSelectorProps) => {
+  const selectedModel = AVAILABLE_MODELS.find(model => model.id === value);
+
   return (
     <Select value={value} onValueChange={onChange}>
       <SelectTrigger className="w-[180px] bg-secondary border-border text-xs">
-        <SelectValue placeholder="Select model" />
+        <SelectValue placeholder="Select model">
+          {selectedModel?.label || 'Select model'}
+        </SelectValue>
       </SelectTrigger>
       <SelectContent>
-        {models.map((model) => (
-          <SelectItem key={model} value={model} className="text-xs">
-            {model}
+        {AVAILABLE_MODELS.map((model) => (
+          <SelectItem key={model.id} value={model.id} className="text-xs">
+            {model.label}
           </SelectItem>
         ))}
       </SelectContent>

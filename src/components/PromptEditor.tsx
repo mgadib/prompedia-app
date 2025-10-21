@@ -1,13 +1,18 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Copy, Save, Share2, FileText } from 'lucide-react';
+import { Copy, Save, Share2, FileText, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { storage, Prompt } from '@/lib/storage';
+import { AVAILABLE_MODELS } from '@/lib/models';
+import { THINKING_MODES, getModeById } from '@/lib/modes';
+import { generateActionInstructions } from '@/lib/actions';
+import { makeAPIRequest } from '@/lib/api-config';
 import ModelSelector from './ModelSelector';
 import ModeSelector from './ModeSelector';
 import TagInput from './TagInput';
+import ActionButtons from './ActionButtons';
 
 interface PromptEditorProps {
   currentPrompt: Prompt | null;
@@ -17,10 +22,12 @@ interface PromptEditorProps {
 const PromptEditor = ({ currentPrompt, onPromptChange }: PromptEditorProps) => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [model, setModel] = useState('GPT-4');
-  const [mode, setMode] = useState('zero-shot');
+  const [model, setModel] = useState(AVAILABLE_MODELS[2].id);
+  const [mode, setMode] = useState(THINKING_MODES[5].id);
   const [tags, setTags] = useState<string[]>([]);
   const [isAutoSaving, setIsAutoSaving] = useState(false);
+  const [isActionLoading, setIsActionLoading] = useState(false);
+  const [loadingAction, setLoadingAction] = useState<string>('');
   
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hasUnsavedChanges = useRef(false);
@@ -29,8 +36,8 @@ const PromptEditor = ({ currentPrompt, onPromptChange }: PromptEditorProps) => {
     if (currentPrompt) {
       setTitle(currentPrompt.title);
       setContent(currentPrompt.content);
-      setModel(currentPrompt.model || 'GPT-4');
-      setMode((currentPrompt as any).mode || 'zero-shot');
+      setModel(currentPrompt.model || AVAILABLE_MODELS[2].id);
+      // Mode tidak berubah otomatis - user harus memilih manual
       setTags(currentPrompt.tags);
     }
   }, [currentPrompt]);
@@ -78,6 +85,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange }: PromptEditorProps) => {
     };
   }, [title, content, model, mode, tags, autoSave, currentPrompt]);
 
+
   const handleNew = () => {
     const user = storage.getUser();
     if (!user) return;
@@ -87,7 +95,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange }: PromptEditorProps) => {
       userId: user.id,
       title: 'Untitled Prompt',
       content: '',
-      model: 'GPT-4',
+      model: AVAILABLE_MODELS[2].id,
       tags: [],
       isPublic: false,
       createdAt: new Date().toISOString(),
@@ -132,6 +140,43 @@ const PromptEditor = ({ currentPrompt, onPromptChange }: PromptEditorProps) => {
     storage.savePrompt(updatedPrompt);
     onPromptChange(updatedPrompt);
     toast.success(updatedPrompt.isPublic ? 'Prompt is now public' : 'Prompt is now private');
+  };
+
+
+  const handleAction = async (actionId: string) => {
+    if (!content.trim()) {
+      toast.error('Please enter prompt content first');
+      return;
+    }
+
+    try {
+      setIsActionLoading(true);
+      setLoadingAction(actionId);
+
+      // Generate action-specific instructions
+      const actionInstructions = generateActionInstructions(actionId, content);
+      
+      // Make API request
+      const response = await makeAPIRequest('/chat/completions', model, actionInstructions);
+      
+      if (response.choices && response.choices[0]) {
+        const processedContent = response.choices[0].message.content;
+        
+        // Update content with processed result
+        setContent(processedContent);
+        hasUnsavedChanges.current = true;
+        
+        toast.success(`Content ${actionId}d successfully`);
+      } else {
+        throw new Error('No response from AI');
+      }
+    } catch (error) {
+      console.error(`Error processing ${actionId}:`, error);
+      toast.error(error instanceof Error ? error.message : `Failed to ${actionId} content`);
+    } finally {
+      setIsActionLoading(false);
+      setLoadingAction('');
+    }
   };
 
   return (
@@ -179,6 +224,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange }: PromptEditorProps) => {
               <Share2 className="w-4 h-4 mr-2" />
               {currentPrompt?.isPublic ? 'Make Private' : 'Share'}
             </Button>
+
           </div>
 
           <div className="flex items-center gap-3">
@@ -190,18 +236,10 @@ const PromptEditor = ({ currentPrompt, onPromptChange }: PromptEditorProps) => {
 
       {/* Main Editor Area */}
       <div className="flex-1 overflow-auto p-4 space-y-4">
-        {/* Title and Tags Section - Compact Layout */}
+        {/* Title and Tags Section - Clean Layout */}
         <div className="flex items-start gap-6">
           {/* Title Section */}
-          <div className="flex-1 space-y-1">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider font-mono">
-                Title
-              </label>
-              <span className={`text-xs font-mono ${title.length > 77 ? 'text-red-500' : 'text-muted-foreground'}`}>
-                {title.length}/77
-              </span>
-            </div>
+          <div className="flex-1">
             <Input
               value={title}
               onChange={(e) => {
@@ -210,57 +248,67 @@ const PromptEditor = ({ currentPrompt, onPromptChange }: PromptEditorProps) => {
                   setTitle(newValue);
                 }
               }}
-              placeholder="Untitled Prompt"
-              className={`text-xl font-bold bg-transparent border-none px-0 focus-visible:ring-0 font-mono prompedia-accent ${
-                title.length > 77 ? 'text-red-500' : ''
-              }`}
+              placeholder="Enter prompt title..."
+              className="text-xl font-bold bg-transparent border-none px-0 focus-visible:ring-0 placeholder:text-muted-foreground/50"
               maxLength={77}
             />
           </div>
 
           {/* Tags Section */}
-          <div className="flex-1 space-y-1">
-            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider font-mono">
-              Tags
-            </label>
+          <div className="flex-1">
             <TagInput tags={tags} onChange={setTags} />
           </div>
         </div>
 
+
         {/* Main Prompt Content */}
-        <div className="space-y-1">
-          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider font-mono">
-            Prompt Content
-          </label>
+        <div className="space-y-3">
+          <ActionButtons 
+            onAction={handleAction}
+            disabled={!content.trim()}
+            isLoading={isActionLoading}
+            loadingAction={loadingAction}
+          />
+          
           <Textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="Write your AI prompt here..."
-            className="min-h-[400px] bg-card border-border font-mono text-sm resize-none leading-relaxed"
+            placeholder="Start writing..."
+            className="min-h-[300px] bg-card border-border font-mono text-sm resize-none leading-relaxed"
           />
         </div>
+
       </div>
 
-      {/* Footer Status */}
+      {/* Footer Status - Minimal */}
       {currentPrompt && (
-        <div className="border-t border-border px-4 py-2 bg-card">
-          <div className="flex items-center justify-between text-xs text-muted-foreground font-mono">
-            <div className="flex items-center gap-4">
-              <span>Last updated: {new Date(currentPrompt.updatedAt).toLocaleString()}</span>
+        <div className="border-t border-border px-4 py-3 bg-card">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
               {isAutoSaving && (
-                <span className="text-prompedia-green-400 animate-pulse">Auto-saving...</span>
+                <div className="flex items-center gap-1 text-primary">
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                  <span className="text-xs">Saving...</span>
+                </div>
               )}
               {hasUnsavedChanges.current && !isAutoSaving && (
-                <span className="text-yellow-400">Unsaved changes</span>
+                <div className="flex items-center gap-1 text-yellow-400">
+                  <div className="w-2 h-2 rounded-full bg-yellow-400" />
+                  <span className="text-xs">Unsaved</span>
+                </div>
               )}
             </div>
-            <div className="flex items-center gap-4">
-              <span>Model: {model}</span>
-              <span>Mode: {mode}</span>
-              <span>Tags: {tags.length}</span>
-              <span className={`px-2 py-1 rounded-full text-xs ${currentPrompt.isPublic ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground'}`}>
+            <div className="flex items-center gap-3">
+              <div className={`flex items-center gap-1 text-xs ${currentPrompt.isPublic ? 'text-primary' : 'text-muted-foreground'}`}>
+                <div className={`w-2 h-2 rounded-full ${currentPrompt.isPublic ? 'bg-primary' : 'bg-muted-foreground'}`} />
                 {currentPrompt.isPublic ? 'Public' : 'Private'}
-              </span>
+              </div>
+              {tags.length > 0 && (
+                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <span>🏷️</span>
+                  <span>{tags.length}</span>
+                </div>
+              )}
             </div>
           </div>
         </div>

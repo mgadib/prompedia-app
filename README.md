@@ -1,73 +1,244 @@
-# Welcome to your Lovable project
+# Prompedia - AI Prompt Engineering Lab
 
-## Project info
+**Prompedia** adalah aplikasi web modern untuk prompt engineering yang dirancang sebagai AI Lab reflektif. Aplikasi ini memungkinkan pengguna untuk berkolaborasi dengan berbagai model AI melalui berbagai pola berpikir dan teknik prompt refinement.
 
-**URL**: https://lovable.dev/projects/2129eae4-ed2f-4bf3-9d93-1b5a515e2c54
+## 🚀 Features
 
-## How can I edit this code?
+### 🧠 AI Lab Playground
+- **6 Thinking Modes**: Meta Prompt, Self-Refine, Chain-of-Thought, Self-Consistency, Chain-of-Prompt, Role Prompt
+- **5 Quick Actions**: Refine, Expand, Reimagine, Reformat, Self-Review
+- **Real-time AI Processing**: Langsung transform content dengan berbagai model AI
 
-There are several ways of editing your application.
+### 📚 Prompt Library
+- **Personal Library**: Koleksi prompt pribadi dengan pencarian dan filter
+- **Public Library**: Bagikan dan temukan prompt dari komunitas
+- **Smart Organization**: Tag system dan visual indicators untuk mengelola prompt
 
-**Use Lovable**
+### 🤖 AI Model Integration
+- **OpenRouter API**: Akses berbagai model AI premium
+- **4 Model Terintegrasi**: Llama 4 Maverick, Qwen 3 30B, DeepSeek Chat V3, OpenAI OSS 20B
+- **Capability-based Selection**: Pilih model berdasarkan kemampuan (Text, Image, Vision, Code, Math, dll)
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/2129eae4-ed2f-4bf3-9d93-1b5a515e2c54) and start prompting.
+### 🎨 Modern UI/UX
+- **Clean & Minimalist**: Interface tanpa clutter, fokus pada konten
+- **Responsive Design**: Berfungsi optimal di desktop dan mobile
+- **Intuitive Navigation**: Sidebar collapsible dengan visual cues
+- **Real-time Feedback**: Status indicators dan loading states
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🛠️ Tech Stack
 
-**Use your preferred IDE**
+### Frontend
+- **React 18** dengan TypeScript
+- **Vite** sebagai build tool
+- **shadcn/ui** + **Tailwind CSS** untuk styling
+- **Radix UI** untuk komponen primitif
+- **React Router** untuk routing
+- **React Query** untuk state management
+- **Lucide React** untuk icons
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Backend & Storage
+- **Supabase** untuk authentication (siap production)
+- **Local Storage** untuk persistence (development)
+- **OpenRouter API** untuk AI model access
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Development Tools
+- **ESLint** + **TypeScript** untuk code quality
+- **Vitest** untuk testing
+- **PostCSS** + **Autoprefixer** untuk CSS processing
 
-Follow these steps:
+## 🔧 Getting Started
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
+### Prerequisites
+- **Node.js** (v16 or higher) - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- **npm** or **yarn** package manager
+
+### Installation
+
+1. **Clone the repository**
+```bash
 git clone <YOUR_GIT_URL>
+cd prompedia-ai
+```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+2. **Install dependencies**
+```bash
+npm install
+```
 
-# Step 3: Install the necessary dependencies.
-npm i
+3. **Configure API Key**
+```bash
+# Copy environment file
+cp .env.example .env
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Edit .env and add your OpenRouter API key
+VITE_OPENROUTER_API_KEY=your_api_key_here
+```
+
+4. **Start development server**
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+5. **Open browser**
+Navigate to `http://localhost:8080`
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 📖 User Guide
 
-**Use GitHub Codespaces**
+### 🔐 Authentication
+- **Guest Mode**: Browse public prompts without login
+- **User Account**: Login to save and manage personal prompts
+- **Social Auth**: Quick login with social providers
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### 📚 Library Management
 
-## What technologies are used for this project?
+#### Private Library
+- **Personal Collection**: Private prompts for personal use
+- **Search & Filter**: Find prompts by title, tags, or content
+- **Grid View**: Visual card layout dengan metadata
+- **CRUD Operations**: Create, read, update, delete prompts
 
-This project is built with:
+#### Public Library
+- **Community Content**: Shared prompts from all users
+- **Discovery**: Browse and find useful prompts
+- **Copy Feature**: Fork public prompts to personal library
+- **Social Features**: Share your best prompts with community
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### 🧠 AI Lab Playground
 
-## How can I deploy this project?
+#### Thinking Modes
+Pilih mode berpikir yang sesuai dengan tujuan Anda:
 
-Simply open [Lovable](https://lovable.dev/projects/2129eae4-ed2f-4bf3-9d93-1b5a515e2c54) and click on Share -> Publish.
+| Mode | Icon | Tujuan | Pola Berpikir |
+|------|------|--------|--------------|
+| **Meta Prompt** | 🪄 | Generate prompts from ideas | Divergent thinking |
+| **Self-Refine** | ✏️ | Improve existing prompts | Reflective thinking |
+| **Chain-of-Thought** | 🧠 | Show reasoning process | Analytical reasoning |
+| **Self-Consistency** | 🧬 | Test prompt stability | Comparative reasoning |
+| **Chain-of-Prompt** | 🔄 | Develop prompts iteratively | Iterative synthesis |
+| **Role Prompt** | 🤝 | Analyze from personas | Dialogic reasoning |
 
-## Can I connect a custom domain to my Lovable project?
+#### Quick Actions
+Transform content dengan satu klik:
 
-Yes, you can!
+| Action | Icon | Fungsi | Hasil |
+|--------|------|--------|-------|
+| **Refine** | ✏️ | Improve clarity | Content lebih fokus |
+| **Expand** | 🧩 | Add context | Content lebih detail |
+| **Reimagine** | 🪄 | Creative reinterpretation | Perspektif baru |
+| **Reformat** | 🧾 | Change structure | Format lebih baik |
+| **Self-Review** | 🪞 | Quality assessment | Evaluasi objektif |
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+#### AI Models
+Pilih model berdasarkan kemampuan:
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+| Model | Provider | Type | Capabilities |
+|-------|----------|------|--------------|
+| **Llama 4 Maverick** | OpenRouter | Multimodal | Text, Image, Vision, Bilingual |
+| **Qwen 3 30B** | OpenRouter | Text | Code, Math, Long Context |
+| **DeepSeek Chat V3** | OpenRouter | Text | Conversational, Reasoning |
+| **OpenAI OSS 20B** | OpenAI | Text | General Reasoning, Code |
+
+### 🎯 Workflow
+
+1. **Pilih Mode**: Select thinking mode dari dropdown
+2. **Tulis Content**: Masukkan prompt atau idea
+3. **Apply Actions**: Klik action buttons untuk transform
+4. **Iterate**: Refine hasil dengan berbagai actions
+5. **Save**: Simpan ke library untuk penggunaan selanjutnya
+
+### 💾 Data Persistence
+- **Local Storage**: Development mode persistence
+- **Supabase**: Production-ready backend (siap deploy)
+- **Auto-save**: Changes tersimpan otomatis saat editing
+
+## 🚀 Deployment
+
+### Lovable Platform (Recommended)
+1. Open [Lovable Project](https://lovable.dev/projects/2129eae4-ed2f-4bf3-9d93-1b5a515e2c54)
+2. Click **Share → Publish**
+3. Your app will be deployed with automatic SSL and CDN
+
+### Manual Deployment
+```bash
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
+
+# Deploy to your hosting platform (Vercel, Netlify, etc.)
+```
+
+### Environment Variables for Production
+Set these in your hosting platform:
+```env
+VITE_OPENROUTER_API_KEY=your_production_api_key
+```
+
+## 📁 Project Structure
+
+```
+prompedia-ai/
+├── src/
+│   ├── components/          # React components
+│   │   ├── ui/             # Reusable UI components
+│   │   ├── ActionButtons.tsx
+│   │   ├── AuthModal.tsx
+│   │   ├── ModelSelector.tsx
+│   │   ├── ModeSelector.tsx
+│   │   ├── PromptEditor.tsx    # Main playground
+│   │   ├── MyLibrary.tsx       # Personal library
+│   │   ├── PublicLibrary.tsx   # Community library
+│   │   ├── Sidebar.tsx
+│   │   └── TagInput.tsx
+│   ├── lib/                # Core logic and configurations
+│   │   ├── actions.ts      # Quick action definitions
+│   │   ├── api-config.ts   # OpenRouter API configuration
+│   │   ├── models.ts       # AI model configurations
+│   │   ├── modes.ts        # Thinking mode definitions
+│   │   └── storage.ts      # Local storage management
+│   ├── pages/              # Route components
+│   ├── hooks/              # Custom React hooks
+│   └── integrations/       # External service integrations
+├── public/                 # Static assets
+├── dist/                   # Production build output
+├── docs/                   # Documentation
+└── supabase/              # Backend configuration
+```
+
+## 🤝 Contributing
+
+1. **Fork** the repository
+2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
+3. **Commit** your changes (`git commit -m 'Add some amazing feature'`)
+4. **Push** to the branch (`git push origin feature/amazing-feature`)
+5. **Open** a Pull Request
+
+### Development Guidelines
+- Follow TypeScript strict mode
+- Use ESLint and Prettier for code formatting
+- Write meaningful commit messages
+- Test features before submitting PR
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- **OpenRouter** for AI model access
+- **shadcn/ui** for beautiful UI components
+- **Radix UI** for accessible primitives
+- **Supabase** for backend services
+- **Tailwind CSS** for styling
+- **Lovable** for rapid development platform
+
+## 📞 Support
+
+- **Issues**: Report bugs via [GitHub Issues](https://github.com/your-username/prompedia-ai/issues)
+- **Discussions**: Join [GitHub Discussions](https://github.com/your-username/prompedia-ai/discussions)
+- **Documentation**: Check [Wiki](https://github.com/your-username/prompedia-ai/wiki) for detailed guides
+
+---
+
+**Prompedia** - Your AI Prompt Engineering Lab 🎯

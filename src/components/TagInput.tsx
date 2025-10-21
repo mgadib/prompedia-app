@@ -113,7 +113,7 @@ const TagInput = ({ tags, onChange }: TagInputProps) => {
             onKeyDown={handleKeyDown}
             onFocus={() => setShowSuggestions(input.length > 0)}
             onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-            placeholder={tags.length >= 3 ? "Maximum 3 tags reached" : "Add tags (separate with comma)"}
+            placeholder={tags.length >= 3 ? "Max 3 tags" : "Add tags..."}
             className="bg-transparent border-none text-sm font-mono focus-visible:ring-0 flex-1 min-w-[150px] px-0"
             disabled={tags.length >= 3}
           />
@@ -138,8 +138,7 @@ const TagInput = ({ tags, onChange }: TagInputProps) => {
 
       {/* Popular Tags Quick Add - only when less than 3 tags */}
       {tags.length < 3 && suggestions.length > 0 && (
-        <div className="mt-2 space-y-1">
-          <p className="text-xs text-muted-foreground font-mono">Popular tags:</p>
+        <div className="mt-2">
           <div className="flex flex-wrap gap-1">
             {suggestions.slice(0, Math.min(6, 3 - tags.length)).map(tag => (
               <Button
