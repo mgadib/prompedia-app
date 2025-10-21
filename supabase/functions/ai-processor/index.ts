@@ -23,17 +23,10 @@ serve(async (req) => {
       }
     )
 
-    // Get the current user
+    // Get the current user (optional for guest users)
     const {
       data: { user },
     } = await supabaseClient.auth.getUser()
-
-    if (!user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-    }
 
     const { model, prompt, mode, options = {} } = await req.json()
 
@@ -101,18 +94,20 @@ serve(async (req) => {
 
     const aiResponse = await openRouterResponse.json()
 
-    // Log the session for analytics
-    await supabaseClient.from('user_sessions').insert({
-      user_id: user.id,
-      session_data: {
-        model,
-        mode: mode || null,
-        prompt_length: prompt.length,
-        response_length: aiResponse.choices[0]?.message?.content?.length || 0,
-        tokens_used: aiResponse.usage?.total_tokens || 0,
-        model_name: modelData.name
-      }
-    })
+    // Log the session for analytics (only for authenticated users)
+    if (user) {
+      await supabaseClient.from('user_sessions').insert({
+        user_id: user.id,
+        session_data: {
+          model,
+          mode: mode || null,
+          prompt_length: prompt.length,
+          response_length: aiResponse.choices[0]?.message?.content?.length || 0,
+          tokens_used: aiResponse.usage?.total_tokens || 0,
+          model_name: modelData.name
+        }
+      })
+    }
 
     // Return the AI response
     return new Response(JSON.stringify({
