@@ -7,6 +7,8 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "13.0.5"
   }
@@ -14,137 +16,136 @@ export type Database = {
     Tables: {
       ai_models: {
         Row: {
+          capabilities: Json
+          created_at: string | null
           id: string
+          is_active: boolean | null
           name: string
           provider: string
-          type: 'Text' | 'Multimodal'
-          capabilities: Json
-          is_active: boolean
-          created_at: string
+          type: string
         }
         Insert: {
+          capabilities?: Json
+          created_at?: string | null
           id: string
+          is_active?: boolean | null
           name: string
           provider: string
-          type: 'Text' | 'Multimodal'
-          capabilities?: Json
-          is_active?: boolean
-          created_at?: string
+          type: string
         }
         Update: {
+          capabilities?: Json
+          created_at?: string | null
           id?: string
+          is_active?: boolean | null
           name?: string
           provider?: string
-          type?: 'Text' | 'Multimodal'
-          capabilities?: Json
-          is_active?: boolean
-          created_at?: string
+          type?: string
         }
         Relationships: []
       }
       profiles: {
         Row: {
-          id: string
-          username: string | null
-          display_name: string | null
           avatar_url: string | null
           bio: string | null
-          preferences: Json
-          role: Database["public"]["Enums"]["user_role"]
-          created_at: string
-          updated_at: string
+          created_at: string | null
+          display_name: string | null
+          id: string
+          preferences: Json | null
+          role: Database["public"]["Enums"]["user_role"] | null
+          updated_at: string | null
+          username: string | null
         }
         Insert: {
-          id: string
-          username?: string | null
-          display_name?: string | null
           avatar_url?: string | null
           bio?: string | null
-          preferences?: Json
-          role?: Database["public"]["Enums"]["user_role"]
-          created_at?: string
-          updated_at?: string
+          created_at?: string | null
+          display_name?: string | null
+          id: string
+          preferences?: Json | null
+          role?: Database["public"]["Enums"]["user_role"] | null
+          updated_at?: string | null
+          username?: string | null
         }
         Update: {
-          id?: string
-          username?: string | null
-          display_name?: string | null
           avatar_url?: string | null
           bio?: string | null
-          preferences?: Json
-          role?: Database["public"]["Enums"]["user_role"]
-          created_at?: string
-          updated_at?: string
+          created_at?: string | null
+          display_name?: string | null
+          id?: string
+          preferences?: Json | null
+          role?: Database["public"]["Enums"]["user_role"] | null
+          updated_at?: string | null
+          username?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "profiles_id_fkey"
-            columns: ["id"]
-            isOneToOne: true
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          }
-        ]
+        Relationships: []
       }
       prompts: {
         Row: {
-          id: string
-          user_id: string
-          title: string
+          color: string | null
           content: string
+          created_at: string | null
           description: string | null
-          model: string | null
+          fork_count: number | null
+          id: string
+          is_featured: boolean | null
+          is_public: boolean | null
           mode: string | null
-          tags: string[]
-          color: string
-          is_public: boolean
-          is_featured: boolean
-          view_count: number
-          fork_count: number
+          model: string | null
           original_prompt_id: string | null
-          usage_stats: Json
-          created_at: string
-          updated_at: string
+          tags: string[] | null
+          title: string
+          updated_at: string | null
+          usage_stats: Json | null
+          user_id: string | null
+          view_count: number | null
         }
         Insert: {
-          id?: string
-          user_id: string
-          title: string
+          color?: string | null
           content: string
+          created_at?: string | null
           description?: string | null
-          model?: string | null
+          fork_count?: number | null
+          id?: string
+          is_featured?: boolean | null
+          is_public?: boolean | null
           mode?: string | null
-          tags?: string[]
-          color?: string
-          is_public?: boolean
-          is_featured?: boolean
-          view_count?: number
-          fork_count?: number
+          model?: string | null
           original_prompt_id?: string | null
-          usage_stats?: Json
-          created_at?: string
-          updated_at?: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string | null
+          usage_stats?: Json | null
+          user_id?: string | null
+          view_count?: number | null
         }
         Update: {
-          id?: string
-          user_id?: string
-          title?: string
+          color?: string | null
           content?: string
+          created_at?: string | null
           description?: string | null
-          model?: string | null
+          fork_count?: number | null
+          id?: string
+          is_featured?: boolean | null
+          is_public?: boolean | null
           mode?: string | null
-          tags?: string[]
-          color?: string
-          is_public?: boolean
-          is_featured?: boolean
-          view_count?: number
-          fork_count?: number
+          model?: string | null
           original_prompt_id?: string | null
-          usage_stats?: Json
-          created_at?: string
-          updated_at?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string | null
+          usage_stats?: Json | null
+          user_id?: string | null
+          view_count?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "prompts_original_prompt_id_fkey"
+            columns: ["original_prompt_id"]
+            isOneToOne: false
+            referencedRelation: "prompts"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "prompts_user_id_fkey"
             columns: ["user_id"]
@@ -152,45 +153,38 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "prompts_original_prompt_id_fkey"
-            columns: ["original_prompt_id"]
-            isOneToOne: false
-            referencedRelation: "prompts"
-            referencedColumns: ["id"]
-          }
         ]
       }
       tags: {
         Row: {
-          id: string
-          name: string
-          description: string | null
-          color: string
-          usage_count: number
+          color: string | null
+          created_at: string | null
           created_by: string | null
-          is_system: boolean
-          created_at: string
+          description: string | null
+          id: string
+          is_system: boolean | null
+          name: string
+          usage_count: number | null
         }
         Insert: {
-          id?: string
-          name: string
-          description?: string | null
-          color?: string
-          usage_count?: number
+          color?: string | null
+          created_at?: string | null
           created_by?: string | null
-          is_system?: boolean
-          created_at?: string
+          description?: string | null
+          id?: string
+          is_system?: boolean | null
+          name: string
+          usage_count?: number | null
         }
         Update: {
-          id?: string
-          name?: string
-          description?: string | null
-          color?: string
-          usage_count?: number
+          color?: string | null
+          created_at?: string | null
           created_by?: string | null
-          is_system?: boolean
-          created_at?: string
+          description?: string | null
+          id?: string
+          is_system?: boolean | null
+          name?: string
+          usage_count?: number | null
         }
         Relationships: [
           {
@@ -199,72 +193,72 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
-          }
+          },
         ]
       }
       thinking_modes: {
         Row: {
-          id: string
-          name: string
-          icon: string
+          created_at: string | null
           description: string
+          icon: string
+          id: string
+          instructions: string
+          is_active: boolean | null
+          name: string
+          output_structure: Json
           purpose: string
           thinking_pattern: string
-          output_structure: Json
-          instructions: string
-          is_active: boolean
-          created_at: string
         }
         Insert: {
-          id: string
-          name: string
-          icon: string
+          created_at?: string | null
           description: string
+          icon: string
+          id: string
+          instructions: string
+          is_active?: boolean | null
+          name: string
+          output_structure?: Json
           purpose: string
           thinking_pattern: string
-          output_structure?: Json
-          instructions: string
-          is_active?: boolean
-          created_at?: string
         }
         Update: {
-          id?: string
-          name?: string
-          icon?: string
+          created_at?: string | null
           description?: string
+          icon?: string
+          id?: string
+          instructions?: string
+          is_active?: boolean | null
+          name?: string
+          output_structure?: Json
           purpose?: string
           thinking_pattern?: string
-          output_structure?: Json
-          instructions?: string
-          is_active?: boolean
-          created_at?: string
         }
         Relationships: []
       }
       user_sessions: {
         Row: {
-          id: string
-          user_id: string
-          session_data: Json
-          started_at: string
-          ended_at: string | null
           duration_seconds: number | null
+          ended_at: string | null
+          id: string
+          session_data: Json | null
+          started_at: string | null
+          user_id: string | null
         }
         Insert: {
-          id?: string
-          user_id: string
-          session_data?: Json
-          started_at?: string
-          ended_at?: string | null
           duration_seconds?: number | null
+          ended_at?: string | null
+          id?: string
+          session_data?: Json | null
+          started_at?: string | null
+          user_id?: string | null
         }
         Update: {
-          id?: string
-          user_id?: string
-          session_data?: Json
-          started_at?: string
-          ended_at?: string | null
           duration_seconds?: number | null
+          ended_at?: string | null
+          id?: string
+          session_data?: Json | null
+          started_at?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -273,7 +267,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
-          }
+          },
         ]
       }
     }
@@ -281,10 +275,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      increment_view_count: {
+        Args: { prompt_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
-      user_role: 'user' | 'admin' | 'moderator'
+      user_role: "user" | "admin" | "moderator"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -411,6 +408,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      user_role: ["user", "admin", "moderator"],
+    },
   },
 } as const
