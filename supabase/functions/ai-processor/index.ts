@@ -38,19 +38,18 @@ serve(async (req) => {
       })
     }
 
-    // Verify model exists and is active
-    const { data: modelData } = await supabaseClient
-      .from('ai_models')
-      .select('id, name, is_active')
-      .eq('id', model)
-      .eq('is_active', true)
-      .single()
-
-    if (!modelData) {
-      return new Response(JSON.stringify({ error: 'Invalid or inactive model' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
+    // Optional: try to map model id to friendly name if table exists
+    let modelName = model
+    try {
+      const { data: modelData } = await supabaseClient
+        .from('ai_models')
+        .select('id, name, is_active')
+        .eq('id', model)
+        .eq('is_active', true)
+        .single()
+      if (modelData?.name) modelName = modelData.name
+    } catch (_) {
+      // Ignore if table doesn't exist or query fails
     }
 
     // Get thinking mode instructions if provided
@@ -89,7 +88,14 @@ serve(async (req) => {
     if (!openRouterResponse.ok) {
       const errorText = await openRouterResponse.text()
       console.error('OpenRouter API error:', openRouterResponse.status, errorText)
-      throw new Error(`OpenRouter API error: ${openRouterResponse.statusText}`)
+      return new Response(JSON.stringify({
+        error: 'OpenRouter API error',
+        status: openRouterResponse.status,
+        details: errorText
+      }), {
+        status: openRouterResponse.status,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
     }
 
     const aiResponse = await openRouterResponse.json()
@@ -104,7 +110,7 @@ serve(async (req) => {
           prompt_length: prompt.length,
           response_length: aiResponse.choices[0]?.message?.content?.length || 0,
           tokens_used: aiResponse.usage?.total_tokens || 0,
-          model_name: modelData.name
+          model_name: modelName
         }
       })
     }
@@ -113,7 +119,7 @@ serve(async (req) => {
     return new Response(JSON.stringify({
       ...aiResponse,
       metadata: {
-        model: modelData.name,
+        model: modelName,
         mode: mode || null,
         tokens_used: aiResponse.usage?.total_tokens || 0
       }

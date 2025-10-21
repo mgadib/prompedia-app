@@ -173,9 +173,12 @@ const PromptEditor = ({ currentPrompt, onPromptChange }: PromptEditorProps) => {
         throw new Error(error.message || 'Failed to process prompt');
       }
       
-      if (data?.response) {
+      if (data) {
+        const processedContent = data?.choices?.[0]?.message?.content || data?.response || '';
+        if (!processedContent) throw new Error('No response from AI');
+        
         // Update content with processed result
-        setContent(data.response);
+        setContent(processedContent);
         hasUnsavedChanges.current = true;
         
         toast.success(`Content ${actionId}d successfully`);
