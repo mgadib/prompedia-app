@@ -157,11 +157,11 @@ const PromptEditor = ({ currentPrompt, onPromptChange }: PromptEditorProps) => {
       const actionInstructions = generateActionInstructions(actionId, content);
       
       // Call edge function to process the prompt
+      // Note: Don't send mode when using action buttons - they have their own instructions
       const { data, error } = await supabase.functions.invoke('ai-processor', {
         body: {
           model: model,
           prompt: actionInstructions,
-          mode: mode,
           options: {
             temperature: 0.7,
             max_tokens: 2048
@@ -170,10 +170,16 @@ const PromptEditor = ({ currentPrompt, onPromptChange }: PromptEditorProps) => {
       });
 
       if (error) {
+        console.error('Edge function error:', error);
         throw new Error(error.message || 'Failed to process prompt');
       }
       
       if (data) {
+        // Check for API error in response
+        if (data.error) {
+          throw new Error(data.error);
+        }
+        
         const processedContent = data?.choices?.[0]?.message?.content || data?.response || '';
         if (!processedContent) throw new Error('No response from AI');
         
