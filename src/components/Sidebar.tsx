@@ -1,49 +1,32 @@
 import { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Play, User, LogOut, Lock, Users, Globe, Hash } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { storage, Prompt } from '@/lib/storage';
-import { toast } from 'sonner';
-import AuthModal from './AuthModal';
+import { ChevronLeft, ChevronRight, Play, User, LogOut, Lock, Users, Hash } from 'lucide-react';
+import { User as SupabaseUser } from '@supabase/supabase-js';
 
 interface SidebarProps {
   activeView: 'my-library' | 'public-library';
   onViewChange: (view: 'my-library' | 'public-library') => void;
   onNewPrompt?: () => void;
+  onLogout: () => void;
+  user: SupabaseUser | null;
   isPlaygroundActive?: boolean;
 }
 
-const Sidebar = ({ activeView, onViewChange, onNewPrompt, isPlaygroundActive }: SidebarProps) => {
+const Sidebar = ({ 
+  activeView, 
+  onViewChange, 
+  onNewPrompt, 
+  onLogout,
+  user,
+  isPlaygroundActive 
+}: SidebarProps) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [user, setUser] = useState(storage.getUser());
   const [allTags, setAllTags] = useState<string[]>([]);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   useEffect(() => {
-    const prompts = storage.getPrompts();
-    const tags = Array.from(new Set(prompts.flatMap(p => p.tags)));
-    setAllTags(tags);
+    // Load tags from local storage or Supabase
+    // For now, we'll keep this empty until we integrate with Supabase
+    setAllTags([]);
   }, []);
-
-  const handleLogout = () => {
-    storage.clearUser();
-    setUser(null);
-    toast.success('Logged out successfully');
-    // Stay on the current page instead of redirecting
-  };
-
-  const handleAuthSuccess = () => {
-    setUser(storage.getUser());
-  };
-
-  const handleProfileClick = () => {
-    if (user) {
-      // If user is logged in, show user info or do nothing
-      return;
-    } else {
-      // If user is not logged in, open auth modal
-      setIsAuthModalOpen(true);
-    }
-  };
 
   return (
     <div className={`${isCollapsed ? 'w-16' : 'w-64'} h-screen bg-sidebar-background border-r border-sidebar-border flex flex-col transition-all duration-300 ease-in-out relative`}>
@@ -146,59 +129,46 @@ const Sidebar = ({ activeView, onViewChange, onNewPrompt, isPlaygroundActive }: 
       <div className="p-4 border-t border-sidebar-border space-y-2">
         {!isCollapsed ? (
           <>
-            <div 
-              className="flex items-center gap-3 px-3 py-2 text-sm text-sidebar-foreground bg-sidebar-accent/10 rounded-md cursor-pointer hover:bg-sidebar-accent/20 transition-colors"
-              onClick={handleProfileClick}
-            >
+            <div className="flex items-center gap-3 px-3 py-2 text-sm text-sidebar-foreground bg-sidebar-accent/10 rounded-md">
               <div className="w-8 h-8 rounded-full bg-sidebar-accent flex items-center justify-center">
                 <User className="w-4 h-4 text-sidebar-accent-foreground" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-medium truncate font-mono">{user?.username || 'Guest User'}</p>
-                <p className="text-xs text-muted-foreground font-mono">
-                  {user ? 'User Profile' : 'Click to login'}
+                <p className="font-medium truncate font-mono">
+                  {user?.user_metadata?.username || user?.email?.split('@')[0] || 'User'}
+                </p>
+                <p className="text-xs text-muted-foreground font-mono truncate">
+                  {user?.email}
                 </p>
               </div>
             </div>
             
-            {user && (
-              <button
-                onClick={handleLogout}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm text-sidebar-foreground hover:bg-destructive/20 hover:text-destructive transition-all duration-200 font-mono"
-              >
-                <LogOut className="w-4 h-4" />
-                Logout
-              </button>
-            )}
+            <button
+              onClick={onLogout}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm text-sidebar-foreground hover:bg-destructive/20 hover:text-destructive transition-all duration-200 font-mono"
+            >
+              <LogOut className="w-4 h-4" />
+              Logout
+            </button>
           </>
         ) : (
           <div className="flex flex-col items-center gap-2">
             <div 
-              className="w-8 h-8 rounded-full bg-sidebar-accent flex items-center justify-center cursor-pointer hover:bg-sidebar-accent/80 transition-colors"
-              onClick={handleProfileClick}
-              title={user ? user.username : 'Click to login'}
+              className="w-8 h-8 rounded-full bg-sidebar-accent flex items-center justify-center"
+              title={user?.email || 'User'}
             >
               <User className="w-4 h-4 text-sidebar-accent-foreground" />
             </div>
-            {user && (
-              <button
-                onClick={handleLogout}
-                className="w-8 h-8 flex items-center justify-center rounded-md text-sidebar-foreground hover:bg-destructive/20 hover:text-destructive transition-all duration-200"
-                title="Logout"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
-            )}
+            <button
+              onClick={onLogout}
+              className="w-8 h-8 flex items-center justify-center rounded-md text-sidebar-foreground hover:bg-destructive/20 hover:text-destructive transition-all duration-200"
+              title="Logout"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
           </div>
         )}
       </div>
-
-      {/* Auth Modal */}
-       <AuthModal 
-         isOpen={isAuthModalOpen}
-         onClose={() => setIsAuthModalOpen(false)}
-         onAuthSuccess={handleAuthSuccess}
-       />
     </div>
   );
 };
