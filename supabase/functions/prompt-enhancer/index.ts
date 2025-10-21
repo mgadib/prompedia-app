@@ -63,7 +63,7 @@ serve(async (req) => {
         // Verify the prompt belongs to the user
         const { data: promptData } = await supabaseClient
           .from('prompts')
-          .select('id, content, user_id')
+          .select('id, content, user_id, usage_stats')
           .eq('id', id)
           .eq('user_id', user.id)
           .single()
@@ -269,10 +269,11 @@ FORMAT OUTPUT:
 
       } catch (error) {
         console.error(`Error processing prompt ${promptItem.id}:`, error)
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
         results.push({
           id: promptItem.id,
           success: false,
-          error: error.message
+          error: errorMessage
         })
       }
     }
@@ -301,8 +302,9 @@ FORMAT OUTPUT:
 
   } catch (error) {
     console.error('Error in prompt-enhancer:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
     return new Response(JSON.stringify({
-      error: error.message,
+      error: errorMessage,
       timestamp: new Date().toISOString()
     }), {
       status: 500,

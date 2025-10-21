@@ -231,7 +231,8 @@ export class SupabaseService {
   }
 
   static async incrementViewCount(id: string): Promise<void> {
-    const { error } = await supabase.rpc('increment_view_count', { prompt_id: id })
+    // Call the increment_view_count function directly
+    const { error } = await supabase.rpc('increment_view_count' as any, { prompt_id: id })
     if (error) throw error
   }
 

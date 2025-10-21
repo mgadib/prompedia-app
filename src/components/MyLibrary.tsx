@@ -143,9 +143,9 @@ const MyLibrary = ({
                   </div>
                   <div className="flex items-center gap-2">
                     {prompt.isPublic ? (
-                      <Globe className="w-4 h-4 text-primary" title="Public" />
+                      <Globe className="w-4 h-4 text-primary" />
                     ) : (
-                      <Lock className="w-4 h-4 text-muted-foreground" title="Private" />
+                      <Lock className="w-4 h-4 text-muted-foreground" />
                     )}
                   </div>
                 </div>
