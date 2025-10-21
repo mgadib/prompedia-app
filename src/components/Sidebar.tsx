@@ -7,7 +7,10 @@ interface SidebarProps {
   onViewChange: (view: 'my-library' | 'public-library') => void;
   onNewPrompt?: () => void;
   onLogout: () => void;
+  onLogin: () => void;
   user: SupabaseUser | null;
+  playgroundCount: number;
+  playgroundLimit: number;
   isPlaygroundActive?: boolean;
 }
 
@@ -16,7 +19,10 @@ const Sidebar = ({
   onViewChange, 
   onNewPrompt, 
   onLogout,
+  onLogin,
   user,
+  playgroundCount,
+  playgroundLimit,
   isPlaygroundActive 
 }: SidebarProps) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -127,46 +133,90 @@ const Sidebar = ({
 
       {/* User Profile Section */}
       <div className="p-4 border-t border-sidebar-border space-y-2">
-        {!isCollapsed ? (
-          <>
-            <div className="flex items-center gap-3 px-3 py-2 text-sm text-sidebar-foreground bg-sidebar-accent/10 rounded-md">
-              <div className="w-8 h-8 rounded-full bg-sidebar-accent flex items-center justify-center">
+        {user ? (
+          // Logged in user
+          !isCollapsed ? (
+            <>
+              <div className="flex items-center gap-3 px-3 py-2 text-sm text-sidebar-foreground bg-sidebar-accent/10 rounded-md">
+                <div className="w-8 h-8 rounded-full bg-sidebar-accent flex items-center justify-center">
+                  <User className="w-4 h-4 text-sidebar-accent-foreground" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium truncate font-mono">
+                    {user.user_metadata?.username || user.email?.split('@')[0]}
+                  </p>
+                  <p className="text-xs text-muted-foreground font-mono truncate">
+                    {user.email}
+                  </p>
+                </div>
+              </div>
+              
+              <button
+                onClick={onLogout}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm text-sidebar-foreground hover:bg-destructive/20 hover:text-destructive transition-all duration-200 font-mono"
+              >
+                <LogOut className="w-4 h-4" />
+                Logout
+              </button>
+            </>
+          ) : (
+            <div className="flex flex-col items-center gap-2">
+              <div 
+                className="w-8 h-8 rounded-full bg-sidebar-accent flex items-center justify-center"
+                title={user.email || 'User'}
+              >
                 <User className="w-4 h-4 text-sidebar-accent-foreground" />
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-medium truncate font-mono">
-                  {user?.user_metadata?.username || user?.email?.split('@')[0] || 'User'}
-                </p>
-                <p className="text-xs text-muted-foreground font-mono truncate">
-                  {user?.email}
+              <button
+                onClick={onLogout}
+                className="w-8 h-8 flex items-center justify-center rounded-md text-sidebar-foreground hover:bg-destructive/20 hover:text-destructive transition-all duration-200"
+                title="Logout"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
+          )
+        ) : (
+          // Guest user
+          !isCollapsed ? (
+            <>
+              <div className="bg-sidebar-accent/10 rounded-md p-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-semibold text-sidebar-foreground font-mono">Guest Mode</p>
+                  <span className="text-xs text-prompedia-green-400 font-mono">
+                    {playgroundCount}/{playgroundLimit}
+                  </span>
+                </div>
+                <div className="w-full bg-sidebar-background rounded-full h-2">
+                  <div 
+                    className="bg-prompedia-green-500 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${(playgroundCount / playgroundLimit) * 100}%` }}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground font-mono">
+                  {playgroundLimit - playgroundCount} playgrounds remaining
                 </p>
               </div>
+              
+              <button
+                onClick={onLogin}
+                className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-md text-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200 font-mono"
+              >
+                <User className="w-4 h-4" />
+                Sign In
+              </button>
+            </>
+          ) : (
+            <div className="flex flex-col items-center gap-2">
+              <button
+                onClick={onLogin}
+                className="w-8 h-8 flex items-center justify-center rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200"
+                title="Sign In"
+              >
+                <User className="w-4 h-4" />
+              </button>
             </div>
-            
-            <button
-              onClick={onLogout}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm text-sidebar-foreground hover:bg-destructive/20 hover:text-destructive transition-all duration-200 font-mono"
-            >
-              <LogOut className="w-4 h-4" />
-              Logout
-            </button>
-          </>
-        ) : (
-          <div className="flex flex-col items-center gap-2">
-            <div 
-              className="w-8 h-8 rounded-full bg-sidebar-accent flex items-center justify-center"
-              title={user?.email || 'User'}
-            >
-              <User className="w-4 h-4 text-sidebar-accent-foreground" />
-            </div>
-            <button
-              onClick={onLogout}
-              className="w-8 h-8 flex items-center justify-center rounded-md text-sidebar-foreground hover:bg-destructive/20 hover:text-destructive transition-all duration-200"
-              title="Logout"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
-          </div>
+          )
         )}
       </div>
     </div>
