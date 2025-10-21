@@ -8,7 +8,7 @@ import { storage, Prompt } from '@/lib/storage';
 import { AVAILABLE_MODELS } from '@/lib/models';
 import { THINKING_MODES, getModeById } from '@/lib/modes';
 import { generateActionInstructions } from '@/lib/actions';
-import { makeAPIRequest } from '@/lib/api-config';
+import { supabase } from '@/integrations/supabase/client';
 import ModelSelector from './ModelSelector';
 import ModeSelector from './ModeSelector';
 import TagInput from './TagInput';
@@ -156,14 +156,26 @@ const PromptEditor = ({ currentPrompt, onPromptChange }: PromptEditorProps) => {
       // Generate action-specific instructions
       const actionInstructions = generateActionInstructions(actionId, content);
       
-      // Make API request
-      const response = await makeAPIRequest('/chat/completions', model, actionInstructions);
+      // Call edge function to process the prompt
+      const { data, error } = await supabase.functions.invoke('ai-processor', {
+        body: {
+          model: model,
+          prompt: actionInstructions,
+          mode: mode,
+          options: {
+            temperature: 0.7,
+            max_tokens: 2048
+          }
+        }
+      });
+
+      if (error) {
+        throw new Error(error.message || 'Failed to process prompt');
+      }
       
-      if (response.choices && response.choices[0]) {
-        const processedContent = response.choices[0].message.content;
-        
+      if (data?.response) {
         // Update content with processed result
-        setContent(processedContent);
+        setContent(data.response);
         hasUnsavedChanges.current = true;
         
         toast.success(`Content ${actionId}d successfully`);
