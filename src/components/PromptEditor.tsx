@@ -22,7 +22,7 @@ interface PromptEditorProps {
 const PromptEditor = ({ currentPrompt, onPromptChange }: PromptEditorProps) => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [model, setModel] = useState(AVAILABLE_MODELS[2].id);
+  const [model, setModel] = useState(AVAILABLE_MODELS[1].id);
   const [mode, setMode] = useState(THINKING_MODES[5].id);
   const [tags, setTags] = useState<string[]>([]);
   const [isAutoSaving, setIsAutoSaving] = useState(false);
@@ -95,7 +95,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange }: PromptEditorProps) => {
       userId: user.id,
       title: 'Untitled Prompt',
       content: '',
-      model: AVAILABLE_MODELS[2].id,
+      model: AVAILABLE_MODELS[1].id,
       tags: [],
       isPublic: false,
       createdAt: new Date().toISOString(),
@@ -183,8 +183,15 @@ const PromptEditor = ({ currentPrompt, onPromptChange }: PromptEditorProps) => {
         const processedContent = data?.choices?.[0]?.message?.content || data?.response || '';
         if (!processedContent) throw new Error('No response from AI');
         
+        // Prefer extracted refined content when available
+        let nextContent = processedContent;
+        const refinedMatch = processedContent.match(/##\s*Hasil\s*Refined\s*([\s\S]*?)(?:\n##|$)/i);
+        if (refinedMatch) {
+          nextContent = refinedMatch[1].trim();
+        }
+        
         // Update content with processed result
-        setContent(processedContent);
+        setContent(nextContent);
         hasUnsavedChanges.current = true;
         
         toast.success(`Content ${actionId}d successfully`);

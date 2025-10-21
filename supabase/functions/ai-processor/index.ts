@@ -91,65 +91,98 @@ serve(async (req) => {
       }
     }
 
-    // Call OpenRouter API
-    const openRouterResponse = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://prompedia.ai',
-        'X-Title': 'Prompedia AI'
-      },
-      body: JSON.stringify({
-        model,
-        messages: [{ role: 'user', content: enhancedPrompt }],
-        temperature: options.temperature || 0.7,
-        max_tokens: options.max_tokens || 2048,
-        top_p: options.top_p || 1.0
+    // Call OpenRouter API with provider-specific keys and graceful fallback
+    const tryModels: string[] = Array.from(new Set([
+      model,
+      'qwen/qwen3-30b-a3b:free',
+      'meta-llama/llama-4-maverick:free',
+      'openai/oss-20b:free'
+    ]));
+
+    let lastErrorText = ''
+    let lastStatus = 0
+
+    for (const candidate of tryModels) {
+      const key = getApiKeyForModel(candidate)
+      if (!key) continue
+
+      const resp = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${key}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': 'https://prompedia.ai',
+          'X-Title': 'Prompedia AI'
+        },
+        body: JSON.stringify({
+          model: candidate,
+          messages: [{ role: 'user', content: enhancedPrompt }],
+          temperature: options.temperature || 0.7,
+          max_tokens: options.max_tokens || 2048,
+          top_p: options.top_p || 1.0
+        })
       })
-    })
 
-    if (!openRouterResponse.ok) {
-      const errorText = await openRouterResponse.text()
-      console.error('OpenRouter API error:', openRouterResponse.status, errorText)
-      return new Response(JSON.stringify({
-        error: 'OpenRouter API error',
-        status: openRouterResponse.status,
-        details: errorText
-      }), {
-        status: openRouterResponse.status,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-    }
+      if (resp.ok) {
+        const aiResponse = await resp.json()
+        const usedModelName = candidate
 
-    const aiResponse = await openRouterResponse.json()
-
-    // Log the session for analytics (only for authenticated users)
-    if (user) {
-      await supabaseClient.from('user_sessions').insert({
-        user_id: user.id,
-        session_data: {
-          model,
-          mode: mode || null,
-          prompt_length: prompt.length,
-          response_length: aiResponse.choices[0]?.message?.content?.length || 0,
-          tokens_used: aiResponse.usage?.total_tokens || 0,
-          model_name: modelName
+        // Log the session for analytics (only for authenticated users)
+        if (user) {
+          await supabaseClient.from('user_sessions').insert({
+            user_id: user.id,
+            session_data: {
+              model: candidate,
+              mode: mode || null,
+              prompt_length: prompt.length,
+              response_length: aiResponse.choices[0]?.message?.content?.length || 0,
+              tokens_used: aiResponse.usage?.total_tokens || 0,
+              model_name: usedModelName,
+              fallback_used: candidate !== model
+            }
+          })
         }
-      })
+
+        // Return the AI response
+        return new Response(JSON.stringify({
+          ...aiResponse,
+          metadata: {
+            model: usedModelName,
+            mode: mode || null,
+            tokens_used: aiResponse.usage?.total_tokens || 0,
+            fallback_used: candidate !== model
+          }
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+
+      lastStatus = resp.status
+      lastErrorText = await resp.text()
+      // If rate-limited or payment required, try next model; otherwise stop and return
+      if (resp.status !== 429 && resp.status !== 402) {
+        console.error('OpenRouter API error:', resp.status, lastErrorText)
+        return new Response(JSON.stringify({
+          error: 'OpenRouter API error',
+          status: resp.status,
+          details: lastErrorText
+        }), {
+          status: resp.status,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
     }
 
-    // Return the AI response
+    // If all candidates failed due to rate limits or payment
     return new Response(JSON.stringify({
-      ...aiResponse,
-      metadata: {
-        model: modelName,
-        mode: mode || null,
-        tokens_used: aiResponse.usage?.total_tokens || 0
-      }
+      error: 'All providers are temporarily rate-limited. Please retry in a moment.',
+      status: lastStatus || 429,
+      details: lastErrorText
     }), {
+      status: 429,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
+
 
   } catch (error) {
     console.error('Error in ai-processor:', error)
