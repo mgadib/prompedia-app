@@ -16,7 +16,7 @@
 
 ### 🤖 AI Model Integration
 - **OpenRouter API**: Akses berbagai model AI premium
-- **4 Model Terintegrasi**: Llama 4 Maverick, Qwen 3 30B, DeepSeek Chat V3, OpenAI OSS 20B
+- **3 Model Terintegrasi**: Llama 4 Maverick, Qwen 3 30B, DeepSeek Chat V3
 - **Capability-based Selection**: Pilih model berdasarkan kemampuan (Text, Image, Vision, Code, Math, dll)
 
 ### 🎨 Modern UI/UX
@@ -136,7 +136,6 @@ Pilih model berdasarkan kemampuan:
 | **Llama 4 Maverick** | OpenRouter | Multimodal | Text, Image, Vision, Bilingual |
 | **Qwen 3 30B** | OpenRouter | Text | Code, Math, Long Context |
 | **DeepSeek Chat V3** | OpenRouter | Text | Conversational, Reasoning |
-| **OpenAI OSS 20B** | OpenAI | Text | General Reasoning, Code |
 
 ### 🎯 Workflow
 

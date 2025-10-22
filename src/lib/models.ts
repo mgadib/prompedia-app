@@ -57,18 +57,6 @@ export const AVAILABLE_MODELS: AIModel[] = [
       reasoning: true
     },
     free: true
-  },
-  {
-    id: 'openai/oss-20b:free',
-    label: 'OpenAI OSS 20B',
-    provider: 'OpenAI',
-    type: 'Text',
-    capabilities: {
-      text: true,
-      reasoning: true,
-      code: true
-    },
-    free: true
   }
 ];
 

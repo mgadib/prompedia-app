@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { storage, Prompt } from '@/lib/storage';
+import { storageManager } from '@/lib/storage-manager';
 import { AVAILABLE_MODELS } from '@/lib/models';
 import { THINKING_MODES, getModeById } from '@/lib/modes';
 import { generateActionInstructions } from '@/lib/actions';
@@ -96,6 +97,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange }: PromptEditorProps) => {
       title: 'Untitled Prompt',
       content: '',
       model: AVAILABLE_MODELS[1].id,
+      mode: THINKING_MODES[5].id,
       tags: [],
       isPublic: false,
       createdAt: new Date().toISOString(),
@@ -106,22 +108,27 @@ const PromptEditor = ({ currentPrompt, onPromptChange }: PromptEditorProps) => {
     toast.success('New prompt created');
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!currentPrompt) return;
 
-    const updatedPrompt: Prompt = {
-      ...currentPrompt,
-      title,
-      content,
-      model,
-      tags,
-      updatedAt: new Date().toISOString(),
-    };
+    try {
+      const updatedPrompt: Prompt = {
+        ...currentPrompt,
+        title,
+        content,
+        model,
+        tags,
+        updatedAt: new Date().toISOString(),
+      };
 
-    storage.savePrompt(updatedPrompt);
-    onPromptChange(updatedPrompt);
-    hasUnsavedChanges.current = false;
-    toast.success('Prompt saved manually');
+      await storageManager.savePrompt(updatedPrompt);
+      onPromptChange(updatedPrompt);
+      hasUnsavedChanges.current = false;
+      toast.success('Prompt saved manually');
+    } catch (error) {
+      console.error('Failed to save prompt:', error);
+      toast.error('Failed to save prompt');
+    }
   };
 
   const handleCopy = () => {
@@ -193,6 +200,35 @@ const PromptEditor = ({ currentPrompt, onPromptChange }: PromptEditorProps) => {
         // Update content with processed result
         setContent(nextContent);
         hasUnsavedChanges.current = true;
+        
+        // Increment playground count after successful AI response (for non-logged in users only)
+        const user = storage.getUser();
+        if (!user) {
+          const currentCount = parseInt(localStorage.getItem('prompedia_playground_count') || '0');
+          const newCount = currentCount + 1;
+          localStorage.setItem('prompedia_playground_count', newCount.toString());
+          
+          // Update parent component's state if available
+          if (window.updatePlaygroundCount) {
+            window.updatePlaygroundCount(newCount);
+          }
+          
+          // Log the counting event
+          console.log(`[Prompt Count] Incremented to ${newCount} after successful AI response`, {
+            timestamp: new Date().toISOString(),
+            context: 'AI action completion',
+            actionId,
+            promptLength: content.length,
+            responseLength: nextContent.length,
+            model
+          });
+          
+          // Show warning when approaching limit
+          const PLAYGROUND_LIMIT = 10;
+          if (newCount >= PLAYGROUND_LIMIT - 3) {
+            toast.warning(`${PLAYGROUND_LIMIT - newCount} playgrounds remaining. Sign in for unlimited access!`);
+          }
+        }
         
         toast.success(`Content ${actionId}d successfully`);
       } else {

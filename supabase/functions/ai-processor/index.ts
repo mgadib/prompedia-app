@@ -46,8 +46,6 @@ serve(async (req) => {
         return Deno.env.get('OPENROUTER_API_KEY_QWEN3_30B')
       } else if (modelId.includes('deepseek')) {
         return Deno.env.get('OPENROUTER_API_KEY_DEEPSEEK_V3')
-      } else if (modelId.includes('oss-20b')) {
-        return Deno.env.get('OPENROUTER_API_KEY_OPENAI_OSS_20B')
       }
       // Fallback to default key
       return Deno.env.get('OPENROUTER_API_KEY')
@@ -95,8 +93,7 @@ serve(async (req) => {
     const tryModels: string[] = Array.from(new Set([
       model,
       'qwen/qwen3-30b-a3b:free',
-      'meta-llama/llama-4-maverick:free',
-      'openai/oss-20b:free'
+      'meta-llama/llama-4-maverick:free'
     ]));
 
     let lastErrorText = ''

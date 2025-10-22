@@ -239,3 +239,103 @@ pnpm-lock.yaml
 # Miscellaneous
 *.tgz
 *.tar.gz
+
+# Modern Development Tools
+.swc/
+.turbo/
+.nx/
+.rush/
+
+# Security and Secrets
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+secrets.json
+.secrets/
+auth.json
+
+# AI/ML Models and Data
+*.model
+*.pkl
+*.h5
+*.pb
+models/
+datasets/
+*.weights
+
+# Performance and Profiling
+*.cpuprofile
+*.heapprofile
+.clinic/
+flamegraph.html
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+.docker/
+
+# Kubernetes
+*.kubeconfig
+k8s-secrets/
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+
+# Cloud Provider Configs
+.aws/
+.gcp/
+.azure/
+
+# Backup files
+*.backup
+*.bak
+*.orig
+*~
+
+# Temporary files
+.tmp/
+.temp/
+*.tmp
+*.temp
+
+# System files
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Package manager specific
+.pnpm-store/
+.yarn/
+node_modules.nosync
+
+# Development databases
+*.db-journal
+*.db-wal
+*.db-shm
+
+# API Keys and Tokens (additional patterns)
+.env.*.local
+.env.keys
+api-keys.json
+tokens.json
+
+# Build artifacts
+*.map
+*.min.js
+*.min.css
+bundle-analyzer-report.html
+
+# IDE specific (additional)
+.fleet/
+.nova/
+*.code-workspace

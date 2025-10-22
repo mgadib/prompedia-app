@@ -5,6 +5,7 @@ import MyLibrary from '@/components/MyLibrary';
 import PublicLibrary from '@/components/PublicLibrary';
 import AuthModal from '@/components/AuthModal';
 import { storage, Prompt } from '@/lib/storage';
+import { storageManager } from '@/lib/storage-manager';
 import { AVAILABLE_MODELS } from '@/lib/models';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
@@ -37,10 +38,17 @@ const AppPage = () => {
         );
 
         // Load playground count for non-logged in users
-        if (!session) {
-          const count = parseInt(localStorage.getItem(PLAYGROUND_COUNT_KEY) || '0');
-          setPlaygroundCount(count);
+        if (!session?.user) {
+          const savedCount = localStorage.getItem(PLAYGROUND_COUNT_KEY);
+          if (savedCount) {
+            setPlaygroundCount(parseInt(savedCount));
+          }
         }
+
+        // Set up global callback for updating playground count
+        window.updatePlaygroundCount = (newCount: number) => {
+          setPlaygroundCount(newCount);
+        };
 
         // Load last opened prompt
         const lastPromptId = storage.getCurrentPromptId();
@@ -55,7 +63,10 @@ const AppPage = () => {
 
         setLoading(false);
 
-        return () => subscription.unsubscribe();
+        return () => {
+          subscription.unsubscribe();
+          delete window.updatePlaygroundCount;
+        };
       } catch (error) {
         console.error('Auth check error:', error);
         setLoading(false);
@@ -82,11 +93,16 @@ const AppPage = () => {
     setShowEditor(true);
   };
 
-  const handleDeletePrompt = (promptId: string) => {
-    storage.deletePrompt(promptId);
-    if (currentPrompt?.id === promptId) {
-      setCurrentPrompt(null);
-      setShowEditor(false);
+  const handleDeletePrompt = async (promptId: string) => {
+    try {
+      await storageManager.deletePrompt(promptId);
+      if (currentPrompt?.id === promptId) {
+        setCurrentPrompt(null);
+        setShowEditor(false);
+      }
+    } catch (error) {
+      console.error('Failed to delete prompt:', error);
+      toast.error('Failed to delete prompt');
     }
   };
 
@@ -129,16 +145,6 @@ const AppPage = () => {
         setShowAuthModal(true);
         return;
       }
-
-      // Increment playground count
-      const newCount = playgroundCount + 1;
-      setPlaygroundCount(newCount);
-      localStorage.setItem(PLAYGROUND_COUNT_KEY, newCount.toString());
-
-      // Show warning when approaching limit
-      if (newCount >= PLAYGROUND_LIMIT - 3) {
-        toast.warning(`${PLAYGROUND_LIMIT - newCount} playgrounds remaining. Sign in for unlimited access!`);
-      }
     }
 
     const newPrompt: Prompt = {
@@ -155,7 +161,7 @@ const AppPage = () => {
 
     setCurrentPrompt(newPrompt);
     setShowEditor(true);
-    toast.success('New prompt created');
+    // Removed toast - this is just navigation to playground, not creating a new prompt
   };
 
   const handleLogout = async () => {

@@ -32,13 +32,6 @@ INSERT INTO public.ai_models (id, name, provider, type, capabilities) VALUES
   "math": true
 }'::jsonb),
 
-('openai/oss-20b:free', 'OpenAI OSS 20B', 'OpenAI', 'Text', '{
-  "text": true,
-  "reasoning": true,
-  "code": true,
-  "conversational": true
-}'::jsonb),
-
 ('anthropic/claude-3.5-sonnet:beta', 'Claude 3.5 Sonnet', 'Anthropic', 'Text', '{
   "text": true,
   "reasoning": true,
