@@ -5,9 +5,6 @@ export interface User {
   id: string;
   email: string;
   full_name: string;
-  avatar_url?: string;
-  created_at: string;
-  updated_at: string;
 }
 
 export interface Prompt {
@@ -17,10 +14,13 @@ export interface Prompt {
   content: string;
   model: string;
   mode: 'meta-prompt' | 'thinking' | 'normal';
-  tags: string[];
+  color: string;
   is_public: boolean;
-  created_at: string;
-  updated_at: string;
+  is_featured: boolean;
+  description?: string;
+  original_prompt_id?: string;
+  // Note: tags are now handled via prompt_tags junction table
+  // created_at and updated_at are not stored in the minimal schema
 }
 
 /**
@@ -138,10 +138,7 @@ export const promptStorage = {
       const prompts = promptStorage.getPrompts();
       const index = prompts.findIndex(p => p.id === validatedPrompt.id);
       
-      const updatedPrompt = {
-        ...validatedPrompt,
-        updated_at: new Date().toISOString()
-      };
+      const updatedPrompt = validatedPrompt;
       
       if (index >= 0) {
         prompts[index] = updatedPrompt;

@@ -16,256 +16,206 @@ export type Database = {
     Tables: {
       ai_models: {
         Row: {
-          capabilities: Json
-          created_at: string | null
           id: string
-          is_active: boolean | null
           name: string
           provider: string
           type: string
         }
         Insert: {
-          capabilities?: Json
-          created_at?: string | null
           id: string
-          is_active?: boolean | null
           name: string
           provider: string
           type: string
         }
         Update: {
-          capabilities?: Json
-          created_at?: string | null
           id?: string
-          is_active?: boolean | null
           name?: string
           provider?: string
           type?: string
         }
         Relationships: []
       }
-      profiles: {
+      users: {
         Row: {
-          avatar_url: string | null
-          bio: string | null
-          created_at: string | null
-          display_name: string | null
           id: string
-          preferences: Json | null
-          role: Database["public"]["Enums"]["user_role"] | null
-          updated_at: string | null
           username: string | null
+          display_name: string | null
+          role: Database["public"]["Enums"]["user_role"] | null
         }
         Insert: {
-          avatar_url?: string | null
-          bio?: string | null
-          created_at?: string | null
-          display_name?: string | null
           id: string
-          preferences?: Json | null
-          role?: Database["public"]["Enums"]["user_role"] | null
-          updated_at?: string | null
           username?: string | null
+          display_name?: string | null
+          role?: Database["public"]["Enums"]["user_role"] | null
         }
         Update: {
-          avatar_url?: string | null
-          bio?: string | null
-          created_at?: string | null
-          display_name?: string | null
           id?: string
-          preferences?: Json | null
-          role?: Database["public"]["Enums"]["user_role"] | null
-          updated_at?: string | null
           username?: string | null
+          display_name?: string | null
+          role?: Database["public"]["Enums"]["user_role"] | null
         }
         Relationships: []
       }
       prompts: {
         Row: {
-          color: string | null
-          content: string
-          created_at: string | null
-          description: string | null
-          fork_count: number | null
           id: string
-          is_featured: boolean | null
-          is_public: boolean | null
-          mode: string | null
-          model: string | null
-          original_prompt_id: string | null
-          tags: string[] | null
-          title: string
-          updated_at: string | null
-          usage_stats: Json | null
           user_id: string | null
-          view_count: number | null
+          title: string
+          content: string
+          description: string | null
+          model: string | null
+          mode: string | null
+          color: string | null
+          is_public: boolean | null
+          is_featured: boolean | null
+          original_prompt_id: string | null
         }
         Insert: {
-          color?: string | null
-          content: string
-          created_at?: string | null
-          description?: string | null
-          fork_count?: number | null
           id?: string
-          is_featured?: boolean | null
-          is_public?: boolean | null
-          mode?: string | null
-          model?: string | null
-          original_prompt_id?: string | null
-          tags?: string[] | null
-          title: string
-          updated_at?: string | null
-          usage_stats?: Json | null
           user_id?: string | null
-          view_count?: number | null
+          title: string
+          content: string
+          description?: string | null
+          model?: string | null
+          mode?: string | null
+          color?: string | null
+          is_public?: boolean | null
+          is_featured?: boolean | null
+          original_prompt_id?: string | null
         }
         Update: {
-          color?: string | null
-          content?: string
-          created_at?: string | null
-          description?: string | null
-          fork_count?: number | null
           id?: string
-          is_featured?: boolean | null
-          is_public?: boolean | null
-          mode?: string | null
-          model?: string | null
-          original_prompt_id?: string | null
-          tags?: string[] | null
-          title?: string
-          updated_at?: string | null
-          usage_stats?: Json | null
           user_id?: string | null
-          view_count?: number | null
+          title?: string
+          content?: string
+          description?: string | null
+          model?: string | null
+          mode?: string | null
+          color?: string | null
+          is_public?: boolean | null
+          is_featured?: boolean | null
+          original_prompt_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "prompts_original_prompt_id_fkey"
+            foreignKeyName: "prompts_original_prompt_id_fkey1"
             columns: ["original_prompt_id"]
             isOneToOne: false
             referencedRelation: "prompts"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "prompts_user_id_fkey"
+            foreignKeyName: "prompts_user_id_fkey1"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
       }
       tags: {
         Row: {
-          color: string | null
-          created_at: string | null
-          created_by: string | null
-          description: string | null
           id: string
-          is_system: boolean | null
           name: string
-          usage_count: number | null
+          description: string | null
+          color: string | null
+          is_system: boolean | null
         }
         Insert: {
-          color?: string | null
-          created_at?: string | null
-          created_by?: string | null
-          description?: string | null
           id?: string
-          is_system?: boolean | null
           name: string
-          usage_count?: number | null
+          description?: string | null
+          color?: string | null
+          is_system?: boolean | null
         }
         Update: {
-          color?: string | null
-          created_at?: string | null
-          created_by?: string | null
-          description?: string | null
           id?: string
-          is_system?: boolean | null
           name?: string
-          usage_count?: number | null
+          description?: string | null
+          color?: string | null
+          is_system?: boolean | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "tags_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       thinking_modes: {
         Row: {
-          created_at: string | null
-          description: string
-          icon: string
           id: string
-          instructions: string
-          is_active: boolean | null
           name: string
-          output_structure: Json
-          purpose: string
-          thinking_pattern: string
+          icon: string
+          description: string
+          instructions: string
         }
         Insert: {
-          created_at?: string | null
-          description: string
-          icon: string
           id: string
-          instructions: string
-          is_active?: boolean | null
           name: string
-          output_structure?: Json
-          purpose: string
-          thinking_pattern: string
+          icon: string
+          description: string
+          instructions: string
         }
         Update: {
-          created_at?: string | null
-          description?: string
-          icon?: string
           id?: string
-          instructions?: string
-          is_active?: boolean | null
           name?: string
-          output_structure?: Json
-          purpose?: string
-          thinking_pattern?: string
+          icon?: string
+          description?: string
+          instructions?: string
         }
         Relationships: []
       }
       user_sessions: {
         Row: {
-          duration_seconds: number | null
-          ended_at: string | null
           id: string
-          session_data: Json | null
-          started_at: string | null
           user_id: string | null
+          started_at: string | null
+          ended_at: string | null
         }
         Insert: {
-          duration_seconds?: number | null
-          ended_at?: string | null
           id?: string
-          session_data?: Json | null
-          started_at?: string | null
           user_id?: string | null
+          started_at?: string | null
+          ended_at?: string | null
         }
         Update: {
-          duration_seconds?: number | null
-          ended_at?: string | null
           id?: string
-          session_data?: Json | null
-          started_at?: string | null
           user_id?: string | null
+          started_at?: string | null
+          ended_at?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "user_sessions_user_id_fkey"
+            foreignKeyName: "user_sessions_user_id_fkey1"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      prompt_tags: {
+        Row: {
+          prompt_id: string
+          tag_id: string
+        }
+        Insert: {
+          prompt_id: string
+          tag_id: string
+        }
+        Update: {
+          prompt_id?: string
+          tag_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prompt_tags_prompt_id_fkey"
+            columns: ["prompt_id"]
+            isOneToOne: false
+            referencedRelation: "prompts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prompt_tags_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "tags"
             referencedColumns: ["id"]
           },
         ]
@@ -275,10 +225,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      increment_view_count: {
-        Args: { prompt_id: string }
-        Returns: undefined
-      }
+      [_ in never]: never
     }
     Enums: {
       user_role: "user" | "admin" | "moderator"

@@ -1,10 +1,15 @@
 import { Prompt } from '@/lib/storage';
 import { Badge } from '@/components/ui/badge';
 import { FileText, Lock, Globe } from 'lucide-react';
+import { Tag } from '@/integrations/supabase/types';
+
+interface PromptWithTags extends Prompt {
+  tags: Tag[];
+}
 
 interface PromptLibraryProps {
-  prompts: Prompt[];
-  onSelectPrompt: (prompt: Prompt) => void;
+  prompts: PromptWithTags[];
+  onSelectPrompt: (prompt: PromptWithTags) => void;
   currentPromptId?: string;
 }
 
@@ -45,7 +50,7 @@ const PromptLibrary = ({ prompts, onSelectPrompt, currentPromptId }: PromptLibra
           </div>
 
           <h3 className="font-semibold mb-1 truncate font-mono responsive-text">{prompt.title}</h3>
-          
+
           {prompt.description && (
             <p className="text-xs text-muted-foreground mb-2 line-clamp-2 font-mono">
               {prompt.description}
@@ -55,11 +60,12 @@ const PromptLibrary = ({ prompts, onSelectPrompt, currentPromptId }: PromptLibra
           <div className="flex flex-wrap gap-1 mb-2">
             {prompt.tags.slice(0, 3).map(tag => (
               <Badge
-                key={tag}
+                key={tag.id}
                 variant="secondary"
                 className="text-xs bg-prompedia-green-500/20 text-prompedia-green-400 border border-prompedia-green-500/30 font-mono"
+                style={{ backgroundColor: `${tag.color}20`, color: tag.color, borderColor: `${tag.color}30` }}
               >
-                {tag}
+                {tag.name}
               </Badge>
             ))}
             {prompt.tags.length > 3 && (
@@ -70,7 +76,7 @@ const PromptLibrary = ({ prompts, onSelectPrompt, currentPromptId }: PromptLibra
           </div>
 
           <div className="text-xs text-muted-foreground font-mono">
-            {prompt.model} • {new Date(prompt.updatedAt).toLocaleDateString()}
+            {prompt.model} • {prompt.isFeatured ? 'Featured' : 'Standard'}
           </div>
         </button>
       ))}

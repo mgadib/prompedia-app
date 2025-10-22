@@ -36,7 +36,7 @@ export const promptTagsSchema = z
   .array(promptTagSchema)
   .max(VALIDATION.PROMPT.TAGS_MAX_COUNT, `Maksimal ${VALIDATION.PROMPT.TAGS_MAX_COUNT} tag`);
 
-// Complete prompt schema
+// Complete prompt schema (updated for minimalist database)
 export const promptSchema = z.object({
   id: z.string().uuid().optional(),
   title: promptTitleSchema,
@@ -45,11 +45,14 @@ export const promptSchema = z.object({
   mode: z.enum(['meta-prompt', 'thinking', 'normal'], {
     errorMap: () => ({ message: 'Mode tidak valid' })
   }),
-  tags: promptTagsSchema.default([]),
+  color: z.string().default('#3b82f6'),
   is_public: z.boolean().default(false),
+  is_featured: z.boolean().default(false),
+  description: z.string().optional(),
+  original_prompt_id: z.string().uuid().optional(),
   user_id: z.string().optional(),
-  created_at: z.string().datetime().optional(),
-  updated_at: z.string().datetime().optional(),
+  // Note: tags are now handled via prompt_tags junction table
+  // created_at and updated_at are not stored in the minimal schema
 });
 
 // Auth schemas
@@ -67,14 +70,12 @@ export const registerSchema = z.object({
   path: ['confirmPassword'],
 });
 
-// User profile schema
+// User schema (updated for minimalist database)
 export const userProfileSchema = z.object({
   id: z.string().uuid(),
-  email: emailSchema,
-  full_name: z.string().min(1, 'Nama lengkap wajib diisi').max(100, 'Nama terlalu panjang'),
-  avatar_url: z.string().url().optional(),
-  created_at: z.string().datetime(),
-  updated_at: z.string().datetime(),
+  username: z.string().min(1, 'Username wajib diisi').max(50, 'Username terlalu panjang'),
+  display_name: z.string().min(1, 'Nama tampilan wajib diisi').max(100, 'Nama terlalu panjang'),
+  role: z.enum(['user', 'admin', 'moderator']).default('user'),
 });
 
 // Validation utility functions

@@ -1,40 +1,90 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Prompt } from '@/lib/storage';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { FileText, Lock, Globe, Edit, Trash2, Search, Filter } from 'lucide-react';
 import { toast } from 'sonner';
+import { SupabaseService } from '@/lib/supabase-service';
+import { Tag } from '@/integrations/supabase/types';
 import PromptDetailModal from './PromptDetailModal';
 
+interface PromptWithTags extends Prompt {
+  tags: Tag[];
+}
+
 interface MyLibraryProps {
-  prompts: Prompt[];
-  onSelectPrompt: (prompt: Prompt) => void;
-  onEditPrompt: (prompt: Prompt) => void;
+  prompts: PromptWithTags[];
+  onSelectPrompt: (prompt: PromptWithTags) => void;
+  onEditPrompt: (prompt: PromptWithTags) => void;
   onDeletePrompt: (promptId: string) => void;
   currentPromptId?: string;
 }
 
-const MyLibrary = ({ 
-  prompts, 
-  onSelectPrompt, 
-  onEditPrompt, 
-  onDeletePrompt, 
-  currentPromptId 
+const MyLibrary = ({
+  prompts,
+  onSelectPrompt,
+  onEditPrompt,
+  onDeletePrompt,
+  currentPromptId
 }: MyLibraryProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTag, setSelectedTag] = useState<string>('');
-  const [selectedPrompt, setSelectedPrompt] = useState<Prompt | null>(null);
+  const [selectedPrompt, setSelectedPrompt] = useState<PromptWithTags | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [allTags, setAllTags] = useState<string[]>([]);
+  const [promptsWithTags, setPromptsWithTags] = useState<PromptWithTags[]>([]);
+  const [isLoadingTags, setIsLoadingTags] = useState(false);
 
-  // Get all unique tags from prompts
-  const allTags = Array.from(new Set(prompts.flatMap(p => p.tags)));
+  // Load tags from database for all prompts
+  useEffect(() => {
+    const loadTagsForPrompts = async () => {
+      if (prompts.length === 0) {
+        setPromptsWithTags([]);
+        setAllTags([]);
+        setIsLoadingTags(false);
+        return;
+      }
+
+      setIsLoadingTags(true);
+      try {
+        const promptsWithTagsData: PromptWithTags[] = [];
+        const tagSet = new Set<string>();
+
+        for (const prompt of prompts) {
+          try {
+            const tags = await SupabaseService.getPromptTags(prompt.id);
+            promptsWithTagsData.push({ ...prompt, tags });
+
+            // Collect all unique tag names
+            tags.forEach(tag => tagSet.add(tag.name));
+          } catch (tagError) {
+            console.warn(`Failed to load tags for prompt ${prompt.id}:`, tagError);
+            // Continue with empty tags for this prompt
+            promptsWithTagsData.push({ ...prompt, tags: [] });
+          }
+        }
+
+        setPromptsWithTags(promptsWithTagsData);
+        setAllTags(Array.from(tagSet));
+      } catch (error) {
+        console.error('Failed to load tags:', error);
+        // Fallback: use prompts without tags
+        setPromptsWithTags(prompts.map(p => ({ ...p, tags: [] })));
+        setAllTags([]);
+      } finally {
+        setIsLoadingTags(false);
+      }
+    };
+
+    loadTagsForPrompts();
+  }, [prompts]);
 
   // Filter prompts based on search and tag
-  const filteredPrompts = prompts.filter(prompt => {
+  const filteredPrompts = promptsWithTags.filter(prompt => {
     const matchesSearch = prompt.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          (prompt.description?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
-    const matchesTag = !selectedTag || prompt.tags.includes(selectedTag);
+    const matchesTag = !selectedTag || prompt.tags.some(tag => tag.name === selectedTag);
     return matchesSearch && matchesTag;
   });
 
@@ -46,12 +96,12 @@ const MyLibrary = ({
     }
   };
 
-  const handleEdit = (e: React.MouseEvent, prompt: Prompt) => {
+  const handleEdit = (e: React.MouseEvent, prompt: PromptWithTags) => {
     e.stopPropagation();
     onEditPrompt(prompt);
   };
 
-  const handleCardClick = (prompt: Prompt) => {
+  const handleCardClick = (prompt: PromptWithTags) => {
     setSelectedPrompt(prompt);
     setIsModalOpen(true);
   };
@@ -61,10 +111,20 @@ const MyLibrary = ({
     setSelectedPrompt(null);
   };
 
-  const handleUsePrompt = (prompt: Prompt) => {
+  const handleUsePrompt = (prompt: PromptWithTags) => {
     onSelectPrompt(prompt);
     toast.success('Prompt loaded in editor');
   };
+
+  // Show loading state while tags are being loaded
+  if (isLoadingTags) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-8">
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="text-sm font-mono">Loading your library...</p>
+      </div>
+    );
+  }
 
   if (prompts.length === 0) {
     return (
@@ -167,11 +227,16 @@ const MyLibrary = ({
                   <div className="flex flex-wrap gap-1 mb-4">
                     {prompt.tags.slice(0, 3).map(tag => (
                       <Badge
-                        key={tag}
+                        key={tag.id}
                         variant="secondary"
                         className="text-xs bg-prompedia-green-500/20 text-prompedia-green-400 border border-prompedia-green-500/30 font-mono"
+                        style={{
+                          backgroundColor: `${tag.color}20`,
+                          color: tag.color,
+                          borderColor: `${tag.color}30`
+                        }}
                       >
-                        {tag}
+                        {tag.name}
                       </Badge>
                     ))}
                     {prompt.tags.length > 3 && (
@@ -182,11 +247,11 @@ const MyLibrary = ({
                   </div>
                 )}
 
-                {/* Footer with date and actions */}
+                {/* Footer with actions */}
                 <div className="flex items-center justify-between pt-4 border-t border-border/50">
                   <div className="text-xs text-muted-foreground font-mono">
-                    <div>Created: {new Date(prompt.createdAt).toLocaleDateString()}</div>
-                    <div>Updated: {new Date(prompt.updatedAt).toLocaleDateString()}</div>
+                    <div>{prompt.model || 'Unknown model'}</div>
+                    <div>{prompt.isFeatured ? 'Featured' : 'Standard'}</div>
                   </div>
                   
                   {/* Action buttons */}

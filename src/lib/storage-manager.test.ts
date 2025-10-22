@@ -66,12 +66,11 @@ describe('StorageManager', () => {
     title: 'Test Prompt',
     content: 'Test content',
     description: 'Test description',
-    tags: ['test'],
     model: 'gpt-4',
     mode: 'normal',
     color: '#ff0000',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    isFeatured: false,
+    isPublic: false,
   };
 
   beforeEach(() => {

@@ -1,17 +1,23 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Prompt } from '@/lib/storage';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { FileText, Globe, User, Copy, Download, Search, Filter, Heart, Eye } from 'lucide-react';
 import { toast } from 'sonner';
+import { SupabaseService } from '@/lib/supabase-service';
+import { Tag } from '@/integrations/supabase/types';
 import PromptDetailModal from './PromptDetailModal';
 
+interface PromptWithTags extends Prompt {
+  tags: Tag[];
+}
+
 interface PublicLibraryProps {
-  prompts: Prompt[];
-  onSelectPrompt: (prompt: Prompt) => void;
-  onCopyPrompt: (prompt: Prompt) => void;
-  onUsePrompt: (prompt: Prompt) => void;
+  prompts: PromptWithTags[];
+  onSelectPrompt: (prompt: PromptWithTags) => void;
+  onCopyPrompt: (prompt: PromptWithTags) => void;
+  onUsePrompt: (prompt: PromptWithTags) => void;
   currentPromptId?: string;
 }
 
@@ -46,20 +52,65 @@ const PublicLibrary = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTag, setSelectedTag] = useState<string>('');
   const [sortBy, setSortBy] = useState<'recent' | 'popular' | 'likes'>('recent');
-  const [selectedPrompt, setSelectedPrompt] = useState<Prompt | null>(null);
+  const [selectedPrompt, setSelectedPrompt] = useState<PromptWithTags | null>(null);
+  const [allTags, setAllTags] = useState<string[]>([]);
+  const [promptsWithTags, setPromptsWithTags] = useState<PromptWithTags[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoadingTags, setIsLoadingTags] = useState(false);
 
-  // Filter only public prompts
-  const publicPrompts = prompts.filter(prompt => prompt.isPublic);
-  
-  // Get all unique tags from public prompts
-  const allTags = Array.from(new Set(publicPrompts.flatMap(p => p.tags)));
+  // Public prompts are already filtered in App.tsx and passed as props
+
+  // Load tags for public prompts
+  useEffect(() => {
+    const loadPublicPromptsWithTags = async () => {
+      if (prompts.length === 0) {
+        setPromptsWithTags([]);
+        setAllTags([]);
+        setIsLoadingTags(false);
+        return;
+      }
+
+      setIsLoadingTags(true);
+      try {
+        const promptsWithTagsData: PromptWithTags[] = [];
+        const tagSet = new Set<string>();
+
+        for (const prompt of prompts) {
+          try {
+            const tags = await SupabaseService.getPromptTags(prompt.id);
+            promptsWithTagsData.push({ ...prompt, tags });
+
+            // Collect all unique tag names
+            tags.forEach(tag => tagSet.add(tag.name));
+          } catch (tagError) {
+            console.warn(`Failed to load tags for prompt ${prompt.id}:`, tagError);
+            // Continue with empty tags for this prompt
+            promptsWithTagsData.push({ ...prompt, tags: [] });
+          }
+        }
+
+        setPromptsWithTags(promptsWithTagsData);
+        setAllTags(Array.from(tagSet));
+      } catch (error) {
+        console.error('Failed to load tags for public prompts:', error);
+        // Fallback: use prompts without tags
+        setPromptsWithTags(prompts.map(p => ({ ...p, tags: [] })));
+        setAllTags([]);
+      } finally {
+        setIsLoadingTags(false);
+      }
+    };
+
+    loadPublicPromptsWithTags();
+  }, [prompts]);
+
+  // allTags already loaded in state via useEffect
 
   // Filter prompts based on search and tag
-  let filteredPrompts = publicPrompts.filter(prompt => {
+  let filteredPrompts = promptsWithTags.filter(prompt => {
     const matchesSearch = prompt.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          (prompt.description?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
-    const matchesTag = !selectedTag || prompt.tags.includes(selectedTag);
+    const matchesTag = !selectedTag || prompt.tags.some(tag => tag.name === selectedTag);
     return matchesSearch && matchesTag;
   });
 
@@ -72,23 +123,23 @@ const PublicLibrary = ({
         return getMockLikes(b.id) - getMockLikes(a.id);
       case 'recent':
       default:
-        return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+        return b.id.localeCompare(a.id); // Sort by ID as fallback since updatedAt is removed
     }
   });
 
-  const handleCopy = (e: React.MouseEvent, prompt: Prompt) => {
+  const handleCopy = (e: React.MouseEvent, prompt: PromptWithTags) => {
     e.stopPropagation();
     onCopyPrompt(prompt);
     toast.success('Prompt copied to your library');
   };
 
-  const handleUse = (e: React.MouseEvent, prompt: Prompt) => {
+  const handleUse = (e: React.MouseEvent, prompt: PromptWithTags) => {
     e.stopPropagation();
     onUsePrompt(prompt);
     toast.success('Prompt loaded for editing');
   };
 
-  const handleCardClick = (prompt: Prompt) => {
+  const handleCardClick = (prompt: PromptWithTags) => {
     setSelectedPrompt(prompt);
     setIsModalOpen(true);
   };
@@ -108,7 +159,17 @@ const PublicLibrary = ({
     toast.success('Prompt copied to your library');
   };
 
-  if (publicPrompts.length === 0) {
+  // Show loading state while tags are being loaded
+  if (isLoadingTags) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-8">
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="text-sm font-mono">Loading prompts...</p>
+      </div>
+    );
+  }
+
+  if (promptsWithTags.length === 0 && prompts.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-8">
         <Globe className="w-16 h-16 mb-4 opacity-50" />
@@ -168,7 +229,7 @@ const PublicLibrary = ({
         
         {/* Results count */}
         <div className="mt-4 text-xs text-muted-foreground font-mono">
-          {filteredPrompts.length} of {publicPrompts.length} public prompts
+          {filteredPrompts.length} of {prompts.length} public prompts
         </div>
       </div>
 
@@ -240,11 +301,16 @@ const PublicLibrary = ({
                     <div className="flex flex-wrap gap-1 mb-4">
                       {prompt.tags.slice(0, 3).map(tag => (
                         <Badge
-                          key={tag}
+                          key={tag.id}
                           variant="secondary"
                           className="text-xs bg-prompedia-green-500/20 text-prompedia-green-400 border border-prompedia-green-500/30 font-mono"
+                          style={{
+                            backgroundColor: `${tag.color}20`,
+                            color: tag.color,
+                            borderColor: `${tag.color}30`
+                          }}
                         >
-                          {tag}
+                          {tag.name}
                         </Badge>
                       ))}
                       {prompt.tags.length > 3 && (
@@ -255,11 +321,11 @@ const PublicLibrary = ({
                     </div>
                   )}
 
-                  {/* Footer with date and actions */}
+                  {/* Footer with actions */}
                   <div className="flex items-center justify-between pt-4 border-t border-border/50">
                     <div className="text-xs text-muted-foreground font-mono">
                       <div>Model: {prompt.model || 'DeepSeek Chat V3'}</div>
-                      <div>Updated: {new Date(prompt.updatedAt).toLocaleDateString()}</div>
+                      <div>{prompt.isFeatured ? 'Featured' : 'Standard'}</div>
                     </div>
                     
                     {/* Action buttons */}

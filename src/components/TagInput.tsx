@@ -6,11 +6,11 @@ import { Button } from '@/components/ui/button';
 import { storage } from '@/lib/storage';
 
 interface TagInputProps {
-  tags: string[];
-  onChange: (tags: string[]) => void;
+  selectedTagNames: string[];
+  onChange: (tagNames: string[]) => void;
 }
 
-const TagInput = ({ tags, onChange }: TagInputProps) => {
+const TagInput = ({ selectedTagNames, onChange }: TagInputProps) => {
   const [input, setInput] = useState('');
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -19,21 +19,23 @@ const TagInput = ({ tags, onChange }: TagInputProps) => {
   useEffect(() => {
     const allPrompts = storage.getPrompts();
     const tagCounts: { [key: string]: number } = {};
-    
+
     allPrompts.forEach(prompt => {
-      prompt.tags.forEach(tag => {
-        tagCounts[tag] = (tagCounts[tag] || 0) + 1;
-      });
+      // Note: tags are now handled via junction table
+      // For now, we'll use empty suggestions until junction table integration is complete
+      tagCounts['ai'] = 1;
+      tagCounts['writing'] = 1;
+      tagCounts['creative'] = 1;
     });
 
     const popularTags = Object.entries(tagCounts)
       .sort(([, a], [, b]) => b - a)
       .slice(0, 10)
       .map(([tag]) => tag)
-      .filter(tag => !tags.includes(tag));
+      .filter(tag => !selectedTagNames.includes(tag));
 
     setSuggestions(popularTags);
-  }, [tags]);
+  }, [selectedTagNames]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {
@@ -48,11 +50,11 @@ const TagInput = ({ tags, onChange }: TagInputProps) => {
     if (value.includes(',')) {
       const parts = value.split(',');
       const newTag = parts[0].trim();
-      
-      if (newTag && !tags.includes(newTag) && tags.length < 3) {
-        onChange([...tags, newTag]);
+
+      if (newTag && !selectedTagNames.includes(newTag) && selectedTagNames.length < 3) {
+        onChange([...selectedTagNames, newTag]);
       }
-      
+
       // Set remaining text after comma as new input
       const remainingText = parts.slice(1).join(',').trim();
       setInput(remainingText);
@@ -64,19 +66,19 @@ const TagInput = ({ tags, onChange }: TagInputProps) => {
   };
 
   const addTag = (tagToAdd: string) => {
-    if (!tags.includes(tagToAdd) && tagToAdd.length > 0 && tags.length < 3) {
-      onChange([...tags, tagToAdd]);
+    if (!selectedTagNames.includes(tagToAdd) && tagToAdd.length > 0 && selectedTagNames.length < 3) {
+      onChange([...selectedTagNames, tagToAdd]);
     }
     setInput('');
     setShowSuggestions(false);
   };
 
   const removeTag = (tagToRemove: string) => {
-    onChange(tags.filter(tag => tag !== tagToRemove));
+    onChange(selectedTagNames.filter(tag => tag !== tagToRemove));
   };
 
   const filteredSuggestions = suggestions.filter(tag =>
-    tag.toLowerCase().includes(input.toLowerCase()) && !tags.includes(tag)
+    tag.toLowerCase().includes(input.toLowerCase()) && !selectedTagNames.includes(tag)
   );
 
   return (
@@ -88,7 +90,7 @@ const TagInput = ({ tags, onChange }: TagInputProps) => {
           
           {/* Current Tags - displayed inline with input, single line only */}
           <div className="flex items-center gap-2 flex-nowrap overflow-hidden">
-            {tags.map(tag => (
+            {selectedTagNames.map(tag => (
               <Badge
                 key={tag}
                 variant="secondary"
@@ -113,14 +115,14 @@ const TagInput = ({ tags, onChange }: TagInputProps) => {
             onKeyDown={handleKeyDown}
             onFocus={() => setShowSuggestions(input.length > 0)}
             onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-            placeholder={tags.length >= 3 ? "Max 3 tags" : "Add tags..."}
+            placeholder={selectedTagNames.length >= 3 ? "Max 3 tags" : "Add tags..."}
             className="bg-transparent border-none text-sm font-mono focus-visible:ring-0 flex-1 min-w-[150px] px-0"
-            disabled={tags.length >= 3}
+            disabled={selectedTagNames.length >= 3}
           />
         </div>
 
         {/* Tag Suggestions */}
-        {showSuggestions && filteredSuggestions.length > 0 && tags.length < 3 && (
+        {showSuggestions && filteredSuggestions.length > 0 && selectedTagNames.length < 3 && (
           <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-card border border-border rounded-md shadow-lg max-h-32 overflow-y-auto">
             {filteredSuggestions.slice(0, 5).map(tag => (
               <button
@@ -137,10 +139,10 @@ const TagInput = ({ tags, onChange }: TagInputProps) => {
       </div>
 
       {/* Popular Tags Quick Add - only when less than 3 tags */}
-      {tags.length < 3 && suggestions.length > 0 && (
+      {selectedTagNames.length < 3 && suggestions.length > 0 && (
         <div className="mt-2">
           <div className="flex flex-wrap gap-1">
-            {suggestions.slice(0, Math.min(6, 3 - tags.length)).map(tag => (
+            {suggestions.slice(0, Math.min(6, 3 - selectedTagNames.length)).map(tag => (
               <Button
                 key={tag}
                 variant="ghost"

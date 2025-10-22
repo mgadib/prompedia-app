@@ -53,9 +53,9 @@ const PromptDetailModal = ({
               {/* Metadata */}
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <div className="flex items-center gap-1">
-                  <Calendar className="w-4 h-4" />
+                  <FileText className="w-4 h-4" />
                   <span className="font-mono">
-                    Updated: {new Date(prompt.updatedAt).toLocaleDateString()}
+                    {prompt.model || 'Unknown Model'}
                   </span>
                 </div>
                 
@@ -158,19 +158,10 @@ const PromptDetailModal = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-border">
               <div className="space-y-1">
                 <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider font-mono">
-                  Created
+                  Status
                 </span>
                 <p className="text-sm font-mono">
-                  {new Date(prompt.createdAt).toLocaleString()}
-                </p>
-              </div>
-              
-              <div className="space-y-1">
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider font-mono">
-                  Last Modified
-                </span>
-                <p className="text-sm font-mono">
-                  {new Date(prompt.updatedAt).toLocaleString()}
+                  {prompt.isFeatured ? 'Featured' : 'Standard'} • {prompt.isPublic ? 'Public' : 'Private'}
                 </p>
               </div>
 

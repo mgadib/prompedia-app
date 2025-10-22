@@ -25,7 +25,7 @@ export const STORAGE_KEYS = {
   CURRENT_PROMPT: 'prompedia_current_prompt',
   PLAYGROUND_COUNT: 'prompedia_playground_count',
   THEME: 'prompedia_theme',
-  PREFERENCES: 'prompedia_preferences',
+  // Note: PREFERENCES removed - preferences field eliminated from database schema
 } as const;
 
 // UI Constants

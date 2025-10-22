@@ -25,7 +25,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange }: PromptEditorProps) => {
   const [content, setContent] = useState('');
   const [model, setModel] = useState(AVAILABLE_MODELS[1].id);
   const [mode, setMode] = useState(THINKING_MODES[5].id);
-  const [tags, setTags] = useState<string[]>([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [isAutoSaving, setIsAutoSaving] = useState(false);
   const [isActionLoading, setIsActionLoading] = useState(false);
   const [loadingAction, setLoadingAction] = useState<string>('');
@@ -35,11 +35,33 @@ const PromptEditor = ({ currentPrompt, onPromptChange }: PromptEditorProps) => {
 
   useEffect(() => {
     if (currentPrompt) {
-      setTitle(currentPrompt.title);
-      setContent(currentPrompt.content);
-      setModel(currentPrompt.model || AVAILABLE_MODELS[2].id);
+      // Sanitize currentPrompt to match new schema
+      const sanitizedPrompt: Prompt = {
+        id: currentPrompt.id || '',
+        user_id: currentPrompt.user_id || '',
+        title: currentPrompt.title || '',
+        content: currentPrompt.content || '',
+        model: currentPrompt.model || AVAILABLE_MODELS[1].id,
+        mode: currentPrompt.mode || THINKING_MODES[5].id,
+        color: currentPrompt.color || '#3b82f6',
+        is_public: currentPrompt.is_public || false,
+        is_featured: currentPrompt.is_featured || false,
+        description: currentPrompt.description,
+        original_prompt_id: currentPrompt.original_prompt_id,
+      };
+
+      setTitle(sanitizedPrompt.title);
+      setContent(sanitizedPrompt.content);
+      setModel(sanitizedPrompt.model);
       // Mode tidak berubah otomatis - user harus memilih manual
-      setTags(currentPrompt.tags);
+      // Note: tags are now loaded separately via junction table
+      setSelectedTags([]);
+    } else {
+      // Reset form when no prompt is selected
+      setTitle('');
+      setContent('');
+      setModel(AVAILABLE_MODELS[1].id);
+      setSelectedTags([]);
     }
   }, [currentPrompt]);
 
@@ -48,22 +70,31 @@ const PromptEditor = ({ currentPrompt, onPromptChange }: PromptEditorProps) => {
     if (!currentPrompt || !hasUnsavedChanges.current) return;
 
     setIsAutoSaving(true);
+    // Sanitize currentPrompt to match new schema
+    const sanitizedPrompt: Prompt = {
+      id: currentPrompt.id || '',
+      user_id: currentPrompt.user_id || '',
+      title: title || '',
+      content: content || '',
+      model: model || AVAILABLE_MODELS[1].id,
+      mode: mode || THINKING_MODES[5].id,
+      color: currentPrompt.color || '#3b82f6',
+      is_public: currentPrompt.is_public || false,
+      is_featured: currentPrompt.is_featured || false,
+      description: currentPrompt.description,
+      original_prompt_id: currentPrompt.original_prompt_id,
+    };
+
     const updatedPrompt: Prompt = {
-      ...currentPrompt,
-      title,
-      content,
-      model,
-      mode,
-      tags,
-      updatedAt: new Date().toISOString(),
-    } as any;
+      ...sanitizedPrompt,
+    };
 
     storage.savePrompt(updatedPrompt);
     onPromptChange(updatedPrompt);
     hasUnsavedChanges.current = false;
-    
+
     setTimeout(() => setIsAutoSaving(false), 1000);
-  }, [currentPrompt, title, content, model, tags, onPromptChange]);
+  }, [currentPrompt, title, content, model, onPromptChange]);
 
   // Debounced auto-save effect
   useEffect(() => {
@@ -84,7 +115,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange }: PromptEditorProps) => {
         clearTimeout(autoSaveTimeoutRef.current);
       }
     };
-  }, [title, content, model, mode, tags, autoSave, currentPrompt]);
+  }, [title, content, model, mode, autoSave, currentPrompt]);
 
 
   const handleNew = () => {
@@ -98,10 +129,9 @@ const PromptEditor = ({ currentPrompt, onPromptChange }: PromptEditorProps) => {
       content: '',
       model: AVAILABLE_MODELS[1].id,
       mode: THINKING_MODES[5].id,
-      tags: [],
+      color: '#3b82f6',
       isPublic: false,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      isFeatured: false,
     };
 
     onPromptChange(newPrompt);
@@ -112,13 +142,23 @@ const PromptEditor = ({ currentPrompt, onPromptChange }: PromptEditorProps) => {
     if (!currentPrompt) return;
 
     try {
+      // Sanitize currentPrompt to match new schema
+      const sanitizedPrompt: Prompt = {
+        id: currentPrompt.id || '',
+        user_id: currentPrompt.user_id || '',
+        title: title || '',
+        content: content || '',
+        model: model || AVAILABLE_MODELS[1].id,
+        mode: mode || THINKING_MODES[5].id,
+        color: currentPrompt.color || '#3b82f6',
+        is_public: currentPrompt.is_public || false,
+        is_featured: currentPrompt.is_featured || false,
+        description: currentPrompt.description,
+        original_prompt_id: currentPrompt.original_prompt_id,
+      };
+
       const updatedPrompt: Prompt = {
-        ...currentPrompt,
-        title,
-        content,
-        model,
-        tags,
-        updatedAt: new Date().toISOString(),
+        ...sanitizedPrompt,
       };
 
       await storageManager.savePrompt(updatedPrompt);
@@ -320,7 +360,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange }: PromptEditorProps) => {
 
           {/* Tags Section */}
           <div className="flex-1">
-            <TagInput tags={tags} onChange={setTags} />
+            <TagInput selectedTagNames={selectedTags} onChange={setSelectedTags} />
           </div>
         </div>
 
@@ -367,10 +407,10 @@ const PromptEditor = ({ currentPrompt, onPromptChange }: PromptEditorProps) => {
                 <div className={`w-2 h-2 rounded-full ${currentPrompt.isPublic ? 'bg-primary' : 'bg-muted-foreground'}`} />
                 {currentPrompt.isPublic ? 'Public' : 'Private'}
               </div>
-              {tags.length > 0 && (
+              {selectedTags.length > 0 && (
                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
                   <span>🏷️</span>
-                  <span>{tags.length}</span>
+                  <span>{selectedTags.length}</span>
                 </div>
               )}
             </div>

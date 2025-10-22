@@ -5,6 +5,11 @@ import MyLibrary from '@/components/MyLibrary';
 import PublicLibrary from '@/components/PublicLibrary';
 import AuthModal from '@/components/AuthModal';
 import { storage, Prompt } from '@/lib/storage';
+import { Tag } from '@/integrations/supabase/types';
+
+interface PromptWithTags extends Prompt {
+  tags: Tag[];
+}
 import { storageManager } from '@/lib/storage-manager';
 import { AVAILABLE_MODELS } from '@/lib/models';
 import { supabase } from '@/integrations/supabase/client';
@@ -81,15 +86,45 @@ const AppPage = () => {
     storage.setCurrentPrompt(prompt.id);
   };
 
-  const handleSelectPrompt = (prompt: Prompt) => {
-    setCurrentPrompt(prompt);
-    storage.setCurrentPrompt(prompt.id);
+  const handleSelectPrompt = (prompt: PromptWithTags) => {
+    // Ensure prompt has required fields for new schema
+    const sanitizedPrompt: Prompt = {
+      id: prompt.id || '',
+      user_id: prompt.user_id || '',
+      title: prompt.title || '',
+      content: prompt.content || '',
+      model: prompt.model || AVAILABLE_MODELS[1].id,
+      mode: prompt.mode || THINKING_MODES[5].id,
+      color: prompt.color || '#3b82f6',
+      is_public: prompt.is_public || false,
+      is_featured: prompt.is_featured || false,
+      description: prompt.description,
+      original_prompt_id: prompt.original_prompt_id,
+    };
+
+    setCurrentPrompt(sanitizedPrompt);
+    storage.setCurrentPrompt(sanitizedPrompt.id);
     setShowEditor(true);
   };
 
-  const handleEditPrompt = (prompt: Prompt) => {
-    setCurrentPrompt(prompt);
-    storage.setCurrentPrompt(prompt.id);
+  const handleEditPrompt = (prompt: PromptWithTags) => {
+    // Ensure prompt has required fields for new schema
+    const sanitizedPrompt: Prompt = {
+      id: prompt.id || '',
+      user_id: prompt.user_id || '',
+      title: prompt.title || '',
+      content: prompt.content || '',
+      model: prompt.model || AVAILABLE_MODELS[1].id,
+      mode: prompt.mode || THINKING_MODES[5].id,
+      color: prompt.color || '#3b82f6',
+      is_public: prompt.is_public || false,
+      is_featured: prompt.is_featured || false,
+      description: prompt.description,
+      original_prompt_id: prompt.original_prompt_id,
+    };
+
+    setCurrentPrompt(sanitizedPrompt);
+    storage.setCurrentPrompt(sanitizedPrompt.id);
     setShowEditor(true);
   };
 
@@ -106,29 +141,57 @@ const AppPage = () => {
     }
   };
 
-  const handleCopyPrompt = (prompt: Prompt) => {
+  const handleCopyPrompt = (prompt: PromptWithTags) => {
     const user = storage.getUser();
     if (!user) {
       toast.error('Please log in to copy prompts');
       return;
     }
 
+    // Sanitize prompt to match new schema
+    const sanitizedPrompt: Prompt = {
+      id: prompt.id || '',
+      user_id: prompt.user_id || '',
+      title: prompt.title || '',
+      content: prompt.content || '',
+      model: prompt.model || AVAILABLE_MODELS[1].id,
+      mode: prompt.mode || THINKING_MODES[5].id,
+      color: prompt.color || '#3b82f6',
+      is_public: prompt.is_public || false,
+      is_featured: prompt.is_featured || false,
+      description: prompt.description,
+      original_prompt_id: prompt.original_prompt_id,
+    };
+
     const copiedPrompt: Prompt = {
-      ...prompt,
+      ...sanitizedPrompt,
       id: crypto.randomUUID(),
-      userId: user.id,
-      title: `Copy of ${prompt.title}`,
-      isPublic: false,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      user_id: user.id,
+      title: `Copy of ${sanitizedPrompt.title}`,
+      is_public: false,
     };
 
     storage.savePrompt(copiedPrompt);
   };
 
-  const handleUsePrompt = (prompt: Prompt) => {
-    setCurrentPrompt(prompt);
-    storage.setCurrentPrompt(prompt.id);
+  const handleUsePrompt = (prompt: PromptWithTags) => {
+    // Ensure prompt has required fields for new schema
+    const sanitizedPrompt: Prompt = {
+      id: prompt.id || '',
+      user_id: prompt.user_id || '',
+      title: prompt.title || '',
+      content: prompt.content || '',
+      model: prompt.model || AVAILABLE_MODELS[1].id,
+      mode: prompt.mode || THINKING_MODES[5].id,
+      color: prompt.color || '#3b82f6',
+      is_public: prompt.is_public || false,
+      is_featured: prompt.is_featured || false,
+      description: prompt.description,
+      original_prompt_id: prompt.original_prompt_id,
+    };
+
+    setCurrentPrompt(sanitizedPrompt);
+    storage.setCurrentPrompt(sanitizedPrompt.id);
     setShowEditor(true);
   };
 
@@ -149,14 +212,13 @@ const AppPage = () => {
 
     const newPrompt: Prompt = {
       id: crypto.randomUUID(),
-      userId: user?.id || 'guest',
+      user_id: user?.id || 'guest',
       title: 'Untitled Prompt',
       content: '',
       model: AVAILABLE_MODELS[2].id,
-      tags: [],
-      isPublic: false,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      color: '#3b82f6',
+      is_public: false,
+      is_featured: false,
     };
 
     setCurrentPrompt(newPrompt);
@@ -200,8 +262,19 @@ const AppPage = () => {
 
   // Get prompts based on current view
   const allPrompts = storage.getPrompts();
-  const myPrompts = user ? allPrompts.filter(p => p.userId === user.id) : [];
-  const publicPrompts = allPrompts.filter(p => p.isPublic);
+  const myPrompts = user ? allPrompts.filter(p => p.user_id === user.id) : [];
+  const publicPrompts = allPrompts.filter(p => p.is_public);
+
+  // Convert to PromptWithTags format (tags loaded separately via junction table)
+  const myPromptsWithTags: PromptWithTags[] = myPrompts.map(prompt => ({
+    ...prompt,
+    tags: [] // Tags will be loaded separately in MyLibrary component
+  }));
+
+  const publicPromptsWithTags: PromptWithTags[] = publicPrompts.map(prompt => ({
+    ...prompt,
+    tags: [] // Tags will be loaded separately in PublicLibrary component
+  }));
 
   return (
     <div className="flex h-screen bg-background">
@@ -227,7 +300,7 @@ const AppPage = () => {
           <>
             {activeView === 'my-library' ? (
               <MyLibrary
-                prompts={myPrompts}
+                prompts={myPromptsWithTags}
                 onSelectPrompt={handleSelectPrompt}
                 onEditPrompt={handleEditPrompt}
                 onDeletePrompt={handleDeletePrompt}
@@ -235,7 +308,7 @@ const AppPage = () => {
               />
             ) : (
               <PublicLibrary
-                prompts={publicPrompts}
+                prompts={publicPromptsWithTags}
                 onSelectPrompt={handleSelectPrompt}
                 onCopyPrompt={handleCopyPrompt}
                 onUsePrompt={handleUsePrompt}

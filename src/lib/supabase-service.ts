@@ -2,19 +2,21 @@ import { supabase } from '@/integrations/supabase/client'
 import { Database } from '@/integrations/supabase/types'
 import { storage } from './storage'
 
-// Type aliases for better readability
-type Profile = Database['public']['Tables']['profiles']['Row']
+// Type aliases for better readability (updated for minimalist schema)
+type User = Database['public']['Tables']['users']['Row']
 type Prompt = Database['public']['Tables']['prompts']['Row']
 type Tag = Database['public']['Tables']['tags']['Row']
 type AIModel = Database['public']['Tables']['ai_models']['Row']
 type ThinkingMode = Database['public']['Tables']['thinking_modes']['Row']
 type UserSession = Database['public']['Tables']['user_sessions']['Row']
+type PromptTag = Database['public']['Tables']['prompt_tags']['Row']
 
 // Insert types
-type ProfileInsert = Database['public']['Tables']['profiles']['Insert']
+type UserInsert = Database['public']['Tables']['users']['Insert']
 type PromptInsert = Database['public']['Tables']['prompts']['Insert']
 type TagInsert = Database['public']['Tables']['tags']['Insert']
 type UserSessionInsert = Database['public']['Tables']['user_sessions']['Insert']
+type PromptTagInsert = Database['public']['Tables']['prompt_tags']['Insert']
 
 export class SupabaseService {
   // ========================================
@@ -58,12 +60,12 @@ export class SupabaseService {
   }
 
   // ========================================
-  // PROFILES
+  // USERS (formerly profiles)
   // ========================================
 
-  static async getProfile(userId: string): Promise<Profile | null> {
+  static async getUser(userId: string): Promise<User | null> {
     const { data, error } = await supabase
-      .from('profiles')
+      .from('users')
       .select('*')
       .eq('id', userId)
       .single()
@@ -72,9 +74,9 @@ export class SupabaseService {
     return data
   }
 
-  static async updateProfile(userId: string, updates: Partial<ProfileInsert>) {
+  static async updateUser(userId: string, updates: Partial<UserInsert>) {
     const { data, error } = await supabase
-      .from('profiles')
+      .from('users')
       .update(updates)
       .eq('id', userId)
       .select()
@@ -84,15 +86,28 @@ export class SupabaseService {
     return data
   }
 
-  static async createProfile(profile: ProfileInsert) {
+  static async createUser(user: UserInsert) {
     const { data, error } = await supabase
-      .from('profiles')
-      .insert(profile)
+      .from('users')
+      .insert(user)
       .select()
       .single()
 
     if (error) throw error
     return data
+  }
+
+  // Legacy methods for backward compatibility
+  static async getProfile(userId: string): Promise<User | null> {
+    return this.getUser(userId)
+  }
+
+  static async updateProfile(userId: string, updates: Partial<UserInsert>) {
+    return this.updateUser(userId, updates)
+  }
+
+  static async createProfile(profile: UserInsert) {
+    return this.createUser(profile)
   }
 
   // ========================================
@@ -104,9 +119,9 @@ export class SupabaseService {
       .from('prompts')
       .select(`
         *,
-        profiles!prompts_user_id_fkey(username, display_name, avatar_url)
+        users!prompts_user_id_fkey1(username, display_name)
       `)
-      .order('updated_at', { ascending: false })
+      // Note: updated_at field removed in minimalist schema
 
     if (userId) {
       query = query.eq('user_id', userId)
@@ -122,10 +137,10 @@ export class SupabaseService {
       .from('prompts')
       .select(`
         *,
-        profiles!prompts_user_id_fkey(username, display_name, avatar_url)
+        users!prompts_user_id_fkey1(username, display_name)
       `)
       .eq('is_public', true)
-      .order('created_at', { ascending: false })
+      .order('id', { ascending: false })
 
     if (error) throw error
     return data || []
@@ -136,10 +151,10 @@ export class SupabaseService {
       .from('prompts')
       .select(`
         *,
-        profiles!prompts_user_id_fkey(username, display_name, avatar_url)
+        users!prompts_user_id_fkey1(username, display_name)
       `)
       .eq('is_featured', true)
-      .order('created_at', { ascending: false })
+      .order('id', { ascending: false })
 
     if (error) throw error
     return data || []
@@ -150,7 +165,7 @@ export class SupabaseService {
       .from('prompts')
       .select(`
         *,
-        profiles!prompts_user_id_fkey(username, display_name, avatar_url)
+        users!prompts_user_id_fkey1(username, display_name)
       `)
       .eq('id', id)
       .single()
@@ -165,7 +180,7 @@ export class SupabaseService {
       .insert(prompt)
       .select(`
         *,
-        profiles!prompts_user_id_fkey(username, display_name, avatar_url)
+        users!prompts_user_id_fkey1(username, display_name)
       `)
       .single()
 
@@ -180,7 +195,7 @@ export class SupabaseService {
       .eq('id', id)
       .select(`
         *,
-        profiles!prompts_user_id_fkey(username, display_name, avatar_url)
+        users!prompts_user_id_fkey1(username, display_name)
       `)
       .single()
 
@@ -204,7 +219,7 @@ export class SupabaseService {
       throw new Error('Original prompt not found')
     }
 
-    // Create forked prompt
+    // Create forked prompt (simplified - no computed fields)
     const forkedPrompt: PromptInsert = {
       user_id: (await this.getCurrentUser())?.id || '',
       title: newTitle || `Fork of ${originalPrompt.title}`,
@@ -212,28 +227,67 @@ export class SupabaseService {
       description: originalPrompt.description,
       model: originalPrompt.model,
       mode: originalPrompt.mode,
-      tags: originalPrompt.tags,
       color: originalPrompt.color,
       is_public: false, // Forks start as private
-      original_prompt_id: originalPromptId,
-      usage_stats: {}
+      original_prompt_id: originalPromptId
     }
 
     const newPrompt = await this.createPrompt(forkedPrompt)
 
-    // Increment fork count on original
-    await supabase
-      .from('prompts')
-      .update({ fork_count: (originalPrompt.fork_count || 0) + 1 })
-      .eq('id', originalPromptId)
+    // Copy tags from original prompt to forked prompt
+    const originalTags = await this.getPromptTags(originalPromptId)
+    if (originalTags.length > 0) {
+      const tagInserts: PromptTagInsert[] = originalTags.map(tag => ({
+        prompt_id: newPrompt.id,
+        tag_id: tag.id
+      }))
+
+      await supabase
+        .from('prompt_tags')
+        .insert(tagInserts)
+    }
 
     return newPrompt
   }
 
-  static async incrementViewCount(id: string): Promise<void> {
-    // Call the increment_view_count function directly
-    const { error } = await supabase.rpc('increment_view_count' as any, { prompt_id: id })
+  // ========================================
+  // PROMPT TAGS (new junction table)
+  // ========================================
+
+  static async getPromptTags(promptId: string): Promise<Tag[]> {
+    const { data, error } = await supabase
+      .from('prompt_tags')
+      .select(`
+        tags!prompt_tags_tag_id_fkey(*)
+      `)
+      .eq('prompt_id', promptId)
+
     if (error) throw error
+    return data?.map(item => item.tags).filter(Boolean) || []
+  }
+
+  static async addPromptTag(promptId: string, tagId: string): Promise<void> {
+    const { error } = await supabase
+      .from('prompt_tags')
+      .insert({ prompt_id: promptId, tag_id: tagId })
+
+    if (error) throw error
+  }
+
+  static async removePromptTag(promptId: string, tagId: string): Promise<void> {
+    const { error } = await supabase
+      .from('prompt_tags')
+      .delete()
+      .eq('prompt_id', promptId)
+      .eq('tag_id', tagId)
+
+    if (error) throw error
+  }
+
+  static async incrementViewCount(id: string): Promise<void> {
+    // Note: View count tracking removed in minimalist schema
+    // Views are now tracked externally if needed
+    console.log('View count increment called for prompt:', id)
   }
 
   // ========================================
@@ -244,7 +298,7 @@ export class SupabaseService {
     const { data, error } = await supabase
       .from('tags')
       .select('*')
-      .order('usage_count', { ascending: false })
+      .order('name', { ascending: true })
 
     if (error) throw error
     return data || []
@@ -266,7 +320,7 @@ export class SupabaseService {
       .from('tags')
       .select('*')
       .ilike('name', `%${query}%`)
-      .order('usage_count', { ascending: false })
+      .order('name', { ascending: true })
       .limit(10)
 
     if (error) throw error
@@ -452,19 +506,37 @@ export class SupabaseService {
     // Sync local prompts to Supabase
     for (const localPrompt of userLocalPrompts) {
       try {
-        await this.createPrompt({
+        const newPrompt = await this.createPrompt({
           user_id: user.id,
           title: localPrompt.title,
           content: localPrompt.content,
           description: localPrompt.description,
           model: localPrompt.model,
           mode: localPrompt.mode,
-          tags: localPrompt.tags,
           color: localPrompt.color,
-          is_public: localPrompt.isPublic,
-          created_at: localPrompt.createdAt,
-          updated_at: localPrompt.updatedAt
+          is_public: localPrompt.isPublic
         })
+
+        // Sync tags for this prompt
+        if (localPrompt.tags && localPrompt.tags.length > 0) {
+          for (const tagName of localPrompt.tags) {
+            // Create tag if it doesn't exist
+            let tag = (await this.searchTags(tagName)).find(t => t.name === tagName)
+            if (!tag) {
+              tag = await this.createTag({
+                name: tagName,
+                description: '',
+                color: '#6b7280',
+                is_system: false
+              })
+            }
+
+            // Link tag to prompt
+            if (tag) {
+              await this.addPromptTag(newPrompt.id, tag.id)
+            }
+          }
+        }
       } catch (error) {
         console.error('Error syncing prompt:', error)
       }

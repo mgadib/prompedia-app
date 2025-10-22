@@ -19,7 +19,7 @@ export const usePromptOperations = () => {
     console.error(defaultMessage, error);
   }, []);
 
-  const createPrompt = useCallback(async (promptData: Omit<Prompt, 'id' | 'created_at' | 'updated_at'>) => {
+  const createPrompt = useCallback(async (promptData: Omit<Prompt, 'id'>) => {
     try {
       setLoading(true);
       setError(null);
@@ -27,8 +27,6 @@ export const usePromptOperations = () => {
       const newPrompt: Prompt = {
         ...promptData,
         id: crypto.randomUUID(),
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
       };
 
       await storageManager.savePrompt(newPrompt);
@@ -52,8 +50,7 @@ export const usePromptOperations = () => {
       const updatedPrompt: Prompt = {
         ...updates,
         id: promptId,
-        updated_at: new Date().toISOString()
-      } as Prompt;
+      };
 
       await storageManager.savePrompt(updatedPrompt);
       
@@ -92,8 +89,6 @@ export const usePromptOperations = () => {
         ...originalPrompt,
         id: crypto.randomUUID(),
         title: `${originalPrompt.title} (Copy)`,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
         is_public: false // Copies are private by default
       };
 
@@ -122,11 +117,10 @@ export const usePromptOperations = () => {
         content: '',
         model: 'gpt-4',
         mode: 'meta-prompt',
-        tags: [],
+        color: '#3b82f6',
         is_public: false,
+        is_featured: false,
         user_id: '',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
       };
 
       await storageManager.savePrompt(duplicatedPrompt);

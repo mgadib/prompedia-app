@@ -237,16 +237,13 @@ class StorageManager {
         title: prompt.title,
         content: prompt.content,
         description: prompt.description || '',
-        tags: prompt.tags || [],
         model: prompt.model,
         mode: prompt.mode,
         is_public: prompt.isPublic || false,
         user_id: this.authUser.id,
         color: prompt.color || null,
-        fork_count: 0,
-        view_count: 0,
-        is_featured: false,
-        original_prompt_id: null
+        is_featured: prompt.isFeatured || false,
+        original_prompt_id: prompt.originalPromptId || null
       };
 
       const { error } = await supabase
@@ -323,9 +320,11 @@ class StorageManager {
     try {
       const { data, error } = await supabase
         .from('prompts')
-        .select('*')
-        .eq('user_id', this.authUser.id)
-        .order('created_at', { ascending: false });
+        .select(`
+          *,
+          users!prompts_user_id_fkey1(username, display_name)
+        `)
+        .eq('user_id', this.authUser.id);
 
       if (error) {
         supabaseLogger.error('Failed to fetch prompts from Supabase', error);
@@ -337,14 +336,15 @@ class StorageManager {
         title: item.title,
         content: item.content,
         description: item.description,
-        tags: item.tags || [],
         model: item.model,
         mode: item.mode,
         isPublic: item.is_public,
         userId: item.user_id,
-        createdAt: new Date().toISOString(), // Use current time as fallback
-        updatedAt: new Date().toISOString(),
-        color: item.color
+        color: item.color,
+        isFeatured: item.is_featured,
+        originalPromptId: item.original_prompt_id
+        // Note: tags are now loaded separately via junction table
+        // createdAt and updatedAt are not stored in the minimal schema
       }));
 
       supabaseLogger.info('Prompts fetched from Supabase', { count: prompts.length });
