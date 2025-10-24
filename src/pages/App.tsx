@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Sidebar from '@/components/Sidebar';
 import PromptEditor from '@/components/PromptEditor';
 import MyLibrary from '@/components/MyLibrary';
@@ -12,6 +12,8 @@ interface PromptWithTags extends Prompt {
 }
 import { storageManager } from '@/lib/storage-manager';
 import { AVAILABLE_MODELS } from '@/lib/models';
+import { THINKING_MODES } from '@/lib/modes';
+import { SupabaseService } from '@/lib/supabase-service';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
 import { toast } from 'sonner';
@@ -27,59 +29,125 @@ const AppPage = () => {
   const [showEditor, setShowEditor] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [playgroundCount, setPlaygroundCount] = useState(0);
+  const [allPrompts, setAllPrompts] = useState<Prompt[]>([]);
+  const [publicPrompts, setPublicPrompts] = useState<Prompt[]>([]);
+
+  const checkAuth = useCallback(async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      setUser(session?.user ?? null);
+
+      // Load playground count for non-logged in users
+      if (!session?.user) {
+        const savedCount = localStorage.getItem(PLAYGROUND_COUNT_KEY);
+        if (savedCount) {
+          setPlaygroundCount(parseInt(savedCount));
+        }
+      }
+
+
+      // Load last opened prompt
+      const lastPromptId = storage.getCurrentPromptId();
+      if (lastPromptId) {
+        const prompts = storage.getPrompts();
+        const lastPrompt = prompts.find(p => p.id === lastPromptId);
+        if (lastPrompt) {
+          setCurrentPrompt(lastPrompt);
+          setShowEditor(true);
+        }
+      }
+
+      setLoading(false);
+    } catch (error) {
+      console.error('Auth check error:', error);
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    // Check authentication
-    const checkAuth = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
+    checkAuth();
+  }, [checkAuth]);
+
+  // Set up auth state listener
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
         setUser(session?.user ?? null);
-
-        // Set up auth state listener
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(
-          (_event, session) => {
-            setUser(session?.user ?? null);
-          }
-        );
-
-        // Load playground count for non-logged in users
-        if (!session?.user) {
-          const savedCount = localStorage.getItem(PLAYGROUND_COUNT_KEY);
-          if (savedCount) {
-            setPlaygroundCount(parseInt(savedCount));
-          }
-        }
-
-        // Set up global callback for updating playground count
-        window.updatePlaygroundCount = (newCount: number) => {
-          setPlaygroundCount(newCount);
-        };
-
-        // Load last opened prompt
-        const lastPromptId = storage.getCurrentPromptId();
-        if (lastPromptId) {
-          const prompts = storage.getPrompts();
-          const lastPrompt = prompts.find(p => p.id === lastPromptId);
-          if (lastPrompt) {
-            setCurrentPrompt(lastPrompt);
-            setShowEditor(true);
-          }
-        }
-
-        setLoading(false);
-
-        return () => {
-          subscription.unsubscribe();
-          delete window.updatePlaygroundCount;
-        };
-      } catch (error) {
-        console.error('Auth check error:', error);
-        setLoading(false);
       }
+    );
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  // Set up global callback for updating playground count
+  useEffect(() => {
+    window.updatePlaygroundCount = (newCount: number) => {
+      setPlaygroundCount(newCount);
     };
 
-    checkAuth();
+    return () => {
+      delete window.updatePlaygroundCount;
+    };
   }, []);
+
+  const loadAllPrompts = useCallback(async () => {
+    try {
+      const prompts = storage.getPrompts();
+      setAllPrompts(prompts);
+    } catch (error) {
+      console.error('Failed to load prompts:', error);
+      setAllPrompts([]);
+    }
+  }, []);
+
+  const loadPublicPrompts = useCallback(async () => {
+    try {
+      const publicPromptsData = await SupabaseService.getPublicPrompts();
+      setPublicPrompts(publicPromptsData);
+    } catch (error) {
+      console.error('Failed to load public prompts:', error);
+      setPublicPrompts([]);
+    }
+  }, []);
+
+  // Combined effect to load both types of prompts
+  useEffect(() => {
+    loadAllPrompts();
+    loadPublicPrompts();
+  }, [loadAllPrompts, loadPublicPrompts]);
+
+  // Separate effect for periodic refresh of public prompts only
+  useEffect(() => {
+    const interval = setInterval(() => {
+      loadPublicPrompts();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [loadPublicPrompts]);
+
+  const myPrompts = useMemo(() =>
+    user ? allPrompts.filter(p => p.user_id === user.id) : [],
+    [allPrompts, user]
+  );
+
+  // Convert to PromptWithTags format (tags loaded separately via junction table)
+  const myPromptsWithTags: PromptWithTags[] = useMemo(() =>
+    myPrompts.map(prompt => ({
+      ...prompt,
+      tags: [] // Tags will be loaded separately in MyLibrary component
+    })),
+    [myPrompts]
+  );
+
+  const publicPromptsWithTags: PromptWithTags[] = useMemo(() =>
+    publicPrompts.map(prompt => ({
+      ...prompt,
+      tags: [] // Tags will be loaded separately in PublicLibrary component
+    })),
+    [publicPrompts]
+  );
 
   const handlePromptChange = (prompt: Prompt) => {
     setCurrentPrompt(prompt);
@@ -215,7 +283,7 @@ const AppPage = () => {
       user_id: user?.id || 'guest',
       title: 'Untitled Prompt',
       content: '',
-      model: AVAILABLE_MODELS[2].id,
+      model: AVAILABLE_MODELS[1].id,
       color: '#3b82f6',
       is_public: false,
       is_featured: false,
@@ -260,22 +328,6 @@ const AppPage = () => {
     );
   }
 
-  // Get prompts based on current view
-  const allPrompts = storage.getPrompts();
-  const myPrompts = user ? allPrompts.filter(p => p.user_id === user.id) : [];
-  const publicPrompts = allPrompts.filter(p => p.is_public);
-
-  // Convert to PromptWithTags format (tags loaded separately via junction table)
-  const myPromptsWithTags: PromptWithTags[] = myPrompts.map(prompt => ({
-    ...prompt,
-    tags: [] // Tags will be loaded separately in MyLibrary component
-  }));
-
-  const publicPromptsWithTags: PromptWithTags[] = publicPrompts.map(prompt => ({
-    ...prompt,
-    tags: [] // Tags will be loaded separately in PublicLibrary component
-  }));
-
   return (
     <div className="flex h-screen bg-background">
       <Sidebar
@@ -295,6 +347,7 @@ const AppPage = () => {
           <PromptEditor
             currentPrompt={currentPrompt}
             onPromptChange={handlePromptChange}
+            onDeletePrompt={handleDeletePrompt}
           />
         ) : (
           <>
@@ -304,6 +357,7 @@ const AppPage = () => {
                 onSelectPrompt={handleSelectPrompt}
                 onEditPrompt={handleEditPrompt}
                 onDeletePrompt={handleDeletePrompt}
+                onCopyPrompt={handleCopyPrompt}
                 currentPromptId={currentPrompt?.id}
               />
             ) : (

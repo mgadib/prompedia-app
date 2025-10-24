@@ -25,7 +25,7 @@
 1. **Prompt Editor & Playground**
    - Editor teks dengan auto-save functionality
    - Real-time preview dan testing
-   - Support untuk multiple AI models (Llama 4, Qwen 3, DeepSeek, OpenAI)
+   - Support untuk multiple AI models (Llama 4, Qwen 3, OpenAI)
    - Thinking modes integration (Meta Prompt, Self-Refine, Chain-of-Thought, dll.)
 
 2. **Library Management System**
@@ -74,7 +74,7 @@
 
 #### **External APIs:**
 - **AI Models**: OpenRouter API
-- **Model Providers**: OpenAI, Meta, Qwen, DeepSeek
+- **Model Providers**: OpenAI, Meta, Qwen
 
 #### **Development Tools:**
 - **Linting**: ESLint 9.32.0 dengan TypeScript ESLint
@@ -244,7 +244,7 @@
    - User-created tags (editable by creator)
 
 3. **Model Selection:**
-   - Default ke model index 2 (DeepSeek Chat V3)
+   - Default ke model index 1 (Qwen 3 30B)
    - Model capabilities influence UI options
    - Free models prioritized untuk guest users
 

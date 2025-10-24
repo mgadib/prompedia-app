@@ -15,6 +15,12 @@ interface ModelSelectorProps {
 const ModelSelector = ({ value, onChange }: ModelSelectorProps) => {
   const selectedModel = AVAILABLE_MODELS.find(model => model.id === value);
 
+  // Only show main models in UI, not fallback models
+  const mainModels = AVAILABLE_MODELS.filter(model =>
+    !model.id.includes('qwen/qwen-2.5-72b:free') &&
+    !model.id.includes('llama-3.1-70b:free')
+  );
+
   return (
     <Select value={value} onValueChange={onChange}>
       <SelectTrigger className="w-[180px] bg-secondary border-border text-xs">
@@ -23,7 +29,7 @@ const ModelSelector = ({ value, onChange }: ModelSelectorProps) => {
         </SelectValue>
       </SelectTrigger>
       <SelectContent>
-        {AVAILABLE_MODELS.map((model) => (
+        {mainModels.map((model) => (
           <SelectItem key={model.id} value={model.id} className="text-xs">
             {model.label}
           </SelectItem>

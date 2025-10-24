@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Copy, Save, Share2, FileText, Loader2 } from 'lucide-react';
+import { Copy, Save, Share2, FileText, Loader2, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -14,13 +14,15 @@ import ModelSelector from './ModelSelector';
 import ModeSelector from './ModeSelector';
 import TagInput from './TagInput';
 import ActionButtons from './ActionButtons';
+import DeletePromptDialog from './DeletePromptDialog';
 
 interface PromptEditorProps {
   currentPrompt: Prompt | null;
   onPromptChange: (prompt: Prompt) => void;
+  onDeletePrompt?: (promptId: string) => void;
 }
 
-const PromptEditor = ({ currentPrompt, onPromptChange }: PromptEditorProps) => {
+const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt }: PromptEditorProps) => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [model, setModel] = useState(AVAILABLE_MODELS[1].id);
@@ -42,7 +44,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange }: PromptEditorProps) => {
         title: currentPrompt.title || '',
         content: currentPrompt.content || '',
         model: currentPrompt.model || AVAILABLE_MODELS[1].id,
-        mode: currentPrompt.mode || THINKING_MODES[5].id,
+        mode: mode || 'role-prompt',
         color: currentPrompt.color || '#3b82f6',
         is_public: currentPrompt.is_public || false,
         is_featured: currentPrompt.is_featured || false,
@@ -66,42 +68,47 @@ const PromptEditor = ({ currentPrompt, onPromptChange }: PromptEditorProps) => {
   }, [currentPrompt]);
 
   // Auto-save function
-  const autoSave = useCallback(() => {
+  const autoSave = useCallback(async () => {
     if (!currentPrompt || !hasUnsavedChanges.current) return;
 
     setIsAutoSaving(true);
-    // Sanitize currentPrompt to match new schema
-    const sanitizedPrompt: Prompt = {
-      id: currentPrompt.id || '',
-      user_id: currentPrompt.user_id || '',
-      title: title || '',
-      content: content || '',
-      model: model || AVAILABLE_MODELS[1].id,
-      mode: mode || THINKING_MODES[5].id,
-      color: currentPrompt.color || '#3b82f6',
-      is_public: currentPrompt.is_public || false,
-      is_featured: currentPrompt.is_featured || false,
-      description: currentPrompt.description,
-      original_prompt_id: currentPrompt.original_prompt_id,
-    };
+    try {
+      // Sanitize currentPrompt to match new schema
+      const sanitizedPrompt: Prompt = {
+        id: currentPrompt.id || '',
+        user_id: currentPrompt.user_id || '',
+        title: title || '',
+        content: content || '',
+        model: model || AVAILABLE_MODELS[1].id,
+        mode: mode || THINKING_MODES[5].id,
+        color: currentPrompt.color || '#3b82f6',
+        is_public: currentPrompt.is_public || false,
+        is_featured: currentPrompt.is_featured || false,
+        description: currentPrompt.description,
+        original_prompt_id: currentPrompt.original_prompt_id,
+      };
 
-    const updatedPrompt: Prompt = {
-      ...sanitizedPrompt,
-    };
+      const updatedPrompt: Prompt = {
+        ...sanitizedPrompt,
+      };
 
-    storage.savePrompt(updatedPrompt);
-    onPromptChange(updatedPrompt);
-    hasUnsavedChanges.current = false;
-
-    setTimeout(() => setIsAutoSaving(false), 1000);
-  }, [currentPrompt, title, content, model, onPromptChange]);
+      await storageManager.savePrompt(updatedPrompt);
+      onPromptChange(updatedPrompt);
+      hasUnsavedChanges.current = false;
+    } catch (error) {
+      console.error('Auto-save failed:', error);
+      toast.error('Failed to auto-save prompt');
+    } finally {
+      setTimeout(() => setIsAutoSaving(false), 1000);
+    }
+  }, [currentPrompt, title, content, model, mode, onPromptChange]);
 
   // Debounced auto-save effect
   useEffect(() => {
     if (!currentPrompt) return;
 
     hasUnsavedChanges.current = true;
-    
+
     if (autoSaveTimeoutRef.current) {
       clearTimeout(autoSaveTimeoutRef.current);
     }
@@ -115,7 +122,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange }: PromptEditorProps) => {
         clearTimeout(autoSaveTimeoutRef.current);
       }
     };
-  }, [title, content, model, mode, autoSave, currentPrompt]);
+  }, [title, content, model, mode, currentPrompt]); // Removed autoSave from dependencies to prevent infinite loop
 
 
   const handleNew = () => {
@@ -164,29 +171,88 @@ const PromptEditor = ({ currentPrompt, onPromptChange }: PromptEditorProps) => {
       await storageManager.savePrompt(updatedPrompt);
       onPromptChange(updatedPrompt);
       hasUnsavedChanges.current = false;
-      toast.success('Prompt saved manually');
+      toast.success('Prompt saved successfully');
     } catch (error) {
       console.error('Failed to save prompt:', error);
-      toast.error('Failed to save prompt');
+      toast.error(error instanceof Error ? error.message : 'Failed to save prompt');
     }
   };
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(content);
-    toast.success('Copied to clipboard');
-  };
-
-  const handleShare = () => {
+  const handleCopy = async () => {
     if (!currentPrompt) return;
 
-    const updatedPrompt: Prompt = {
-      ...currentPrompt,
-      isPublic: !currentPrompt.isPublic,
-    };
+    try {
+      // Create a copy of the current prompt
+      const copiedPrompt: Prompt = {
+        id: crypto.randomUUID(),
+        user_id: currentPrompt.user_id || '',
+        title: `Copy of ${currentPrompt.title}`,
+        content: currentPrompt.content,
+        model: currentPrompt.model || AVAILABLE_MODELS[1].id,
+        mode: currentPrompt.mode || THINKING_MODES[5].id,
+        color: currentPrompt.color || '#3b82f6',
+        is_public: false, // Copies start as private
+        is_featured: false,
+        description: currentPrompt.description,
+        original_prompt_id: currentPrompt.id, // Reference to original prompt
+      };
 
-    storage.savePrompt(updatedPrompt);
-    onPromptChange(updatedPrompt);
-    toast.success(updatedPrompt.isPublic ? 'Prompt is now public' : 'Prompt is now private');
+      await storageManager.savePrompt(copiedPrompt);
+      onPromptChange(copiedPrompt);
+      toast.success('Prompt copied successfully');
+    } catch (error) {
+      console.error('Failed to copy prompt:', error);
+      toast.error('Failed to copy prompt');
+    }
+  };
+
+  const handleShare = async () => {
+    if (!currentPrompt) return;
+
+    try {
+      const user = storage.getUser();
+      if (!user && !currentPrompt.is_public) {
+        toast.error('Please sign in to make prompts public');
+        return;
+      }
+
+      const updatedPrompt: Prompt = {
+        ...currentPrompt,
+        is_public: !currentPrompt.is_public,
+      };
+
+      await storageManager.savePrompt(updatedPrompt);
+      onPromptChange(updatedPrompt);
+      toast.success(updatedPrompt.is_public ? 'Prompt is now public' : 'Prompt is now private');
+    } catch (error) {
+      console.error('Failed to update prompt visibility:', error);
+      toast.error('Failed to update prompt visibility');
+    }
+  };
+
+  const handleDelete = async (promptId: string) => {
+    try {
+      if (onDeletePrompt) {
+        onDeletePrompt(promptId);
+      } else {
+        await storageManager.deletePrompt(promptId);
+        onPromptChange({
+          id: crypto.randomUUID(),
+          user_id: currentPrompt?.user_id || '',
+          title: 'Untitled Prompt',
+          content: '',
+          model: AVAILABLE_MODELS[1].id,
+          mode: THINKING_MODES[5].id,
+          color: '#3b82f6',
+          is_public: false,
+          is_featured: false,
+        });
+      }
+      toast.success('Prompt deleted successfully');
+    } catch (error) {
+      console.error('Failed to delete prompt:', error);
+      toast.error('Failed to delete prompt');
+    }
   };
 
 
@@ -326,8 +392,12 @@ const PromptEditor = ({ currentPrompt, onPromptChange }: PromptEditorProps) => {
               disabled={!currentPrompt}
             >
               <Share2 className="w-4 h-4 mr-2" />
-              {currentPrompt?.isPublic ? 'Make Private' : 'Share'}
+              {currentPrompt?.is_public ? 'Make Private' : 'Share'}
             </Button>
+            <DeletePromptDialog
+              promptTitle={currentPrompt?.title || 'Untitled Prompt'}
+              onConfirm={() => handleDelete(currentPrompt?.id || '')}
+            />
 
           </div>
 

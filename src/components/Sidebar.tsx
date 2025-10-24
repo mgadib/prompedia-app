@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Play, User, LogOut, Lock, Users, Hash } from 'lucide-react';
 import { User as SupabaseUser } from '@supabase/supabase-js';
+import LogoutDialog from './LogoutDialog';
 
 interface SidebarProps {
   activeView: 'my-library' | 'public-library';
@@ -151,13 +152,10 @@ const Sidebar = ({
                 </div>
               </div>
               
-              <button
-                onClick={onLogout}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm text-sidebar-foreground hover:bg-destructive/20 hover:text-destructive transition-all duration-200 font-mono"
-              >
-                <LogOut className="w-4 h-4" />
-                Logout
-              </button>
+              <LogoutDialog
+                userName={user.user_metadata?.username || user.email?.split('@')[0]}
+                onConfirm={onLogout}
+              />
             </>
           ) : (
             <div className="flex flex-col items-center gap-2">
@@ -167,13 +165,9 @@ const Sidebar = ({
               >
                 <User className="w-4 h-4 text-sidebar-accent-foreground" />
               </div>
-              <button
-                onClick={onLogout}
-                className="w-8 h-8 flex items-center justify-center rounded-md text-sidebar-foreground hover:bg-destructive/20 hover:text-destructive transition-all duration-200"
-                title="Logout"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
+              <LogoutDialog
+                onConfirm={onLogout}
+              />
             </div>
           )
         ) : (

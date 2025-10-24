@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Prompt } from '@/lib/storage';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -60,49 +60,49 @@ const PublicLibrary = ({
 
   // Public prompts are already filtered in App.tsx and passed as props
 
+  const loadPublicPromptsWithTags = useCallback(async () => {
+    if (prompts.length === 0) {
+      setPromptsWithTags([]);
+      setAllTags([]);
+      setIsLoadingTags(false);
+      return;
+    }
+
+    setIsLoadingTags(true);
+    try {
+      const promptsWithTagsData: PromptWithTags[] = [];
+      const tagSet = new Set<string>();
+
+      for (const prompt of prompts) {
+        try {
+          const tags = await SupabaseService.getPromptTags(prompt.id);
+          promptsWithTagsData.push({ ...prompt, tags });
+
+          // Collect all unique tag names
+          tags.forEach(tag => tagSet.add(tag.name));
+        } catch (tagError) {
+          console.warn(`Failed to load tags for prompt ${prompt.id}:`, tagError);
+          // Continue with empty tags for this prompt
+          promptsWithTagsData.push({ ...prompt, tags: [] });
+        }
+      }
+
+      setPromptsWithTags(promptsWithTagsData);
+      setAllTags(Array.from(tagSet));
+    } catch (error) {
+      console.error('Failed to load tags for public prompts:', error);
+      // Fallback: use prompts without tags
+      setPromptsWithTags(prompts.map(p => ({ ...p, tags: [] })));
+      setAllTags([]);
+    } finally {
+      setIsLoadingTags(false);
+    }
+  }, [prompts]);
+
   // Load tags for public prompts
   useEffect(() => {
-    const loadPublicPromptsWithTags = async () => {
-      if (prompts.length === 0) {
-        setPromptsWithTags([]);
-        setAllTags([]);
-        setIsLoadingTags(false);
-        return;
-      }
-
-      setIsLoadingTags(true);
-      try {
-        const promptsWithTagsData: PromptWithTags[] = [];
-        const tagSet = new Set<string>();
-
-        for (const prompt of prompts) {
-          try {
-            const tags = await SupabaseService.getPromptTags(prompt.id);
-            promptsWithTagsData.push({ ...prompt, tags });
-
-            // Collect all unique tag names
-            tags.forEach(tag => tagSet.add(tag.name));
-          } catch (tagError) {
-            console.warn(`Failed to load tags for prompt ${prompt.id}:`, tagError);
-            // Continue with empty tags for this prompt
-            promptsWithTagsData.push({ ...prompt, tags: [] });
-          }
-        }
-
-        setPromptsWithTags(promptsWithTagsData);
-        setAllTags(Array.from(tagSet));
-      } catch (error) {
-        console.error('Failed to load tags for public prompts:', error);
-        // Fallback: use prompts without tags
-        setPromptsWithTags(prompts.map(p => ({ ...p, tags: [] })));
-        setAllTags([]);
-      } finally {
-        setIsLoadingTags(false);
-      }
-    };
-
     loadPublicPromptsWithTags();
-  }, [prompts]);
+  }, [loadPublicPromptsWithTags]);
 
   // allTags already loaded in state via useEffect
 
@@ -324,7 +324,7 @@ const PublicLibrary = ({
                   {/* Footer with actions */}
                   <div className="flex items-center justify-between pt-4 border-t border-border/50">
                     <div className="text-xs text-muted-foreground font-mono">
-                      <div>Model: {prompt.model || 'DeepSeek Chat V3'}</div>
+                      <div>Model: {prompt.model || 'Llama 4 Maverick'}</div>
                       <div>{prompt.isFeatured ? 'Featured' : 'Standard'}</div>
                     </div>
                     

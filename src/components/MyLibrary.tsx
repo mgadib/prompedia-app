@@ -1,13 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Prompt } from '@/lib/storage';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { FileText, Lock, Globe, Edit, Trash2, Search, Filter } from 'lucide-react';
+import { FileText, Lock, Globe, Edit, Trash2, Search, Filter, Copy } from 'lucide-react';
 import { toast } from 'sonner';
 import { SupabaseService } from '@/lib/supabase-service';
 import { Tag } from '@/integrations/supabase/types';
 import PromptDetailModal from './PromptDetailModal';
+import DeletePromptDialog from './DeletePromptDialog';
 
 interface PromptWithTags extends Prompt {
   tags: Tag[];
@@ -18,6 +19,7 @@ interface MyLibraryProps {
   onSelectPrompt: (prompt: PromptWithTags) => void;
   onEditPrompt: (prompt: PromptWithTags) => void;
   onDeletePrompt: (promptId: string) => void;
+  onCopyPrompt?: (prompt: PromptWithTags) => void;
   currentPromptId?: string;
 }
 
@@ -26,6 +28,7 @@ const MyLibrary = ({
   onSelectPrompt,
   onEditPrompt,
   onDeletePrompt,
+  onCopyPrompt,
   currentPromptId
 }: MyLibraryProps) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -36,49 +39,49 @@ const MyLibrary = ({
   const [promptsWithTags, setPromptsWithTags] = useState<PromptWithTags[]>([]);
   const [isLoadingTags, setIsLoadingTags] = useState(false);
 
+  const loadTagsForPrompts = useCallback(async () => {
+    if (prompts.length === 0) {
+      setPromptsWithTags([]);
+      setAllTags([]);
+      setIsLoadingTags(false);
+      return;
+    }
+
+    setIsLoadingTags(true);
+    try {
+      const promptsWithTagsData: PromptWithTags[] = [];
+      const tagSet = new Set<string>();
+
+      for (const prompt of prompts) {
+        try {
+          const tags = await SupabaseService.getPromptTags(prompt.id);
+          promptsWithTagsData.push({ ...prompt, tags });
+
+          // Collect all unique tag names
+          tags.forEach(tag => tagSet.add(tag.name));
+        } catch (tagError) {
+          console.warn(`Failed to load tags for prompt ${prompt.id}:`, tagError);
+          // Continue with empty tags for this prompt
+          promptsWithTagsData.push({ ...prompt, tags: [] });
+        }
+      }
+
+      setPromptsWithTags(promptsWithTagsData);
+      setAllTags(Array.from(tagSet));
+    } catch (error) {
+      console.error('Failed to load tags:', error);
+      // Fallback: use prompts without tags
+      setPromptsWithTags(prompts.map(p => ({ ...p, tags: [] })));
+      setAllTags([]);
+    } finally {
+      setIsLoadingTags(false);
+    }
+  }, [prompts]);
+
   // Load tags from database for all prompts
   useEffect(() => {
-    const loadTagsForPrompts = async () => {
-      if (prompts.length === 0) {
-        setPromptsWithTags([]);
-        setAllTags([]);
-        setIsLoadingTags(false);
-        return;
-      }
-
-      setIsLoadingTags(true);
-      try {
-        const promptsWithTagsData: PromptWithTags[] = [];
-        const tagSet = new Set<string>();
-
-        for (const prompt of prompts) {
-          try {
-            const tags = await SupabaseService.getPromptTags(prompt.id);
-            promptsWithTagsData.push({ ...prompt, tags });
-
-            // Collect all unique tag names
-            tags.forEach(tag => tagSet.add(tag.name));
-          } catch (tagError) {
-            console.warn(`Failed to load tags for prompt ${prompt.id}:`, tagError);
-            // Continue with empty tags for this prompt
-            promptsWithTagsData.push({ ...prompt, tags: [] });
-          }
-        }
-
-        setPromptsWithTags(promptsWithTagsData);
-        setAllTags(Array.from(tagSet));
-      } catch (error) {
-        console.error('Failed to load tags:', error);
-        // Fallback: use prompts without tags
-        setPromptsWithTags(prompts.map(p => ({ ...p, tags: [] })));
-        setAllTags([]);
-      } finally {
-        setIsLoadingTags(false);
-      }
-    };
-
     loadTagsForPrompts();
-  }, [prompts]);
+  }, [loadTagsForPrompts]);
 
   // Filter prompts based on search and tag
   const filteredPrompts = promptsWithTags.filter(prompt => {
@@ -88,17 +91,21 @@ const MyLibrary = ({
     return matchesSearch && matchesTag;
   });
 
-  const handleDelete = (e: React.MouseEvent, promptId: string) => {
-    e.stopPropagation();
-    if (window.confirm('Are you sure you want to delete this prompt?')) {
-      onDeletePrompt(promptId);
-      toast.success('Prompt deleted successfully');
-    }
+  const handleDelete = (promptId: string) => {
+    onDeletePrompt(promptId);
+    toast.success('Prompt deleted successfully');
   };
 
   const handleEdit = (e: React.MouseEvent, prompt: PromptWithTags) => {
     e.stopPropagation();
     onEditPrompt(prompt);
+  };
+
+  const handleCopy = (e: React.MouseEvent, prompt: PromptWithTags) => {
+    e.stopPropagation();
+    if (onCopyPrompt) {
+      onCopyPrompt(prompt);
+    }
   };
 
   const handleCardClick = (prompt: PromptWithTags) => {
@@ -256,6 +263,17 @@ const MyLibrary = ({
                   
                   {/* Action buttons */}
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {onCopyPrompt && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={(e) => handleCopy(e, prompt)}
+                        className="h-8 w-8 p-0 hover:bg-blue-500/20 hover:text-blue-500"
+                        title="Copy prompt"
+                      >
+                        <Copy className="w-3 h-3" />
+                      </Button>
+                    )}
                     <Button
                       size="sm"
                       variant="ghost"
@@ -265,15 +283,10 @@ const MyLibrary = ({
                     >
                       <Edit className="w-3 h-3" />
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={(e) => handleDelete(e, prompt.id)}
-                      className="h-8 w-8 p-0 hover:bg-destructive/20 hover:text-destructive"
-                      title="Delete prompt"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
+                    <DeletePromptDialog
+                      promptTitle={prompt.title || 'Untitled Prompt'}
+                      onConfirm={() => handleDelete(prompt.id)}
+                    />
                   </div>
                 </div>
               </div>

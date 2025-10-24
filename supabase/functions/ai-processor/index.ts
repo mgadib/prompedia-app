@@ -40,12 +40,10 @@ serve(async (req) => {
 
     // Map model to appropriate API key
     const getApiKeyForModel = (modelId: string): string | undefined => {
-      if (modelId.includes('llama-4-maverick') || modelId.includes('llama4')) {
+      if (modelId.includes('llama-4-maverick') || modelId.includes('llama4') || modelId.includes('llama-3.1')) {
         return Deno.env.get('OPENROUTER_API_KEY_LLAMA4_MAVERICK')
-      } else if (modelId.includes('qwen3-30b')) {
+      } else if (modelId.includes('qwen3-30b') || modelId.includes('qwen-2.5') || modelId.includes('qwen/')) {
         return Deno.env.get('OPENROUTER_API_KEY_QWEN3_30B')
-      } else if (modelId.includes('deepseek')) {
-        return Deno.env.get('OPENROUTER_API_KEY_DEEPSEEK_V3')
       }
       // Fallback to default key
       return Deno.env.get('OPENROUTER_API_KEY')
@@ -89,12 +87,27 @@ serve(async (req) => {
       }
     }
 
-    // Call OpenRouter API with provider-specific keys and graceful fallback
-    const tryModels: string[] = Array.from(new Set([
-      model,
-      'qwen/qwen3-30b-a3b:free',
-      'meta-llama/llama-4-maverick:free'
-    ]));
+    // Call OpenRouter API with model-specific fallbacks
+    const getModelFallbacks = (modelId: string): string[] => {
+      // Only try the same model or its variants, no cross-model fallbacks
+      if (modelId.includes('qwen')) {
+        return [
+          modelId,
+          'qwen/qwen3-30b-a3b:free', // Try standard qwen if variant fails
+          'qwen/qwen-2.5-72b:free'
+        ];
+      } else if (modelId.includes('llama') || modelId.includes('meta')) {
+        return [
+          modelId,
+          'meta-llama/llama-4-maverick:free', // Try standard llama if variant fails
+          'meta-llama/llama-3.1-70b:free'
+        ];
+      }
+      // Default: only try the requested model
+      return [modelId];
+    };
+
+    const tryModels: string[] = getModelFallbacks(model);
 
     let lastErrorText = ''
     let lastStatus = 0

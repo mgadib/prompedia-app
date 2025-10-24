@@ -29,7 +29,9 @@ export const AVAILABLE_MODELS: AIModel[] = [
       text: true,
       image: true,
       vision: true,
-      bilingual: true
+      bilingual: true,
+      conversational: true,
+      reasoning: true
     },
     free: true
   },
@@ -42,19 +44,38 @@ export const AVAILABLE_MODELS: AIModel[] = [
       text: true,
       code: true,
       math: true,
-      longContext: true
+      longContext: true,
+      reasoning: true
+    },
+    free: true
+  },
+  // Fallback models (not shown in UI but available for API fallbacks)
+  {
+    id: 'qwen/qwen-2.5-72b:free',
+    label: 'Qwen 2.5 72B',
+    provider: 'OpenRouter',
+    type: 'Text',
+    capabilities: {
+      text: true,
+      code: true,
+      math: true,
+      longContext: true,
+      reasoning: true
     },
     free: true
   },
   {
-    id: 'deepseek/deepseek-chat-v3-0324:free',
-    label: 'DeepSeek Chat V3',
+    id: 'meta-llama/llama-3.1-70b:free',
+    label: 'Llama 3.1 70B',
     provider: 'OpenRouter',
     type: 'Text',
     capabilities: {
       text: true,
       conversational: true,
-      reasoning: true
+      reasoning: true,
+      code: true,
+      math: true,
+      longContext: true
     },
     free: true
   }

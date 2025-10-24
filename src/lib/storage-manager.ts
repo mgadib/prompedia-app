@@ -113,8 +113,8 @@ class StorageManager {
       let used = 0;
       
       // Calculate current usage
-      for (let key in localStorage) {
-        if (localStorage.hasOwnProperty(key)) {
+      for (const key in localStorage) {
+        if (Object.prototype.hasOwnProperty.call(localStorage, key)) {
           used += localStorage[key].length + key.length;
         }
       }
@@ -239,11 +239,11 @@ class StorageManager {
         description: prompt.description || '',
         model: prompt.model,
         mode: prompt.mode,
-        is_public: prompt.isPublic || false,
+        is_public: prompt.is_public || false,
         user_id: this.authUser.id,
         color: prompt.color || null,
-        is_featured: prompt.isFeatured || false,
-        original_prompt_id: prompt.originalPromptId || null
+        is_featured: prompt.is_featured || false,
+        original_prompt_id: prompt.original_prompt_id || null
       };
 
       const { error } = await supabase
@@ -338,11 +338,11 @@ class StorageManager {
         description: item.description,
         model: item.model,
         mode: item.mode,
-        isPublic: item.is_public,
-        userId: item.user_id,
+        is_public: item.is_public,
+        user_id: item.user_id,
         color: item.color,
-        isFeatured: item.is_featured,
-        originalPromptId: item.original_prompt_id
+        is_featured: item.is_featured,
+        original_prompt_id: item.original_prompt_id
         // Note: tags are now loaded separately via junction table
         // createdAt and updatedAt are not stored in the minimal schema
       }));

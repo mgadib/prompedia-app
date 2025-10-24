@@ -52,7 +52,26 @@ serve(async (req) => {
       })
     }
 
+    // Map model to appropriate API key and validate
+    const getApiKeyForModel = (modelId: string): string | undefined => {
+      if (modelId.includes('llama-4-maverick') || modelId.includes('llama4') || modelId.includes('llama-3.1')) {
+        return Deno.env.get('OPENROUTER_API_KEY_LLAMA4_MAVERICK')
+      } else if (modelId.includes('qwen3-30b') || modelId.includes('qwen-2.5') || modelId.includes('qwen/')) {
+        return Deno.env.get('OPENROUTER_API_KEY_QWEN3_30B')
+      }
+      // Fallback to default key
+      return Deno.env.get('OPENROUTER_API_KEY')
+    }
+
     const model = options.model || 'meta-llama/llama-4-maverick:free'
+    const apiKey = getApiKeyForModel(model)
+
+    if (!apiKey) {
+      return new Response(JSON.stringify({ error: `No API key configured for model: ${model}` }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
     const results = []
 
     // Process each prompt
@@ -78,7 +97,7 @@ serve(async (req) => {
         }
 
         // Create enhanced prompt based on operation
-        let enhancedPrompt = content
+        const enhancedPrompt = content
         let modeInstructions = ''
 
         switch (operation) {
@@ -216,7 +235,7 @@ FORMAT OUTPUT:
         const openRouterResponse = await fetch('https://openrouter.ai/api/v1/chat/completions', {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${Deno.env.get('OPENROUTER_API_KEY')}`,
+            'Authorization': `Bearer ${apiKey}`,
             'Content-Type': 'application/json',
             'HTTP-Referer': 'https://prompedia.ai',
             'X-Title': 'Prompedia AI'

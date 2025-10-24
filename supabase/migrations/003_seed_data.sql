@@ -24,12 +24,22 @@ INSERT INTO public.ai_models (id, name, provider, type, capabilities) VALUES
   "reasoning": true
 }'::jsonb),
 
-('deepseek/deepseek-chat-v3-0324:free', 'DeepSeek Chat V3', 'OpenRouter', 'Text', '{
+-- Additional fallback models for better reliability
+('qwen/qwen-2.5-72b:free', 'Qwen 2.5 72B', 'OpenRouter', 'Text', '{
+  "text": true,
+  "code": true,
+  "math": true,
+  "longContext": true,
+  "reasoning": true
+}'::jsonb),
+
+('meta-llama/llama-3.1-70b:free', 'Llama 3.1 70B', 'OpenRouter', 'Text', '{
   "text": true,
   "conversational": true,
   "reasoning": true,
   "code": true,
-  "math": true
+  "math": true,
+  "longContext": true
 }'::jsonb),
 
 ('anthropic/claude-3.5-sonnet:beta', 'Claude 3.5 Sonnet', 'Anthropic', 'Text', '{
