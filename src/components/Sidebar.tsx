@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Play, User, LogOut, Lock, Users, Hash } from 'lucide-react';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import LogoutDialog from './LogoutDialog';
+import { TagService } from '@/lib/tag-service';
+import { supabase } from '@/integrations/supabase/client';
 
 interface SidebarProps {
   activeView: 'my-library' | 'public-library';
@@ -10,30 +12,45 @@ interface SidebarProps {
   onLogout: () => void;
   onLogin: () => void;
   user: SupabaseUser | null;
-  playgroundCount: number;
-  playgroundLimit: number;
   isPlaygroundActive?: boolean;
 }
 
-const Sidebar = ({ 
-  activeView, 
-  onViewChange, 
-  onNewPrompt, 
+const Sidebar = ({
+  activeView,
+  onViewChange,
+  onNewPrompt,
   onLogout,
   onLogin,
   user,
-  playgroundCount,
-  playgroundLimit,
-  isPlaygroundActive 
+  isPlaygroundActive
 }: SidebarProps) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [allTags, setAllTags] = useState<string[]>([]);
+  const [isLoadingTags, setIsLoadingTags] = useState(true);
 
   useEffect(() => {
-    // Load tags from local storage or Supabase
-    // For now, we'll keep this empty until we integrate with Supabase
-    setAllTags([]);
-  }, []);
+    const loadUserMostUsedTags = async () => {
+      setIsLoadingTags(true);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          // Get user's most frequently used tags (exactly 7)
+          const userTags = await TagService.getUserMostUsedTags(user.id, 7);
+          const tagNames = userTags.map(tag => tag.name);
+          setAllTags(tagNames);
+        } else {
+          setAllTags([]);
+        }
+      } catch (error) {
+        console.error('Failed to load user most used tags:', error);
+        setAllTags([]);
+      } finally {
+        setIsLoadingTags(false);
+      }
+    };
+
+    loadUserMostUsedTags();
+  }, [user]);
 
   return (
     <div className={`${isCollapsed ? 'w-16' : 'w-64'} h-screen bg-sidebar-background border-r border-sidebar-border flex flex-col transition-all duration-300 ease-in-out relative`}>
@@ -84,18 +101,21 @@ const Sidebar = ({
             </button>
           )}
           
-          <button
-            onClick={() => onViewChange('my-library')}
-            className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5 rounded-md text-sm transition-all duration-200 font-mono ${
-              activeView === 'my-library' && !isPlaygroundActive
-                ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-sm'
-                : 'text-sidebar-foreground hover:bg-sidebar-accent/20 hover:text-sidebar-accent-foreground'
-            }`}
-            title={isCollapsed ? 'Private Library' : ''}
-          >
-            <Lock className="w-4 h-4" />
-            {!isCollapsed && 'Private Library'}
-          </button>
+          {/* Private Library - Only for authenticated users */}
+          {user && (
+            <button
+              onClick={() => onViewChange('my-library')}
+              className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5 rounded-md text-sm transition-all duration-200 font-mono ${
+                activeView === 'my-library' && !isPlaygroundActive
+                  ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-sm'
+                  : 'text-sidebar-foreground hover:bg-sidebar-accent/20 hover:text-sidebar-accent-foreground'
+              }`}
+              title={isCollapsed ? 'Private Library' : ''}
+            >
+              <Lock className="w-4 h-4" />
+              {!isCollapsed && 'Private Library'}
+            </button>
+          )}
 
           <button
             onClick={() => onViewChange('public-library')}
@@ -112,22 +132,36 @@ const Sidebar = ({
         </div>
 
         {/* Tags Section */}
-        {!isCollapsed && allTags.length > 0 && (
-          <div className="mb-4">
-            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 font-mono">
-              Tags
+        {!isCollapsed && (
+          <div className="mt-6">
+            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 font-mono">
+              Most Used Tags
             </h3>
-            <div className="space-y-1 max-h-48 overflow-y-auto">
-              {allTags.map(tag => (
-                <div
-                  key={tag}
-                  className="flex items-center gap-2 px-3 py-1.5 text-xs text-sidebar-foreground hover:bg-sidebar-accent/10 rounded-md transition-colors cursor-pointer font-mono"
-                >
-                  <Hash className="w-3 h-3 text-prompedia-green-400" />
-                  <span className="truncate">{tag}</span>
-                </div>
-              ))}
-            </div>
+            {isLoadingTags ? (
+              <div className="space-y-1">
+                {[...Array(7)].map((_, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-md animate-pulse"
+                  >
+                    <div className="w-3 h-3 bg-muted-foreground/20 rounded-full" />
+                    <div className="h-3 bg-muted-foreground/20 rounded w-16" />
+                  </div>
+                ))}
+              </div>
+            ) : allTags.length > 0 ? (
+              <div className="space-y-1">
+                {allTags.map(tag => (
+                  <div
+                    key={tag}
+                    className="flex items-center gap-2 px-3 py-1.5 text-xs text-sidebar-foreground hover:bg-sidebar-accent/10 rounded-md transition-colors cursor-pointer font-mono"
+                  >
+                    <Hash className="w-3 h-3 text-prompedia-green-400" />
+                    <span className="truncate">{tag}</span>
+                  </div>
+                ))}
+              </div>
+            ) : null}
           </div>
         )}
       </nav>
@@ -151,7 +185,8 @@ const Sidebar = ({
                   </p>
                 </div>
               </div>
-              
+
+
               <LogoutDialog
                 userName={user.user_metadata?.username || user.email?.split('@')[0]}
                 onConfirm={onLogout}
@@ -159,12 +194,14 @@ const Sidebar = ({
             </>
           ) : (
             <div className="flex flex-col items-center gap-2">
-              <div 
+              <div
                 className="w-8 h-8 rounded-full bg-sidebar-accent flex items-center justify-center"
                 title={user.email || 'User'}
               >
                 <User className="w-4 h-4 text-sidebar-accent-foreground" />
               </div>
+
+
               <LogoutDialog
                 onConfirm={onLogout}
               />
@@ -174,23 +211,6 @@ const Sidebar = ({
           // Guest user
           !isCollapsed ? (
             <>
-              <div className="bg-sidebar-accent/10 rounded-md p-3 space-y-2">
-                <div className="flex items-center justify-between">
-                  <p className="text-xs font-semibold text-sidebar-foreground font-mono">Guest Mode</p>
-                  <span className="text-xs text-prompedia-green-400 font-mono">
-                    {playgroundCount}/{playgroundLimit}
-                  </span>
-                </div>
-                <div className="w-full bg-sidebar-background rounded-full h-2">
-                  <div 
-                    className="bg-prompedia-green-500 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${(playgroundCount / playgroundLimit) * 100}%` }}
-                  />
-                </div>
-                <p className="text-xs text-muted-foreground font-mono">
-                  {playgroundLimit - playgroundCount} playgrounds remaining
-                </p>
-              </div>
               
               <button
                 onClick={onLogin}

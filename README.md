@@ -37,8 +37,9 @@
 - **Lucide React** untuk icons
 
 ### Backend & Storage
-- **Supabase** untuk authentication (siap production)
-- **Local Storage** untuk persistence (development)
+- **Supabase Cloud** untuk authentication dan database (production-ready)
+- **MCP Supabase** untuk semua operasi database dan migrasi
+- **Local Storage** untuk persistence (development fallback)
 - **OpenRouter API** untuk AI model access
 
 ### Development Tools
@@ -145,9 +146,32 @@ Pilih model berdasarkan kemampuan:
 5. **Save**: Simpan ke library untuk penggunaan selanjutnya
 
 ### 💾 Data Persistence
-- **Local Storage**: Development mode persistence
-- **Supabase**: Production-ready backend (siap deploy)
+- **Supabase Cloud**: Production-ready backend dengan MCP Supabase
+- **Local Storage**: Development mode persistence (fallback)
 - **Auto-save**: Changes tersimpan otomatis saat editing
+- **RLS Security**: Row Level Security untuk data protection
+
+## 🗄️ Database Management
+
+### MCP Supabase Integration
+Aplikasi ini menggunakan **MCP Supabase** secara eksklusif untuk semua operasi database:
+
+- **✅ Cloud-First**: Semua migrasi dilakukan langsung ke Supabase Cloud
+- **✅ No Local Migrations**: File migrasi lokal telah dihapus untuk mencegah konflik
+- **✅ RLS Security**: Row Level Security aktif untuk perlindungan data
+- **✅ Production Ready**: Database siap untuk production dengan performa optimal
+
+### Migration Guide
+Lihat [MCP_SUPABASE_MIGRATION_GUIDE.md](supabase/MCP_SUPABASE_MIGRATION_GUIDE.md) untuk:
+- Cara menggunakan MCP Supabase untuk migrasi
+- Best practices untuk database operations
+- Troubleshooting dan maintenance
+
+### Current Database Status
+- **Tables**: 8 tabel dengan schema minimalist
+- **Functions**: 6 fungsi untuk automation
+- **RLS Policies**: 19 policies untuk security
+- **Seed Data**: AI models, thinking modes, dan system tags
 
 ## 🚀 Deployment
 
@@ -201,7 +225,10 @@ prompedia/
 ├── public/                 # Static assets
 ├── dist/                   # Production build output
 ├── docs/                   # Documentation
-└── supabase/              # Backend configuration
+├── supabase/              # Backend configuration
+│   ├── functions/         # Edge Functions
+│   ├── config.toml        # Supabase configuration
+│   └── MCP_SUPABASE_MIGRATION_GUIDE.md  # Migration guide
 ```
 
 ## 🤝 Contributing

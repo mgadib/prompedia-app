@@ -6,9 +6,19 @@ import { Input } from '@/components/ui/input';
 import { FileText, Lock, Globe, Edit, Trash2, Search, Filter, Copy } from 'lucide-react';
 import { toast } from 'sonner';
 import { SupabaseService } from '@/lib/supabase-service';
+import { TagService } from '@/lib/tag-service';
 import { Tag } from '@/integrations/supabase/types';
 import PromptDetailModal from './PromptDetailModal';
-import DeletePromptDialog from './DeletePromptDialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface PromptWithTags extends Prompt {
   tags: Tag[];
@@ -35,6 +45,8 @@ const MyLibrary = ({
   const [selectedTag, setSelectedTag] = useState<string>('');
   const [selectedPrompt, setSelectedPrompt] = useState<PromptWithTags | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [promptToDelete, setPromptToDelete] = useState<PromptWithTags | null>(null);
   const [allTags, setAllTags] = useState<string[]>([]);
   const [promptsWithTags, setPromptsWithTags] = useState<PromptWithTags[]>([]);
   const [isLoadingTags, setIsLoadingTags] = useState(false);
@@ -54,7 +66,7 @@ const MyLibrary = ({
 
       for (const prompt of prompts) {
         try {
-          const tags = await SupabaseService.getPromptTags(prompt.id);
+          const tags = await TagService.getPromptTags(prompt.id);
           promptsWithTagsData.push({ ...prompt, tags });
 
           // Collect all unique tag names
@@ -91,9 +103,30 @@ const MyLibrary = ({
     return matchesSearch && matchesTag;
   });
 
-  const handleDelete = (promptId: string) => {
-    onDeletePrompt(promptId);
-    toast.success('Prompt deleted successfully');
+  // New delete UX flow handlers
+  const handleDeleteClick = (prompt: PromptWithTags) => {
+    setPromptToDelete(prompt);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!promptToDelete) return;
+    
+    try {
+      await onDeletePrompt(promptToDelete.id);
+      toast.success('Prompt deleted successfully');
+    } catch (error) {
+      console.error('Failed to delete prompt:', error);
+      toast.error('Failed to delete prompt');
+    } finally {
+      setIsDeleteDialogOpen(false);
+      setPromptToDelete(null);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setIsDeleteDialogOpen(false);
+    setPromptToDelete(null);
   };
 
   const handleEdit = (e: React.MouseEvent, prompt: PromptWithTags) => {
@@ -209,10 +242,16 @@ const MyLibrary = ({
                     <FileText className="w-4 h-4 text-muted-foreground" />
                   </div>
                   <div className="flex items-center gap-2">
-                    {prompt.isPublic ? (
-                      <Globe className="w-4 h-4 text-primary" />
+                    {prompt.is_public ? (
+                      <div className="flex items-center gap-1 text-primary">
+                        <Globe className="w-4 h-4" />
+                        <span className="text-xs font-mono">Public</span>
+                      </div>
                     ) : (
-                      <Lock className="w-4 h-4 text-muted-foreground" />
+                      <div className="flex items-center gap-1 text-muted-foreground">
+                        <Lock className="w-4 h-4" />
+                        <span className="text-xs font-mono">Private</span>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -254,11 +293,11 @@ const MyLibrary = ({
                   </div>
                 )}
 
-                {/* Footer with actions */}
+                {/* Footer with metadata */}
                 <div className="flex items-center justify-between pt-4 border-t border-border/50">
                   <div className="text-xs text-muted-foreground font-mono">
                     <div>{prompt.model || 'Unknown model'}</div>
-                    <div>{prompt.isFeatured ? 'Featured' : 'Standard'}</div>
+                    <div>{prompt.is_featured ? 'Featured' : 'Standard'}</div>
                   </div>
                   
                   {/* Action buttons */}
@@ -283,10 +322,18 @@ const MyLibrary = ({
                     >
                       <Edit className="w-3 h-3" />
                     </Button>
-                    <DeletePromptDialog
-                      promptTitle={prompt.title || 'Untitled Prompt'}
-                      onConfirm={() => handleDelete(prompt.id)}
-                    />
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteClick(prompt);
+                      }}
+                      className="h-8 w-8 p-0 hover:bg-destructive/20 hover:text-destructive"
+                      title="Delete prompt"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -302,6 +349,29 @@ const MyLibrary = ({
         onClose={handleCloseModal}
         onUse={handleUsePrompt}
       />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Prompt</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{promptToDelete?.title || 'Untitled Prompt'}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleDeleteCancel}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteConfirm}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

@@ -8,7 +8,13 @@ export const APP_CONFIG = {
   NAME: 'Prompedia AI',
   DESCRIPTION: 'Prompt Engineering Laboratory',
   VERSION: '1.0.0',
-  PLAYGROUND_LIMIT: 17, // Limit for non-authenticated users
+  // Rate limiting configuration
+  RATE_LIMITS: {
+    GUEST_DAILY_LIMIT: 7,     // Guest users: 7 AI calls
+    AUTH_DAILY_LIMIT: 27,     // Authenticated users: 27 AI calls per day
+    RESET_HOUR_GMT7: 17,      // Reset at 00:00 GMT+7 (17:00 UTC)
+  },
+  TIMEZONE: 'Asia/Jakarta',   // GMT+7 timezone
 } as const;
 
 // API Configuration
@@ -24,6 +30,7 @@ export const STORAGE_KEYS = {
   PROMPTS: 'prompedia_prompts',
   CURRENT_PROMPT: 'prompedia_current_prompt',
   PLAYGROUND_COUNT: 'prompedia_playground_count',
+  GUEST_USAGE: 'prompedia_guest_usage',  // Track guest usage locally
   THEME: 'prompedia_theme',
   // Note: PREFERENCES removed - preferences field eliminated from database schema
 } as const;

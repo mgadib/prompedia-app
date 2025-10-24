@@ -42,7 +42,7 @@ const PromptLibrary = ({ prompts, onSelectPrompt, currentPromptId }: PromptLibra
               />
               <FileText className="w-4 h-4 text-muted-foreground" />
             </div>
-            {prompt.isPublic ? (
+            {prompt.is_public ? (
               <Globe className="w-4 h-4 text-primary" />
             ) : (
               <Lock className="w-4 h-4 text-muted-foreground" />

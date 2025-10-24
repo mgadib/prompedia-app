@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { Copy, Save, Share2, FileText, Loader2, Trash2 } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Copy, Save, Share2, FileText, Trash2, ArrowLeft, ArrowRight, CheckCircle, Lock, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -10,30 +10,36 @@ import { AVAILABLE_MODELS } from '@/lib/models';
 import { THINKING_MODES, getModeById } from '@/lib/modes';
 import { generateModeAwareActionInstructions } from '@/lib/actions';
 import { supabase } from '@/integrations/supabase/client';
+import { rateLimitingService } from '@/lib/rate-limiting';
+import { TagService } from '@/lib/tag-service';
 import ModelSelector from './ModelSelector';
 import ModeSelector from './ModeSelector';
 import TagInput from './TagInput';
 import ActionButtons from './ActionButtons';
 import DeletePromptDialog from './DeletePromptDialog';
 
+type ViewState = 'original' | 'ai-result';
+
 interface PromptEditorProps {
   currentPrompt: Prompt | null;
   onPromptChange: (prompt: Prompt) => void;
   onDeletePrompt?: (promptId: string) => void;
+  onNewPrompt?: () => void;
 }
 
-const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt }: PromptEditorProps) => {
+const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewPrompt }: PromptEditorProps) => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [originalContent, setOriginalContent] = useState('');
+  const [aiResultContent, setAiResultContent] = useState('');
+  const [viewState, setViewState] = useState<ViewState>('original');
   const [model, setModel] = useState(AVAILABLE_MODELS[1].id);
   const [mode, setMode] = useState(THINKING_MODES[5].id);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [isAutoSaving, setIsAutoSaving] = useState(false);
   const [isActionLoading, setIsActionLoading] = useState(false);
   const [loadingAction, setLoadingAction] = useState<string>('');
-  
-  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const hasUnsavedChanges = useRef(false);
+  const [userCanUseAI, setUserCanUseAI] = useState(true);
+
 
   useEffect(() => {
     if (currentPrompt) {
@@ -44,7 +50,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt }: PromptE
         title: currentPrompt.title || '',
         content: currentPrompt.content || '',
         model: currentPrompt.model || AVAILABLE_MODELS[1].id,
-        mode: mode || 'role-prompt',
+        mode: currentPrompt.mode || mode || 'role-prompt',
         color: currentPrompt.color || '#3b82f6',
         is_public: currentPrompt.is_public || false,
         is_featured: currentPrompt.is_featured || false,
@@ -55,190 +61,97 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt }: PromptE
       setTitle(sanitizedPrompt.title);
       setContent(sanitizedPrompt.content);
       setModel(sanitizedPrompt.model);
-      // Mode tidak berubah otomatis - user harus memilih manual
-      // Note: tags are now loaded separately via junction table
-      setSelectedTags([]);
+      setMode(sanitizedPrompt.mode);
+      
+      // Load existing tags for the prompt
+      loadPromptTags(sanitizedPrompt.id);
+
+      // Reset AI result state when loading a new prompt
+      setOriginalContent('');
+      setAiResultContent('');
+      setViewState('original');
     } else {
       // Reset form when no prompt is selected
       setTitle('');
       setContent('');
       setModel(AVAILABLE_MODELS[1].id);
+      setMode(THINKING_MODES[5].id);
+      setSelectedTags([]);
+
+      // Reset AI result state
+      setOriginalContent('');
+      setAiResultContent('');
+      setViewState('original');
+    }
+  }, [currentPrompt]);
+
+  // Load tags for a prompt
+  const loadPromptTags = async (promptId: string) => {
+    try {
+      const tags = await TagService.getPromptTags(promptId);
+      setSelectedTags(tags.map(tag => tag.name));
+    } catch (error) {
+      console.error('Failed to load prompt tags:', error);
       setSelectedTags([]);
     }
-  }, [currentPrompt, mode]);
+  };
 
-  // Auto-save function
-  const autoSave = useCallback(async () => {
-    if (!currentPrompt || !hasUnsavedChanges.current) return;
-
-    setIsAutoSaving(true);
-    try {
-      // Sanitize currentPrompt to match new schema
-      const sanitizedPrompt: Prompt = {
-        id: currentPrompt.id || '',
-        user_id: currentPrompt.user_id || '',
-        title: title || '',
-        content: content || '',
-        model: model || AVAILABLE_MODELS[1].id,
-        mode: mode || THINKING_MODES[5].id,
-        color: currentPrompt.color || '#3b82f6',
-        is_public: currentPrompt.is_public || false,
-        is_featured: currentPrompt.is_featured || false,
-        description: currentPrompt.description,
-        original_prompt_id: currentPrompt.original_prompt_id,
-      };
-
-      const updatedPrompt: Prompt = {
-        ...sanitizedPrompt,
-      };
-
-      await storageManager.savePrompt(updatedPrompt);
-      onPromptChange(updatedPrompt);
-      hasUnsavedChanges.current = false;
-    } catch (error) {
-      console.error('Auto-save failed:', error);
-      toast.error('Failed to auto-save prompt');
-    } finally {
-      setTimeout(() => setIsAutoSaving(false), 1000);
+  // Handle back to original prompt
+  const handleBack = useCallback(() => {
+    if (originalContent && viewState === 'ai-result') {
+      setContent(originalContent);
+      setViewState('original');
     }
-  }, [currentPrompt, title, content, model, mode, onPromptChange]);
+  }, [originalContent, viewState]);
 
-  // Debounced auto-save effect
+  // Handle forward to AI result
+  const handleForward = useCallback(() => {
+    if (aiResultContent && viewState === 'original') {
+      setContent(aiResultContent);
+      setViewState('ai-result');
+    }
+  }, [aiResultContent, viewState]);
+
+  // Check rate limits periodically for real-time UI updates
   useEffect(() => {
-    if (!currentPrompt) return;
-
-    hasUnsavedChanges.current = true;
-
-    if (autoSaveTimeoutRef.current) {
-      clearTimeout(autoSaveTimeoutRef.current);
-    }
-
-    autoSaveTimeoutRef.current = setTimeout(() => {
-      autoSave();
-    }, 2000); // Auto-save after 2 seconds of inactivity
-
-    return () => {
-      if (autoSaveTimeoutRef.current) {
-        clearTimeout(autoSaveTimeoutRef.current);
+    const checkRateLimits = async () => {
+      try {
+        const user = await supabase.auth.getUser().then(({ data }) => data.user);
+        const rateLimitCheck = await rateLimitingService.canMakeAICall(user);
+        setUserCanUseAI(rateLimitCheck.allowed);
+      } catch (error) {
+        console.error('Failed to check rate limits:', error);
+        setUserCanUseAI(false);
       }
     };
-  }, [title, content, model, mode, currentPrompt]); // Removed autoSave from dependencies to prevent infinite loop
+
+    checkRateLimits();
+
+    // Check every 30 seconds for real-time updates
+    const interval = setInterval(checkRateLimits, 30000);
+
+    return () => clearInterval(interval);
+  }, []);
 
 
-  const handleNew = () => {
-    const user = storage.getUser();
-    if (!user) return;
 
-    const newPrompt: Prompt = {
-      id: crypto.randomUUID(),
-      userId: user.id,
-      title: 'Untitled Prompt',
-      content: '',
-      model: AVAILABLE_MODELS[1].id,
-      mode: THINKING_MODES[5].id,
-      color: '#3b82f6',
-      isPublic: false,
-      isFeatured: false,
-    };
+  const handleNew = async () => {
+    if (onNewPrompt) {
+      // Use the parent's new prompt handler
+      onNewPrompt();
+    } else {
+      // Fallback to local implementation
+      try {
+        const user = await supabase.auth.getUser().then(({ data }) => data.user);
+        
+        if (!user) {
+          toast.error('Please sign in to create new prompts');
+          return;
+        }
 
-    onPromptChange(newPrompt);
-    toast.success('New prompt created');
-  };
-
-  const handleSave = async () => {
-    if (!currentPrompt) return;
-
-    try {
-      // Sanitize currentPrompt to match new schema
-      const sanitizedPrompt: Prompt = {
-        id: currentPrompt.id || '',
-        user_id: currentPrompt.user_id || '',
-        title: title || '',
-        content: content || '',
-        model: model || AVAILABLE_MODELS[1].id,
-        mode: mode || THINKING_MODES[5].id,
-        color: currentPrompt.color || '#3b82f6',
-        is_public: currentPrompt.is_public || false,
-        is_featured: currentPrompt.is_featured || false,
-        description: currentPrompt.description,
-        original_prompt_id: currentPrompt.original_prompt_id,
-      };
-
-      const updatedPrompt: Prompt = {
-        ...sanitizedPrompt,
-      };
-
-      await storageManager.savePrompt(updatedPrompt);
-      onPromptChange(updatedPrompt);
-      hasUnsavedChanges.current = false;
-      toast.success('Prompt saved successfully');
-    } catch (error) {
-      console.error('Failed to save prompt:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to save prompt');
-    }
-  };
-
-  const handleCopy = async () => {
-    if (!currentPrompt) return;
-
-    try {
-      // Create a copy of the current prompt
-      const copiedPrompt: Prompt = {
-        id: crypto.randomUUID(),
-        user_id: currentPrompt.user_id || '',
-        title: `Copy of ${currentPrompt.title}`,
-        content: currentPrompt.content,
-        model: currentPrompt.model || AVAILABLE_MODELS[1].id,
-        mode: currentPrompt.mode || THINKING_MODES[5].id,
-        color: currentPrompt.color || '#3b82f6',
-        is_public: false, // Copies start as private
-        is_featured: false,
-        description: currentPrompt.description,
-        original_prompt_id: currentPrompt.id, // Reference to original prompt
-      };
-
-      await storageManager.savePrompt(copiedPrompt);
-      onPromptChange(copiedPrompt);
-      toast.success('Prompt copied successfully');
-    } catch (error) {
-      console.error('Failed to copy prompt:', error);
-      toast.error('Failed to copy prompt');
-    }
-  };
-
-  const handleShare = async () => {
-    if (!currentPrompt) return;
-
-    try {
-      const user = storage.getUser();
-      if (!user && !currentPrompt.is_public) {
-        toast.error('Please sign in to make prompts public');
-        return;
-      }
-
-      const updatedPrompt: Prompt = {
-        ...currentPrompt,
-        is_public: !currentPrompt.is_public,
-      };
-
-      await storageManager.savePrompt(updatedPrompt);
-      onPromptChange(updatedPrompt);
-      toast.success(updatedPrompt.is_public ? 'Prompt is now public' : 'Prompt is now private');
-    } catch (error) {
-      console.error('Failed to update prompt visibility:', error);
-      toast.error('Failed to update prompt visibility');
-    }
-  };
-
-  const handleDelete = async (promptId: string) => {
-    try {
-      if (onDeletePrompt) {
-        onDeletePrompt(promptId);
-      } else {
-        await storageManager.deletePrompt(promptId);
-        onPromptChange({
+        const newPrompt: Prompt = {
           id: crypto.randomUUID(),
-          user_id: currentPrompt?.user_id || '',
+          user_id: user.id,
           title: 'Untitled Prompt',
           content: '',
           model: AVAILABLE_MODELS[1].id,
@@ -246,9 +159,257 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt }: PromptE
           color: '#3b82f6',
           is_public: false,
           is_featured: false,
-        });
+          description: null,
+          original_prompt_id: null,
+        };
+
+        try {
+          onPromptChange(newPrompt);
+        } catch (error) {
+          console.error('Failed to update prompt:', error);
+          toast.error('Failed to update prompt');
+        }
+        toast.success('New prompt created');
+      } catch (error) {
+        console.error('Failed to create new prompt:', error);
+        toast.error('Failed to create new prompt');
+      }
+    }
+  };
+
+  const handleSave = async () => {
+    if (!title || !content) {
+      toast.error('Please enter a title and content');
+      return;
+    }
+
+    console.log('Save button clicked:', {
+      title,
+      content,
+      currentPrompt: currentPrompt?.id,
+      hasCurrentPrompt: !!currentPrompt
+    });
+
+    try {
+      const user = await supabase.auth.getUser().then(({ data }) => data.user);
+
+      console.log('Save attempt:', {
+        title,
+        content,
+        user,
+        hasUser: !!user,
+        userId: user?.id,
+        currentPromptId: currentPrompt?.id,
+        storageManagerAuth: storageManager.getAuthDebugInfo()
+      });
+
+      // Guest users cannot save prompts (only localStorage auto-save for current session)
+      if (!user) {
+        toast.error('Please sign in to save prompts permanently');
+        return;
+      }
+
+      // Check if user can make AI calls (they need quota for saving)
+      const rateLimitCheck = await rateLimitingService.canMakeAICall(user);
+      if (!rateLimitCheck.allowed) {
+        toast.error('Please wait before saving. AI limit reached.');
+        return;
+      }
+
+      // Create or update prompt
+      const promptToSave: Prompt = {
+        id: currentPrompt?.id || crypto.randomUUID(),
+        user_id: user.id,
+        title: title || '',
+        content: content || '',
+        model: model || AVAILABLE_MODELS[1].id,
+        mode: mode || THINKING_MODES[5].id,
+        color: currentPrompt?.color || '#3b82f6',
+        is_public: currentPrompt?.is_public || false,
+        is_featured: currentPrompt?.is_featured || false,
+        description: currentPrompt?.description || null,
+        original_prompt_id: currentPrompt?.original_prompt_id || null,
+      };
+
+      console.log('Prompt to save:', promptToSave);
+
+      await storageManager.savePrompt(promptToSave);
+      
+      // Save tags for the prompt
+      if (selectedTags.length > 0) {
+        await TagService.savePromptTags(promptToSave.id, selectedTags, user.id);
+      }
+      
+      try {
+        onPromptChange(promptToSave);
+      } catch (error) {
+        console.error('Failed to update prompt:', error);
+        toast.error('Failed to update prompt');
+      }
+      toast.success('Prompt saved successfully');
+
+      // Increment usage counter after successful save
+      await rateLimitingService.incrementUsage(user);
+    } catch (error) {
+      console.error('Failed to save prompt:', error);
+      console.error('Error details:', {
+        errorType: typeof error,
+        errorMessage: error instanceof Error ? error.message : String(error),
+        errorStack: error instanceof Error ? error.stack : undefined,
+        title,
+        content,
+        userId: user?.id,
+        hasUser: !!user,
+        storageManagerAuth: storageManager.getAuthDebugInfo()
+      });
+      toast.error(error instanceof Error ? error.message : 'Failed to save prompt');
+    }
+  };
+
+  const handleCopy = async () => {
+    if (!content) {
+      toast.error('No content to copy');
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(content);
+      toast.success('Content copied to clipboard');
+    } catch (error) {
+      console.error('Failed to copy content:', error);
+      toast.error('Failed to copy content');
+    }
+  };
+
+  const handleShare = async () => {
+    if (!title || !content) {
+      toast.error('Please enter a title and content');
+      return;
+    }
+
+    console.log('Share button clicked:', {
+      title,
+      content,
+      currentPrompt: currentPrompt?.id,
+      hasCurrentPrompt: !!currentPrompt,
+      currentIsPublic: currentPrompt?.is_public
+    });
+
+    try {
+      const user = await supabase.auth.getUser().then(({ data }) => data.user);
+
+      console.log('Share attempt:', {
+        title,
+        content,
+        user,
+        hasUser: !!user,
+        userId: user?.id,
+        currentIsPublic: currentPrompt?.is_public,
+        currentPromptId: currentPrompt?.id,
+        storageManagerAuth: storageManager.getAuthDebugInfo()
+      });
+
+      // Guest users cannot make prompts public or save prompts
+      if (!user) {
+        toast.error('Please sign in to save and share prompts');
+        return;
+      }
+
+      // Check if user can make AI calls (they need to be authenticated)
+      const rateLimitCheck = await rateLimitingService.canMakeAICall(user);
+      if (!rateLimitCheck.allowed) {
+        toast.error('Please wait before making changes. AI limit reached.');
+        return;
+      }
+
+      const updatedPrompt: Prompt = {
+        id: currentPrompt?.id || crypto.randomUUID(),
+        user_id: user.id,
+        title: title || '',
+        content: content || '',
+        model: model || AVAILABLE_MODELS[1].id,
+        mode: mode || THINKING_MODES[5].id,
+        color: currentPrompt?.color || '#3b82f6',
+        is_public: !currentPrompt?.is_public, // Toggle public status
+        is_featured: currentPrompt?.is_featured || false,
+        description: currentPrompt?.description || null,
+        original_prompt_id: currentPrompt?.original_prompt_id || null,
+      };
+
+      console.log('Updated prompt for sharing:', updatedPrompt);
+
+      await storageManager.savePrompt(updatedPrompt);
+      
+      // Save tags for the prompt
+      if (selectedTags.length > 0) {
+        await TagService.savePromptTags(updatedPrompt.id, selectedTags, user.id);
+      }
+      
+      try {
+        onPromptChange(updatedPrompt);
+      } catch (error) {
+        console.error('Failed to update prompt:', error);
+        toast.error('Failed to update prompt');
+      }
+      toast.success(updatedPrompt.is_public ? 'Prompt is now public' : 'Prompt is now private');
+    } catch (error) {
+      console.error('Failed to update prompt visibility:', error);
+      console.error('Error details:', {
+        errorType: typeof error,
+        errorMessage: error instanceof Error ? error.message : String(error),
+        errorStack: error instanceof Error ? error.stack : undefined,
+        title,
+        content,
+        userId: user?.id,
+        hasUser: !!user,
+        storageManagerAuth: storageManager.getAuthDebugInfo()
+      });
+      toast.error('Failed to update prompt visibility');
+    }
+  };
+
+  const handleDelete = async (promptId: string) => {
+    try {
+      const user = await supabase.auth.getUser().then(({ data }) => data.user);
+
+      // Guest users cannot delete prompts
+      if (!user) {
+        toast.error('Please sign in to delete prompts');
+        return;
+      }
+
+      // Check if user can make AI calls (deleting requires quota)
+      const rateLimitCheck = await rateLimitingService.canMakeAICall(user);
+      if (!rateLimitCheck.allowed) {
+        toast.error('Please wait before deleting. AI limit reached.');
+        return;
+      }
+
+      if (onDeletePrompt) {
+        onDeletePrompt(promptId);
+      } else {
+        await storageManager.deletePrompt(promptId);
+        try {
+          onPromptChange({
+            id: crypto.randomUUID(),
+            user_id: currentPrompt?.user_id || '',
+            title: 'Untitled Prompt',
+            content: '',
+            model: AVAILABLE_MODELS[1].id,
+            mode: THINKING_MODES[5].id,
+            color: '#3b82f6',
+            is_public: false,
+            is_featured: false,
+          });
+        } catch (error) {
+          console.error('Failed to update prompt:', error);
+          toast.error('Failed to update prompt');
+        }
       }
       toast.success('Prompt deleted successfully');
+
+      // Increment usage counter after successful delete
+      await rateLimitingService.incrementUsage(user);
     } catch (error) {
       console.error('Failed to delete prompt:', error);
       toast.error('Failed to delete prompt');
@@ -265,6 +426,26 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt }: PromptE
     try {
       setIsActionLoading(true);
       setLoadingAction(actionId);
+
+      // Check rate limits before making AI call
+      const user = await supabase.auth.getUser().then(({ data }) => data.user);
+      const rateLimitCheck = await rateLimitingService.canMakeAICall(user);
+
+      if (!rateLimitCheck.allowed) {
+        const limitType = user ? 'daily' : 'guest';
+        toast.error(
+          `AI usage limit exceeded! ${limitType === 'daily' ? 'Daily' : 'Guest'} limit reached. ${rateLimitCheck.error || ''}`
+        );
+        return;
+      }
+
+      // Show remaining usage warning when approaching limit
+      if (rateLimitCheck.usage.remaining <= 3) {
+        const limitType = user ? 'daily' : 'guest';
+        toast.warning(
+          `${rateLimitCheck.usage.remaining} AI calls remaining. ${user ? '' : 'Sign in for unlimited access!'}`
+        );
+      }
 
       // Generate action-specific instructions WITH MODE
       const actionInstructions = generateModeAwareActionInstructions(
@@ -307,40 +488,20 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt }: PromptE
           nextContent = refinedMatch[1].trim();
         }
         
-        // Update content with processed result
-        setContent(nextContent);
-        hasUnsavedChanges.current = true;
-        
-        // Increment playground count after successful AI response (for non-logged in users only)
-        const user = storage.getUser();
-        if (!user) {
-          const currentCount = parseInt(localStorage.getItem('prompedia_playground_count') || '0');
-          const newCount = currentCount + 1;
-          localStorage.setItem('prompedia_playground_count', newCount.toString());
-          
-          // Update parent component's state if available
-          if (window.updatePlaygroundCount) {
-            window.updatePlaygroundCount(newCount);
-          }
-          
-          // Log the counting event
-          console.log(`[Prompt Count] Incremented to ${newCount} after successful AI response`, {
-            timestamp: new Date().toISOString(),
-            context: 'AI action completion',
-            actionId,
-            promptLength: content.length,
-            responseLength: nextContent.length,
-            model
-          });
-          
-          // Show warning when approaching limit
-          const PLAYGROUND_LIMIT = 10;
-          if (newCount >= PLAYGROUND_LIMIT - 3) {
-            toast.warning(`${PLAYGROUND_LIMIT - newCount} playgrounds remaining. Sign in for unlimited access!`);
-          }
+        // Store original content and show AI result
+        if (viewState === 'original') {
+          setOriginalContent(content);
         }
+        setAiResultContent(nextContent);
+        setContent(nextContent);
+        setViewState('ai-result');
+        
         
         toast.success(`Content ${actionId}d successfully`);
+
+        // Increment usage counter after successful AI response
+        await rateLimitingService.incrementUsage(user);
+
       } else {
         throw new Error('No response from AI');
       }
@@ -354,7 +515,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt }: PromptE
   };
 
   return (
-    <div className="flex-1 flex flex-col h-screen bg-background">
+    <div className="flex-1 flex flex-col h-full bg-background">
       {/* Header Bar */}
       <div className="border-b border-border px-6 py-4 bg-card">
         <div className="flex items-center justify-between">
@@ -383,7 +544,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt }: PromptE
               variant="ghost"
               size="sm"
               className="hover:bg-accent/20 hover:text-accent font-mono"
-              disabled={!currentPrompt}
+              disabled={!title || !content}
             >
               <Save className="w-4 h-4 mr-2" />
               Save
@@ -393,7 +554,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt }: PromptE
               variant="ghost"
               size="sm"
               className="hover:bg-accent/20 hover:text-accent font-mono"
-              disabled={!currentPrompt}
+              disabled={!title || !content}
             >
               <Share2 className="w-4 h-4 mr-2" />
               {currentPrompt?.is_public ? 'Make Private' : 'Share'}
@@ -413,7 +574,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt }: PromptE
       </div>
 
       {/* Main Editor Area */}
-      <div className="flex-1 overflow-auto p-4 space-y-4">
+      <div className="flex-1 flex flex-col overflow-hidden p-4 space-y-4">
         {/* Title and Tags Section - Clean Layout */}
         <div className="flex items-start gap-6">
           {/* Title Section */}
@@ -440,57 +601,140 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt }: PromptE
 
 
         {/* Main Prompt Content */}
-        <div className="space-y-3">
-          <ActionButtons 
-            onAction={handleAction}
-            disabled={!content.trim()}
-            isLoading={isActionLoading}
-            loadingAction={loadingAction}
-          />
-          
+        <div className="flex flex-col flex-1 space-y-3">
+          <div className="flex items-center gap-2">
+            <ActionButtons
+              onAction={handleAction}
+              disabled={!content.trim() || viewState === 'ai-result' || !userCanUseAI}
+              isLoading={isActionLoading}
+              loadingAction={loadingAction}
+            />
+
+            {/* Navigation buttons */}
+            {viewState === 'ai-result' && (
+              <Button
+                onClick={handleBack}
+                variant="outline"
+                size="sm"
+                className="text-xs h-8 px-3 hover:bg-secondary/20 transition-all font-mono"
+                title="Back to original prompt"
+              >
+                <ArrowLeft className="w-4 h-4 mr-1" />
+                Back
+              </Button>
+            )}
+
+            {viewState === 'original' && aiResultContent && (
+              <Button
+                onClick={handleForward}
+                variant="outline"
+                size="sm"
+                className="text-xs h-8 px-3 hover:bg-secondary/20 transition-all font-mono"
+                title="Forward to AI result"
+              >
+                <ArrowRight className="w-4 h-4 mr-1" />
+                Forward
+              </Button>
+            )}
+
+            {/* AI Result indicator */}
+            {viewState === 'ai-result' && (
+              <div className="flex items-center gap-1 text-primary ml-auto">
+                <CheckCircle className="w-4 h-4" />
+                <span className="text-xs font-mono">AI Generated</span>
+              </div>
+            )}
+
+            {/* Original prompt indicator */}
+            {viewState === 'original' && originalContent && (
+              <div className="flex items-center gap-1 text-muted-foreground ml-auto">
+                <FileText className="w-4 h-4" />
+                <span className="text-xs font-mono">Original</span>
+              </div>
+            )}
+
+            {/* Rate limit warning */}
+            {!userCanUseAI && (
+              <div className="flex items-center gap-1 text-red-400 ml-auto">
+                <span className="text-xs font-mono">⚠️ Limit Exceeded</span>
+              </div>
+            )}
+          </div>
+
           <Textarea
             value={content}
-            onChange={(e) => setContent(e.target.value)}
+            onChange={(e) => {
+              const newContent = e.target.value;
+              setContent(newContent);
+
+              // Update the corresponding state based on current view
+              if (viewState === 'original') {
+                setOriginalContent(newContent);
+              } else if (viewState === 'ai-result') {
+                setAiResultContent(newContent);
+              }
+            }}
             placeholder="Start writing..."
-            className="min-h-[300px] bg-card border-border font-mono text-sm resize-none leading-relaxed"
+            className="flex-1 min-h-0 bg-card border-border font-mono text-sm resize-none leading-relaxed"
           />
         </div>
 
       </div>
 
-      {/* Footer Status - Minimal */}
-      {currentPrompt && (
-        <div className="border-t border-border px-4 py-3 bg-card">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              {isAutoSaving && (
-                <div className="flex items-center gap-1 text-primary">
-                  <Loader2 className="w-3 h-3 animate-spin" />
-                  <span className="text-xs">Saving...</span>
-                </div>
-              )}
-              {hasUnsavedChanges.current && !isAutoSaving && (
-                <div className="flex items-center gap-1 text-yellow-400">
-                  <div className="w-2 h-2 rounded-full bg-yellow-400" />
-                  <span className="text-xs">Unsaved</span>
-                </div>
-              )}
+      {/* Footer Status - Enhanced Info */}
+      <div className="border-t border-border px-4 py-3 bg-card mt-auto">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            {/* Word count */}
+            <div className="flex items-center gap-1 text-xs text-muted-foreground font-mono">
+              <FileText className="w-3 h-3" />
+              <span>{content.split(/\s+/).filter(word => word.length > 0).length} words</span>
             </div>
-            <div className="flex items-center gap-3">
-              <div className={`flex items-center gap-1 text-xs ${currentPrompt.isPublic ? 'text-primary' : 'text-muted-foreground'}`}>
-                <div className={`w-2 h-2 rounded-full ${currentPrompt.isPublic ? 'bg-primary' : 'bg-muted-foreground'}`} />
-                {currentPrompt.isPublic ? 'Public' : 'Private'}
+
+            {/* Character count */}
+            <div className="flex items-center gap-1 text-xs text-muted-foreground font-mono">
+              <span>#</span>
+              <span>{content.length} chars</span>
+            </div>
+
+            {/* Current date */}
+            <div className="flex items-center gap-1 text-xs text-muted-foreground font-mono">
+              <span>📅</span>
+              <span>{new Date().toLocaleDateString()}</span>
+            </div>
+
+            {/* AI Result indicator */}
+            {viewState === 'ai-result' && (
+              <div className="flex items-center gap-1 text-primary font-mono">
+                <CheckCircle className="w-3 h-3" />
+                <span className="text-xs">AI Generated</span>
               </div>
-              {selectedTags.length > 0 && (
-                <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <span>🏷️</span>
-                  <span>{selectedTags.length}</span>
+            )}
+
+          </div>
+
+          <div className="flex items-center gap-3">
+            {currentPrompt && (
+              <>
+                <div className={`flex items-center gap-2 text-xs font-mono ${currentPrompt.is_public ? 'text-primary' : 'text-muted-foreground'}`}>
+                  {currentPrompt.is_public ? (
+                    <Globe className="w-3 h-3 text-primary" />
+                  ) : (
+                    <Lock className="w-3 h-3 text-muted-foreground" />
+                  )}
+                  <span>{currentPrompt.is_public ? 'Public' : 'Private'}</span>
                 </div>
-              )}
-            </div>
+                {selectedTags.length > 0 && (
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <span>🏷️</span>
+                    <span>{selectedTags.length}</span>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };

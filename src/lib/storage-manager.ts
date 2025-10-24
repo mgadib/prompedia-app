@@ -90,6 +90,42 @@ class StorageManager {
   }
 
   /**
+   * Get authentication debug info
+   */
+  public getAuthDebugInfo(): {
+    isAuthenticated: boolean;
+    userId: string | null;
+    hasAuthUser: boolean;
+  } {
+    return {
+      isAuthenticated: !!this.authUser,
+      userId: this.authUser?.id || null,
+      hasAuthUser: !!this.authUser
+    };
+  }
+
+  /**
+   * Refresh authentication state
+   */
+  public async refreshAuthState(): Promise<void> {
+    try {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error) {
+        supabaseLogger.error('Failed to refresh auth state', error);
+      } else {
+        const previousUserId = this.authUser?.id;
+        this.authUser = session?.user ?? null;
+        supabaseLogger.info('Auth state refreshed', { 
+          previousUserId,
+          currentUserId: this.authUser?.id 
+        });
+      }
+    } catch (error) {
+      supabaseLogger.error('Failed to refresh auth state', error as Error);
+    }
+  }
+
+  /**
    * Queue storage operations to prevent race conditions
    */
   private queueOperation<T>(operation: () => Promise<T>): Promise<T> {
@@ -203,6 +239,9 @@ class StorageManager {
     
     return this.queueOperation(async () => {
       try {
+        // Refresh auth state before saving
+        await this.refreshAuthState();
+        
         // Validate prompt data
         const validatedPrompt = promptSchema.parse(prompt);
         
@@ -240,18 +279,28 @@ class StorageManager {
         model: prompt.model,
         mode: prompt.mode,
         is_public: prompt.is_public || false,
-        user_id: this.authUser.id,
+        user_id: prompt.user_id || this.authUser.id,
         color: prompt.color || null,
         is_featured: prompt.is_featured || false,
         original_prompt_id: prompt.original_prompt_id || null
       };
+
+      supabaseLogger.info('Attempting to save prompt to Supabase', {
+        promptId: prompt.id,
+        promptData: promptData,
+        authUser: this.authUser?.id
+      });
 
       const { error } = await supabase
         .from('prompts')
         .upsert(promptData, { onConflict: 'id' });
 
       if (error) {
-        supabaseLogger.error('Supabase upsert failed', error, { promptId: prompt.id });
+        supabaseLogger.error('Supabase upsert failed', error, { 
+          promptId: prompt.id,
+          promptData: promptData,
+          authUser: this.authUser?.id
+        });
         throw new StorageError('Failed to save prompt to Supabase', error);
       }
 
@@ -392,6 +441,9 @@ class StorageManager {
     
     return this.queueOperation(async () => {
       try {
+        // Refresh auth state before deleting
+        await this.refreshAuthState();
+        
         if (this.isAuthenticated()) {
           await this.deletePromptFromSupabase(promptId);
         } else {
@@ -418,6 +470,11 @@ class StorageManager {
     }
 
     try {
+      supabaseLogger.info('Attempting to delete prompt from Supabase', {
+        promptId,
+        authUser: this.authUser?.id
+      });
+
       const { error } = await supabase
         .from('prompts')
         .delete()
@@ -425,7 +482,10 @@ class StorageManager {
         .eq('user_id', this.authUser.id);
 
       if (error) {
-        supabaseLogger.error('Failed to delete prompt from Supabase', error);
+        supabaseLogger.error('Failed to delete prompt from Supabase', error, {
+          promptId,
+          authUser: this.authUser?.id
+        });
         throw new StorageError('Failed to delete prompt from Supabase', error);
       }
 

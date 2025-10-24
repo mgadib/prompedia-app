@@ -135,10 +135,7 @@ export class SupabaseService {
   static async getPublicPrompts(): Promise<Prompt[]> {
     const { data, error } = await supabase
       .from('prompts')
-      .select(`
-        *,
-        users!prompts_user_id_fkey1(username, display_name)
-      `)
+      .select('*')
       .eq('is_public', true)
       .order('id', { ascending: false })
 

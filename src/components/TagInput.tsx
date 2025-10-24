@@ -4,6 +4,8 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { storage } from '@/lib/storage';
+import { TagService } from '@/lib/tag-service';
+import { supabase } from '@/integrations/supabase/client';
 
 interface TagInputProps {
   selectedTagNames: string[];
@@ -15,26 +17,30 @@ const TagInput = ({ selectedTagNames, onChange }: TagInputProps) => {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
-  // Get popular tags from all prompts for suggestions
+  // Get user's tags for suggestions
   useEffect(() => {
-    const allPrompts = storage.getPrompts();
-    const tagCounts: { [key: string]: number } = {};
+    const loadSuggestions = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          // Get user's tags for suggestions
+          const userTags = await TagService.getUserTags(user.id);
+          const tagNames = userTags.map(tag => tag.name);
+          
+          // Filter out already selected tags
+          const availableTags = tagNames.filter(tag => !selectedTagNames.includes(tag));
+          setSuggestions(availableTags.slice(0, 10));
+        } else {
+          // For guest users, use some default suggestions
+          setSuggestions(['ai', 'writing', 'creative', 'productivity', 'coding']);
+        }
+      } catch (error) {
+        console.error('Failed to load tag suggestions:', error);
+        setSuggestions(['ai', 'writing', 'creative', 'productivity', 'coding']);
+      }
+    };
 
-    allPrompts.forEach(prompt => {
-      // Note: tags are now handled via junction table
-      // For now, we'll use empty suggestions until junction table integration is complete
-      tagCounts['ai'] = 1;
-      tagCounts['writing'] = 1;
-      tagCounts['creative'] = 1;
-    });
-
-    const popularTags = Object.entries(tagCounts)
-      .sort(([, a], [, b]) => b - a)
-      .slice(0, 10)
-      .map(([tag]) => tag)
-      .filter(tag => !selectedTagNames.includes(tag));
-
-    setSuggestions(popularTags);
+    loadSuggestions();
   }, [selectedTagNames]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {

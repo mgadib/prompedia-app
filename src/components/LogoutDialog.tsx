@@ -10,35 +10,36 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { User } from '@supabase/supabase-js';
+import { Button } from '@/components/ui/button';
+import { LogOut } from 'lucide-react';
 
 interface LogoutDialogProps {
   userName?: string;
   onConfirm: () => void;
-  children?: React.ReactNode;
 }
 
-const LogoutDialog = ({ userName, onConfirm, children }: LogoutDialogProps) => {
+const LogoutDialog = ({ userName = 'User', onConfirm }: LogoutDialogProps) => {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        {children}
+        <Button
+          variant="ghost"
+          className="w-full flex items-center justify-start gap-3 px-3 py-2.5 rounded-md text-sm text-sidebar-foreground hover:bg-sidebar-accent/20 hover:text-sidebar-accent-foreground font-mono"
+        >
+          <LogOut className="w-4 h-4" />
+          Logout
+        </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Konfirmasi Logout</AlertDialogTitle>
-          <AlertDialogDescription>
-            {userName
-              ? `Apakah Anda yakin ingin logout sebagai ${userName}?`
-              : 'Apakah Anda yakin ingin logout?'
-            }
+          <AlertDialogTitle className="font-mono">Confirm Logout</AlertDialogTitle>
+          <AlertDialogDescription className="font-mono">
+            Are you sure you want to log out, {userName}?
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Batal</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm}>
-            Logout
-          </AlertDialogAction>
+          <AlertDialogCancel className="font-mono">Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={onConfirm} className="font-mono">Logout</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

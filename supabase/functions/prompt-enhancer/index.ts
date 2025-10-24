@@ -35,6 +35,38 @@ serve(async (req) => {
       })
     }
 
+    // Check rate limits before processing
+    const { data: usageCheck, error: usageError } = await supabaseClient.rpc('get_current_usage', {
+      p_user_id: user.id,
+      p_is_guest: false,
+      p_session_id: null
+    });
+
+    if (usageError) {
+      return new Response(JSON.stringify({ error: 'Failed to check usage limits' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const dailyLimit = 27; // Authenticated user daily limit
+    const currentUsage = usageCheck?.usage_count || 0;
+    const remainingUsage = dailyLimit - currentUsage;
+
+    if (remainingUsage <= 0) {
+      return new Response(JSON.stringify({
+        error: `Daily AI usage limit exceeded. You have used ${currentUsage}/${dailyLimit} calls today. Limit resets at midnight GMT+7.`
+      }), {
+        status: 429,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Show warning when approaching limit
+    if (remainingUsage <= 3) {
+      console.log(`[Rate Limit Warning] User ${user.id} has ${remainingUsage} calls remaining`);
+    }
+
     const { prompts, operation, options = {} } = await req.json()
 
     // Validate input
@@ -296,6 +328,13 @@ FORMAT OUTPUT:
         })
       }
     }
+
+    // Increment usage counter after successful batch processing
+    await supabaseClient.rpc('increment_ai_usage', {
+      p_user_id: user.id,
+      p_is_guest: false,
+      p_session_id: null
+    });
 
     // Log the batch operation
     await supabaseClient.from('user_sessions').insert({

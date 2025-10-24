@@ -48,8 +48,8 @@ export const promptSchema = z.object({
   color: z.string().default('#3b82f6'),
   is_public: z.boolean().default(false),
   is_featured: z.boolean().default(false),
-  description: z.string().optional(),
-  original_prompt_id: z.string().uuid().optional(),
+  description: z.string().nullable().optional(),
+  original_prompt_id: z.string().uuid().nullable().optional(),
   user_id: z.string().optional(),
   // Note: tags are now handled via prompt_tags junction table
   // created_at and updated_at are not stored in the minimal schema
