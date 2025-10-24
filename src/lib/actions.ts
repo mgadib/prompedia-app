@@ -1,3 +1,5 @@
+import { getModeById } from './modes';
+
 export interface PromptAction {
   id: string;
   label: string;
@@ -182,4 +184,36 @@ KONTEN YANG AKAN DIPROSES:
 "${content}"
 
 Silakan proses konten di atas sesuai dengan aturan ${action.label} yang telah ditentukan.`;
+};
+
+export const generateModeAwareActionInstructions = (
+  actionId: string,
+  modeId: string,
+  content: string
+): string => {
+  const action = getActionById(actionId);
+  const mode = getModeById(modeId);
+
+  if (!action) return content;
+
+  // Base instruction dari action
+  let instructions = action.instructions;
+
+  // Jika ada mode, gabungkan dengan thinking pattern dari mode
+  if (mode) {
+    instructions = `POLA BERPIKIR: ${mode.thinkingPattern}
+
+MODE CONTEXT: ${mode.description}
+
+${instructions}
+
+CATATAN: Gunakan pola berpikir "${mode.label}" dalam menjalankan action "${action.label}".`;
+  }
+
+  return `${instructions}
+
+KONTEN YANG AKAN DIPROSES:
+"${content}"
+
+Silakan proses konten di atas sesuai dengan aturan ${action.label} dan pola berpikir ${mode?.label || 'default'}.`;
 };

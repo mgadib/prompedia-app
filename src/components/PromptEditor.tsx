@@ -8,7 +8,7 @@ import { storage, Prompt } from '@/lib/storage';
 import { storageManager } from '@/lib/storage-manager';
 import { AVAILABLE_MODELS } from '@/lib/models';
 import { THINKING_MODES, getModeById } from '@/lib/modes';
-import { generateActionInstructions } from '@/lib/actions';
+import { generateModeAwareActionInstructions } from '@/lib/actions';
 import { supabase } from '@/integrations/supabase/client';
 import ModelSelector from './ModelSelector';
 import ModeSelector from './ModeSelector';
@@ -65,7 +65,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt }: PromptE
       setModel(AVAILABLE_MODELS[1].id);
       setSelectedTags([]);
     }
-  }, [currentPrompt]);
+  }, [currentPrompt, mode]);
 
   // Auto-save function
   const autoSave = useCallback(async () => {
@@ -266,15 +266,19 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt }: PromptE
       setIsActionLoading(true);
       setLoadingAction(actionId);
 
-      // Generate action-specific instructions
-      const actionInstructions = generateActionInstructions(actionId, content);
-      
-      // Call edge function to process the prompt
-      // Note: Don't send mode when using action buttons - they have their own instructions
+      // Generate action-specific instructions WITH MODE
+      const actionInstructions = generateModeAwareActionInstructions(
+        actionId,
+        mode,  // Pass current selected mode
+        content
+      );
+
+      // Call edge function with mode parameter
       const { data, error } = await supabase.functions.invoke('ai-processor', {
         body: {
           model: model,
           prompt: actionInstructions,
+          mode: mode,  // Add mode to request
           options: {
             temperature: 0.7,
             max_tokens: 2048

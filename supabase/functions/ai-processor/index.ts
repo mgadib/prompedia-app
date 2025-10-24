@@ -74,16 +74,24 @@ serve(async (req) => {
 
     // Get thinking mode instructions if provided
     let enhancedPrompt = prompt
+    let modeContext = ''
+
     if (mode) {
       const { data: modeData } = await supabaseClient
         .from('thinking_modes')
-        .select('instructions, thinking_pattern')
+        .select('instructions, thinking_pattern, description')
         .eq('id', mode)
         .eq('is_active', true)
         .single()
 
       if (modeData) {
-        enhancedPrompt = `${modeData.instructions}\n\nKONTEKS:\nInput dari pengguna: "${prompt}"\n\nIkuti format output yang telah ditentukan dan terapkan pola berpikir "${modeData.thinking_pattern}".`
+        // Mode context ditambahkan sebagai system message
+        modeContext = `Anda sedang beroperasi dalam mode "${mode}".
+Pola berpikir: ${modeData.thinking_pattern}
+Instruksi mode: ${modeData.instructions}`;
+
+        // Enhanced prompt tetap menggunakan prompt yang sudah diformat dari frontend
+        enhancedPrompt = prompt
       }
     }
 
@@ -126,7 +134,14 @@ serve(async (req) => {
         },
         body: JSON.stringify({
           model: candidate,
-          messages: [{ role: 'user', content: enhancedPrompt }],
+          messages: modeContext
+            ? [
+                { role: 'system', content: modeContext },
+                { role: 'user', content: enhancedPrompt }
+              ]
+            : [
+                { role: 'user', content: enhancedPrompt }
+              ],
           temperature: options.temperature || 0.7,
           max_tokens: options.max_tokens || 2048,
           top_p: options.top_p || 1.0
