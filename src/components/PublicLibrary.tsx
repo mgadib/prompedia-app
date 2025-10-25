@@ -1,5 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Prompt } from '@/lib/storage';
+import { Prompt, Tag } from '@/lib/storage';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,7 +6,6 @@ import { FileText, Globe, User, Copy, Download, Search, Filter } from 'lucide-re
 import { toast } from 'sonner';
 import { SupabaseService } from '@/lib/supabase-service';
 import { TagService } from '@/lib/tag-service';
-import { Tag } from '@/integrations/supabase/types';
 import PromptDetailModal from './PromptDetailModal';
 
 interface PromptWithTags extends Prompt {
@@ -125,7 +123,7 @@ const PublicLibrary = ({
   };
 
   const handleUsePromptFromModal = (prompt: Prompt) => {
-    onUsePrompt(prompt);
+    onUsePrompt({ ...prompt, tags: selectedPrompt?.tags || [] });
     toast.success('Prompt loaded for editing');
   };
 
@@ -242,7 +240,7 @@ const PublicLibrary = ({
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
             {filteredPrompts.map((prompt) => {
-              const userData = getMockUserData(prompt.userId);
+              const userData = getMockUserData(prompt.user_id || '');
               
               return (
                 <div
@@ -309,7 +307,7 @@ const PublicLibrary = ({
                   <div className="flex items-center justify-between pt-4 border-t border-border/50">
                     <div className="text-xs text-muted-foreground font-mono">
                       <div>Model: {prompt.model || 'Llama 4 Maverick'}</div>
-                      <div>{prompt.isFeatured ? 'Featured' : 'Standard'}</div>
+                      <div>{prompt.is_featured ? 'Featured' : 'Standard'}</div>
                     </div>
                     
                     {/* Action buttons */}

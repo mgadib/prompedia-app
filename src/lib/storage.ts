@@ -3,13 +3,15 @@ import { validateData, promptSchema, userProfileSchema } from './validation';
 
 export interface User {
   id: string;
-  email: string;
-  full_name: string;
+  email?: string;
+  username?: string;
+  display_name?: string;
+  role?: 'admin' | 'moderator' | 'user';
 }
 
 export interface Prompt {
   id: string;
-  user_id: string;
+  user_id?: string;
   title: string;
   content: string;
   model: string;
@@ -17,10 +19,18 @@ export interface Prompt {
   color: string;
   is_public: boolean;
   is_featured: boolean;
-  description?: string;
-  original_prompt_id?: string;
+  description?: string | null;
+  original_prompt_id?: string | null;
   // Note: tags are now handled via prompt_tags junction table
   // created_at and updated_at are not stored in the minimal schema
+}
+
+// Tag interface for local use
+export interface Tag {
+  id: string;
+  name: string;
+  color?: string;
+  description?: string | null;
 }
 
 /**

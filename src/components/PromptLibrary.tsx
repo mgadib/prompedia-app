@@ -1,7 +1,6 @@
-import { Prompt } from '@/lib/storage';
+import { Prompt, Tag } from '@/lib/storage';
 import { Badge } from '@/components/ui/badge';
 import { FileText, Lock, Globe } from 'lucide-react';
-import { Tag } from '@/integrations/supabase/types';
 
 interface PromptWithTags extends Prompt {
   tags: Tag[];
@@ -76,7 +75,7 @@ const PromptLibrary = ({ prompts, onSelectPrompt, currentPromptId }: PromptLibra
           </div>
 
           <div className="text-xs text-muted-foreground font-mono">
-            {prompt.model} • {prompt.isFeatured ? 'Featured' : 'Standard'}
+            {prompt.model} • {prompt.is_featured ? 'Featured' : 'Standard'}
           </div>
         </button>
       ))}

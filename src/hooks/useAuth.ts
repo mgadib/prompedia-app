@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
-import { User } from '@supabase/supabase-js';
+import { User as SupabaseUser } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { setUser, clearUser } from '@/lib/storage';
+import { clearUser } from '@/lib/storage';
 
 /**
  * Custom hook for managing authentication state and operations
  * Follows Single Responsibility Principle by isolating auth logic
  */
 export const useAuth = () => {
-  const [user, setUserState] = useState<User | null>(null);
+  const [user, setUserState] = useState<SupabaseUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -22,9 +22,6 @@ export const useAuth = () => {
           setError(error.message);
         } else {
           setUserState(session?.user ?? null);
-          if (session?.user) {
-            setUser(session.user);
-          }
         }
       } catch (err) {
         console.error('Unexpected error:', err);
@@ -41,9 +38,7 @@ export const useAuth = () => {
       async (event, session) => {
         try {
           setUserState(session?.user ?? null);
-          if (session?.user) {
-            setUser(session.user);
-          } else {
+          if (!session?.user) {
             clearUser();
           }
           setError(null);
