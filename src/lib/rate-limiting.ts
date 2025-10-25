@@ -79,8 +79,8 @@ export class RateLimitingService {
         // Authenticated user - check database
         return await this.checkAuthenticatedUserUsage(user.id);
       } else {
-        // Guest user - check localStorage
-        return this.checkGuestUsage();
+        // Guest user - check server-side validation
+        return await this.checkGuestUsage();
       }
     } catch (error) {
       console.error('Error checking AI usage:', error);
@@ -105,8 +105,8 @@ export class RateLimitingService {
         // Authenticated user - update database
         return await this.incrementAuthenticatedUserUsage(user.id);
       } else {
-        // Guest user - update localStorage
-        return this.incrementGuestUsage();
+        // Guest user - update server-side validation
+        return await this.incrementGuestUsage();
       }
     } catch (error) {
       console.error('Error incrementing AI usage:', error);
@@ -191,9 +191,49 @@ export class RateLimitingService {
   }
 
   /**
-   * Check guest user usage from localStorage
+   * Check guest user usage from server-side validation
    */
-  private checkGuestUsage(): {
+  private async checkGuestUsage(): Promise<{
+    allowed: boolean;
+    usage: AIUsage;
+    error?: string;
+  }> {
+    try {
+      // Get client info for tracking
+      const ipAddress = await this.getClientIP();
+      const userAgent = navigator.userAgent;
+      
+      // Use server-side validation
+      const { data, error } = await supabase.rpc('track_guest_usage', {
+        p_session_id: this.guestSessionId || crypto.randomUUID(),
+        p_ip_address: ipAddress,
+        p_user_agent: userAgent
+      });
+
+      if (error) throw error;
+
+      return {
+        allowed: data.success,
+        usage: {
+          usage_count: data.usage_count,
+          daily_limit: data.daily_limit,
+          remaining: data.remaining,
+          last_used_at: null,
+          session_id: this.guestSessionId
+        },
+        error: data.success ? undefined : 'Daily limit exceeded'
+      };
+    } catch (error) {
+      console.error('Error checking guest usage:', error);
+      // Fallback to localStorage if server fails
+      return this.checkGuestUsageFallback();
+    }
+  }
+
+  /**
+   * Fallback guest usage check from localStorage
+   */
+  private checkGuestUsageFallback(): {
     allowed: boolean;
     usage: AIUsage;
     error?: string;
@@ -229,9 +269,49 @@ export class RateLimitingService {
   }
 
   /**
-   * Increment guest user usage in localStorage
+   * Increment guest user usage with server-side validation
    */
-  private incrementGuestUsage(): {
+  private async incrementGuestUsage(): Promise<{
+    success: boolean;
+    usage: AIUsage;
+    error?: string;
+  }> {
+    try {
+      // Get client info for tracking
+      const ipAddress = await this.getClientIP();
+      const userAgent = navigator.userAgent;
+      
+      // Use server-side validation and increment
+      const { data, error } = await supabase.rpc('track_guest_usage', {
+        p_session_id: this.guestSessionId || crypto.randomUUID(),
+        p_ip_address: ipAddress,
+        p_user_agent: userAgent
+      });
+
+      if (error) throw error;
+
+      return {
+        success: data.success,
+        usage: {
+          usage_count: data.usage_count,
+          daily_limit: data.daily_limit,
+          remaining: data.remaining,
+          last_used_at: null,
+          session_id: this.guestSessionId
+        },
+        error: data.success ? undefined : 'Daily limit exceeded'
+      };
+    } catch (error) {
+      console.error('Error incrementing guest usage:', error);
+      // Fallback to localStorage if server fails
+      return this.incrementGuestUsageFallback();
+    }
+  }
+
+  /**
+   * Fallback guest usage increment from localStorage
+   */
+  private incrementGuestUsageFallback(): {
     success: boolean;
     usage: AIUsage;
     error?: string;
@@ -283,6 +363,21 @@ export class RateLimitingService {
         session_id: usageData.sessionId
       }
     };
+  }
+
+  /**
+   * Get client IP address (simplified for browser environment)
+   */
+  private async getClientIP(): Promise<string | null> {
+    try {
+      // In browser environment, we can't directly get real IP
+      // This is a simplified approach - in production, you might want to
+      // use a service like ipify.org or get it from server headers
+      return 'browser-client';
+    } catch (error) {
+      console.error('Error getting client IP:', error);
+      return null;
+    }
   }
 
   /**

@@ -146,13 +146,54 @@ export function isValidPassword(password: string): boolean {
 
 /**
  * Sanitizes string input by trimming and removing dangerous characters
+ * Enhanced version with comprehensive protection against XSS and injection attacks
  */
-export function sanitizeString(input: string): string {
+export function sanitizeString(input: string, maxLength: number = 50000): string {
+  if (!input || typeof input !== 'string') {
+    return '';
+  }
+
+  // Enforce length limit BEFORE processing
+  if (input.length > maxLength) {
+    throw new ValidationError(`Input exceeds maximum length of ${maxLength}`);
+  }
+
   return input
     .trim()
-    .replace(/[<>]/g, '') // Remove potential HTML tags
-    .replace(/javascript:/gi, '') // Remove javascript: protocol
-    .replace(/on\w+=/gi, ''); // Remove event handlers
+    // Remove all HTML tags
+    .replace(/<[^>]*>/g, '')
+    // Remove javascript: protocol
+    .replace(/javascript:/gi, '')
+    // Remove data: protocol (base64 exploits)
+    .replace(/data:/gi, '')
+    // Remove event handlers
+    .replace(/on\w+\s*=/gi, '')
+    // Remove script tags content
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    // Normalize Unicode (prevent homograph attacks)
+    .normalize('NFKC')
+    // Remove null bytes
+    .replace(/\0/g, '')
+    // Remove control characters except newlines and tabs
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
+}
+
+/**
+ * Validates and sanitizes AI prompt input with enhanced security
+ */
+export function validateAIPromptInput(prompt: string): string {
+  const sanitized = sanitizeString(prompt, VALIDATION.PROMPT.CONTENT_MAX_LENGTH);
+  
+  // Additional checks for AI input
+  if (sanitized.length < 1) {
+    throw new ValidationError('Prompt cannot be empty');
+  }
+  
+  if (sanitized.length > VALIDATION.PROMPT.CONTENT_MAX_LENGTH) {
+    throw new ValidationError(`Prompt exceeds maximum length of ${VALIDATION.PROMPT.CONTENT_MAX_LENGTH}`);
+  }
+  
+  return sanitized;
 }
 
 /**

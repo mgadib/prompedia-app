@@ -132,13 +132,29 @@ export class TagService {
 
   /**
    * Save tags for a prompt
+   * SECURITY FIX: Added ownership validation to prevent unauthorized tag modifications
    */
   static async savePromptTags(promptId: string, tagNames: string[], userId: string): Promise<void> {
     try {
-      // First, remove all existing tags for this prompt
+      // SECURITY FIX: Verify prompt ownership BEFORE updating tags
+      const { data: prompt, error: promptError } = await supabase
+        .from('prompts')
+        .select('id, user_id')
+        .eq('id', promptId)
+        .single();
+
+      if (promptError || !prompt) {
+        throw new Error('Prompt not found');
+      }
+
+      // Check if user owns this prompt
+      if (prompt.user_id !== userId) {
+        throw new Error('Unauthorized: You do not own this prompt');
+      }
+
+      // Now safe to update tags
       await this.removeAllPromptTags(promptId);
 
-      // Then add new tags
       for (const tagName of tagNames) {
         if (tagName.trim()) {
           const tag = await this.findOrCreateTag(tagName, userId);

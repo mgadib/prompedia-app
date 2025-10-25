@@ -1,15 +1,44 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+const ALLOWED_ORIGINS = [
+  'https://prompedia.ai',
+  'https://www.prompedia.ai',
+  'http://localhost:8080',
+  'http://localhost:8083'
+];
+
+const corsHeaders = (origin: string | null) => {
+  const allowedOrigin = origin && ALLOWED_ORIGINS.includes(origin) 
+    ? origin 
+    : ALLOWED_ORIGINS[0];
+    
+  return {
+    'Access-Control-Allow-Origin': allowedOrigin,
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Credentials': 'true',
+  };
+};
 
 serve(async (req) => {
+  // Security logging
+  const requestId = crypto.randomUUID();
+  const timestamp = new Date().toISOString();
+  const userAgent = req.headers.get('user-agent') || 'unknown';
+  const origin = req.headers.get('origin') || 'unknown';
+  const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
+
+  console.log(`[${timestamp}] [${requestId}] AI Processor Request:`, {
+    method: req.method,
+    origin,
+    userAgent: userAgent.substring(0, 100), // Truncate for security
+    ip: ip.substring(0, 50), // Truncate for security
+    url: req.url
+  });
+
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response('ok', { headers: corsHeaders(req.headers.get('origin')) })
   }
 
   try {
@@ -30,11 +59,51 @@ serve(async (req) => {
 
     const { model, prompt, mode, options = {} } = await req.json()
 
-    // Validate required fields
-    if (!model || !prompt) {
-      return new Response(JSON.stringify({ error: 'Model and prompt are required' }), {
+    // ENHANCED VALIDATION - Security improvements
+    if (!model || typeof model !== 'string') {
+      return new Response(JSON.stringify({ error: 'Invalid model parameter' }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders(req.headers.get('origin')), 'Content-Type': 'application/json' },
+      })
+    }
+
+    if (!prompt || typeof prompt !== 'string') {
+      return new Response(JSON.stringify({ error: 'Invalid prompt parameter' }), {
+        status: 400,
+        headers: { ...corsHeaders(req.headers.get('origin')), 'Content-Type': 'application/json' },
+      })
+    }
+
+    // Length validation
+    const MAX_PROMPT_LENGTH = 50000;
+    if (prompt.length > MAX_PROMPT_LENGTH) {
+      return new Response(JSON.stringify({ 
+        error: `Prompt exceeds maximum length of ${MAX_PROMPT_LENGTH} characters` 
+      }), {
+        status: 400,
+        headers: { ...corsHeaders(req.headers.get('origin')), 'Content-Type': 'application/json' },
+      })
+    }
+
+    // Sanitize prompt input
+    const sanitizedPrompt = prompt
+      .trim()
+      .replace(/<[^>]*>/g, '')
+      .replace(/javascript:/gi, '')
+      .replace(/data:/gi, '');
+
+    // Validate options
+    if (options.temperature && (options.temperature < 0 || options.temperature > 2)) {
+      return new Response(JSON.stringify({ error: 'Invalid temperature value' }), {
+        status: 400,
+        headers: { ...corsHeaders(req.headers.get('origin')), 'Content-Type': 'application/json' },
+      })
+    }
+
+    if (options.max_tokens && (options.max_tokens < 1 || options.max_tokens > 16384)) {
+      return new Response(JSON.stringify({ error: 'Invalid max_tokens value' }), {
+        status: 400,
+        headers: { ...corsHeaders(req.headers.get('origin')), 'Content-Type': 'application/json' },
       })
     }
 
@@ -54,7 +123,7 @@ serve(async (req) => {
     if (!apiKey) {
       return new Response(JSON.stringify({ error: `No API key configured for model: ${model}` }), {
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders(req.headers.get('origin')), 'Content-Type': 'application/json' },
       })
     }
 
@@ -73,7 +142,7 @@ serve(async (req) => {
     }
 
     // Get thinking mode instructions if provided
-    let enhancedPrompt = prompt
+    let enhancedPrompt = sanitizedPrompt
     let modeContext = ''
 
     if (mode) {
@@ -90,8 +159,8 @@ serve(async (req) => {
 Pola berpikir: ${modeData.thinking_pattern}
 Instruksi mode: ${modeData.instructions}`;
 
-        // Enhanced prompt tetap menggunakan prompt yang sudah diformat dari frontend
-        enhancedPrompt = prompt
+        // Enhanced prompt menggunakan sanitized prompt
+        enhancedPrompt = sanitizedPrompt
       }
     }
 
@@ -178,7 +247,7 @@ Instruksi mode: ${modeData.instructions}`;
             fallback_used: candidate !== model
           }
         }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          headers: { ...corsHeaders(req.headers.get('origin')), 'Content-Type': 'application/json' },
         })
       }
 
@@ -193,7 +262,7 @@ Instruksi mode: ${modeData.instructions}`;
           details: lastErrorText
         }), {
           status: resp.status,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          headers: { ...corsHeaders(req.headers.get('origin')), 'Content-Type': 'application/json' },
         })
       }
     }
@@ -205,19 +274,26 @@ Instruksi mode: ${modeData.instructions}`;
       details: lastErrorText
     }), {
       status: 429,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders(req.headers.get('origin')), 'Content-Type': 'application/json' },
     })
 
 
   } catch (error) {
-    console.error('Error in ai-processor:', error)
+    console.error(`[${timestamp}] [${requestId}] Error in ai-processor:`, {
+      error: error instanceof Error ? error.message : 'Unknown error occurred',
+      stack: error instanceof Error ? error.stack : undefined,
+      origin,
+      userAgent: userAgent.substring(0, 100),
+      ip: ip.substring(0, 50)
+    });
+    
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
     return new Response(JSON.stringify({
       error: errorMessage,
       timestamp: new Date().toISOString()
     }), {
       status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders(req.headers.get('origin')), 'Content-Type': 'application/json' },
     })
   }
 })

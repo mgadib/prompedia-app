@@ -1,15 +1,44 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+const ALLOWED_ORIGINS = [
+  'https://prompedia.ai',
+  'https://www.prompedia.ai',
+  'http://localhost:8080',
+  'http://localhost:8083'
+];
+
+const corsHeaders = (origin: string | null) => {
+  const allowedOrigin = origin && ALLOWED_ORIGINS.includes(origin) 
+    ? origin 
+    : ALLOWED_ORIGINS[0];
+    
+  return {
+    'Access-Control-Allow-Origin': allowedOrigin,
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Credentials': 'true',
+  };
+};
 
 serve(async (req) => {
+  // Security logging
+  const requestId = crypto.randomUUID();
+  const timestamp = new Date().toISOString();
+  const userAgent = req.headers.get('user-agent') || 'unknown';
+  const origin = req.headers.get('origin') || 'unknown';
+  const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
+
+  console.log(`[${timestamp}] [${requestId}] Prompt Enhancer Request:`, {
+    method: req.method,
+    origin,
+    userAgent: userAgent.substring(0, 100), // Truncate for security
+    ip: ip.substring(0, 50), // Truncate for security
+    url: req.url
+  });
+
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response('ok', { headers: corsHeaders(req.headers.get('origin')) })
   }
 
   try {
@@ -31,7 +60,7 @@ serve(async (req) => {
     if (!user) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders(req.headers.get('origin')), 'Content-Type': 'application/json' },
       })
     }
 
@@ -45,7 +74,7 @@ serve(async (req) => {
     if (usageError) {
       return new Response(JSON.stringify({ error: 'Failed to check usage limits' }), {
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders(req.headers.get('origin')), 'Content-Type': 'application/json' },
       });
     }
 
@@ -58,7 +87,7 @@ serve(async (req) => {
         error: `Daily AI usage limit exceeded. You have used ${currentUsage}/${dailyLimit} calls today. Limit resets at midnight GMT+7.`
       }), {
         status: 429,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders(req.headers.get('origin')), 'Content-Type': 'application/json' },
       });
     }
 
@@ -69,18 +98,53 @@ serve(async (req) => {
 
     const { prompts, operation, options = {} } = await req.json()
 
-    // Validate input
+    // ENHANCED VALIDATION - Security improvements
     if (!prompts || !Array.isArray(prompts) || prompts.length === 0) {
       return new Response(JSON.stringify({ error: 'Prompts array is required' }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders(req.headers.get('origin')), 'Content-Type': 'application/json' },
       })
+    }
+
+    // Validate prompts array structure and content
+    for (const promptItem of prompts) {
+      if (!promptItem || typeof promptItem !== 'object') {
+        return new Response(JSON.stringify({ error: 'Invalid prompt item structure' }), {
+          status: 400,
+          headers: { ...corsHeaders(req.headers.get('origin')), 'Content-Type': 'application/json' },
+        })
+      }
+
+      if (!promptItem.id || typeof promptItem.id !== 'string') {
+        return new Response(JSON.stringify({ error: 'Invalid prompt ID' }), {
+          status: 400,
+          headers: { ...corsHeaders(req.headers.get('origin')), 'Content-Type': 'application/json' },
+        })
+      }
+
+      if (!promptItem.content || typeof promptItem.content !== 'string') {
+        return new Response(JSON.stringify({ error: 'Invalid prompt content' }), {
+          status: 400,
+          headers: { ...corsHeaders(req.headers.get('origin')), 'Content-Type': 'application/json' },
+        })
+      }
+
+      // Length validation for each prompt
+      const MAX_PROMPT_LENGTH = 50000;
+      if (promptItem.content.length > MAX_PROMPT_LENGTH) {
+        return new Response(JSON.stringify({ 
+          error: `Prompt content exceeds maximum length of ${MAX_PROMPT_LENGTH} characters` 
+        }), {
+          status: 400,
+          headers: { ...corsHeaders(req.headers.get('origin')), 'Content-Type': 'application/json' },
+        })
+      }
     }
 
     if (!operation || !['enhance', 'refine', 'expand', 'reimagine', 'reformat', 'review'].includes(operation)) {
       return new Response(JSON.stringify({ error: 'Valid operation is required' }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders(req.headers.get('origin')), 'Content-Type': 'application/json' },
       })
     }
 
@@ -101,7 +165,7 @@ serve(async (req) => {
     if (!apiKey) {
       return new Response(JSON.stringify({ error: `No API key configured for model: ${model}` }), {
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders(req.headers.get('origin')), 'Content-Type': 'application/json' },
       })
     }
     const results = []
@@ -110,6 +174,13 @@ serve(async (req) => {
     for (const promptItem of prompts) {
       try {
         const { id, content, currentMode } = promptItem
+
+        // Sanitize prompt content
+        const sanitizedContent = content
+          .trim()
+          .replace(/<[^>]*>/g, '')
+          .replace(/javascript:/gi, '')
+          .replace(/data:/gi, '');
 
         // Verify the prompt belongs to the user
         const { data: promptData } = await supabaseClient
@@ -129,7 +200,7 @@ serve(async (req) => {
         }
 
         // Create enhanced prompt based on operation
-        const enhancedPrompt = content
+        const enhancedPrompt = sanitizedContent
         let modeInstructions = ''
 
         switch (operation) {
@@ -137,7 +208,7 @@ serve(async (req) => {
             modeInstructions = `Sebagai Prompt Enhancement Specialist, tugas Anda adalah meningkatkan prompt yang diberikan dengan menambahkan konteks, contoh, dan instruksi yang lebih spesifik untuk menghasilkan output yang lebih baik.
 
 KONTEKS:
-Prompt asli: "${content}"
+Prompt asli: "${sanitizedContent}"
 
 ATURAN WAJIB:
 - Pertahankan maksud utama dari prompt asli
@@ -157,7 +228,7 @@ FORMAT OUTPUT:
             modeInstructions = `Sebagai Prompt Refinement Expert, tugas Anda adalah memperjelas dan memperbaiki prompt yang sudah ada.
 
 KONTEKS:
-Prompt asli: "${content}"
+Prompt asli: "${sanitizedContent}"
 
 ATURAN WAJIB:
 - Baca dan pahami prompt yang diberikan
@@ -180,7 +251,7 @@ FORMAT OUTPUT:
             modeInstructions = `Sebagai Prompt Expansion Specialist, tugas Anda adalah mengembangkan prompt dengan menambahkan detail, konteks, dan instruksi tambahan.
 
 KONTEKS:
-Prompt asli: "${content}"
+Prompt asli: "${sanitizedContent}"
 
 ATURAN WAJIB:
 - Perluas prompt dengan informasi tambahan yang relevan
@@ -200,7 +271,7 @@ FORMAT OUTPUT:
             modeInstructions = `Sebagai Creative Prompt Reimaginer, tugas Anda adalah membuat versi kreatif dan inovatif dari prompt yang ada.
 
 KONTEKS:
-Prompt asli: "${content}"
+Prompt asli: "${sanitizedContent}"
 
 ATURAN WAJIB:
 - Berikan perspektif baru dan kreatif
@@ -220,7 +291,7 @@ FORMAT OUTPUT:
             modeInstructions = `Sebagai Prompt Formatting Specialist, tugas Anda adalah menyusun ulang prompt dengan struktur yang lebih baik.
 
 KONTEKS:
-Prompt asli: "${content}"
+Prompt asli: "${sanitizedContent}"
 
 ATURAN WAJIB:
 - Perbaiki struktur dan formatting
@@ -240,7 +311,7 @@ FORMAT OUTPUT:
             modeInstructions = `Sebagai Prompt Quality Reviewer, tugas Anda adalah mengevaluasi dan memberikan feedback konstruktif untuk prompt.
 
 KONTEKS:
-Prompt untuk direview: "${content}"
+Prompt untuk direview: "${sanitizedContent}"
 
 ATURAN WAJIB:
 - Evaluasi kekuatan dan kelemahan prompt
@@ -355,18 +426,25 @@ FORMAT OUTPUT:
       successful: results.filter(r => r.success).length,
       results
     }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders(req.headers.get('origin')), 'Content-Type': 'application/json' },
     })
 
   } catch (error) {
-    console.error('Error in prompt-enhancer:', error)
+    console.error(`[${timestamp}] [${requestId}] Error in prompt-enhancer:`, {
+      error: error instanceof Error ? error.message : 'Unknown error occurred',
+      stack: error instanceof Error ? error.stack : undefined,
+      origin,
+      userAgent: userAgent.substring(0, 100),
+      ip: ip.substring(0, 50)
+    });
+    
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
     return new Response(JSON.stringify({
       error: errorMessage,
       timestamp: new Date().toISOString()
     }), {
       status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders(req.headers.get('origin')), 'Content-Type': 'application/json' },
     })
   }
 })
