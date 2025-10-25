@@ -111,7 +111,7 @@ export class TagService {
   static async findOrCreateTag(tagName: string, userId: string): Promise<Tag> {
     try {
       // First, try to find existing tag for this user
-      const { data: existingTag, error: findError } = await supabase
+      const { data: existingTag, error: findError } = await (supabase as any)
         .from('tags')
         .select('*')
         .eq('name', tagName.toLowerCase().trim())
@@ -119,7 +119,7 @@ export class TagService {
         .single();
 
       if (existingTag && !findError) {
-        return existingTag;
+        return existingTag as Tag;
       }
 
       // If not found, create new tag for this user
@@ -232,7 +232,7 @@ export class TagService {
         return [];
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('tags')
         .select('*')
         .eq('user_id', userId)
@@ -241,7 +241,7 @@ export class TagService {
         .limit(10);
 
       if (error) throw error;
-      return data || [];
+      return (data || []) as Tag[];
     } catch (error) {
       console.error('Failed to search tags:', error);
       return [];
