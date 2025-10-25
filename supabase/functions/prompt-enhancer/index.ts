@@ -2,8 +2,8 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const ALLOWED_ORIGINS = [
-  'https://prompedia.ai',
-  'https://www.prompedia.ai',
+  'https://prompedia.app',
+  'https://www.prompedia.app',
   'http://localhost:8080',
   'http://localhost:8083'
 ];
@@ -383,7 +383,7 @@ FORMAT OUTPUT:
           headers: {
             'Authorization': `Bearer ${apiKey}`,
             'Content-Type': 'application/json',
-            'HTTP-Referer': 'https://prompedia.ai',
+            'HTTP-Referer': 'https://prompedia.app',
             'X-Title': 'Prompedia AI'
           },
           body: JSON.stringify({
