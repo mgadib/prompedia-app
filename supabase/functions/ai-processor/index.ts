@@ -8,10 +8,12 @@ const ALLOWED_ORIGINS = [
   'http://localhost:8083'
 ];
 
-const corsHeaders = (origin: string | null) => {
-  const allowedOrigin = origin && ALLOWED_ORIGINS.includes(origin) 
-    ? origin 
-    : ALLOWED_ORIGINS[0];
+const corsHeaders = (origin: string | null): Record<string, string> => {
+  // Allow Lovable preview domains and configured origins
+  const isLovablePreview = origin?.includes('.lovableproject.com') || false;
+  const isAllowedOrigin = origin ? ALLOWED_ORIGINS.includes(origin) : false;
+  
+  const allowedOrigin = (isLovablePreview || isAllowedOrigin) && origin ? origin : ALLOWED_ORIGINS[0];
     
   return {
     'Access-Control-Allow-Origin': allowedOrigin,
