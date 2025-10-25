@@ -32,6 +32,7 @@ const AppPage = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [allPrompts, setAllPrompts] = useState<Prompt[]>([]);
   const [publicPrompts, setPublicPrompts] = useState<Prompt[]>([]);
+  const [isFocusMode, setIsFocusMode] = useState(false);
 
   const checkAuth = useCallback(async () => {
     try {
@@ -394,6 +395,10 @@ const AppPage = () => {
     setShowAuthModal(true);
   };
 
+  const handleToggleFocus = () => {
+    setIsFocusMode(prev => !prev);
+  };
+
   // Show loading state
   if (loading) {
     return (
@@ -423,6 +428,7 @@ const AppPage = () => {
           onLogin={handleLogin}
           user={user}
           isPlaygroundActive={showEditor}
+          isFocusMode={isFocusMode}
         />
       </div>
 
@@ -434,6 +440,9 @@ const AppPage = () => {
               onPromptChange={handlePromptChange}
               onDeletePrompt={handleDeletePrompt}
               onNewPrompt={handleNewPrompt}
+              isFocusMode={isFocusMode}
+              onToggleFocus={handleToggleFocus}
+              user={user}
             />
           ) : (
             <>

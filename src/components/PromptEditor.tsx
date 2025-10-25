@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Copy, Save, Share2, FileText, Trash2, ArrowLeft, ArrowRight, CheckCircle, Lock, Globe } from 'lucide-react';
+import { Copy, Save, Share2, FileText, Trash2, ArrowLeft, ArrowRight, CheckCircle, Lock, Globe, Leaf, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -25,9 +25,12 @@ interface PromptEditorProps {
   onPromptChange: (prompt: Prompt) => void;
   onDeletePrompt?: (promptId: string) => void;
   onNewPrompt?: () => void;
+  isFocusMode?: boolean;
+  onToggleFocus?: () => void;
+  user?: any;
 }
 
-const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewPrompt }: PromptEditorProps) => {
+const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewPrompt, isFocusMode = false, onToggleFocus, user }: PromptEditorProps) => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [originalContent, setOriginalContent] = useState('');
@@ -520,11 +523,31 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       <div className="border-b border-border px-6 py-4 bg-card">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
+            {user && (
+              <Button
+                onClick={onToggleFocus}
+                variant="ghost"
+                size="sm"
+                className={`font-mono ${
+                  isFocusMode 
+                    ? 'bg-accent text-accent-foreground hover:bg-accent/90' 
+                    : 'hover:bg-accent/20 hover:text-accent'
+                }`}
+                title={isFocusMode ? 'Exit Focus Mode' : 'Focus Mode - Hide Sidebar for Clean Editing'}
+              >
+                {isFocusMode ? (
+                  <EyeOff className="w-4 h-4 mr-2" />
+                ) : (
+                  <Leaf className="w-4 h-4 mr-2" />
+                )}
+                Focus
+              </Button>
+            )}
             <Button
               onClick={handleNew}
               variant="ghost"
               size="sm"
-              className="prompedia-button text-white hover:bg-primary/90 font-mono"
+              className="hover:bg-accent/20 hover:text-accent font-mono"
             >
               <FileText className="w-4 h-4 mr-2" />
               New

@@ -13,6 +13,7 @@ interface SidebarProps {
   onLogin: () => void;
   user: SupabaseUser | null;
   isPlaygroundActive?: boolean;
+  isFocusMode?: boolean;
 }
 
 const Sidebar = ({
@@ -22,7 +23,8 @@ const Sidebar = ({
   onLogout,
   onLogin,
   user,
-  isPlaygroundActive
+  isPlaygroundActive,
+  isFocusMode = false
 }: SidebarProps) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [allTags, setAllTags] = useState<string[]>([]);
@@ -53,19 +55,11 @@ const Sidebar = ({
   }, [user]);
 
   return (
-    <div className={`${isCollapsed ? 'w-16' : 'w-64'} h-screen bg-sidebar-background border-r border-sidebar-border flex flex-col transition-all duration-300 ease-in-out relative`}>
-      {/* Collapse Toggle Button */}
-      <button
-        onClick={() => setIsCollapsed(!isCollapsed)}
-        className="absolute -right-3 top-6 z-10 w-7 h-7 bg-sidebar-background border border-sidebar-border rounded-full flex items-center justify-center hover:bg-sidebar-accent/20 hover:border-sidebar-accent transition-all duration-200 shadow-lg hover:shadow-xl group"
-        title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-      >
-        {isCollapsed ? (
-          <PanelLeftOpen className="w-4 h-4 text-sidebar-foreground group-hover:text-sidebar-accent-foreground transition-colors" />
-        ) : (
-          <PanelLeftClose className="w-4 h-4 text-sidebar-foreground group-hover:text-sidebar-accent-foreground transition-colors" />
-        )}
-      </button>
+    <div className={`${
+      isFocusMode 
+        ? 'w-0 overflow-hidden opacity-0' 
+        : isCollapsed ? 'w-16' : 'w-64'
+    } h-screen bg-sidebar-background border-r border-sidebar-border flex flex-col transition-all duration-300 ease-in-out relative`}>
 
       {/* Logo Section */}
       <div className="p-6 border-b border-sidebar-border">
