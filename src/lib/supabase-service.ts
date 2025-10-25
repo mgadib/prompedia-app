@@ -541,4 +541,46 @@ export class SupabaseService {
 
     console.log(`Synced ${userLocalPrompts.length} prompts from local storage`)
   }
+
+  // ========================================
+  // SECURE USER QUERY METHODS
+  // ========================================
+
+  /**
+   * Get public profile (safe fields only - excludes role field)
+   * Used for displaying other users' profiles
+   */
+  static async getUserPublicProfile(userId: string) {
+    const { data, error } = await supabase
+      .from('users')
+      .select('id, username, display_name') // Exclude role field
+      .eq('id', userId)
+      .single();
+    return { data, error };
+  }
+
+  /**
+   * Get own profile (includes role field)
+   * Used for authenticated user's own profile
+   */
+  static async getUserOwnProfile(userId: string) {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .single();
+    return { data, error };
+  }
+
+  /**
+   * Get all users for public display (safe fields only)
+   * Used for user lists, mentions, etc.
+   */
+  static async getAllUsersPublic() {
+    const { data, error } = await supabase
+      .from('users')
+      .select('id, username, display_name') // Exclude role field
+      .order('username');
+    return { data, error };
+  }
 }

@@ -106,6 +106,27 @@ serve(async (req) => {
       })
     }
 
+    // Validate operation parameter
+    const ALLOWED_OPERATIONS = ['enhance', 'summarize', 'expand', 'refine', 'translate'];
+    if (!operation || !ALLOWED_OPERATIONS.includes(operation)) {
+      return new Response(JSON.stringify({ 
+        error: 'Invalid operation. Allowed operations: enhance, summarize, expand, refine, translate' 
+      }), { 
+        status: 400, 
+        headers: { ...corsHeaders(req.headers.get('origin')), 'Content-Type': 'application/json' } 
+      })
+    }
+
+    // Validate options object type
+    if (options && typeof options !== 'object') {
+      return new Response(JSON.stringify({ 
+        error: 'Invalid options parameter. Must be an object.' 
+      }), { 
+        status: 400, 
+        headers: { ...corsHeaders(req.headers.get('origin')), 'Content-Type': 'application/json' } 
+      })
+    }
+
     // Validate prompts array structure and content
     for (const promptItem of prompts) {
       if (!promptItem || typeof promptItem !== 'object') {
@@ -148,6 +169,29 @@ serve(async (req) => {
       })
     }
 
+    // Model whitelist validation
+    const ALLOWED_MODELS = [
+      'meta-llama/llama-4-maverick:free',
+      'qwen/qwen-2.5-72b-instruct:free',
+      'meta-llama/llama-3.1-8b-instruct:free',
+      'meta-llama/llama-3.1-70b-instruct:free',
+      'openai/gpt-4o-mini:free',
+      'openai/gpt-4o:free',
+      'anthropic/claude-3.5-sonnet:free',
+      'anthropic/claude-3-haiku:free'
+    ];
+
+    const model = options.model || 'meta-llama/llama-4-maverick:free';
+    
+    if (!ALLOWED_MODELS.includes(model)) {
+      return new Response(JSON.stringify({ 
+        error: 'Invalid model selection. Please select from allowed models.' 
+      }), { 
+        status: 400, 
+        headers: { ...corsHeaders(req.headers.get('origin')), 'Content-Type': 'application/json' } 
+      })
+    }
+
     // Map model to appropriate API key and validate
     const getApiKeyForModel = (modelId: string): string | undefined => {
       if (modelId.includes('llama-4-maverick') || modelId.includes('llama4') || modelId.includes('llama-3.1')) {
@@ -159,7 +203,6 @@ serve(async (req) => {
       return Deno.env.get('OPENROUTER_API_KEY')
     }
 
-    const model = options.model || 'meta-llama/llama-4-maverick:free'
     const apiKey = getApiKeyForModel(model)
 
     if (!apiKey) {

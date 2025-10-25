@@ -67,6 +67,27 @@ serve(async (req) => {
       })
     }
 
+    // Model whitelist validation
+    const ALLOWED_MODELS = [
+      'meta-llama/llama-4-maverick:free',
+      'qwen/qwen-2.5-72b-instruct:free',
+      'meta-llama/llama-3.1-8b-instruct:free',
+      'meta-llama/llama-3.1-70b-instruct:free',
+      'openai/gpt-4o-mini:free',
+      'openai/gpt-4o:free',
+      'anthropic/claude-3.5-sonnet:free',
+      'anthropic/claude-3-haiku:free'
+    ];
+
+    if (!ALLOWED_MODELS.includes(model)) {
+      return new Response(JSON.stringify({ 
+        error: 'Invalid model selection. Please select from allowed models.' 
+      }), { 
+        status: 400, 
+        headers: { ...corsHeaders(req.headers.get('origin')), 'Content-Type': 'application/json' } 
+      })
+    }
+
     if (!prompt || typeof prompt !== 'string') {
       return new Response(JSON.stringify({ error: 'Invalid prompt parameter' }), {
         status: 400,
@@ -92,16 +113,37 @@ serve(async (req) => {
       .replace(/javascript:/gi, '')
       .replace(/data:/gi, '');
 
-    // Validate options
+    // Validate mode parameter
+    const ALLOWED_MODES = ['creative', 'balanced', 'precise', 'custom', null, undefined];
+    if (mode && !ALLOWED_MODES.includes(mode)) {
+      return new Response(JSON.stringify({ 
+        error: 'Invalid mode parameter. Allowed modes: creative, balanced, precise, custom' 
+      }), { 
+        status: 400, 
+        headers: { ...corsHeaders(req.headers.get('origin')), 'Content-Type': 'application/json' } 
+      })
+    }
+
+    // Validate options object type
+    if (options && typeof options !== 'object') {
+      return new Response(JSON.stringify({ 
+        error: 'Invalid options parameter. Must be an object.' 
+      }), { 
+        status: 400, 
+        headers: { ...corsHeaders(req.headers.get('origin')), 'Content-Type': 'application/json' } 
+      })
+    }
+
+    // Validate options properties
     if (options.temperature && (options.temperature < 0 || options.temperature > 2)) {
-      return new Response(JSON.stringify({ error: 'Invalid temperature value' }), {
+      return new Response(JSON.stringify({ error: 'Invalid temperature value. Must be between 0 and 2.' }), {
         status: 400,
         headers: { ...corsHeaders(req.headers.get('origin')), 'Content-Type': 'application/json' },
       })
     }
 
     if (options.max_tokens && (options.max_tokens < 1 || options.max_tokens > 16384)) {
-      return new Response(JSON.stringify({ error: 'Invalid max_tokens value' }), {
+      return new Response(JSON.stringify({ error: 'Invalid max_tokens value. Must be between 1 and 16384.' }), {
         status: 400,
         headers: { ...corsHeaders(req.headers.get('origin')), 'Content-Type': 'application/json' },
       })
