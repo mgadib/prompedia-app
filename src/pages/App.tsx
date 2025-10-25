@@ -4,8 +4,7 @@ import PromptEditor from '@/components/PromptEditor';
 import MyLibrary from '@/components/MyLibrary';
 import PublicLibrary from '@/components/PublicLibrary';
 import AuthModal from '@/components/AuthModal';
-import { storage, Prompt } from '@/lib/storage';
-import { Tag } from '@/integrations/supabase/types';
+import { storage, Prompt, Tag } from '@/lib/storage';
 
 interface PromptWithTags extends Prompt {
   tags: Tag[];
@@ -98,7 +97,11 @@ const AppPage = () => {
       console.log('Loading public prompts...');
       const publicPromptsData = await SupabaseService.getPublicPrompts();
       console.log('Public prompts loaded:', publicPromptsData.length);
-      setPublicPrompts(publicPromptsData);
+      const typedPrompts = publicPromptsData.map(p => ({
+        ...p,
+        mode: (p.mode || 'normal') as 'meta-prompt' | 'thinking' | 'normal'
+      }));
+      setPublicPrompts(typedPrompts);
     } catch (error) {
       console.error('Failed to load public prompts:', error);
       toast.error('Failed to load public library');
@@ -170,7 +173,7 @@ const AppPage = () => {
       title: prompt.title || '',
       content: prompt.content || '',
       model: prompt.model || AVAILABLE_MODELS[1].id,
-      mode: prompt.mode || THINKING_MODES[5].id,
+      mode: (prompt.mode || THINKING_MODES[5].id) as 'meta-prompt' | 'thinking' | 'normal',
       color: prompt.color || '#3b82f6',
       is_public: prompt.is_public || false,
       is_featured: prompt.is_featured || false,
@@ -191,7 +194,7 @@ const AppPage = () => {
       title: prompt.title || '',
       content: prompt.content || '',
       model: prompt.model || AVAILABLE_MODELS[1].id,
-      mode: prompt.mode || THINKING_MODES[5].id,
+      mode: (prompt.mode || THINKING_MODES[5].id) as 'meta-prompt' | 'thinking' | 'normal',
       color: prompt.color || '#3b82f6',
       is_public: prompt.is_public || false,
       is_featured: prompt.is_featured || false,
@@ -250,7 +253,7 @@ const AppPage = () => {
         title: prompt.title || '',
         content: prompt.content || '',
         model: prompt.model || AVAILABLE_MODELS[1].id,
-        mode: prompt.mode || THINKING_MODES[5].id,
+        mode: (prompt.mode || THINKING_MODES[5].id) as 'meta-prompt' | 'thinking' | 'normal',
         color: prompt.color || '#3b82f6',
         is_public: prompt.is_public || false,
         is_featured: prompt.is_featured || false,
@@ -291,7 +294,7 @@ const AppPage = () => {
       title: prompt.title || '',
       content: prompt.content || '',
       model: prompt.model || AVAILABLE_MODELS[1].id,
-      mode: prompt.mode || THINKING_MODES[5].id,
+      mode: (prompt.mode || THINKING_MODES[5].id) as 'meta-prompt' | 'thinking' | 'normal',
       color: prompt.color || '#3b82f6',
       is_public: prompt.is_public || false,
       is_featured: prompt.is_featured || false,
@@ -359,7 +362,7 @@ const AppPage = () => {
       content: '',
       model: AVAILABLE_MODELS[1].id,
       color: '#3b82f6',
-      mode: THINKING_MODES[5].id,
+      mode: THINKING_MODES[5].id as 'meta-prompt' | 'thinking' | 'normal',
       is_public: false,
       is_featured: false,
     };

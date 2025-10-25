@@ -106,15 +106,9 @@ export const userStorage = {
     const data = safeLocalStorageGet(STORAGE_KEYS.USER);
     const parsed = safeJsonParse(data, null);
     
-    if (!parsed) return null;
+    if (!parsed || !parsed.id) return null;
     
-    try {
-      return validateData(userProfileSchema, parsed);
-    } catch (error) {
-      console.warn('Invalid user data in storage, clearing:', error);
-      userStorage.clearUser();
-      return null;
-    }
+    return parsed as User;
   },
   
   clearUser: (): void => {
@@ -144,20 +138,21 @@ export const promptStorage = {
   
   savePrompt: (prompt: Prompt): Prompt => {
     try {
-      const validatedPrompt = validateData(promptSchema, prompt);
-      const prompts = promptStorage.getPrompts();
-      const index = prompts.findIndex(p => p.id === validatedPrompt.id);
+      if (!prompt.id || !prompt.title || !prompt.content || !prompt.model) {
+        throw new Error('Missing required fields');
+      }
       
-      const updatedPrompt = validatedPrompt;
+      const prompts = promptStorage.getPrompts();
+      const index = prompts.findIndex(p => p.id === prompt.id);
       
       if (index >= 0) {
-        prompts[index] = updatedPrompt;
+        prompts[index] = prompt;
       } else {
-        prompts.push(updatedPrompt);
+        prompts.push(prompt);
       }
       
       safeLocalStorageSet(STORAGE_KEYS.PROMPTS, JSON.stringify(prompts));
-      return updatedPrompt;
+      return prompt;
     } catch (error) {
       throw new StorageError(ERROR_MESSAGES.PROMPT.SAVE_FAILED, 'savePrompt');
     }

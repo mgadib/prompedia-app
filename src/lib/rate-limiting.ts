@@ -126,20 +126,22 @@ export class RateLimitingService {
     usage: AIUsage;
     error?: string;
   }> {
-    const { data, error } = await supabase.rpc('get_current_usage', {
+    // @ts-expect-error - Custom RPC function not in generated types
+    const { data, error } = await supabase.rpc('get_current_usage' as any, {
       p_user_id: userId,
       p_is_guest: false,
       p_session_id: null
-    });
+    }) as { data: any; error: any };
 
     if (error) throw error;
+    if (!data) throw new Error('No data returned from get_current_usage');
 
     const usage: AIUsage = {
-      usage_count: data.usage_count || 0,
+      usage_count: Number(data.usage_count) || 0,
       daily_limit: APP_CONFIG.RATE_LIMITS.AUTH_DAILY_LIMIT,
-      remaining: data.remaining || APP_CONFIG.RATE_LIMITS.AUTH_DAILY_LIMIT,
-      last_used_at: data.last_used_at,
-      session_id: data.session_id
+      remaining: Number(data.remaining) || APP_CONFIG.RATE_LIMITS.AUTH_DAILY_LIMIT,
+      last_used_at: data.last_used_at || null,
+      session_id: data.session_id || null
     };
 
     return {
@@ -156,34 +158,36 @@ export class RateLimitingService {
     usage: AIUsage;
     error?: string;
   }> {
-    const { data, error } = await supabase.rpc('increment_ai_usage', {
+    // @ts-expect-error - Custom RPC function not in generated types
+    const { data, error } = await supabase.rpc('increment_ai_usage' as any, {
       p_user_id: userId,
       p_is_guest: false,
       p_session_id: null
-    });
+    }) as { data: any; error: any };
 
     if (error) throw error;
+    if (!data) throw new Error('No data returned from increment_ai_usage');
 
     if (!data.success) {
       return {
         success: false,
         usage: {
-          usage_count: data.usage_count || 0,
-          daily_limit: data.daily_limit || APP_CONFIG.RATE_LIMITS.AUTH_DAILY_LIMIT,
-          remaining: data.remaining || 0,
+          usage_count: Number(data.usage_count) || 0,
+          daily_limit: Number(data.daily_limit) || APP_CONFIG.RATE_LIMITS.AUTH_DAILY_LIMIT,
+          remaining: Number(data.remaining) || 0,
           last_used_at: null,
           session_id: null
         },
-        error: data.error || 'Usage limit exceeded'
+        error: String(data.error) || 'Usage limit exceeded'
       };
     }
 
     return {
       success: true,
       usage: {
-        usage_count: data.usage_count,
-        daily_limit: data.daily_limit,
-        remaining: data.remaining,
+        usage_count: Number(data.usage_count) || 0,
+        daily_limit: Number(data.daily_limit) || APP_CONFIG.RATE_LIMITS.AUTH_DAILY_LIMIT,
+        remaining: Number(data.remaining) || 0,
         last_used_at: null,
         session_id: null
       }
@@ -204,20 +208,22 @@ export class RateLimitingService {
       const userAgent = navigator.userAgent;
       
       // Use server-side validation
-      const { data, error } = await supabase.rpc('track_guest_usage', {
+      // @ts-expect-error - Custom RPC function not in generated types
+      const { data, error } = await supabase.rpc('track_guest_usage' as any, {
         p_session_id: this.guestSessionId || crypto.randomUUID(),
         p_ip_address: ipAddress,
         p_user_agent: userAgent
-      });
+      }) as { data: any; error: any };
 
       if (error) throw error;
+      if (!data) throw new Error('No data returned from track_guest_usage');
 
       return {
-        allowed: data.success,
+        allowed: Boolean(data.success),
         usage: {
-          usage_count: data.usage_count,
-          daily_limit: data.daily_limit,
-          remaining: data.remaining,
+          usage_count: Number(data.usage_count) || 0,
+          daily_limit: Number(data.daily_limit) || APP_CONFIG.RATE_LIMITS.GUEST_DAILY_LIMIT,
+          remaining: Number(data.remaining) || 0,
           last_used_at: null,
           session_id: this.guestSessionId
         },
@@ -282,20 +288,22 @@ export class RateLimitingService {
       const userAgent = navigator.userAgent;
       
       // Use server-side validation and increment
-      const { data, error } = await supabase.rpc('track_guest_usage', {
+      // @ts-expect-error - Custom RPC function not in generated types
+      const { data, error } = await supabase.rpc('track_guest_usage' as any, {
         p_session_id: this.guestSessionId || crypto.randomUUID(),
         p_ip_address: ipAddress,
         p_user_agent: userAgent
-      });
+      }) as { data: any; error: any };
 
       if (error) throw error;
+      if (!data) throw new Error('No data returned from track_guest_usage');
 
       return {
-        success: data.success,
+        success: Boolean(data.success),
         usage: {
-          usage_count: data.usage_count,
-          daily_limit: data.daily_limit,
-          remaining: data.remaining,
+          usage_count: Number(data.usage_count) || 0,
+          daily_limit: Number(data.daily_limit) || APP_CONFIG.RATE_LIMITS.GUEST_DAILY_LIMIT,
+          remaining: Number(data.remaining) || 0,
           last_used_at: null,
           session_id: this.guestSessionId
         },
@@ -405,7 +413,7 @@ export class RateLimitingService {
     if (user) {
       // For authenticated users, delete today's usage record
       const today = new Date().toISOString().split('T')[0];
-      await supabase
+      await (supabase as any)
         .from('ai_usage')
         .delete()
         .eq('user_id', user.id)

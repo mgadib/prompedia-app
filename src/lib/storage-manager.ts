@@ -242,13 +242,15 @@ class StorageManager {
         // Refresh auth state before saving
         await this.refreshAuthState();
         
-        // Validate prompt data
-        const validatedPrompt = promptSchema.parse(prompt);
+        // Validate prompt data - ensure required fields are present
+        if (!prompt.id || !prompt.title || !prompt.content || !prompt.model) {
+          throw new StorageError('Missing required prompt fields');
+        }
         
         if (this.isAuthenticated()) {
-          await this.savePromptToSupabase(validatedPrompt);
+          await this.savePromptToSupabase(prompt as Prompt);
         } else {
-          await this.savePromptToLocalStorage(validatedPrompt);
+          await this.savePromptToLocalStorage(prompt as Prompt);
         }
         
         storageLogger.info('Prompt saved successfully', {
@@ -386,7 +388,7 @@ class StorageManager {
         content: item.content,
         description: item.description,
         model: item.model,
-        mode: item.mode,
+        mode: (item.mode || 'normal') as 'meta-prompt' | 'thinking' | 'normal',
         is_public: item.is_public,
         user_id: item.user_id,
         color: item.color,

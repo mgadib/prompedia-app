@@ -48,8 +48,17 @@ export const usePromptOperations = () => {
       setError(null);
 
       const updatedPrompt: Prompt = {
-        ...updates,
         id: promptId,
+        title: updates.title || '',
+        content: updates.content || '',
+        model: updates.model || '',
+        mode: updates.mode || 'normal',
+        color: updates.color || '#3b82f6',
+        is_public: updates.is_public || false,
+        is_featured: updates.is_featured || false,
+        user_id: updates.user_id,
+        description: updates.description,
+        original_prompt_id: updates.original_prompt_id,
       };
 
       await storageManager.savePrompt(updatedPrompt);

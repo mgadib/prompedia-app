@@ -42,9 +42,7 @@ export const promptSchema = z.object({
   title: promptTitleSchema,
   content: promptContentSchema,
   model: z.string().min(1, 'Model wajib dipilih'),
-  mode: z.enum(['meta-prompt', 'self-refine', 'chain-of-thought', 'self-consistency', 'chain-of-prompt', 'role-prompt', 'normal'], {
-    errorMap: () => ({ message: 'Mode tidak valid' })
-  }),
+  mode: z.enum(['meta-prompt', 'thinking', 'normal']).optional().default('normal'),
   color: z.string().default('#3b82f6'),
   is_public: z.boolean().default(false),
   is_featured: z.boolean().default(false),

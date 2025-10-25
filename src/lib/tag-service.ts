@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { Tag } from '@/integrations/supabase/types';
+import { Tag } from './storage';
 
 export interface TagInsert {
   name: string;
@@ -12,14 +12,14 @@ export class TagService {
    */
   static async getUserTags(userId: string): Promise<Tag[]> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('tags')
         .select('*')
         .eq('user_id', userId)
         .order('name', { ascending: true });
 
       if (error) throw error;
-      return data || [];
+      return (data || []) as Tag[];
     } catch (error) {
       console.error('Failed to get user tags:', error);
       return [];

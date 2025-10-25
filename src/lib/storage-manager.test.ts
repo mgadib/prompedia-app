@@ -42,7 +42,7 @@ vi.mock('./logger', () => ({
   },
 }));
 
-import { StorageManager, StorageError, storageManager } from './storage-manager';
+import { storageManager, StorageError } from './storage-manager';
 import { Prompt } from './storage';
 
 // Mock localStorage
@@ -69,8 +69,9 @@ describe('StorageManager', () => {
     model: 'gpt-4',
     mode: 'normal',
     color: '#ff0000',
-    isFeatured: false,
-    isPublic: false,
+    is_featured: false,
+    is_public: false,
+    user_id: 'test-user-id'
   };
 
   beforeEach(() => {

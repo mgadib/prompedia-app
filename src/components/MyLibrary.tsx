@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Prompt } from '@/lib/storage';
+import { Prompt, Tag } from '@/lib/storage';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,7 +7,6 @@ import { FileText, Lock, Globe, Edit, Trash2, Search, Filter, Copy } from 'lucid
 import { toast } from 'sonner';
 import { SupabaseService } from '@/lib/supabase-service';
 import { TagService } from '@/lib/tag-service';
-import { Tag } from '@/integrations/supabase/types';
 import PromptDetailModal from './PromptDetailModal';
 import {
   AlertDialog,

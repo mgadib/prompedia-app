@@ -329,26 +329,23 @@ export class SupabaseService {
   // ========================================
 
   static async getAIModels(): Promise<AIModel[]> {
-    const { data, error } = await supabase
+    const result: any = await supabase
       .from('ai_models')
       .select('*')
-      .eq('is_active', true)
-      .order('name')
-
-    if (error) throw error
-    return data || []
+    
+    if (result.error) throw result.error
+    return result.data || []
   }
 
   static async getAIModel(id: string): Promise<AIModel | null> {
-    const { data, error } = await supabase
+    const result: any = await supabase
       .from('ai_models')
       .select('*')
       .eq('id', id)
-      .eq('is_active', true)
       .single()
-
-    if (error && error.code !== 'PGRST116') throw error
-    return data
+ 
+    if (result.error && result.error.code !== 'PGRST116') throw result.error
+    return result.data
   }
 
   // ========================================
@@ -356,26 +353,23 @@ export class SupabaseService {
   // ========================================
 
   static async getThinkingModes(): Promise<ThinkingMode[]> {
-    const { data, error } = await supabase
+    const result: any = await supabase
       .from('thinking_modes')
       .select('*')
-      .eq('is_active', true)
-      .order('name')
 
-    if (error) throw error
-    return data || []
+    if (result.error) throw result.error
+    return result.data || []
   }
 
   static async getThinkingMode(id: string): Promise<ThinkingMode | null> {
-    const { data, error } = await supabase
+    const result: any = await supabase
       .from('thinking_modes')
       .select('*')
       .eq('id', id)
-      .eq('is_active', true)
       .single()
 
-    if (error && error.code !== 'PGRST116') throw error
-    return data
+    if (result.error && result.error.code !== 'PGRST116') throw result.error
+    return result.data
   }
 
   // ========================================
@@ -488,7 +482,7 @@ export class SupabaseService {
 
     // Get local prompts
     const localPrompts = storage.getPrompts()
-    const userLocalPrompts = localPrompts.filter(p => p.userId === user.id)
+    const userLocalPrompts = localPrompts.filter(p => p.user_id === user.id)
 
     if (userLocalPrompts.length === 0) return
 
@@ -511,29 +505,11 @@ export class SupabaseService {
           model: localPrompt.model,
           mode: localPrompt.mode,
           color: localPrompt.color,
-          is_public: localPrompt.isPublic
+          is_public: localPrompt.is_public
         })
 
-        // Sync tags for this prompt
-        if (localPrompt.tags && localPrompt.tags.length > 0) {
-          for (const tagName of localPrompt.tags) {
-            // Create tag if it doesn't exist
-            let tag = (await this.searchTags(tagName)).find(t => t.name === tagName)
-            if (!tag) {
-              tag = await this.createTag({
-                name: tagName,
-                description: '',
-                color: '#6b7280',
-                is_system: false
-              })
-            }
-
-            // Link tag to prompt
-            if (tag) {
-              await this.addPromptTag(newPrompt.id, tag.id)
-            }
-          }
-        }
+        // Tags are handled separately via prompt_tags table
+        // No tags property on Prompt interface anymore
       } catch (error) {
         console.error('Error syncing prompt:', error)
       }
