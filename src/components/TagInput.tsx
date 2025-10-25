@@ -91,7 +91,7 @@ const TagInput = ({ selectedTagNames, onChange }: TagInputProps) => {
     <div className="space-y-1">
       <div className="relative">
         {/* Main input area with tags inline - matching title design */}
-        <div className="relative flex items-center gap-2 min-h-[40px] bg-transparent border-none px-0 focus-within:ring-0">
+        <div className="relative flex items-center gap-3 min-h-[40px] bg-transparent border-none px-3 py-2 focus-within:ring-0">
           <Hash className="w-4 h-4 text-muted-foreground flex-shrink-0" />
           
           {/* Current Tags - displayed inline with input, single line only */}
@@ -122,7 +122,7 @@ const TagInput = ({ selectedTagNames, onChange }: TagInputProps) => {
             onFocus={() => setShowSuggestions(input.length > 0)}
             onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
             placeholder={selectedTagNames.length >= 3 ? "Max 3 tags" : "Add tags..."}
-            className="bg-transparent border-none text-sm font-mono focus-visible:ring-0 flex-1 min-w-[150px] px-0"
+            className="bg-transparent border-none text-sm font-mono focus-visible:ring-0 flex-1 min-w-[150px] px-2"
             disabled={selectedTagNames.length >= 3}
           />
         </div>

@@ -180,7 +180,7 @@ const MyLibrary = ({
     <div className="flex flex-col h-full">
       {/* Search and Filter Header */}
       <div className="p-6 border-b border-border bg-card/50">
-        <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center">
           {/* Search Input */}
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -198,7 +198,7 @@ const MyLibrary = ({
             <select
               value={selectedTag}
               onChange={(e) => setSelectedTag(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-background border border-input rounded-md text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-full pl-10 pr-4 h-10 bg-background border border-input rounded-md text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ring"
             >
               <option value="">All tags</option>
               {allTags.map(tag => (
@@ -206,11 +206,52 @@ const MyLibrary = ({
               ))}
             </select>
           </div>
-        </div>
-        
-        {/* Results count */}
-        <div className="mt-4 text-xs text-muted-foreground font-mono">
-          {filteredPrompts.length} of {prompts.length} prompts
+
+          {/* Prompt count and filter info - on the same line */}
+          <div className="flex items-center gap-4 text-sm font-mono">
+            <div className="flex items-center gap-2">
+              <FileText className="w-4 h-4 text-primary" />
+              <span className="text-foreground font-semibold">
+                {filteredPrompts.length.toLocaleString()}
+              </span>
+              <span className="text-muted-foreground">
+                of {prompts.length.toLocaleString()}
+              </span>
+            </div>
+            
+            {/* Filter indicators */}
+            {(searchTerm || selectedTag) && (
+              <div className="flex items-center gap-2 text-xs">
+                {searchTerm && (
+                  <Badge variant="secondary" className="text-xs">
+                    <Search className="w-3 h-3 mr-1" />
+                    "{searchTerm}"
+                  </Badge>
+                )}
+                {selectedTag && (
+                  <Badge variant="outline" className="text-xs">
+                    <Filter className="w-3 h-3 mr-1" />
+                    {selectedTag}
+                  </Badge>
+                )}
+              </div>
+            )}
+            
+            {/* Clear filters button */}
+            {(searchTerm || selectedTag) && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setSearchTerm('');
+                  setSelectedTag('');
+                }}
+                className="text-xs h-7 px-2 hover:bg-secondary/50"
+              >
+                Clear
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 

@@ -450,7 +450,6 @@ const AppPage = () => {
                 <PublicLibrary
                   prompts={publicPromptsWithTags}
                   onSelectPrompt={handleSelectPrompt}
-                  onCopyPrompt={handleCopyPrompt}
                   onUsePrompt={handleUsePrompt}
                   currentPromptId={currentPrompt?.id}
                 />

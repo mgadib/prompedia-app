@@ -51,7 +51,7 @@ export const makeAPIRequest = async (
       }
     ],
     temperature: options.temperature || 0.7,
-    max_tokens: options.max_tokens || 2048,
+    max_tokens: options.max_tokens || 8192,
     top_p: options.top_p || 1.0
   };
 

@@ -79,7 +79,24 @@ All colors MUST be HSL.
 
   .prompedia-button:hover {
     background: hsl(var(--prompedia-green-hover));
-    transform: translateY(-1px);
+  }
+
+  /* Custom scrollbar for prompt editor */
+  .prompt-editor-textarea::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .prompt-editor-textarea::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .prompt-editor-textarea::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 4px;
+  }
+
+  .prompt-editor-textarea::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--border) / 0.8);
   }
 
   .prompedia-accent {

@@ -462,7 +462,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
           mode: mode,  // Add mode to request
           options: {
             temperature: 0.7,
-            max_tokens: 2048
+            max_tokens: 8192
           }
         }
       });
@@ -576,7 +576,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       {/* Main Editor Area */}
       <div className="flex-1 flex flex-col overflow-hidden p-4 space-y-4">
         {/* Title and Tags Section - Clean Layout */}
-        <div className="flex items-start gap-6">
+        <div className="flex items-start gap-8">
           {/* Title Section */}
           <div className="flex-1">
             <Input
@@ -588,7 +588,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
                 }
               }}
               placeholder="Enter prompt title..."
-              className="text-xl font-bold bg-transparent border-none px-0 focus-visible:ring-0 placeholder:text-muted-foreground/50"
+              className="text-xl font-bold bg-transparent border-none px-3 py-2 focus-visible:ring-0 placeholder:text-muted-foreground/50"
               maxLength={77}
             />
           </div>
@@ -653,10 +653,17 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
               </div>
             )}
 
+            {/* Character limit warning */}
+            {content.length > 45000 && (
+              <div className="flex items-center gap-1 text-red-400 ml-auto">
+                <span className="text-xs font-mono">⚠️ Character Limit Near</span>
+              </div>
+            )}
+
             {/* Rate limit warning */}
             {!userCanUseAI && (
               <div className="flex items-center gap-1 text-red-400 ml-auto">
-                <span className="text-xs font-mono">⚠️ Limit Exceeded</span>
+                <span className="text-xs font-mono">⚠️ AI Limit Exceeded</span>
               </div>
             )}
           </div>
@@ -675,7 +682,8 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
               }
             }}
             placeholder="Start writing..."
-            className="flex-1 min-h-0 bg-card border-border font-mono text-sm resize-none leading-relaxed"
+            className="flex-1 min-h-0 bg-card border-border font-mono text-sm resize-none leading-relaxed prompt-editor-textarea"
+            maxLength={50000}
           />
         </div>
 
@@ -691,10 +699,12 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
               <span>{content.split(/\s+/).filter(word => word.length > 0).length} words</span>
             </div>
 
-            {/* Character count */}
-            <div className="flex items-center gap-1 text-xs text-muted-foreground font-mono">
+            {/* Character count with limit indicator */}
+            <div className="flex items-center gap-1 text-xs font-mono">
               <span>#</span>
-              <span>{content.length} chars</span>
+              <span className={content.length > 45000 ? "text-red-400" : content.length > 40000 ? "text-yellow-400" : "text-muted-foreground"}>
+                {content.length.toLocaleString()}/50,000
+              </span>
             </div>
 
             {/* Current date */}

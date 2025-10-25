@@ -17,7 +17,6 @@ interface PromptWithTags extends Prompt {
 interface PublicLibraryProps {
   prompts: PromptWithTags[];
   onSelectPrompt: (prompt: PromptWithTags) => void;
-  onCopyPrompt: (prompt: PromptWithTags) => void;
   onUsePrompt: (prompt: PromptWithTags) => void;
   currentPromptId?: string;
 }
@@ -36,7 +35,6 @@ const getMockUserData = (userId: string) => {
 const PublicLibrary = ({ 
   prompts, 
   onSelectPrompt, 
-  onCopyPrompt, 
   onUsePrompt, 
   currentPromptId 
 }: PublicLibraryProps) => {
@@ -106,8 +104,8 @@ const PublicLibrary = ({
 
   const handleCopy = (e: React.MouseEvent, prompt: PromptWithTags) => {
     e.stopPropagation();
-    onCopyPrompt(prompt);
-    toast.success('Prompt copied to your library');
+    navigator.clipboard.writeText(prompt.content);
+    toast.success('Prompt content copied to clipboard');
   };
 
   const handleUse = (e: React.MouseEvent, prompt: PromptWithTags) => {
@@ -132,8 +130,8 @@ const PublicLibrary = ({
   };
 
   const handleCopyPromptFromModal = (prompt: Prompt) => {
-    onCopyPrompt(prompt);
-    toast.success('Prompt copied to your library');
+    navigator.clipboard.writeText(prompt.content);
+    toast.success('Prompt content copied to clipboard');
   };
 
   // Show loading state while tags are being loaded
@@ -160,39 +158,77 @@ const PublicLibrary = ({
     <div className="flex flex-col h-full">
       {/* Search and Filter Header */}
       <div className="p-6 border-b border-border bg-card/50">
-        <div className="flex flex-col gap-4">
-          {/* Search, Filter, and Count Row */}
-          <div className="flex flex-col lg:flex-row gap-4">
-            {/* Search Input */}
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Search public prompts..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 font-mono"
-              />
+        <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center">
+          {/* Search Input */}
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Search public prompts..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 font-mono"
+            />
+          </div>
+          
+          {/* Tag Filter */}
+          <div className="relative min-w-[200px]">
+            <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <select
+              value={selectedTag}
+              onChange={(e) => setSelectedTag(e.target.value)}
+              className="w-full pl-10 pr-4 h-10 bg-background border border-input rounded-md text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              <option value="">All tags</option>
+              {allTags.map(tag => (
+                <option key={tag} value={tag}>{tag}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Prompt count and filter info - on the same line */}
+          <div className="flex items-center gap-4 text-sm font-mono">
+            <div className="flex items-center gap-2">
+              <Globe className="w-4 h-4 text-primary" />
+              <span className="text-foreground font-semibold">
+                {filteredPrompts.length.toLocaleString()}
+              </span>
+              <span className="text-muted-foreground">
+                of {prompts.length.toLocaleString()}
+              </span>
             </div>
             
-            {/* Tag Filter */}
-            <div className="relative lg:w-64">
-              <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <select
-                value={selectedTag}
-                onChange={(e) => setSelectedTag(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-background border border-input rounded-md text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ring"
+            {/* Filter indicators */}
+            {(searchTerm || selectedTag) && (
+              <div className="flex items-center gap-2 text-xs">
+                {searchTerm && (
+                  <Badge variant="secondary" className="text-xs">
+                    <Search className="w-3 h-3 mr-1" />
+                    "{searchTerm}"
+                  </Badge>
+                )}
+                {selectedTag && (
+                  <Badge variant="outline" className="text-xs">
+                    <Filter className="w-3 h-3 mr-1" />
+                    {selectedTag}
+                  </Badge>
+                )}
+              </div>
+            )}
+            
+            {/* Clear filters button */}
+            {(searchTerm || selectedTag) && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setSearchTerm('');
+                  setSelectedTag('');
+                }}
+                className="text-xs h-7 px-2 hover:bg-secondary/50"
               >
-                <option value="">Filter by tag...</option>
-                {allTags.map(tag => (
-                  <option key={tag} value={tag}>{tag}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Results count */}
-            <div className="flex items-center text-xs text-muted-foreground font-mono lg:min-w-[200px]">
-              {filteredPrompts.length} of {prompts.length} public prompts
-            </div>
+                Clear
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -283,7 +319,7 @@ const PublicLibrary = ({
                         variant="ghost"
                         onClick={(e) => handleCopy(e, prompt)}
                         className="h-8 w-8 p-0 hover:bg-primary/20"
-                        title="Copy to private library"
+                        title="Copy content to clipboard"
                       >
                         <Copy className="w-3 h-3" />
                       </Button>
