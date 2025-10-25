@@ -59,10 +59,31 @@ serve(async (req) => {
       data: { user },
     } = await supabaseClient.auth.getUser()
 
-    const { model, prompt, mode, options = {} } = await req.json()
+    let requestBody
+    try {
+      requestBody = await req.json()
+    } catch (parseError) {
+      console.error(`[${requestId}] Failed to parse request body:`, parseError)
+      return new Response(JSON.stringify({ 
+        error: 'Invalid request body. Expected valid JSON.',
+        details: parseError instanceof Error ? parseError.message : 'JSON parse error'
+      }), {
+        status: 400,
+        headers: { ...corsHeaders(req.headers.get('origin')), 'Content-Type': 'application/json' },
+      })
+    }
+    
+    console.log(`[${requestId}] Request body received:`, { 
+      hasModel: !!requestBody.model, 
+      hasPrompt: !!requestBody.prompt,
+      mode: requestBody.mode 
+    })
+
+    const { model, prompt, mode, options = {} } = requestBody
 
     // ENHANCED VALIDATION - Security improvements
     if (!model || typeof model !== 'string') {
+      console.error(`[${requestId}] Invalid model parameter:`, model)
       return new Response(JSON.stringify({ error: 'Invalid model parameter' }), {
         status: 400,
         headers: { ...corsHeaders(req.headers.get('origin')), 'Content-Type': 'application/json' },
@@ -72,9 +93,12 @@ serve(async (req) => {
     // Model whitelist validation
     const ALLOWED_MODELS = [
       'meta-llama/llama-4-maverick:free',
+      'qwen/qwen3-30b-a3b:free',
       'qwen/qwen-2.5-72b-instruct:free',
+      'qwen/qwen-2.5-72b:free',
       'meta-llama/llama-3.1-8b-instruct:free',
       'meta-llama/llama-3.1-70b-instruct:free',
+      'meta-llama/llama-3.1-70b:free',
       'openai/gpt-4o-mini:free',
       'openai/gpt-4o:free',
       'anthropic/claude-3.5-sonnet:free',
@@ -82,8 +106,11 @@ serve(async (req) => {
     ];
 
     if (!ALLOWED_MODELS.includes(model)) {
+      console.error(`[${requestId}] Model not in whitelist:`, model)
       return new Response(JSON.stringify({ 
-        error: 'Invalid model selection. Please select from allowed models.' 
+        error: 'Invalid model selection. Please select from allowed models.',
+        requested_model: model,
+        allowed_models: ALLOWED_MODELS
       }), { 
         status: 400, 
         headers: { ...corsHeaders(req.headers.get('origin')), 'Content-Type': 'application/json' } 
@@ -155,7 +182,7 @@ serve(async (req) => {
     const getApiKeyForModel = (modelId: string): string | undefined => {
       if (modelId.includes('llama-4-maverick') || modelId.includes('llama4') || modelId.includes('llama-3.1')) {
         return Deno.env.get('OPENROUTER_API_KEY_LLAMA4_MAVERICK')
-      } else if (modelId.includes('qwen3-30b') || modelId.includes('qwen-2.5') || modelId.includes('qwen/')) {
+      } else if (modelId.includes('qwen3') || modelId.includes('qwen-2.5') || modelId.includes('qwen/')) {
         return Deno.env.get('OPENROUTER_API_KEY_QWEN3_30B')
       }
       // Fallback to default key
@@ -165,11 +192,17 @@ serve(async (req) => {
     const apiKey = getApiKeyForModel(model)
     
     if (!apiKey) {
-      return new Response(JSON.stringify({ error: `No API key configured for model: ${model}` }), {
+      console.error(`[${requestId}] No API key found for model:`, model)
+      return new Response(JSON.stringify({ 
+        error: `No API key configured for model: ${model}`,
+        model_requested: model
+      }), {
         status: 500,
         headers: { ...corsHeaders(req.headers.get('origin')), 'Content-Type': 'application/json' },
       })
     }
+    
+    console.log(`[${requestId}] Using API key for model:`, model)
 
     // Optional: try to map model id to friendly name if table exists
     let modelName = model
@@ -211,17 +244,17 @@ Instruksi mode: ${modeData.instructions}`;
     // Call OpenRouter API with model-specific fallbacks
     const getModelFallbacks = (modelId: string): string[] => {
       // Only try the same model or its variants, no cross-model fallbacks
-      if (modelId.includes('qwen')) {
+      if (modelId.includes('qwen3') || modelId.includes('qwen-2.5')) {
         return [
           modelId,
-          'qwen/qwen3-30b-a3b:free', // Try standard qwen if variant fails
-          'qwen/qwen-2.5-72b:free'
+          'qwen/qwen3-30b-a3b:free', // Try qwen3 as primary
+          'qwen/qwen-2.5-72b:free'   // Fallback to qwen 2.5
         ];
       } else if (modelId.includes('llama') || modelId.includes('meta')) {
         return [
           modelId,
-          'meta-llama/llama-4-maverick:free', // Try standard llama if variant fails
-          'meta-llama/llama-3.1-70b:free'
+          'meta-llama/llama-4-maverick:free', // Try llama 4 as primary
+          'meta-llama/llama-3.1-70b:free'     // Fallback to llama 3.1
         ];
       }
       // Default: only try the requested model
@@ -297,18 +330,24 @@ Instruksi mode: ${modeData.instructions}`;
 
       lastStatus = resp.status
       lastErrorText = await resp.text()
+      console.error(`[${requestId}] OpenRouter API error for model ${candidate}:`, {
+        status: resp.status,
+        error: lastErrorText.substring(0, 500)
+      })
+      
       // If rate-limited or payment required, try next model; otherwise stop and return
       if (resp.status !== 429 && resp.status !== 402) {
-        console.error('OpenRouter API error:', resp.status, lastErrorText)
         return new Response(JSON.stringify({
           error: 'OpenRouter API error',
           status: resp.status,
-          details: lastErrorText
+          model_tried: candidate,
+          details: lastErrorText.substring(0, 500)
         }), {
           status: resp.status,
           headers: { ...corsHeaders(req.headers.get('origin')), 'Content-Type': 'application/json' },
         })
       }
+      console.log(`[${requestId}] Trying fallback model after ${resp.status} error...`)
     }
 
     // If all candidates failed due to rate limits or payment

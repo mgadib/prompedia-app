@@ -470,47 +470,80 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
         }
       });
 
+      // Enhanced error handling
       if (error) {
         console.error('Edge function error:', error);
-        throw new Error(error.message || 'Failed to process prompt');
+        
+        // Try to extract more meaningful error message
+        let errorMessage = 'Failed to process prompt';
+        
+        if (error.message) {
+          errorMessage = error.message;
+        }
+        
+        if (error.context) {
+          console.error('Error context:', error.context);
+        }
+        
+        throw new Error(errorMessage);
       }
       
-      if (data) {
-        // Check for API error in response
-        if (data.error) {
-          throw new Error(data.error);
-        }
-        
-        const processedContent = data?.choices?.[0]?.message?.content || data?.response || '';
-        if (!processedContent) throw new Error('No response from AI');
-        
-        // Prefer extracted refined content when available
-        let nextContent = processedContent;
-        const refinedMatch = processedContent.match(/##\s*Hasil\s*Refined\s*([\s\S]*?)(?:\n##|$)/i);
-        if (refinedMatch) {
-          nextContent = refinedMatch[1].trim();
-        }
-        
-        // Store original content and show AI result
-        if (viewState === 'original') {
-          setOriginalContent(content);
-        }
-        setAiResultContent(nextContent);
-        setContent(nextContent);
-        setViewState('ai-result');
-        
-        
-        toast.success(`Content ${actionId}d successfully`);
-
-        // Increment usage counter after successful AI response
-        await rateLimitingService.incrementUsage(user);
-
-      } else {
-        throw new Error('No response from AI');
+      if (!data) {
+        throw new Error('No response from AI service');
       }
+
+      // Check for API error in response
+      if (data.error) {
+        console.error('API error response:', data);
+        throw new Error(data.error);
+      }
+      
+      const processedContent = data?.choices?.[0]?.message?.content || data?.response || '';
+      if (!processedContent) {
+        console.error('No content in response:', data);
+        throw new Error('No response content from AI');
+      }
+      
+      // Prefer extracted refined content when available
+      let nextContent = processedContent;
+      const refinedMatch = processedContent.match(/##\s*Hasil\s*Refined\s*([\s\S]*?)(?:\n##|$)/i);
+      if (refinedMatch) {
+        nextContent = refinedMatch[1].trim();
+      }
+      
+      // Store original content and show AI result
+      if (viewState === 'original') {
+        setOriginalContent(content);
+      }
+      setAiResultContent(nextContent);
+      setContent(nextContent);
+      setViewState('ai-result');
+      
+      
+      toast.success(`Content ${actionId}d successfully`);
+
+      // Increment usage counter after successful AI response
+      await rateLimitingService.incrementUsage(user);
+
     } catch (error) {
       console.error(`Error processing ${actionId}:`, error);
-      toast.error(error instanceof Error ? error.message : `Failed to ${actionId} content`);
+      
+      // More detailed error message
+      let errorMsg = `Failed to ${actionId} content`;
+      if (error instanceof Error) {
+        errorMsg = error.message;
+        
+        // Show specific error types
+        if (errorMsg.includes('rate limit') || errorMsg.includes('429')) {
+          errorMsg = 'AI service rate limit exceeded. Please try again in a moment.';
+        } else if (errorMsg.includes('API key') || errorMsg.includes('401')) {
+          errorMsg = 'API authentication failed. Please contact support.';
+        } else if (errorMsg.includes('timeout')) {
+          errorMsg = 'Request timeout. Please try again.';
+        }
+      }
+      
+      toast.error(errorMsg);
     } finally {
       setIsActionLoading(false);
       setLoadingAction('');

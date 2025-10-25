@@ -174,9 +174,12 @@ serve(async (req) => {
     // Model whitelist validation
     const ALLOWED_MODELS = [
       'meta-llama/llama-4-maverick:free',
+      'qwen/qwen3-30b-a3b:free',
       'qwen/qwen-2.5-72b-instruct:free',
+      'qwen/qwen-2.5-72b:free',
       'meta-llama/llama-3.1-8b-instruct:free',
       'meta-llama/llama-3.1-70b-instruct:free',
+      'meta-llama/llama-3.1-70b:free',
       'openai/gpt-4o-mini:free',
       'openai/gpt-4o:free',
       'anthropic/claude-3.5-sonnet:free',
@@ -198,7 +201,7 @@ serve(async (req) => {
     const getApiKeyForModel = (modelId: string): string | undefined => {
       if (modelId.includes('llama-4-maverick') || modelId.includes('llama4') || modelId.includes('llama-3.1')) {
         return Deno.env.get('OPENROUTER_API_KEY_LLAMA4_MAVERICK')
-      } else if (modelId.includes('qwen3-30b') || modelId.includes('qwen-2.5') || modelId.includes('qwen/')) {
+      } else if (modelId.includes('qwen3') || modelId.includes('qwen-2.5') || modelId.includes('qwen/')) {
         return Deno.env.get('OPENROUTER_API_KEY_QWEN3_30B')
       }
       // Fallback to default key
