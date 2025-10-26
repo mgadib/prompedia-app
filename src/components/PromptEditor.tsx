@@ -632,7 +632,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       {/* Main Editor Area */}
       <div className="flex-1 flex flex-col overflow-hidden p-4 space-y-4">
         {/* Title and Tags Section - Clean Layout */}
-        <div className="flex items-start gap-8">
+        <div className="flex items-center gap-8">
           {/* Title Section */}
           <div className="flex-1">
             <Input

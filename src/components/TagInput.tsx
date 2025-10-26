@@ -125,6 +125,24 @@ const TagInput = ({ selectedTagNames, onChange }: TagInputProps) => {
             className="bg-transparent border-none text-sm font-mono focus-visible:ring-0 flex-1 min-w-[150px] px-2"
             disabled={selectedTagNames.length >= 3}
           />
+
+          {/* Popular Tags Quick Add - inline on same row */}
+          {selectedTagNames.length < 3 && suggestions.length > 0 && (
+            <div className="flex items-center gap-1 ml-2">
+              {suggestions.slice(0, 3 - selectedTagNames.length).map(tag => (
+                <Button
+                  key={tag}
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => addTag(tag)}
+                  className="h-6 px-2 text-xs bg-accent/10 hover:bg-accent/20 hover:text-accent font-mono flex-shrink-0"
+                >
+                  <Plus className="w-3 h-3 mr-1" />
+                  {tag}
+                </Button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Tag Suggestions */}
@@ -143,26 +161,6 @@ const TagInput = ({ selectedTagNames, onChange }: TagInputProps) => {
           </div>
         )}
       </div>
-
-      {/* Popular Tags Quick Add - only when less than 3 tags */}
-      {selectedTagNames.length < 3 && suggestions.length > 0 && (
-        <div className="mt-2">
-          <div className="flex flex-wrap gap-1">
-            {suggestions.slice(0, Math.min(6, 3 - selectedTagNames.length)).map(tag => (
-              <Button
-                key={tag}
-                variant="ghost"
-                size="sm"
-                onClick={() => addTag(tag)}
-                className="h-6 px-2 text-xs bg-accent/10 hover:bg-accent/20 hover:text-accent font-mono"
-              >
-                <Plus className="w-3 h-3 mr-1" />
-                {tag}
-              </Button>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 };
