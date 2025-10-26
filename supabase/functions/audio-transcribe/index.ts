@@ -73,12 +73,11 @@ serve(async (req) => {
     }
 
     console.log(`[${requestId}] Sending to OpenRouter Gemini for transcription...`)
-    
-    // Convert audio to base64 data URL for OpenRouter
+
+    // Convert audio bytes to base64 for OpenRouter audio input
     const base64Audio = btoa(String.fromCharCode(...binaryAudio))
-    const audioDataUrl = `data:audio/${format};base64,${base64Audio}`
-    
-    // Send to OpenRouter with Gemini model
+
+    // Send to OpenRouter with Gemini Flash Lite using input_audio
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -88,19 +87,20 @@ serve(async (req) => {
         'X-Title': 'Prompedia Audio Transcription'
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.0-flash-exp:free',
+        model: 'google/gemini-2.0-flash-lite-001',
         messages: [
           {
             role: 'user',
             content: [
               {
                 type: 'text',
-                text: 'Transkripsi audio ini ke dalam teks bahasa Indonesia. Hanya berikan hasil transkripsi tanpa komentar tambahan.'
+                text: 'Transkripsikan audio berikut ke teks Bahasa Indonesia. Kembalikan hanya teks transkripsinya tanpa penjelasan.'
               },
               {
-                type: 'image_url',
-                image_url: {
-                  url: audioDataUrl
+                type: 'input_audio',
+                input_audio: {
+                  data: base64Audio,
+                  format: format
                 }
               }
             ]
