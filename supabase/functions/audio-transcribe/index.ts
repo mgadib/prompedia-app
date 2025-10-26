@@ -55,11 +55,11 @@ serve(async (req) => {
 
     console.log(`[${requestId}] Processing audio data, mimeType: ${mimeType}`);
 
-    // Get API key for Gemini 2.0 Flash Lite
-    const apiKey = Deno.env.get('OPENROUTER_API_KEY_GEMINI_2.0_FLASH_LITE');
+    // Get OpenAI API key for Whisper
+    const apiKey = Deno.env.get('OPENAI_API_KEY');
     
     if (!apiKey) {
-      console.error(`[${requestId}] No API key found for Gemini 2.0 Flash Lite`);
+      console.error(`[${requestId}] No OpenAI API key found`);
       throw new Error('Transcription service not configured');
     }
 
@@ -67,60 +67,40 @@ serve(async (req) => {
     const binaryAudio = processBase64Chunks(audio);
     console.log(`[${requestId}] Audio processed, size: ${binaryAudio.length} bytes`);
     
-    // Prepare multimodal request for Gemini
-    // Gemini 2.0 Flash supports audio transcription via chat completions
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    // Prepare form data for OpenAI Whisper API
+    const formData = new FormData();
+    const blob = new Blob([binaryAudio], { type: mimeType });
+    formData.append('file', blob, 'audio.webm');
+    formData.append('model', 'whisper-1');
+    formData.append('language', 'id'); // Indonesian language
+    formData.append('response_format', 'text');
+
+    // Send to OpenAI Whisper API
+    const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://prompedia.app',
-        'X-Title': 'Prompedia Voice Transcription'
       },
-      body: JSON.stringify({
-        model: 'google/gemini-2.0-flash-lite-001',
-        messages: [
-          {
-            role: 'user',
-            content: [
-              {
-                type: 'text',
-                text: 'Please transcribe this audio file accurately. Provide only the transcription text without any additional commentary or formatting.'
-              },
-              {
-                type: 'input_audio',
-                input_audio: {
-                  data: audio,
-                  format: 'webm'
-                }
-              }
-            ]
-          }
-        ],
-        temperature: 0.3,
-        max_tokens: 4096
-      })
+      body: formData,
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`[${requestId}] OpenRouter API error:`, {
+      console.error(`[${requestId}] OpenAI Whisper API error:`, {
         status: response.status,
         error: errorText.substring(0, 500)
       });
       throw new Error(`Transcription failed: ${response.status} - ${errorText.substring(0, 200)}`);
     }
 
-    const result = await response.json();
-    console.log(`[${requestId}] Transcription successful`);
-
-    const transcription = result.choices[0]?.message?.content || '';
+    const transcription = await response.text();
+    console.log(`[${requestId}] Transcription successful, length: ${transcription.length} chars`);
 
     return new Response(
       JSON.stringify({ 
         text: transcription,
         meta: {
-          model: 'google/gemini-2.0-flash-lite-001',
+          model: 'whisper-1',
           timestamp: new Date().toISOString()
         }
       }),
