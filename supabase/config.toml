@@ -18,6 +18,9 @@ Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline'
 [functions.ai-processor]
 verify_jwt = false
 
+[functions.audio-transcribe]
+verify_jwt = false
+
 [functions.prompt-enhancer]
 verify_jwt = false
 
