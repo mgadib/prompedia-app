@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts'
 
 const ALLOWED_ORIGINS = [
   'https://prompedia.app',
@@ -21,6 +22,37 @@ const corsHeaders = (origin: string | null): Record<string, string> => {
     'Access-Control-Allow-Credentials': 'true',
   };
 };
+
+// Input validation schema using Zod for security
+const ALLOWED_MODELS = [
+  'meta-llama/llama-4-maverick:free',
+  'qwen/qwen3-30b-a3b:free',
+  'qwen/qwen-2.5-72b-instruct:free',
+  'qwen/qwen-2.5-72b:free',
+  'meta-llama/llama-3.1-8b-instruct:free',
+  'meta-llama/llama-3.1-70b-instruct:free',
+  'meta-llama/llama-3.1-70b:free',
+  'openai/gpt-4o-mini:free',
+  'openai/gpt-4o:free',
+  'anthropic/claude-3.5-sonnet:free',
+  'anthropic/claude-3-haiku:free'
+] as const;
+
+const ALLOWED_MODES = ['creative', 'balanced', 'precise', 'custom', null, undefined] as const;
+
+const RequestSchema = z.object({
+  model: z.string().min(1).max(100).refine(
+    (val) => ALLOWED_MODELS.includes(val as any),
+    { message: 'Invalid model selection. Please select from allowed models.' }
+  ),
+  prompt: z.string().min(1, 'Prompt cannot be empty').max(50000, 'Prompt exceeds maximum length of 50000 characters'),
+  mode: z.string().max(50).optional().nullable(),
+  options: z.object({
+    temperature: z.number().min(0).max(2).optional(),
+    max_tokens: z.number().int().min(1).max(16384).optional(),
+    top_p: z.number().min(0).max(1).optional()
+  }).optional()
+});
 
 serve(async (req) => {
   // Security logging
@@ -72,111 +104,44 @@ serve(async (req) => {
         headers: { ...corsHeaders(req.headers.get('origin')), 'Content-Type': 'application/json' },
       })
     }
-    
-    console.log(`[${requestId}] Request body received:`, { 
-      hasModel: !!requestBody.model, 
-      hasPrompt: !!requestBody.prompt,
-      mode: requestBody.mode 
-    })
 
-    const { model, prompt, mode, options = {} } = requestBody
-
-    // ENHANCED VALIDATION - Security improvements
-    if (!model || typeof model !== 'string') {
-      console.error(`[${requestId}] Invalid model parameter:`, model)
-      return new Response(JSON.stringify({ error: 'Invalid model parameter' }), {
-        status: 400,
-        headers: { ...corsHeaders(req.headers.get('origin')), 'Content-Type': 'application/json' },
-      })
-    }
-
-    // Model whitelist validation
-    const ALLOWED_MODELS = [
-      'meta-llama/llama-4-maverick:free',
-      'qwen/qwen3-30b-a3b:free',
-      'qwen/qwen-2.5-72b-instruct:free',
-      'qwen/qwen-2.5-72b:free',
-      'meta-llama/llama-3.1-8b-instruct:free',
-      'meta-llama/llama-3.1-70b-instruct:free',
-      'meta-llama/llama-3.1-70b:free',
-      'openai/gpt-4o-mini:free',
-      'openai/gpt-4o:free',
-      'anthropic/claude-3.5-sonnet:free',
-      'anthropic/claude-3-haiku:free'
-    ];
-
-    if (!ALLOWED_MODELS.includes(model)) {
-      console.error(`[${requestId}] Model not in whitelist:`, model)
+    // Validate request body using Zod schema
+    const validation = RequestSchema.safeParse(requestBody);
+    if (!validation.success) {
+      console.error(`[${requestId}] Request validation failed:`, validation.error.errors)
       return new Response(JSON.stringify({ 
-        error: 'Invalid model selection. Please select from allowed models.',
-        requested_model: model,
-        allowed_models: ALLOWED_MODELS
-      }), { 
-        status: 400, 
-        headers: { ...corsHeaders(req.headers.get('origin')), 'Content-Type': 'application/json' } 
-      })
-    }
-
-    if (!prompt || typeof prompt !== 'string') {
-      return new Response(JSON.stringify({ error: 'Invalid prompt parameter' }), {
-        status: 400,
-        headers: { ...corsHeaders(req.headers.get('origin')), 'Content-Type': 'application/json' },
-      })
-    }
-
-    // Length validation
-    const MAX_PROMPT_LENGTH = 50000;
-    if (prompt.length > MAX_PROMPT_LENGTH) {
-      return new Response(JSON.stringify({ 
-        error: `Prompt exceeds maximum length of ${MAX_PROMPT_LENGTH} characters` 
+        error: 'Invalid input parameters',
+        details: validation.error.errors.map(err => ({
+          field: err.path.join('.'),
+          message: err.message
+        }))
       }), {
         status: 400,
         headers: { ...corsHeaders(req.headers.get('origin')), 'Content-Type': 'application/json' },
       })
     }
+    
+    // Use validated data
+    const validatedData = validation.data
+    
+    console.log(`[${requestId}] Request body validated:`, { 
+      model: validatedData.model,
+      promptLength: validatedData.prompt.length,
+      mode: validatedData.mode,
+      hasOptions: !!validatedData.options
+    })
 
-    // Sanitize prompt input
+    const { model, prompt, mode, options = {} } = validatedData
+
+    // Sanitize prompt input (additional layer after validation)
     const sanitizedPrompt = prompt
       .trim()
-      .replace(/<[^>]*>/g, '')
-      .replace(/javascript:/gi, '')
-      .replace(/data:/gi, '');
-
-    // Validate mode parameter
-    const ALLOWED_MODES = ['creative', 'balanced', 'precise', 'custom', null, undefined];
-    if (mode && !ALLOWED_MODES.includes(mode)) {
-      return new Response(JSON.stringify({ 
-        error: 'Invalid mode parameter. Allowed modes: creative, balanced, precise, custom' 
-      }), { 
-        status: 400, 
-        headers: { ...corsHeaders(req.headers.get('origin')), 'Content-Type': 'application/json' } 
-      })
-    }
-
-    // Validate options object type
-    if (options && typeof options !== 'object') {
-      return new Response(JSON.stringify({ 
-        error: 'Invalid options parameter. Must be an object.' 
-      }), { 
-        status: 400, 
-        headers: { ...corsHeaders(req.headers.get('origin')), 'Content-Type': 'application/json' } 
-      })
-    }
-
-    // Validate options properties
-    if (options.temperature && (options.temperature < 0 || options.temperature > 2)) {
-      return new Response(JSON.stringify({ error: 'Invalid temperature value. Must be between 0 and 2.' }), {
-        status: 400,
-        headers: { ...corsHeaders(req.headers.get('origin')), 'Content-Type': 'application/json' },
-      })
-    }
-
-    if (options.max_tokens && (options.max_tokens < 1 || options.max_tokens > 16384)) {
-      return new Response(JSON.stringify({ error: 'Invalid max_tokens value. Must be between 1 and 16384.' }), {
-        status: 400,
-        headers: { ...corsHeaders(req.headers.get('origin')), 'Content-Type': 'application/json' },
-      })
-    }
+      .normalize('NFKC')  // Prevent Unicode exploits
+      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')  // Remove control characters
+      .replace(/<[^>]*>/g, '')  // Remove HTML tags
+      .replace(/javascript:/gi, '')  // Remove javascript: protocol
+      .replace(/data:/gi, '')  // Remove data: protocol
+      .replace(/on\w+\s*=/gi, '');  // Remove event handlers
 
     // Map model to appropriate API key
     const getApiKeyForModel = (modelId: string): string | undefined => {

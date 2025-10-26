@@ -35,160 +35,107 @@ export type Database = {
         }
         Relationships: []
       }
-      users: {
+      ai_usage: {
         Row: {
+          created_at: string | null
           id: string
-          username: string | null
-          display_name: string | null
-          role: Database["public"]["Enums"]["user_role"] | null
-        }
-        Insert: {
-          id: string
-          username?: string | null
-          display_name?: string | null
-          role?: Database["public"]["Enums"]["user_role"] | null
-        }
-        Update: {
-          id?: string
-          username?: string | null
-          display_name?: string | null
-          role?: Database["public"]["Enums"]["user_role"] | null
-        }
-        Relationships: []
-      }
-      prompts: {
-        Row: {
-          id: string
+          is_guest: boolean | null
+          last_used_at: string | null
+          session_id: string | null
+          updated_at: string | null
+          usage_count: number | null
+          usage_date: string
           user_id: string | null
-          title: string
-          content: string
-          description: string | null
-          model: string | null
-          mode: string | null
-          color: string | null
-          is_public: boolean | null
-          is_featured: boolean | null
-          original_prompt_id: string | null
         }
         Insert: {
+          created_at?: string | null
           id?: string
+          is_guest?: boolean | null
+          last_used_at?: string | null
+          session_id?: string | null
+          updated_at?: string | null
+          usage_count?: number | null
+          usage_date?: string
           user_id?: string | null
-          title: string
-          content: string
-          description?: string | null
-          model?: string | null
-          mode?: string | null
-          color?: string | null
-          is_public?: boolean | null
-          is_featured?: boolean | null
-          original_prompt_id?: string | null
         }
         Update: {
+          created_at?: string | null
           id?: string
+          is_guest?: boolean | null
+          last_used_at?: string | null
+          session_id?: string | null
+          updated_at?: string | null
+          usage_count?: number | null
+          usage_date?: string
           user_id?: string | null
-          title?: string
-          content?: string
-          description?: string | null
-          model?: string | null
-          mode?: string | null
-          color?: string | null
-          is_public?: boolean | null
-          is_featured?: boolean | null
-          original_prompt_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "prompts_original_prompt_id_fkey1"
-            columns: ["original_prompt_id"]
-            isOneToOne: false
-            referencedRelation: "prompts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "prompts_user_id_fkey1"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      tags: {
-        Row: {
-          id: string
-          name: string
-          description: string | null
-          color: string | null
-          is_system: boolean | null
-        }
-        Insert: {
-          id?: string
-          name: string
-          description?: string | null
-          color?: string | null
-          is_system?: boolean | null
-        }
-        Update: {
-          id?: string
-          name?: string
-          description?: string | null
-          color?: string | null
-          is_system?: boolean | null
         }
         Relationships: []
       }
-      thinking_modes: {
+      audio_recordings: {
         Row: {
+          created_at: string | null
+          duration_seconds: number
+          file_path: string
+          file_size: number
           id: string
-          name: string
-          icon: string
-          description: string
-          instructions: string
-        }
-        Insert: {
-          id: string
-          name: string
-          icon: string
-          description: string
-          instructions: string
-        }
-        Update: {
-          id?: string
-          name?: string
-          icon?: string
-          description?: string
-          instructions?: string
-        }
-        Relationships: []
-      }
-      user_sessions: {
-        Row: {
-          id: string
+          transcript: string | null
           user_id: string | null
-          started_at: string | null
-          ended_at: string | null
         }
         Insert: {
+          created_at?: string | null
+          duration_seconds: number
+          file_path: string
+          file_size: number
           id?: string
+          transcript?: string | null
           user_id?: string | null
-          started_at?: string | null
-          ended_at?: string | null
         }
         Update: {
+          created_at?: string | null
+          duration_seconds?: number
+          file_path?: string
+          file_size?: number
           id?: string
+          transcript?: string | null
           user_id?: string | null
-          started_at?: string | null
-          ended_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "user_sessions_user_id_fkey1"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
+      }
+      guest_sessions: {
+        Row: {
+          created_at: string | null
+          daily_limit: number | null
+          id: string
+          ip_address: string | null
+          last_used_at: string | null
+          session_id: string
+          usage_count: number | null
+          usage_date: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          daily_limit?: number | null
+          id?: string
+          ip_address?: string | null
+          last_used_at?: string | null
+          session_id: string
+          usage_count?: number | null
+          usage_date?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          daily_limit?: number | null
+          id?: string
+          ip_address?: string | null
+          last_used_at?: string | null
+          session_id?: string
+          usage_count?: number | null
+          usage_date?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
       }
       prompt_tags: {
         Row: {
@@ -220,12 +167,231 @@ export type Database = {
           },
         ]
       }
+      prompts: {
+        Row: {
+          color: string | null
+          content: string
+          created_at: string | null
+          description: string | null
+          id: string
+          is_featured: boolean | null
+          is_public: boolean | null
+          mode: string | null
+          model: string | null
+          original_prompt_id: string | null
+          title: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          color?: string | null
+          content: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_featured?: boolean | null
+          is_public?: boolean | null
+          mode?: string | null
+          model?: string | null
+          original_prompt_id?: string | null
+          title: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          color?: string | null
+          content?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_featured?: boolean | null
+          is_public?: boolean | null
+          mode?: string | null
+          model?: string | null
+          original_prompt_id?: string | null
+          title?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prompts_original_prompt_id_fkey1"
+            columns: ["original_prompt_id"]
+            isOneToOne: false
+            referencedRelation: "prompts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prompts_user_id_fkey1"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prompts_user_id_fkey1"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tags: {
+        Row: {
+          color: string | null
+          description: string | null
+          id: string
+          is_system: boolean | null
+          name: string
+          user_id: string | null
+        }
+        Insert: {
+          color?: string | null
+          description?: string | null
+          id?: string
+          is_system?: boolean | null
+          name: string
+          user_id?: string | null
+        }
+        Update: {
+          color?: string | null
+          description?: string | null
+          id?: string
+          is_system?: boolean | null
+          name?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      thinking_modes: {
+        Row: {
+          description: string
+          icon: string
+          id: string
+          instructions: string
+          name: string
+        }
+        Insert: {
+          description: string
+          icon: string
+          id: string
+          instructions: string
+          name: string
+        }
+        Update: {
+          description?: string
+          icon?: string
+          id?: string
+          instructions?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      user_sessions: {
+        Row: {
+          ended_at: string | null
+          id: string
+          started_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          ended_at?: string | null
+          id?: string
+          started_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          ended_at?: string | null
+          id?: string
+          started_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_sessions_user_id_fkey1"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_sessions_user_id_fkey1"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          display_name: string | null
+          id: string
+          role: Database["public"]["Enums"]["user_role"] | null
+          username: string | null
+        }
+        Insert: {
+          display_name?: string | null
+          id: string
+          role?: Database["public"]["Enums"]["user_role"] | null
+          username?: string | null
+        }
+        Update: {
+          display_name?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"] | null
+          username?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
-      [_ in never]: never
+      users_public: {
+        Row: {
+          display_name: string | null
+          id: string | null
+          username: string | null
+        }
+        Insert: {
+          display_name?: string | null
+          id?: string | null
+          username?: string | null
+        }
+        Update: {
+          display_name?: string | null
+          id?: string | null
+          username?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      [_ in never]: never
+      get_current_usage: {
+        Args: {
+          p_is_guest?: boolean
+          p_session_id?: string
+          p_user_id?: string
+        }
+        Returns: Json
+      }
+      increment_ai_usage: {
+        Args: {
+          p_is_guest?: boolean
+          p_session_id?: string
+          p_user_id?: string
+        }
+        Returns: Json
+      }
+      reset_daily_usage: { Args: never; Returns: number }
+      track_guest_usage: {
+        Args: {
+          p_ip_address?: string
+          p_session_id: string
+          p_user_agent?: string
+        }
+        Returns: Json
+      }
     }
     Enums: {
       user_role: "user" | "admin" | "moderator"

@@ -126,7 +126,6 @@ export class RateLimitingService {
     usage: AIUsage;
     error?: string;
   }> {
-    // @ts-expect-error - Custom RPC function not in generated types
     const { data, error } = await supabase.rpc('get_current_usage' as any, {
       p_user_id: userId,
       p_is_guest: false,
@@ -158,7 +157,6 @@ export class RateLimitingService {
     usage: AIUsage;
     error?: string;
   }> {
-    // @ts-expect-error - Custom RPC function not in generated types
     const { data, error } = await supabase.rpc('increment_ai_usage' as any, {
       p_user_id: userId,
       p_is_guest: false,
@@ -208,7 +206,6 @@ export class RateLimitingService {
       const userAgent = navigator.userAgent;
       
       // Use server-side validation
-      // @ts-expect-error - Custom RPC function not in generated types
       const { data, error } = await supabase.rpc('track_guest_usage' as any, {
         p_session_id: this.guestSessionId || crypto.randomUUID(),
         p_ip_address: ipAddress,
@@ -288,7 +285,6 @@ export class RateLimitingService {
       const userAgent = navigator.userAgent;
       
       // Use server-side validation and increment
-      // @ts-expect-error - Custom RPC function not in generated types
       const { data, error } = await supabase.rpc('track_guest_usage' as any, {
         p_session_id: this.guestSessionId || crypto.randomUUID(),
         p_ip_address: ipAddress,
