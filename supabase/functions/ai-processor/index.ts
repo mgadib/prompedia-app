@@ -300,8 +300,8 @@ Instruksi mode: ${modeData.instructions}`;
         error: lastErrorText.substring(0, 500)
       })
       
-      // If rate-limited or payment required, try next model; otherwise stop and return
-      if (resp.status !== 429 && resp.status !== 402) {
+      // If rate-limited, payment required, or content moderation issue, try next model; otherwise stop and return
+      if (resp.status !== 429 && resp.status !== 402 && resp.status !== 403) {
         return new Response(JSON.stringify({
           error: 'OpenRouter API error',
           status: resp.status,
