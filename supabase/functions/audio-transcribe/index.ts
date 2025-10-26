@@ -64,49 +64,68 @@ serve(async (req) => {
     
     console.log(`[${requestId}] Audio size: ${binaryAudio.length} bytes`)
     
-    // Prepare form data
-    const formData = new FormData()
-    const blob = new Blob([binaryAudio], { type: `audio/${format}` })
-    formData.append('file', blob, `audio.${format}`)
-    formData.append('model', 'whisper-1')
-    formData.append('language', 'id') // Indonesian language
-    formData.append('response_format', 'json')
-
-    const apiKey = Deno.env.get('OPENAI_API_KEY')
+    // Get OpenRouter API key for Gemini
+    const apiKey = Deno.env.get('OPENROUTER_API_KEY_GEMINI_2.0_FLASH_LITE')
     
     if (!apiKey) {
       console.error(`[${requestId}] No API key configured`)
-      throw new Error('OpenAI API key not configured')
+      throw new Error('OpenRouter API key for Gemini not configured')
     }
 
-    console.log(`[${requestId}] Sending to OpenAI Whisper API...`)
+    console.log(`[${requestId}] Sending to OpenRouter Gemini for transcription...`)
     
-    // Send to OpenAI Whisper
-    const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+    // Convert audio to base64 data URL for OpenRouter
+    const base64Audio = btoa(String.fromCharCode(...binaryAudio))
+    const audioDataUrl = `data:audio/${format};base64,${base64Audio}`
+    
+    // Send to OpenRouter with Gemini model
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://prompedia.app',
+        'X-Title': 'Prompedia Audio Transcription'
       },
-      body: formData,
+      body: JSON.stringify({
+        model: 'google/gemini-2.0-flash-exp:free',
+        messages: [
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'text',
+                text: 'Transkripsi audio ini ke dalam teks bahasa Indonesia. Hanya berikan hasil transkripsi tanpa komentar tambahan.'
+              },
+              {
+                type: 'image_url',
+                image_url: {
+                  url: audioDataUrl
+                }
+              }
+            ]
+          }
+        ]
+      }),
     })
 
     if (!response.ok) {
       const errorText = await response.text()
-      console.error(`[${requestId}] OpenAI API error:`, {
+      console.error(`[${requestId}] OpenRouter API error:`, {
         status: response.status,
         error: errorText.substring(0, 500)
       })
-      throw new Error(`OpenAI API error: ${errorText}`)
+      throw new Error(`OpenRouter API error: ${errorText}`)
     }
 
     const result = await response.json()
+    const transcribedText = result.choices?.[0]?.message?.content || ''
     
-    console.log(`[${requestId}] Transcription successful, text length: ${result.text?.length || 0}`)
+    console.log(`[${requestId}] Transcription successful, text length: ${transcribedText.length}`)
 
     return new Response(
       JSON.stringify({ 
-        text: result.text,
-        duration: result.duration 
+        text: transcribedText
       }),
       { 
         headers: { 
