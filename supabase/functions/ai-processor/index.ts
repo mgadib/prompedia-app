@@ -11,7 +11,7 @@ const ALLOWED_ORIGINS = [
 
 const corsHeaders = (origin: string | null): Record<string, string> => {
   // Allow Lovable preview domains and configured origins
-  const isLovablePreview = origin?.includes('.lovableproject.com') || false;
+  const isLovablePreview = origin?.includes('.lovable.app') || origin?.includes('.lovableproject.com') || false;
   const isAllowedOrigin = origin ? ALLOWED_ORIGINS.includes(origin) : false;
   
   const allowedOrigin = (isLovablePreview || isAllowedOrigin) && origin ? origin : ALLOWED_ORIGINS[0];
