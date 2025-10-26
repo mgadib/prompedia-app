@@ -17,7 +17,6 @@ import ModeSelector from './ModeSelector';
 import TagInput from './TagInput';
 import ActionButtons from './ActionButtons';
 import DeletePromptDialog from './DeletePromptDialog';
-import { VoiceRecorder } from './VoiceRecorder';
 
 type ViewState = 'original' | 'ai-result';
 
@@ -659,31 +658,13 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
 
         {/* Main Prompt Content */}
         <div className="flex flex-col flex-1 space-y-3">
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-2">
             <ActionButtons
               onAction={handleAction}
               disabled={!content.trim() || viewState === 'ai-result' || !userCanUseAI}
               isLoading={isActionLoading}
               loadingAction={loadingAction}
             />
-            
-            <div className="ml-auto">
-              <VoiceRecorder
-                onTranscriptionComplete={(text) => {
-                  // Append transcription to current content
-                  const newContent = content ? `${content}\n\n${text}` : text;
-                  setContent(newContent);
-                  
-                  // Update the corresponding state based on current view
-                  if (viewState === 'original') {
-                    setOriginalContent(newContent);
-                  } else if (viewState === 'ai-result') {
-                    setAiResultContent(newContent);
-                  }
-                }}
-                disabled={!userCanUseAI}
-              />
-            </div>
 
             {/* Navigation buttons */}
             {viewState === 'ai-result' && (
