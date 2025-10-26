@@ -17,6 +17,7 @@ import ModeSelector from './ModeSelector';
 import TagInput from './TagInput';
 import ActionButtons from './ActionButtons';
 import DeletePromptDialog from './DeletePromptDialog';
+import AudioRecorder from './AudioRecorder';
 
 type ViewState = 'original' | 'ai-result';
 
@@ -658,7 +659,21 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
 
         {/* Main Prompt Content */}
         <div className="flex flex-col flex-1 space-y-3">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <AudioRecorder
+              onTranscriptionComplete={(text) => {
+                // Append transcription to existing content or set as new content
+                if (content.trim()) {
+                  setContent(prev => prev + '\n\n' + text);
+                  toast.success('Hasil transkripsi ditambahkan ke editor');
+                } else {
+                  setContent(text);
+                  toast.success('Hasil transkripsi dimasukkan ke editor');
+                }
+              }}
+              disabled={!userCanUseAI}
+            />
+            
             <ActionButtons
               onAction={handleAction}
               disabled={!content.trim() || viewState === 'ai-result' || !userCanUseAI}
