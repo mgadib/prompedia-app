@@ -13,6 +13,7 @@ export interface ModelCapabilities {
 export interface AIModel {
   id: string;
   label: string;
+  name: string; // Add name for DB compatibility
   provider: string;
   type: 'Text' | 'Multimodal';
   capabilities: ModelCapabilities;
@@ -24,6 +25,7 @@ export const AVAILABLE_MODELS: AIModel[] = [
   {
     id: 'meta-llama/llama-4-maverick:free',
     label: 'Llama 4 Maverick',
+    name: 'Llama 4 Maverick', // Add name for DB compatibility
     provider: 'OpenRouter',
     type: 'Multimodal',
     capabilities: {
@@ -39,6 +41,7 @@ export const AVAILABLE_MODELS: AIModel[] = [
   {
     id: 'qwen/qwen3-30b-a3b:free',
     label: 'Qwen 3 30B',
+    name: 'Qwen 3 30B', // Add name for DB compatibility
     provider: 'OpenRouter',
     type: 'Text',
     capabilities: {

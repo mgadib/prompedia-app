@@ -222,8 +222,8 @@ export class SupabaseService {
       title: newTitle || `Fork of ${originalPrompt.title}`,
       content: originalPrompt.content,
       description: originalPrompt.description,
-      model: originalPrompt.model,
-      mode: originalPrompt.mode,
+      model_id: originalPrompt.model_id,
+      mode_id: originalPrompt.mode_id,
       color: originalPrompt.color,
       is_public: false, // Forks start as private
       original_prompt_id: originalPromptId
@@ -530,8 +530,8 @@ export class SupabaseService {
           title: localPrompt.title,
           content: localPrompt.content,
           description: localPrompt.description,
-          model: localPrompt.model,
-          mode: localPrompt.mode,
+          model_id: localPrompt.model_id,
+          mode_id: localPrompt.mode_id,
           color: localPrompt.color,
           is_public: localPrompt.is_public
         })

@@ -102,11 +102,7 @@ const AppPage = () => {
       console.log('Loading public prompts...');
       const publicPromptsData = await SupabaseService.getPublicPrompts();
       console.log('Public prompts loaded:', publicPromptsData.length);
-      const typedPrompts = publicPromptsData.map(p => ({
-        ...p,
-        mode: (p.mode || 'normal') as 'meta-prompt' | 'thinking' | 'normal'
-      }));
-      setPublicPrompts(typedPrompts);
+      setPublicPrompts(publicPromptsData);
     } catch (error) {
       console.error('Failed to load public prompts:', error);
       toast.error('Failed to load public library');
@@ -171,18 +167,15 @@ const AppPage = () => {
   };
 
   const handleSelectPrompt = (prompt: PromptWithTags) => {
-    // Ensure prompt has required fields for new schema with dual support
+    // Ensure prompt has required fields for new schema
     const sanitizedPrompt: Prompt = {
       id: prompt.id || '',
       user_id: prompt.user_id || '',
       title: prompt.title || '',
       content: prompt.content || '',
       
-      // Support both old and new fields
-      model_id: prompt.model_id || prompt.model || AVAILABLE_MODELS[1].id,
-      mode_id: prompt.mode_id || prompt.mode || THINKING_MODES[5].id,
-      model: prompt.model || prompt.model_id || AVAILABLE_MODELS[1].id,
-      mode: (prompt.mode || prompt.mode_id || THINKING_MODES[5].id) as 'meta-prompt' | 'thinking' | 'normal',
+      model_id: prompt.model_id || AVAILABLE_MODELS[1].id,
+      mode_id: prompt.mode_id || THINKING_MODES[5].id,
       
       color: prompt.color || '#3b82f6',
       is_public: prompt.is_public || false,
@@ -197,18 +190,15 @@ const AppPage = () => {
   };
 
   const handleEditPrompt = (prompt: PromptWithTags) => {
-    // Ensure prompt has required fields for new schema with dual support
+    // Ensure prompt has required fields for new schema
     const sanitizedPrompt: Prompt = {
       id: prompt.id || '',
       user_id: prompt.user_id || user?.id || '',
       title: prompt.title || '',
       content: prompt.content || '',
       
-      // Support both old and new fields
-      model_id: prompt.model_id || prompt.model || AVAILABLE_MODELS[1].id,
-      mode_id: prompt.mode_id || prompt.mode || THINKING_MODES[5].id,
-      model: prompt.model || prompt.model_id || AVAILABLE_MODELS[1].id,
-      mode: (prompt.mode || prompt.mode_id || THINKING_MODES[5].id) as 'meta-prompt' | 'thinking' | 'normal',
+      model_id: prompt.model_id || AVAILABLE_MODELS[1].id,
+      mode_id: prompt.mode_id || THINKING_MODES[5].id,
       
       color: prompt.color || '#3b82f6',
       is_public: prompt.is_public || false,

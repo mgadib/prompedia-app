@@ -1,6 +1,7 @@
 export interface ThinkingMode {
   id: string;
   label: string;
+  name: string; // Add name for DB compatibility
   icon: string;
   description: string;
   purpose: string;
@@ -14,6 +15,7 @@ export const THINKING_MODES: ThinkingMode[] = [
   {
     id: 'meta-prompt',
     label: 'Meta Prompt',
+    name: 'Meta Prompt', // Add name for DB compatibility
     icon: '🪄',
     description: 'Menghasilkan prompt baru dari ide mentah pengguna',
     purpose: 'Divergent thinking - meluaskan kemungkinan',
@@ -40,6 +42,7 @@ FORMAT OUTPUT:
   {
     id: 'self-refine',
     label: 'Self-Refine',
+    name: 'Self-Refine', // Add name for DB compatibility
     icon: '✏️',
     description: 'Memperjelas dan memperbaiki prompt yang sudah ada',
     purpose: 'Reflective thinking - analisis dan perbaikan',
@@ -66,6 +69,7 @@ FORMAT OUTPUT:
   {
     id: 'chain-of-thought',
     label: 'Chain-of-Thought',
+    name: 'Chain-of-Thought', // Add name for DB compatibility
     icon: '🧠',
     description: 'Membedah bagaimana model menalar prompt',
     purpose: 'Analytical reasoning - langkah demi langkah',
@@ -91,6 +95,7 @@ FORMAT OUTPUT:
   {
     id: 'self-consistency',
     label: 'Self-Consistency',
+    name: 'Self-Consistency', // Add name for DB compatibility
     icon: '🧬',
     description: 'Menguji stabilitas prompt dengan multiple reasoning',
     purpose: 'Comparative reasoning - pengujian konsistensi',
@@ -125,6 +130,7 @@ FORMAT OUTPUT:
   {
     id: 'chain-of-prompt',
     label: 'Chain-of-Prompt',
+    name: 'Chain-of-Prompt', // Add name for DB compatibility
     icon: '🔄',
     description: 'Mengembangkan prompt secara bertahap (v1→v2→v3)',
     purpose: 'Iterative synthesis - pengembangan bertahap',
@@ -156,6 +162,7 @@ FORMAT OUTPUT:
   {
     id: 'role-prompt',
     label: 'Role Prompt',
+    name: 'Role Prompt', // Add name for DB compatibility
     icon: '🤝',
     description: 'Berdiskusi atau menilai prompt dengan persona tertentu',
     purpose: 'Dialogic reasoning - perspektif multi-angle',
