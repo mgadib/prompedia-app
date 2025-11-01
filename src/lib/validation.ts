@@ -41,8 +41,13 @@ export const promptSchema = z.object({
   id: z.string().uuid().optional(),
   title: promptTitleSchema,
   content: promptContentSchema,
-  model: z.string().min(1, 'Model wajib dipilih'),
+  
+  // Support both old and new fields for backward compatibility
+  model: z.string().optional(),
+  model_id: z.string().optional(),
   mode: z.enum(['meta-prompt', 'thinking', 'normal']).optional().default('normal'),
+  mode_id: z.string().optional(),
+  
   color: z.string().default('#3b82f6'),
   is_public: z.boolean().default(false),
   is_featured: z.boolean().default(false),
@@ -51,7 +56,13 @@ export const promptSchema = z.object({
   user_id: z.string().optional(),
   // Note: tags are now handled via prompt_tags junction table
   // created_at and updated_at are not stored in the minimal schema
-});
+}).refine(
+  (data) => data.model || data.model_id, 
+  { message: "Either model or model_id must be provided" }
+).refine(
+  (data) => data.mode || data.mode_id,
+  { message: "Either mode or mode_id must be provided" }
+);
 
 // Auth schemas
 export const loginSchema = z.object({

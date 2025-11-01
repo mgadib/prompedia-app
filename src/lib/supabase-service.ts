@@ -328,48 +328,60 @@ export class SupabaseService {
   // AI MODELS
   // ========================================
 
-  static async getAIModels(): Promise<AIModel[]> {
-    const result: any = await supabase
+  // Cache for models and modes to avoid repeated DB calls
+  private static aiModelsCache: AIModel[] | null = null
+  private static thinkingModesCache: ThinkingMode[] | null = null
+
+  static async getAIModels(forceRefresh = false): Promise<AIModel[]> {
+    if (!forceRefresh && this.aiModelsCache) {
+      return this.aiModelsCache
+    }
+
+    const { data, error } = await supabase
       .from('ai_models')
       .select('*')
+      .order('name')
     
-    if (result.error) throw result.error
-    return result.data || []
+    if (error) throw error
+    
+    this.aiModelsCache = data || []
+    return this.aiModelsCache
   }
 
   static async getAIModel(id: string): Promise<AIModel | null> {
-    const result: any = await supabase
-      .from('ai_models')
-      .select('*')
-      .eq('id', id)
-      .single()
- 
-    if (result.error && result.error.code !== 'PGRST116') throw result.error
-    return result.data
+    const models = await this.getAIModels()
+    return models.find(model => model.id === id) || null
   }
 
   // ========================================
   // THINKING MODES
   // ========================================
 
-  static async getThinkingModes(): Promise<ThinkingMode[]> {
-    const result: any = await supabase
+  static async getThinkingModes(forceRefresh = false): Promise<ThinkingMode[]> {
+    if (!forceRefresh && this.thinkingModesCache) {
+      return this.thinkingModesCache
+    }
+
+    const { data, error } = await supabase
       .from('thinking_modes')
       .select('*')
+      .order('name')
 
-    if (result.error) throw result.error
-    return result.data || []
+    if (error) throw error
+    
+    this.thinkingModesCache = data || []
+    return this.thinkingModesCache
   }
 
   static async getThinkingMode(id: string): Promise<ThinkingMode | null> {
-    const result: any = await supabase
-      .from('thinking_modes')
-      .select('*')
-      .eq('id', id)
-      .single()
+    const modes = await this.getThinkingModes()
+    return modes.find(mode => mode.id === id) || null
+  }
 
-    if (result.error && result.error.code !== 'PGRST116') throw result.error
-    return result.data
+  // Clear caches (useful for development/testing)
+  static clearCaches(): void {
+    this.aiModelsCache = null
+    this.thinkingModesCache = null
   }
 
   // ========================================

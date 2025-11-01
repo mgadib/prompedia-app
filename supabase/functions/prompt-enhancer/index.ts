@@ -86,7 +86,7 @@ serve(async (req) => {
 
     if (remainingUsage <= 0) {
       return new Response(JSON.stringify({
-        error: `Daily AI usage limit exceeded. You have used ${currentUsage}/${dailyLimit} calls today. Limit resets at midnight GMT+7.`
+        error: `Daily usage limit reached. You have used ${currentUsage}/${dailyLimit} calls today. Limit resets at midnight GMT+7.`
       }), {
         status: 429,
         headers: { ...corsHeaders(req.headers.get('origin')), 'Content-Type': 'application/json' },

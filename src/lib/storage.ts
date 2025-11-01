@@ -14,8 +14,13 @@ export interface Prompt {
   user_id?: string;
   title: string;
   content: string;
-  model: string;
-  mode: 'meta-prompt' | 'thinking' | 'normal';
+  
+  // Dual support - old and new fields for backward compatibility
+  model?: string | null;        // OLD - keep for backward compatibility
+  mode?: 'meta-prompt' | 'thinking' | 'normal';  // OLD
+  model_id?: string | null;     // NEW - FK to ai_models
+  mode_id?: string | null;      // NEW - FK to thinking_modes
+  
   color: string;
   is_public: boolean;
   is_featured: boolean;

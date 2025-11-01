@@ -273,13 +273,17 @@ class StorageManager {
     }
 
     try {
+      // Use ONLY FK columns (model_id/mode_id) - no more dual-write
       const promptData = {
         id: prompt.id,
         title: prompt.title,
         content: prompt.content,
         description: prompt.description || '',
-        model: prompt.model,
-        mode: prompt.mode,
+        
+        // FK only approach (model and mode TEXT columns have been dropped)
+        model_id: prompt.model_id || prompt.model,  // Keep fallback to old field for migration
+        mode_id: prompt.mode_id || prompt.mode,      // Keep fallback to old field for migration
+        
         is_public: prompt.is_public || false,
         user_id: prompt.user_id || this.authUser.id,
         color: prompt.color || null,
@@ -387,8 +391,15 @@ class StorageManager {
         title: item.title,
         content: item.content,
         description: item.description,
-        model: item.model,
-        mode: (item.mode || 'normal') as 'meta-prompt' | 'thinking' | 'normal',
+        
+        // Read ONLY from FK columns (model and mode TEXT columns have been dropped)
+        model_id: item.model_id,
+        mode_id: item.mode_id,
+        
+        // Keep model/mode fields populated for app compatibility
+        model: item.model_id,
+        mode: (item.mode_id || 'normal') as 'meta-prompt' | 'thinking' | 'normal',
+        
         is_public: item.is_public,
         user_id: item.user_id,
         color: item.color,

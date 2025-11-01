@@ -215,7 +215,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       // Check if user can make AI calls (they need quota for saving)
       const rateLimitCheck = await rateLimitingService.canMakeAICall(user);
       if (!rateLimitCheck.allowed) {
-        toast.error('Please wait before saving. AI limit reached.');
+        toast.error('Please wait before saving. Use limit reached.');
         return;
       }
 
@@ -225,8 +225,15 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
         user_id: user.id,
         title: title || '',
         content: content || '',
+        
+        // Use NEW FK columns
+        model_id: model || AVAILABLE_MODELS[1].id,
+        mode_id: mode || THINKING_MODES[5].id,
+        
+        // Keep old fields for backward compat (dual-write)
         model: model || AVAILABLE_MODELS[1].id,
         mode: (mode || THINKING_MODES[5].id) as 'meta-prompt' | 'thinking' | 'normal',
+        
         color: currentPrompt?.color || '#3b82f6',
         is_public: currentPrompt?.is_public || false,
         is_featured: currentPrompt?.is_featured || false,
@@ -321,7 +328,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       // Check if user can make AI calls (they need to be authenticated)
       const rateLimitCheck = await rateLimitingService.canMakeAICall(user);
       if (!rateLimitCheck.allowed) {
-        toast.error('Please wait before making changes. AI limit reached.');
+        toast.error('Please wait before making changes. Use limit reached.');
         return;
       }
 
@@ -384,7 +391,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       // Check if user can make AI calls (deleting requires quota)
       const rateLimitCheck = await rateLimitingService.canMakeAICall(user);
       if (!rateLimitCheck.allowed) {
-        toast.error('Please wait before deleting. AI limit reached.');
+        toast.error('Please wait before deleting. Use limit reached.');
         return;
       }
 
@@ -437,7 +444,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       if (!rateLimitCheck.allowed) {
         const limitType = user ? 'daily' : 'guest';
         toast.error(
-          `AI usage limit exceeded! ${limitType === 'daily' ? 'Daily' : 'Guest'} limit reached. ${rateLimitCheck.error || ''}`
+          `Use limit reached! ${limitType === 'daily' ? 'Daily' : 'Guest'} limit reached. ${rateLimitCheck.error || ''}`
         );
         return;
       }
@@ -535,7 +542,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
         
         // Show specific error types
         if (errorMsg.includes('rate limit') || errorMsg.includes('429')) {
-          errorMsg = 'AI service rate limit exceeded. Please try again in a moment.';
+          errorMsg = 'Service use limit reached. Please try again in a moment.';
         } else if (errorMsg.includes('API key') || errorMsg.includes('401')) {
           errorMsg = 'API authentication failed. Please contact support.';
         } else if (errorMsg.includes('timeout')) {
@@ -719,7 +726,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
             {/* Rate limit warning */}
             {!userCanUseAI && (
               <div className="flex items-center gap-1 text-red-400 ml-auto">
-                <span className="text-xs font-mono">⚠️ AI Limit Exceeded</span>
+                <span className="text-xs font-mono">⚠️ Use Limit</span>
               </div>
             )}
           </div>

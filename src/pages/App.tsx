@@ -166,14 +166,19 @@ const AppPage = () => {
   };
 
   const handleSelectPrompt = (prompt: PromptWithTags) => {
-    // Ensure prompt has required fields for new schema
+    // Ensure prompt has required fields for new schema with dual support
     const sanitizedPrompt: Prompt = {
       id: prompt.id || '',
       user_id: prompt.user_id || '',
       title: prompt.title || '',
       content: prompt.content || '',
-      model: prompt.model || AVAILABLE_MODELS[1].id,
-      mode: (prompt.mode || THINKING_MODES[5].id) as 'meta-prompt' | 'thinking' | 'normal',
+      
+      // Support both old and new fields
+      model_id: prompt.model_id || prompt.model || AVAILABLE_MODELS[1].id,
+      mode_id: prompt.mode_id || prompt.mode || THINKING_MODES[5].id,
+      model: prompt.model || prompt.model_id || AVAILABLE_MODELS[1].id,
+      mode: (prompt.mode || prompt.mode_id || THINKING_MODES[5].id) as 'meta-prompt' | 'thinking' | 'normal',
+      
       color: prompt.color || '#3b82f6',
       is_public: prompt.is_public || false,
       is_featured: prompt.is_featured || false,
@@ -187,14 +192,19 @@ const AppPage = () => {
   };
 
   const handleEditPrompt = (prompt: PromptWithTags) => {
-    // Ensure prompt has required fields for new schema
+    // Ensure prompt has required fields for new schema with dual support
     const sanitizedPrompt: Prompt = {
       id: prompt.id || '',
       user_id: prompt.user_id || user?.id || '',
       title: prompt.title || '',
       content: prompt.content || '',
-      model: prompt.model || AVAILABLE_MODELS[1].id,
-      mode: (prompt.mode || THINKING_MODES[5].id) as 'meta-prompt' | 'thinking' | 'normal',
+      
+      // Support both old and new fields
+      model_id: prompt.model_id || prompt.model || AVAILABLE_MODELS[1].id,
+      mode_id: prompt.mode_id || prompt.mode || THINKING_MODES[5].id,
+      model: prompt.model || prompt.model_id || AVAILABLE_MODELS[1].id,
+      mode: (prompt.mode || prompt.mode_id || THINKING_MODES[5].id) as 'meta-prompt' | 'thinking' | 'normal',
+      
       color: prompt.color || '#3b82f6',
       is_public: prompt.is_public || false,
       is_featured: prompt.is_featured || false,
@@ -235,7 +245,7 @@ const AppPage = () => {
       // Check if user can make AI calls (copying requires quota)
       const rateLimitCheck = await rateLimitingService.canMakeAICall(user);
       if (!rateLimitCheck.allowed) {
-        toast.error('Please wait before copying. AI limit reached.');
+        toast.error('Please wait before copying. Use limit reached.');
         return;
       }
 
@@ -334,7 +344,7 @@ const AppPage = () => {
       if (!rateLimitCheck.allowed) {
         const limitType = user ? 'daily' : 'guest';
         toast.error(
-          `AI usage limit exceeded! ${limitType === 'daily' ? 'Daily' : 'Guest'} limit reached. ${rateLimitCheck.error || ''}`
+          `Use limit reached! ${limitType === 'daily' ? 'Daily' : 'Guest'} limit reached. ${rateLimitCheck.error || ''}`
         );
         if (!user) {
           setShowAuthModal(true);

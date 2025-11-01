@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import {
   Select,
   SelectContent,
@@ -5,6 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { SupabaseService } from '@/lib/supabase-service';
 import { THINKING_MODES } from '@/lib/modes';
 
 interface ModeSelectorProps {
@@ -12,20 +14,69 @@ interface ModeSelectorProps {
   onChange: (value: string) => void;
 }
 
+interface DBMode {
+  id: string;
+  name: string;
+  icon?: string;
+  description?: string;
+  instructions?: string;
+  purpose?: string;
+  thinking_pattern?: string;
+  output_structure?: string[];
+}
+
 const ModeSelector = ({ value, onChange }: ModeSelectorProps) => {
-  const selectedMode = THINKING_MODES.find(mode => mode.id === value) || THINKING_MODES[5];
+  const [modes, setModes] = useState<DBMode[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadModes = async () => {
+      try {
+        // Try to fetch from database first
+        const dbModes = await SupabaseService.getThinkingModes();
+        if (dbModes && dbModes.length > 0) {
+          setModes(dbModes);
+        } else {
+          // Fallback to hardcoded data
+          setModes(THINKING_MODES);
+        }
+      } catch (error) {
+        console.error('Failed to load modes from database:', error);
+        // Fallback to hardcoded data
+        setModes(THINKING_MODES);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadModes();
+  }, []);
+
+  const selectedMode = modes.find(mode => mode.id === value) || modes[5];
+
+  if (loading) {
+    return (
+      <Select disabled>
+        <SelectTrigger className="w-[180px] bg-secondary border-border text-xs">
+          <SelectValue placeholder="Loading modes...">
+            Loading...
+          </SelectValue>
+        </SelectTrigger>
+      </Select>
+    );
+  }
 
   return (
     <Select value={value} onValueChange={onChange}>
       <SelectTrigger className="w-[180px] bg-secondary border-border text-xs">
         <SelectValue placeholder="Select mode">
-          <span>{selectedMode.label}</span>
+          <span>{selectedMode?.name || selectedMode?.id}</span>
         </SelectValue>
       </SelectTrigger>
       <SelectContent>
-        {THINKING_MODES.map((mode) => (
+        {modes.map((mode) => (
           <SelectItem key={mode.id} value={mode.id} className="text-xs">
-            {mode.label}
+            {mode.name || mode.id}
           </SelectItem>
         ))}
       </SelectContent>
