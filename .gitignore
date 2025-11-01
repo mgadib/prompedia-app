@@ -1,53 +1,59 @@
+# ============================================
 # Dependencies
+# ============================================
 node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-bun.lockb
+.pnp
+.pnp.js
 
-# Build outputs
+# ============================================
+# Build Outputs
+# ============================================
 dist/
 dist-ssr/
 build/
 out/
-.next/
-.nuxt/
-.output/
+*.local
 
-# Environment variables
+# ============================================
+# Environment Variables & Secrets
+# ============================================
 .env
+.env.*
+!.env.example
+!.env.template
+
+# Local environment files
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
-.env.*.local
-!.env.example
 
-# IDE and Editor files
-.vscode/*
-!.vscode/extensions.json
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-.idea/
-*.swp
-*.swo
-*~
-.DS_Store
-Thumbs.db
+# API Keys and Secrets
+*.key
+*.pem
+*.crt
+*.p12
+*.pfx
+secrets.json
+.secrets/
+auth.json
+api-keys.json
+tokens.json
 
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
+# ============================================
+# Testing & Coverage
+# ============================================
+coverage/
+*.lcov
+.nyc_output/
+.jest/
+test-results/
+playwright-report/
+.vitest/
 
+# ============================================
 # Logs
+# ============================================
 logs/
 *.log
 npm-debug.log*
@@ -55,82 +61,55 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+bun.lockb
 
-# Runtime data
-pids/
-*.pid
-*.seed
-*.pid.lock
-
-# Coverage directory used by tools like istanbul
-coverage/
-*.lcov
-
-# nyc test coverage
-.nyc_output/
-
-# ESLint cache
-.eslintcache
-
-# Microbundle cache
-.rpt2_cache/
-.rts2_cache_cjs/
-.rts2_cache_es/
-.rts2_cache_umd/
-
-# Optional REPL history
-.node_repl_history
-
-# Output of 'npm pack'
-*.tgz
-
-# Yarn Integrity file
-.yarn-integrity
-
-# parcel-bundler cache (https://parceljs.org/)
+# ============================================
+# Runtime & Cache
+# ============================================
 .cache/
 .parcel-cache/
+.npm/
+.eslintcache
+.stylelintcache
+*.tsbuildinfo
+.tscache/
+.turbo/
+.swc/
 
-# Next.js build output
-.next/
-out/
+# Vite
+.vite/
+vite.config.*.timestamp-*
 
-# Nuxt.js build / generate output
-.nuxt/
-dist/
+# TypeScript
+*.tsbuildinfo
+.tsbuildinfo
 
-# Gatsby files
-.cache/
-public
+# ============================================
+# Supabase
+# ============================================
+.supabase/
+supabase/.temp/
+supabase/.branches/
+supabase/.temp/
 
-# Storybook build outputs
-.out/
-.storybook-out/
-
-# Temporary folders
-tmp/
-temp/
-
-# Editor directories and files
-.vscode/
-!.vscode/extensions.json
-!.vscode/settings.json
-.idea/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-
+# ============================================
+# IDE & Editor Files
+# ============================================
 # Visual Studio Code
-.vscode/
+.vscode/*
+!.vscode/extensions.json
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
-!.vscode/extensions.json
+!.vscode/*.code-snippets
+.vscode-test/
 
-# JetBrains IDEs
+# JetBrains IDEs (WebStorm, IntelliJ IDEA, etc.)
 .idea/
+*.iml
+*.iws
+*.ipr
+out/
 
 # Sublime Text
 *.sublime-workspace
@@ -140,123 +119,176 @@ temp/
 *.swp
 *.swo
 *~
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-rt-v][a-z]
+[._]ss[a-gi-z]
+[._]sw[a-p]
 
 # Emacs
 *~
 \#*\#
 /.emacs.desktop
-/.emacs.desktop
+/.emacs.desktop.lock
 *.elc
 auto-save-list
 tramp
 .\#*
 
-# SASS
-.sass-cache/
+# VS Code - Cursor
+.cursor/
 
-# Compass
-*.css.map
-*.scss.map
+# Fleet
+.fleet/
 
-# TypeScript
-*.tsbuildinfo
-.tscache/
+# Nova
+.nova/
 
-# Optional npm cache directory
-.npm
+# ============================================
+# OS Generated Files
+# ============================================
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+.AppleDouble
+.LSOverride
+Icon
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
 
-# Optional eslint cache
-.eslintcache
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
 
-# Microbundle cache
-.rpt2_cache/
-.rts2_cache_cjs/
-.rts2_cache_es/
-.rts2_cache_umd/
+# Linux
+*~
+.directory
+.Trash-*
+.nfs*
 
-# Optional REPL history
-.node_repl_history
+# ============================================
+# Package Manager Lock Files
+# ============================================
+# Keep package-lock.json for npm projects (best practice)
+# Keep yarn.lock for yarn projects
+# Keep pnpm-lock.yaml for pnpm projects
+bun.lockb            # Ignore bun lock file (we use npm)
 
-# Output of 'npm pack'
-*.tgz
-
-# Yarn Integrity file
-.yarn-integrity
-
-# dotenv environment variables file
-.env
-.env.test
-.env.production
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-!.env.example
-
-# Stores VSCode versions used for testing VSCode extensions
-.vscode-test
-
-# yarn v2
+# Yarn v2
 .yarn/cache
 .yarn/unplugged
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
 
-# Turbo
-.turbo/
-
-# Vercel
-.vercel/
-
-# Supabase
-.supabase/
-
-# Local development
-*.local
-
-# Testing
-coverage/
-.nyc_output/
-.jest/
-
-# Storybook
-storybook-static/
-
-# Sentry Config File
-.sentryclirc
-
-# Database
+# ============================================
+# Database Files
+# ============================================
 *.db
 *.sqlite
 *.sqlite3
+*.db-journal
+*.db-wal
+*.db-shm
 
-# Lock files (if using multiple package managers)
-package-lock.json
-yarn.lock
-pnpm-lock.yaml
+# ============================================
+# Temporary Files
+# ============================================
+tmp/
+temp/
+.tmp/
+.temp/
+*.tmp
+*.temp
+*.swp
+*.swo
+*.bak
+*.backup
+*.orig
 
-# Miscellaneous
-*.tgz
-*.tar.gz
+# ============================================
+# Build Artifacts
+# ============================================
+*.map
+*.min.js
+*.min.css
+bundle-analyzer-report.html
+stats.html
 
-# Modern Development Tools
-.swc/
-.turbo/
-.nx/
-.rush/
+# ============================================
+# Deployment & CI/CD
+# ============================================
+.vercel/
+.netlify/
+.railway/
+.serverless/
+.fusebox/
+.dynamodb/
 
-# Security and Secrets
-*.pem
-*.key
-*.crt
-*.p12
-*.pfx
-secrets.json
-.secrets/
-auth.json
+# ============================================
+# Cloud Provider Configs
+# ============================================
+.aws/
+.gcp/
+.azure/
 
-# AI/ML Models and Data
+# ============================================
+# Docker
+# ============================================
+docker-compose.override.yml
+.docker/
+
+# ============================================
+# Kubernetes
+# ============================================
+*.kubeconfig
+k8s-secrets/
+
+# ============================================
+# Terraform
+# ============================================
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+
+# ============================================
+# Storybook
+# ============================================
+storybook-static/
+.out/
+.storybook-out/
+
+# ============================================
+# Performance & Profiling
+# ============================================
+*.cpuprofile
+*.heapprofile
+.flamegraph.html
+.clinic/
+
+# ============================================
+# AI/ML Models (if applicable)
+# ============================================
 *.model
 *.pkl
 *.h5
@@ -265,77 +297,21 @@ models/
 datasets/
 *.weights
 
-# Performance and Profiling
-*.cpuprofile
-*.heapprofile
-.clinic/
-flamegraph.html
+# ============================================
+# Misc
+# ============================================
+*.tgz
+*.tar.gz
+.yarn-integrity
+.node_repl_history
+.rpt2_cache/
+.rts2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
 
-# Docker
-.dockerignore
-docker-compose.override.yml
-.docker/
+# Sentry
+.sentryclirc
 
-# Kubernetes
-*.kubeconfig
-k8s-secrets/
-
-# Terraform
-*.tfstate
-*.tfstate.*
-.terraform/
-.terraform.lock.hcl
-
-# Cloud Provider Configs
-.aws/
-.gcp/
-.azure/
-
-# Backup files
-*.backup
-*.bak
-*.orig
-*~
-
-# Temporary files
-.tmp/
-.temp/
-*.tmp
-*.temp
-
-# System files
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-Icon?
-ehthumbs.db
-Thumbs.db
-desktop.ini
-
-# Package manager specific
+# Package manager caches
 .pnpm-store/
-.yarn/
-node_modules.nosync
-
-# Development databases
-*.db-journal
-*.db-wal
-*.db-shm
-
-# API Keys and Tokens (additional patterns)
-.env.*.local
-.env.keys
-api-keys.json
-tokens.json
-
-# Build artifacts
-*.map
-*.min.js
-*.min.css
-bundle-analyzer-report.html
-
-# IDE specific (additional)
-.fleet/
-.nova/
-*.code-workspace
