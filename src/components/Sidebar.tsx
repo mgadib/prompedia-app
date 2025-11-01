@@ -244,7 +244,7 @@ const Sidebar = ({
   if (isMobile) {
     return (
       <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
-        <SheetContent side="left" className="w-80 p-0 bg-sidebar-background border-sidebar-border">
+        <SheetContent side="left" className="w-80 p-0 bg-sidebar-background/100 border-sidebar-border backdrop-blur-none">
           {sidebarContent}
         </SheetContent>
       </Sheet>

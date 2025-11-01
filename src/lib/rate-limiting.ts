@@ -176,7 +176,7 @@ export class RateLimitingService {
           last_used_at: null,
           session_id: null
         },
-        error: String(data.error) || 'Use limit reached'
+        error: String(data.error) || 'Usage limit reached'
       };
     }
 
@@ -224,7 +224,7 @@ export class RateLimitingService {
           last_used_at: null,
           session_id: this.guestSessionId
         },
-        error: data.success ? undefined : 'Daily use limit reached'
+        error: data.success ? undefined : 'Daily usage limit reached'
       };
     } catch (error) {
       console.error('Error checking guest usage:', error);
@@ -303,7 +303,7 @@ export class RateLimitingService {
           last_used_at: null,
           session_id: this.guestSessionId
         },
-        error: data.success ? undefined : 'Daily use limit reached'
+        error: data.success ? undefined : 'Daily usage limit reached'
       };
     } catch (error) {
       console.error('Error incrementing guest usage:', error);
@@ -347,7 +347,7 @@ export class RateLimitingService {
           last_used_at: usageData.lastUsedAt || null,
           session_id: usageData.sessionId
         },
-        error: 'Daily use limit reached'
+        error: 'Daily usage limit reached'
       };
     }
 

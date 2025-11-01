@@ -65,7 +65,7 @@ const ModelSelector = ({ value, onChange }: ModelSelectorProps) => {
   if (loading) {
     return (
       <Select disabled>
-        <SelectTrigger className={`${isMobile ? 'w-full min-h-[44px]' : 'w-[180px]'} bg-secondary border-border ${isMobile ? 'text-sm' : 'text-xs'}`}>
+        <SelectTrigger className={`${isMobile ? 'w-full h-9 text-xs' : 'w-[180px]'} bg-secondary border-border ${isMobile ? 'text-xs' : 'text-xs'}`}>
           <SelectValue placeholder="Loading models...">
             Loading...
           </SelectValue>
@@ -76,14 +76,14 @@ const ModelSelector = ({ value, onChange }: ModelSelectorProps) => {
 
   return (
     <Select value={value} onValueChange={onChange}>
-      <SelectTrigger className={`${isMobile ? 'w-full min-h-[44px]' : 'w-[180px]'} bg-secondary border-border ${isMobile ? 'text-sm' : 'text-xs'} touch-manipulation`}>
+      <SelectTrigger className={`${isMobile ? 'w-full h-9 text-xs' : 'w-[180px]'} bg-secondary border-border text-xs touch-manipulation`}>
         <SelectValue placeholder="Select model">
-          {selectedModel?.name || selectedModel?.id || 'Select model'}
+          <span className="truncate">{selectedModel?.name || selectedModel?.id || 'Select model'}</span>
         </SelectValue>
       </SelectTrigger>
       <SelectContent>
         {mainModels.map((model) => (
-          <SelectItem key={model.id} value={model.id} className={`${isMobile ? 'text-sm min-h-[44px]' : 'text-xs'}`}>
+          <SelectItem key={model.id} value={model.id} className={`${isMobile ? 'text-xs py-2' : 'text-xs'}`}>
             {model.name || model.id}
           </SelectItem>
         ))}

@@ -217,7 +217,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       // Check if user can make AI calls (they need quota for saving)
       const rateLimitCheck = await rateLimitingService.canMakeAICall(user);
       if (!rateLimitCheck.allowed) {
-        toast.error('Please wait before saving. Use limit reached.');
+        toast.error('Please wait before saving. Usage limit reached.');
         return;
       }
 
@@ -330,7 +330,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       // Check if user can make AI calls (they need to be authenticated)
       const rateLimitCheck = await rateLimitingService.canMakeAICall(user);
       if (!rateLimitCheck.allowed) {
-        toast.error('Please wait before making changes. Use limit reached.');
+        toast.error('Please wait before making changes. Usage limit reached.');
         return;
       }
 
@@ -393,7 +393,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       // Check if user can make AI calls (deleting requires quota)
       const rateLimitCheck = await rateLimitingService.canMakeAICall(user);
       if (!rateLimitCheck.allowed) {
-        toast.error('Please wait before deleting. Use limit reached.');
+        toast.error('Please wait before deleting. Usage limit reached.');
         return;
       }
 
@@ -446,7 +446,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       if (!rateLimitCheck.allowed) {
         const limitType = user ? 'daily' : 'guest';
         toast.error(
-          `Use limit reached! ${limitType === 'daily' ? 'Daily' : 'Guest'} limit reached. ${rateLimitCheck.error || ''}`
+          `Usage limit reached! ${limitType === 'daily' ? 'Daily' : 'Guest'} limit reached. ${rateLimitCheck.error || ''}`
         );
         return;
       }
@@ -544,7 +544,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
         
         // Show specific error types
         if (errorMsg.includes('rate limit') || errorMsg.includes('429')) {
-          errorMsg = 'Service use limit reached. Please try again in a moment.';
+          errorMsg = 'Service usage limit reached. Please try again in a moment.';
         } else if (errorMsg.includes('API key') || errorMsg.includes('401')) {
           errorMsg = 'API authentication failed. Please contact support.';
         } else if (errorMsg.includes('timeout')) {
@@ -560,11 +560,11 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-background overflow-hidden">
+    <div className={`flex-1 flex flex-col bg-background overflow-hidden ${isMobile ? 'h-[calc(100vh-3.5rem)]' : 'h-full'}`}>
       {/* Header Bar */}
-      <div className={`border-b border-border bg-card ${isMobile ? 'px-3 py-3' : 'px-6 py-4'}`}>
-        <div className={`flex ${isMobile ? 'flex-col' : 'items-center justify-between'} gap-3`}>
-          <div className={`flex items-center ${isMobile ? 'flex-wrap' : ''} gap-2`}>
+      <div className={`border-b border-border bg-card flex-shrink-0 ${isMobile ? 'px-2 py-2' : 'px-6 py-4'}`}>
+        <div className={`flex ${isMobile ? 'flex-col' : 'items-center justify-between'} ${isMobile ? 'gap-2' : 'gap-3'}`}>
+          <div className={`flex items-center ${isMobile ? 'flex-wrap' : ''} ${isMobile ? 'gap-1' : 'gap-2'}`}>
             {user && !isMobile && (
               <Button
                 onClick={onToggleFocus}
@@ -588,40 +588,44 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
             <Button
               onClick={handleNew}
               variant="ghost"
-              size={isMobile ? "default" : "sm"}
-              className={`hover:bg-accent/20 hover:text-accent font-mono touch-manipulation ${isMobile ? 'min-h-[44px]' : ''}`}
+              size={isMobile ? "icon" : "sm"}
+              className={`hover:bg-accent/20 hover:text-accent font-mono touch-manipulation ${isMobile ? 'h-9 w-9' : ''}`}
+              title={isMobile ? 'New' : ''}
             >
-              <FileText className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${isMobile ? '' : 'mr-2'}`} />
+              <FileText className={`${isMobile ? 'w-4 h-4' : 'w-4 h-4'} ${isMobile ? '' : 'mr-2'}`} />
               {isMobile ? '' : 'New'}
             </Button>
             <Button
               onClick={handleCopy}
               variant="ghost"
-              size={isMobile ? "default" : "sm"}
-              className={`hover:bg-accent/20 hover:text-accent font-mono touch-manipulation ${isMobile ? 'min-h-[44px]' : ''}`}
+              size={isMobile ? "icon" : "sm"}
+              className={`hover:bg-accent/20 hover:text-accent font-mono touch-manipulation ${isMobile ? 'h-9 w-9' : ''}`}
               disabled={!content}
+              title={isMobile ? 'Copy' : ''}
             >
-              <Copy className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${isMobile ? '' : 'mr-2'}`} />
+              <Copy className={`${isMobile ? 'w-4 h-4' : 'w-4 h-4'} ${isMobile ? '' : 'mr-2'}`} />
               {isMobile ? '' : 'Copy'}
             </Button>
             <Button
               onClick={handleSave}
               variant="ghost"
-              size={isMobile ? "default" : "sm"}
-              className={`hover:bg-accent/20 hover:text-accent font-mono touch-manipulation ${isMobile ? 'min-h-[44px]' : ''}`}
+              size={isMobile ? "icon" : "sm"}
+              className={`hover:bg-accent/20 hover:text-accent font-mono touch-manipulation ${isMobile ? 'h-9 w-9' : ''}`}
               disabled={!title || !content}
+              title={isMobile ? 'Save' : ''}
             >
-              <Save className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${isMobile ? '' : 'mr-2'}`} />
+              <Save className={`${isMobile ? 'w-4 h-4' : 'w-4 h-4'} ${isMobile ? '' : 'mr-2'}`} />
               {isMobile ? '' : 'Save'}
             </Button>
             <Button
               onClick={handleShare}
               variant="ghost"
-              size={isMobile ? "default" : "sm"}
-              className={`hover:bg-accent/20 hover:text-accent font-mono touch-manipulation ${isMobile ? 'min-h-[44px]' : ''}`}
+              size={isMobile ? "icon" : "sm"}
+              className={`hover:bg-accent/20 hover:text-accent font-mono touch-manipulation ${isMobile ? 'h-9 w-9' : ''}`}
               disabled={!title || !content}
+              title={isMobile ? (currentPrompt?.is_public ? 'Make Private' : 'Share') : ''}
             >
-              <Share2 className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${isMobile ? '' : 'mr-2'}`} />
+              <Share2 className={`${isMobile ? 'w-4 h-4' : 'w-4 h-4'} ${isMobile ? '' : 'mr-2'}`} />
               {isMobile ? '' : (currentPrompt?.is_public ? 'Make Private' : 'Share')}
             </Button>
             <DeletePromptDialog
@@ -631,17 +635,21 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
 
           </div>
 
-          <div className={`flex items-center ${isMobile ? 'flex-wrap' : ''} gap-3`}>
-            <ModeSelector value={mode} onChange={setMode} />
-            <ModelSelector value={model} onChange={setModel} />
+          <div className={`flex items-center ${isMobile ? 'flex-wrap w-full' : ''} ${isMobile ? 'gap-2' : 'gap-3'}`}>
+            <div className={isMobile ? 'w-full' : ''}>
+              <ModeSelector value={mode} onChange={setMode} />
+            </div>
+            <div className={isMobile ? 'w-full' : ''}>
+              <ModelSelector value={model} onChange={setModel} />
+            </div>
           </div>
         </div>
       </div>
 
       {/* Main Editor Area */}
-      <div className={`flex-1 flex flex-col overflow-hidden space-y-4 ${isMobile ? 'p-3' : 'p-4'}`}>
+      <div className={`flex-1 flex flex-col overflow-hidden min-h-0 ${isMobile ? 'p-2 space-y-2' : 'p-4 space-y-4'}`}>
         {/* Title and Tags Section - Clean Layout */}
-        <div className={`flex ${isMobile ? 'flex-col gap-3' : 'items-center gap-8'}`}>
+        <div className={`flex flex-shrink-0 ${isMobile ? 'flex-col gap-2' : 'items-center gap-8'}`}>
           {/* Title Section */}
           <div className="flex-1 w-full">
             <Input
@@ -653,7 +661,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
                 }
               }}
               placeholder="Enter prompt title..."
-              className={`${isMobile ? 'text-lg' : 'text-xl'} font-bold bg-transparent border-none px-3 py-2 focus-visible:ring-0 placeholder:text-muted-foreground/50`}
+              className={`${isMobile ? 'text-base' : 'text-xl'} font-bold bg-transparent border-none ${isMobile ? 'px-2 py-1.5' : 'px-3 py-2'} focus-visible:ring-0 placeholder:text-muted-foreground/50`}
               maxLength={77}
             />
           </div>
@@ -666,7 +674,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
 
 
         {/* Main Prompt Content */}
-        <div className="flex flex-col flex-1 space-y-3 min-h-0">
+        <div className={`flex flex-col flex-1 min-h-0 ${isMobile ? 'space-y-2' : 'space-y-3'}`}>
           <div className={`flex items-center ${isMobile ? 'flex-wrap' : ''} gap-2`}>
             <ActionButtons
               onAction={handleAction}
@@ -728,7 +736,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
             {/* Rate limit warning */}
             {!userCanUseAI && (
               <div className="flex items-center gap-1 text-red-400 ml-auto">
-                <span className="text-xs font-mono">⚠️ Use Limit</span>
+                <span className="text-xs font-mono">⚠️ Usage Limit</span>
               </div>
             )}
           </div>
@@ -747,7 +755,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
               }
             }}
             placeholder="Start writing..."
-            className="flex-1 min-h-0 bg-card border-border font-mono text-sm resize-none leading-relaxed prompt-editor-textarea"
+            className={`flex-1 min-h-0 bg-card border-border font-mono resize-none leading-relaxed prompt-editor-textarea ${isMobile ? 'text-base' : 'text-sm'}`}
             maxLength={50000}
           />
         </div>
@@ -755,7 +763,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       </div>
 
       {/* Footer Status - Enhanced Info */}
-      <div className={`border-t border-border bg-card mt-auto ${isMobile ? 'px-3 py-2' : 'px-4 py-3'}`}>
+      <div className={`border-t border-border bg-card flex-shrink-0 ${isMobile ? 'px-2 py-1.5' : 'px-4 py-3'}`}>
         <div className={`flex ${isMobile ? 'flex-col gap-2' : 'items-center justify-between'}`}>
           <div className={`flex items-center ${isMobile ? 'flex-wrap' : ''} ${isMobile ? 'gap-2' : 'gap-4'}`}>
             {/* Word count */}

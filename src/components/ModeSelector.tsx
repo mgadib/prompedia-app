@@ -59,7 +59,7 @@ const ModeSelector = ({ value, onChange }: ModeSelectorProps) => {
   if (loading) {
     return (
       <Select disabled>
-        <SelectTrigger className={`${isMobile ? 'w-full min-h-[44px]' : 'w-[180px]'} bg-secondary border-border ${isMobile ? 'text-sm' : 'text-xs'}`}>
+        <SelectTrigger className={`${isMobile ? 'w-full h-9 text-xs' : 'w-[180px]'} bg-secondary border-border ${isMobile ? 'text-xs' : 'text-xs'}`}>
           <SelectValue placeholder="Loading modes...">
             Loading...
           </SelectValue>
@@ -70,14 +70,14 @@ const ModeSelector = ({ value, onChange }: ModeSelectorProps) => {
 
   return (
     <Select value={value} onValueChange={onChange}>
-      <SelectTrigger className={`${isMobile ? 'w-full min-h-[44px]' : 'w-[180px]'} bg-secondary border-border ${isMobile ? 'text-sm' : 'text-xs'} touch-manipulation`}>
+      <SelectTrigger className={`${isMobile ? 'w-full h-9 text-xs' : 'w-[180px]'} bg-secondary border-border text-xs touch-manipulation`}>
         <SelectValue placeholder="Select mode">
-          <span>{selectedMode?.name || selectedMode?.id}</span>
+          <span className="truncate">{selectedMode?.name || selectedMode?.id}</span>
         </SelectValue>
       </SelectTrigger>
       <SelectContent>
         {modes.map((mode) => (
-          <SelectItem key={mode.id} value={mode.id} className={`${isMobile ? 'text-sm min-h-[44px]' : 'text-xs'}`}>
+          <SelectItem key={mode.id} value={mode.id} className={`${isMobile ? 'text-xs py-2' : 'text-xs'}`}>
             {mode.name || mode.id}
           </SelectItem>
         ))}

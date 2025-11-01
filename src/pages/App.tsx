@@ -240,7 +240,7 @@ const AppPage = () => {
       // Check if user can make AI calls (copying requires quota)
       const rateLimitCheck = await rateLimitingService.canMakeAICall(user);
       if (!rateLimitCheck.allowed) {
-        toast.error('Please wait before copying. Use limit reached.');
+        toast.error('Please wait before copying. Usage limit reached.');
         return;
       }
 
@@ -339,7 +339,7 @@ const AppPage = () => {
       if (!rateLimitCheck.allowed) {
         const limitType = user ? 'daily' : 'guest';
         toast.error(
-          `Use limit reached! ${limitType === 'daily' ? 'Daily' : 'Guest'} limit reached. ${rateLimitCheck.error || ''}`
+          `Usage limit reached! ${limitType === 'daily' ? 'Daily' : 'Guest'} limit reached. ${rateLimitCheck.error || ''}`
         );
         if (!user) {
           setShowAuthModal(true);
@@ -484,21 +484,21 @@ const AppPage = () => {
       )}
 
       {/* Main Content Area */}
-      <div className={`flex-1 flex flex-col transition-opacity duration-500 ${isInitializing ? 'opacity-0' : 'opacity-100'} min-w-0 overflow-hidden`}>
+      <div className={`flex-1 flex flex-col transition-opacity duration-500 ${isInitializing ? 'opacity-0' : 'opacity-100'} min-w-0 overflow-hidden ${isMobile ? 'h-screen' : ''}`}>
         {/* Mobile Hamburger Menu Button */}
         {isMobile && (
-          <div className="md:hidden border-b border-border bg-card/50 px-4 py-3 flex items-center gap-3 z-10">
+          <div className="md:hidden border-b border-border bg-card flex-shrink-0 px-4 py-3 flex items-center gap-3 z-10">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setMobileSidebarOpen(true)}
-              className="h-11 w-11 touch-manipulation"
+              className="h-9 w-9 touch-manipulation"
               aria-label="Open menu"
             >
               <Menu className="h-5 w-5" />
             </Button>
             <div className="flex-1">
-              <h1 className="text-base font-semibold font-mono">Prompedia AI</h1>
+              <h1 className="text-sm font-semibold font-mono">Prompedia AI</h1>
             </div>
           </div>
         )}
