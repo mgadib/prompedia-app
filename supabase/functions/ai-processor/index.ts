@@ -166,9 +166,8 @@ serve(async (req) => {
     try {
       const { data: modelData } = await supabaseClient
         .from('ai_models')
-        .select('id, name, is_active')
+        .select('id, name')
         .eq('id', model)
-        .eq('is_active', true)
         .single()
       if (modelData?.name) modelName = modelData.name
     } catch (_) {
@@ -180,14 +179,14 @@ serve(async (req) => {
     let modeContext = ''
 
     if (mode) {
-      const { data: modeData } = await supabaseClient
+      // Be resilient to schemas without `is_active` column
+      const { data: modeData, error: modeErr } = await supabaseClient
         .from('thinking_modes')
         .select('instructions, thinking_pattern, description')
         .eq('id', mode)
-        .eq('is_active', true)
         .single()
 
-      if (modeData) {
+      if (!modeErr && modeData) {
         // Mode context ditambahkan sebagai system message
         modeContext = `Anda sedang beroperasi dalam mode "${mode}".
 Pola berpikir: ${modeData.thinking_pattern}
