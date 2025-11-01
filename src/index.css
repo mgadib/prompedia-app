@@ -59,9 +59,36 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
+  html {
+    /* Prevent iOS zoom on input focus - minimum 16px */
+    font-size: 16px;
+    /* Improve touch scrolling on iOS */
+    -webkit-overflow-scrolling: touch;
+    /* Smooth scrolling */
+    scroll-behavior: smooth;
+  }
+
   body {
     @apply bg-background text-foreground font-mono;
     font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
+    /* Minimum font size to prevent zoom on iOS */
+    font-size: 16px;
+    /* Prevent horizontal scrolling */
+    overflow-x: hidden;
+    /* Improve text rendering */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Ensure inputs have minimum 16px to prevent iOS zoom */
+  input, select, textarea {
+    font-size: 16px;
+  }
+
+  /* Touch-friendly tap highlighting */
+  button, a, [role="button"] {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+    tap-highlight-color: rgba(0, 0, 0, 0.1);
   }
 
   /* Prompedia custom styles */
@@ -186,5 +213,57 @@ All colors MUST be HSL.
 
   .responsive-gap {
     gap: clamp(0.5rem, 2vw, 1rem);
+  }
+
+  /* Touch manipulation for better mobile performance */
+  .touch-manipulation {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Safe area insets for mobile devices with notches */
+  @supports (padding: max(0px)) {
+    .safe-top {
+      padding-top: max(1rem, env(safe-area-inset-top));
+    }
+    
+    .safe-bottom {
+      padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    }
+    
+    .safe-left {
+      padding-left: max(1rem, env(safe-area-inset-left));
+    }
+    
+    .safe-right {
+      padding-right: max(1rem, env(safe-area-inset-right));
+    }
+  }
+
+  /* Mobile-first container improvements */
+  @media (max-width: 640px) {
+    .container {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+  }
+
+  /* Improve readability on mobile */
+  @media (max-width: 768px) {
+    body {
+      line-height: 1.6;
+    }
+    
+    h1, h2, h3, h4, h5, h6 {
+      line-height: 1.3;
+    }
+  }
+
+  /* Prevent text size adjustment on iOS */
+  @media screen and (max-width: 768px) {
+    body {
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
   }
 }

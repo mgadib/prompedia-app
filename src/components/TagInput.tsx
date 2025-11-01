@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { storage } from '@/lib/storage';
 import { TagService } from '@/lib/tag-service';
 import { supabase } from '@/integrations/supabase/client';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface TagInputProps {
   selectedTagNames: string[];
@@ -16,6 +17,7 @@ const TagInput = ({ selectedTagNames, onChange }: TagInputProps) => {
   const [input, setInput] = useState('');
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const isMobile = useIsMobile();
 
   // Get user's tags for suggestions
   useEffect(() => {
@@ -91,24 +93,24 @@ const TagInput = ({ selectedTagNames, onChange }: TagInputProps) => {
     <div className="space-y-1">
       <div className="relative">
         {/* Main input area with tags inline - matching title design */}
-        <div className="relative flex items-center gap-3 min-h-[40px] bg-transparent border-none px-3 py-2 focus-within:ring-0">
-          <Hash className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+        <div className={`relative flex ${isMobile ? 'flex-wrap' : 'items-center'} gap-2 ${isMobile ? 'min-h-[44px]' : 'min-h-[40px]'} bg-transparent border-none ${isMobile ? 'px-2 py-2' : 'px-3 py-2'} focus-within:ring-0`}>
+          <Hash className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} text-muted-foreground flex-shrink-0 ${isMobile ? 'self-start mt-2' : ''}`} />
           
-          {/* Current Tags - displayed inline with input, single line only */}
-          <div className="flex items-center gap-2 flex-nowrap overflow-hidden">
+          {/* Current Tags - displayed inline with input, wrap on mobile */}
+          <div className={`flex items-center gap-2 ${isMobile ? 'flex-wrap' : 'flex-nowrap overflow-hidden'}`}>
             {selectedTagNames.map(tag => (
               <Badge
                 key={tag}
                 variant="secondary"
-                className="bg-prompedia-green-500/20 text-prompedia-green-400 border border-prompedia-green-500/30 text-xs font-mono hover:bg-prompedia-green-500/30 transition-colors flex-shrink-0 whitespace-nowrap"
+                className={`bg-prompedia-green-500/20 text-prompedia-green-400 border border-prompedia-green-500/30 ${isMobile ? 'text-sm' : 'text-xs'} font-mono hover:bg-prompedia-green-500/30 transition-colors flex-shrink-0 whitespace-nowrap touch-manipulation ${isMobile ? 'py-1.5 px-2' : ''}`}
               >
-                <Hash className="w-3 h-3 mr-1" />
-                <span className="truncate max-w-[100px]">{tag}</span>
+                <Hash className={`${isMobile ? 'w-4 h-4' : 'w-3 h-3'} mr-1`} />
+                <span className={`truncate ${isMobile ? 'max-w-[120px]' : 'max-w-[100px]'}`}>{tag}</span>
                 <button
                   onClick={() => removeTag(tag)}
-                  className="ml-2 hover:text-prompedia-green-300 transition-colors flex-shrink-0"
+                  className={`ml-2 hover:text-prompedia-green-300 transition-colors flex-shrink-0 touch-manipulation ${isMobile ? 'min-h-[24px] min-w-[24px]' : ''}`}
                 >
-                  <X className="w-3 h-3" />
+                  <X className={`${isMobile ? 'w-4 h-4' : 'w-3 h-3'}`} />
                 </button>
               </Badge>
             ))}
@@ -122,12 +124,12 @@ const TagInput = ({ selectedTagNames, onChange }: TagInputProps) => {
             onFocus={() => setShowSuggestions(input.length > 0)}
             onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
             placeholder={selectedTagNames.length >= 3 ? "Max 3 tags" : "Add tags..."}
-            className="bg-transparent border-none text-sm font-mono focus-visible:ring-0 flex-1 min-w-[150px] px-2"
+            className={`bg-transparent border-none ${isMobile ? 'text-base' : 'text-sm'} font-mono focus-visible:ring-0 flex-1 ${isMobile ? 'min-w-[120px]' : 'min-w-[150px]'} ${isMobile ? 'min-h-[44px]' : ''} px-2`}
             disabled={selectedTagNames.length >= 3}
           />
 
-          {/* Popular Tags Quick Add - inline on same row */}
-          {selectedTagNames.length < 3 && suggestions.length > 0 && (
+          {/* Popular Tags Quick Add - inline on same row, wrap on mobile */}
+          {selectedTagNames.length < 3 && suggestions.length > 0 && !isMobile && (
             <div className="flex items-center gap-1 ml-2">
               {suggestions.slice(0, 3 - selectedTagNames.length).map(tag => (
                 <Button
@@ -135,7 +137,7 @@ const TagInput = ({ selectedTagNames, onChange }: TagInputProps) => {
                   variant="ghost"
                   size="sm"
                   onClick={() => addTag(tag)}
-                  className="h-6 px-2 text-xs bg-accent/10 hover:bg-accent/20 hover:text-accent font-mono flex-shrink-0"
+                  className="h-6 px-2 text-xs bg-accent/10 hover:bg-accent/20 hover:text-accent font-mono flex-shrink-0 touch-manipulation"
                 >
                   <Plus className="w-3 h-3 mr-1" />
                   {tag}
@@ -144,17 +146,35 @@ const TagInput = ({ selectedTagNames, onChange }: TagInputProps) => {
             </div>
           )}
         </div>
+        
+        {/* Popular Tags Quick Add - separate row on mobile */}
+        {selectedTagNames.length < 3 && suggestions.length > 0 && isMobile && (
+          <div className="flex items-center gap-2 mt-2 px-2">
+            {suggestions.slice(0, 3 - selectedTagNames.length).map(tag => (
+              <Button
+                key={tag}
+                variant="ghost"
+                size="default"
+                onClick={() => addTag(tag)}
+                className="h-9 px-3 text-sm bg-accent/10 hover:bg-accent/20 hover:text-accent font-mono flex-shrink-0 touch-manipulation"
+              >
+                <Plus className="w-4 h-4 mr-1" />
+                {tag}
+              </Button>
+            ))}
+          </div>
+        )}
 
         {/* Tag Suggestions */}
         {showSuggestions && filteredSuggestions.length > 0 && selectedTagNames.length < 3 && (
-          <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-card border border-border rounded-md shadow-lg max-h-32 overflow-y-auto">
+          <div className={`absolute top-full left-0 right-0 z-10 mt-1 bg-card border border-border rounded-md shadow-lg max-h-32 overflow-y-auto ${isMobile ? 'max-h-40' : ''}`}>
             {filteredSuggestions.slice(0, 5).map(tag => (
               <button
                 key={tag}
                 onClick={() => addTag(tag)}
-                className="w-full text-left px-3 py-2 text-sm hover:bg-accent/20 hover:text-accent font-mono flex items-center gap-2"
+                className={`w-full text-left ${isMobile ? 'px-4 py-3 text-base min-h-[44px]' : 'px-3 py-2 text-sm'} hover:bg-accent/20 hover:text-accent font-mono flex items-center gap-2 touch-manipulation`}
               >
-                <Hash className="w-3 h-3" />
+                <Hash className={`${isMobile ? 'w-4 h-4' : 'w-3 h-3'}`} />
                 {tag}
               </button>
             ))}

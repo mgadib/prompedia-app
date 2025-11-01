@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Sparkles, Loader2 } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -19,6 +20,7 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
+  const isMobile = useIsMobile();
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,22 +74,22 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className={`${isMobile ? 'max-w-[calc(100vw-2rem)] mx-4' : 'sm:max-w-md'} max-h-[90vh] overflow-y-auto`}>
         <DialogHeader>
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <Sparkles className="w-6 h-6 text-primary" />
-            <DialogTitle className="text-2xl font-mono">
+          <div className={`flex items-center justify-center gap-2 ${isMobile ? 'mb-3' : 'mb-4'}`}>
+            <Sparkles className={`${isMobile ? 'w-5 h-5' : 'w-6 h-6'} text-primary`} />
+            <DialogTitle className={`${isMobile ? 'text-xl' : 'text-2xl'} font-mono`}>
               {isLogin ? 'Sign In' : 'Create Account'}
             </DialogTitle>
           </div>
-          <DialogDescription className="font-mono text-center">
+          <DialogDescription className={`font-mono text-center ${isMobile ? 'text-sm' : ''}`}>
             {isLogin
               ? 'Welcome back! Enter your credentials to continue.'
               : 'Join Prompedia to unlock unlimited prompts.'}
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleAuth} className="space-y-4 mt-4">
+        <form onSubmit={handleAuth} className={`space-y-4 ${isMobile ? 'mt-3' : 'mt-4'}`}>
           {!isLogin && (
             <div className="space-y-2">
               <Label htmlFor="username" className="font-mono">
@@ -146,12 +148,12 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
 
           <Button
             type="submit"
-            className="w-full font-mono"
+            className={`w-full font-mono touch-manipulation ${isMobile ? 'min-h-[44px] text-base' : ''}`}
             disabled={loading}
           >
             {loading ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className={`${isMobile ? 'mr-2 h-5 w-5' : 'mr-2 h-4 w-4'} animate-spin`} />
                 Processing...
               </>
             ) : isLogin ? (
@@ -162,10 +164,10 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
           </Button>
         </form>
 
-        <div className="mt-4 text-center">
+        <div className={`${isMobile ? 'mt-3' : 'mt-4'} text-center`}>
           <button
             onClick={() => setIsLogin(!isLogin)}
-            className="text-sm text-primary hover:underline font-mono"
+            className={`${isMobile ? 'text-base min-h-[44px] py-2' : 'text-sm'} text-primary hover:underline font-mono touch-manipulation`}
             disabled={loading}
           >
             {isLogin

@@ -156,26 +156,26 @@ const PublicLibrary = ({
   return (
     <div className="flex flex-col h-full">
       {/* Search and Filter Header */}
-      <div className="p-6 border-b border-border bg-card/50">
-        <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center">
+      <div className="border-b border-border bg-card/50 sm:p-4 md:p-6 p-3">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center">
           {/* Search Input */}
-          <div className="relative flex-1">
+          <div className="relative flex-1 w-full">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="Search public prompts..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 font-mono"
+              className="pl-10 font-mono min-h-[44px] text-base sm:text-sm"
             />
           </div>
           
           {/* Tag Filter */}
-          <div className="relative min-w-[200px]">
+          <div className="relative w-full sm:w-auto sm:min-w-[200px]">
             <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <select
               value={selectedTag}
               onChange={(e) => setSelectedTag(e.target.value)}
-              className="w-full pl-10 pr-4 h-10 bg-background border border-input rounded-md text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-full pl-10 pr-4 min-h-[44px] text-base sm:text-sm bg-background border border-input rounded-md font-mono focus:outline-none focus:ring-2 focus:ring-ring touch-manipulation"
             >
               <option value="">All tags</option>
               {allTags.map(tag => (
@@ -184,8 +184,8 @@ const PublicLibrary = ({
             </select>
           </div>
 
-          {/* Prompt count and filter info - on the same line */}
-          <div className="flex items-center gap-4 text-sm font-mono">
+          {/* Prompt count and filter info - responsive */}
+          <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-sm font-mono">
             <div className="flex items-center gap-2">
               <Globe className="w-4 h-4 text-primary" />
               <span className="text-foreground font-semibold">
@@ -223,7 +223,7 @@ const PublicLibrary = ({
                   setSearchTerm('');
                   setSelectedTag('');
                 }}
-                className="text-xs h-7 px-2 hover:bg-secondary/50"
+                className="text-xs sm:text-xs min-h-[44px] sm:h-7 px-3 sm:px-2 hover:bg-secondary/50 touch-manipulation"
               >
                 Clear
               </Button>
@@ -239,7 +239,7 @@ const PublicLibrary = ({
             <p className="text-sm font-mono">No prompts match your search criteria</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 p-3 sm:p-4 md:p-6">
             {filteredPrompts.map((prompt) => {
               const userData = getMockUserData(prompt.user_id || '');
               
@@ -247,7 +247,7 @@ const PublicLibrary = ({
                 <div
                   key={prompt.id}
                   onClick={() => handleCardClick(prompt)}
-                  className={`group relative bg-card border rounded-lg p-6 cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-primary/50 ${
+                  className={`group relative bg-card border rounded-lg p-4 sm:p-6 cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-primary/50 active:scale-[0.98] touch-manipulation ${
                     currentPromptId === prompt.id
                       ? 'border-primary bg-accent/20 shadow-md'
                       : 'border-border hover:bg-accent/10'

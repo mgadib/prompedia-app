@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { Menu } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import Sidebar from '@/components/Sidebar';
 import PromptEditor from '@/components/PromptEditor';
 import MyLibrary from '@/components/MyLibrary';
 import PublicLibrary from '@/components/PublicLibrary';
 import AuthModal from '@/components/AuthModal';
 import { storage, Prompt, Tag } from '@/lib/storage';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface PromptWithTags extends Prompt {
   tags: Tag[];
@@ -32,6 +35,8 @@ const AppPage = () => {
   const [allPrompts, setAllPrompts] = useState<Prompt[]>([]);
   const [publicPrompts, setPublicPrompts] = useState<Prompt[]>([]);
   const [isFocusMode, setIsFocusMode] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   const checkAuth = useCallback(async () => {
     try {
@@ -430,22 +435,84 @@ const AppPage = () => {
     );
   }
 
+  // Close mobile sidebar when view changes
+  const handleViewChangeWithMobile = (view: 'my-library' | 'public-library') => {
+    handleViewChange(view);
+    if (isMobile) {
+      setMobileSidebarOpen(false);
+    }
+  };
+
+  const handleNewPromptWithMobile = async () => {
+    await handleNewPrompt();
+    if (isMobile) {
+      setMobileSidebarOpen(false);
+    }
+  };
+
+  const handleLoginWithMobile = () => {
+    handleLogin();
+    if (isMobile) {
+      setMobileSidebarOpen(false);
+    }
+  };
+
   return (
-    <div className="flex h-screen bg-background">
-      <div className={`transition-opacity duration-500 ${isInitializing ? 'opacity-0' : 'opacity-100'}`}>
+    <div className="flex h-screen bg-background overflow-hidden">
+      {/* Desktop Sidebar */}
+      {!isMobile && (
+        <div className={`transition-opacity duration-500 ${isInitializing ? 'opacity-0' : 'opacity-100'} hidden md:block`}>
+          <Sidebar
+            activeView={activeView}
+            onViewChange={handleViewChange}
+            onNewPrompt={handleNewPrompt}
+            onLogout={handleLogout}
+            onLogin={handleLogin}
+            user={user}
+            isPlaygroundActive={showEditor}
+            isFocusMode={isFocusMode}
+            mobileSidebarOpen={undefined}
+            setMobileSidebarOpen={undefined}
+          />
+        </div>
+      )}
+
+      {/* Mobile Sidebar */}
+      {isMobile && (
         <Sidebar
           activeView={activeView}
-          onViewChange={handleViewChange}
-          onNewPrompt={handleNewPrompt}
+          onViewChange={handleViewChangeWithMobile}
+          onNewPrompt={handleNewPromptWithMobile}
           onLogout={handleLogout}
-          onLogin={handleLogin}
+          onLogin={handleLoginWithMobile}
           user={user}
           isPlaygroundActive={showEditor}
           isFocusMode={isFocusMode}
+          mobileSidebarOpen={mobileSidebarOpen}
+          setMobileSidebarOpen={setMobileSidebarOpen}
         />
-      </div>
+      )}
 
-      <div className={`flex-1 flex flex-col transition-opacity duration-500 ${isInitializing ? 'opacity-0' : 'opacity-100'}`}>
+      {/* Main Content Area */}
+      <div className={`flex-1 flex flex-col transition-opacity duration-500 ${isInitializing ? 'opacity-0' : 'opacity-100'} min-w-0 overflow-hidden`}>
+        {/* Mobile Hamburger Menu Button */}
+        {isMobile && (
+          <div className="md:hidden border-b border-border bg-card/50 px-4 py-3 flex items-center gap-3 z-10">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setMobileSidebarOpen(true)}
+              className="h-11 w-11 touch-manipulation"
+              aria-label="Open menu"
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+            <div className="flex-1">
+              <h1 className="text-base font-semibold font-mono">Prompedia AI</h1>
+            </div>
+          </div>
+        )}
+
         <ErrorBoundary>
           {showEditor ? (
             <PromptEditor

@@ -337,14 +337,30 @@ export class SupabaseService {
       return this.aiModelsCache
     }
 
+    const allowedModelIds = ['meta-llama/llama-4-maverick:free', 'qwen/qwen3-30b-a3b:free']
+    
     const { data, error } = await supabase
       .from('ai_models')
       .select('*')
+      .in('id', allowedModelIds)
       .order('name')
     
-    if (error) throw error
+    if (error) {
+      // If is_active column doesn't exist yet, filter in memory
+      const { data: allData, error: allError } = await supabase
+        .from('ai_models')
+        .select('*')
+        .order('name')
+      
+      if (allError) throw allError
+      
+      // Filter to only allow the 2 specified models
+      this.aiModelsCache = (allData || []).filter(model => allowedModelIds.includes(model.id))
+      return this.aiModelsCache
+    }
     
-    this.aiModelsCache = data || []
+    // Filter to only allow the 2 specified models (double check)
+    this.aiModelsCache = (data || []).filter(model => allowedModelIds.includes(model.id))
     return this.aiModelsCache
   }
 

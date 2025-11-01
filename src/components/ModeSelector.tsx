@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/select';
 import { SupabaseService } from '@/lib/supabase-service';
 import { THINKING_MODES } from '@/lib/modes';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ModeSelectorProps {
   value: string;
@@ -28,6 +29,7 @@ interface DBMode {
 const ModeSelector = ({ value, onChange }: ModeSelectorProps) => {
   const [modes, setModes] = useState<DBMode[]>([]);
   const [loading, setLoading] = useState(true);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const loadModes = async () => {
@@ -57,7 +59,7 @@ const ModeSelector = ({ value, onChange }: ModeSelectorProps) => {
   if (loading) {
     return (
       <Select disabled>
-        <SelectTrigger className="w-[180px] bg-secondary border-border text-xs">
+        <SelectTrigger className={`${isMobile ? 'w-full min-h-[44px]' : 'w-[180px]'} bg-secondary border-border ${isMobile ? 'text-sm' : 'text-xs'}`}>
           <SelectValue placeholder="Loading modes...">
             Loading...
           </SelectValue>
@@ -68,14 +70,14 @@ const ModeSelector = ({ value, onChange }: ModeSelectorProps) => {
 
   return (
     <Select value={value} onValueChange={onChange}>
-      <SelectTrigger className="w-[180px] bg-secondary border-border text-xs">
+      <SelectTrigger className={`${isMobile ? 'w-full min-h-[44px]' : 'w-[180px]'} bg-secondary border-border ${isMobile ? 'text-sm' : 'text-xs'} touch-manipulation`}>
         <SelectValue placeholder="Select mode">
           <span>{selectedMode?.name || selectedMode?.id}</span>
         </SelectValue>
       </SelectTrigger>
       <SelectContent>
         {modes.map((mode) => (
-          <SelectItem key={mode.id} value={mode.id} className="text-xs">
+          <SelectItem key={mode.id} value={mode.id} className={`${isMobile ? 'text-sm min-h-[44px]' : 'text-xs'}`}>
             {mode.name || mode.id}
           </SelectItem>
         ))}

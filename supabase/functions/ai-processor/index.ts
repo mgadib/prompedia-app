@@ -24,18 +24,10 @@ const corsHeaders = (origin: string | null): Record<string, string> => {
 };
 
 // Input validation schema using Zod for security
+// Only allow 2 models: Llama 4 Maverick and Qwen 3 30B
 const ALLOWED_MODELS = [
   'meta-llama/llama-4-maverick:free',
-  'qwen/qwen3-30b-a3b:free',
-  'qwen/qwen-2.5-72b-instruct:free',
-  'qwen/qwen-2.5-72b:free',
-  'meta-llama/llama-3.1-8b-instruct:free',
-  'meta-llama/llama-3.1-70b-instruct:free',
-  'meta-llama/llama-3.1-70b:free',
-  'openai/gpt-4o-mini:free',
-  'openai/gpt-4o:free',
-  'anthropic/claude-3.5-sonnet:free',
-  'anthropic/claude-3-haiku:free'
+  'qwen/qwen3-30b-a3b:free'
 ] as const;
 
 const ALLOWED_MODES = ['creative', 'balanced', 'precise', 'custom', null, undefined] as const;
@@ -207,23 +199,36 @@ Instruksi mode: ${modeData.instructions}`;
     }
 
     // Call OpenRouter API with model-specific fallbacks
+    // Only allow 2 models: Llama 4 Maverick and Qwen 3 30B
+    const ALLOWED_MODELS = ['meta-llama/llama-4-maverick:free', 'qwen/qwen3-30b-a3b:free'];
+    
+    // Validate model is allowed
+    if (!ALLOWED_MODELS.includes(model)) {
+      console.error(`[${requestId}] Model not allowed: ${model}. Only ${ALLOWED_MODELS.join(', ')} are allowed.`);
+      return new Response(JSON.stringify({ 
+        error: `Model "${model}" is not available. Please select from: ${ALLOWED_MODELS.join(', ')}`,
+        allowed_models: ALLOWED_MODELS
+      }), {
+        status: 400,
+        headers: { ...corsHeaders(req.headers.get('origin')), 'Content-Type': 'application/json' },
+      });
+    }
+    
     const getModelFallbacks = (modelId: string): string[] => {
-      // Only try the same model or its variants, no cross-model fallbacks
-      if (modelId.includes('qwen3') || modelId.includes('qwen-2.5')) {
+      // Only allow fallback within the 2 allowed models
+      if (modelId === 'qwen/qwen3-30b-a3b:free') {
         return [
-          modelId,
-          'qwen/qwen3-30b-a3b:free', // Try qwen3 as primary
-          'qwen/qwen-2.5-72b:free'   // Fallback to qwen 2.5
+          'qwen/qwen3-30b-a3b:free', // Primary
+          'meta-llama/llama-4-maverick:free' // Fallback to other allowed model
         ];
-      } else if (modelId.includes('llama') || modelId.includes('meta')) {
+      } else if (modelId === 'meta-llama/llama-4-maverick:free') {
         return [
-          modelId,
-          'meta-llama/llama-4-maverick:free', // Try llama 4 as primary
-          'meta-llama/llama-3.1-70b:free'     // Fallback to llama 3.1
+          'meta-llama/llama-4-maverick:free', // Primary
+          'qwen/qwen3-30b-a3b:free' // Fallback to other allowed model
         ];
       }
-      // Default: only try the requested model
-      return [modelId];
+      // If somehow an invalid model is passed, return empty array
+      return [];
     };
 
     const tryModels: string[] = getModelFallbacks(model);

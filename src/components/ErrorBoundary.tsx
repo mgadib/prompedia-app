@@ -55,40 +55,40 @@ export class ErrorBoundary extends Component<Props, State> {
 
       // Default error UI
       return (
-        <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="min-h-screen flex items-center justify-center p-4 bg-background">
           <div className="max-w-md w-full space-y-4">
             <Alert variant="destructive">
-              <AlertTriangle className="h-4 w-4" />
-              <AlertTitle>Terjadi Kesalahan</AlertTitle>
-              <AlertDescription>
-                Aplikasi mengalami kesalahan yang tidak terduga. Silakan coba muat ulang halaman.
+              <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5" />
+              <AlertTitle className="font-mono text-base sm:text-lg">An Error Occurred</AlertTitle>
+              <AlertDescription className="font-mono text-sm">
+                The application encountered an unexpected error. Please try reloading the page.
               </AlertDescription>
             </Alert>
 
-            <div className="space-y-2">
+            <div className="space-y-2 sm:space-y-3">
               <Button 
                 onClick={this.handleReset} 
-                className="w-full"
+                className="w-full font-mono touch-manipulation min-h-[44px] sm:min-h-0"
                 variant="outline"
               >
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Coba Lagi
+                <RefreshCw className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                Try Again
               </Button>
               
               <Button 
                 onClick={() => window.location.reload()} 
-                className="w-full"
+                className="w-full font-mono touch-manipulation min-h-[44px] sm:min-h-0"
               >
-                Muat Ulang Halaman
+                Reload Page
               </Button>
             </div>
 
             {process.env.NODE_ENV === 'development' && this.state.error && (
-              <details className="mt-4 p-4 bg-gray-100 rounded-md text-sm">
-                <summary className="cursor-pointer font-medium">
-                  Detail Error (Development)
+              <details className="mt-4 p-3 sm:p-4 bg-muted rounded-md text-sm font-mono">
+                <summary className="cursor-pointer font-medium touch-manipulation min-h-[44px] flex items-center sm:min-h-0">
+                  Error Details (Development)
                 </summary>
-                <pre className="mt-2 whitespace-pre-wrap text-xs">
+                <pre className="mt-2 whitespace-pre-wrap text-xs overflow-x-auto">
                   {this.state.error.toString()}
                   {this.state.errorInfo?.componentStack}
                 </pre>

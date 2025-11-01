@@ -4,6 +4,8 @@ import { User as SupabaseUser } from '@supabase/supabase-js';
 import LogoutDialog from './LogoutDialog';
 import { TagService } from '@/lib/tag-service';
 import { supabase } from '@/integrations/supabase/client';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
 
 interface SidebarProps {
   activeView: 'my-library' | 'public-library';
@@ -14,6 +16,8 @@ interface SidebarProps {
   user: SupabaseUser | null;
   isPlaygroundActive?: boolean;
   isFocusMode?: boolean;
+  mobileSidebarOpen?: boolean;
+  setMobileSidebarOpen?: (open: boolean) => void;
 }
 
 const Sidebar = ({
@@ -24,11 +28,14 @@ const Sidebar = ({
   onLogin,
   user,
   isPlaygroundActive,
-  isFocusMode = false
+  isFocusMode = false,
+  mobileSidebarOpen,
+  setMobileSidebarOpen
 }: SidebarProps) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [allTags, setAllTags] = useState<string[]>([]);
   const [isLoadingTags, setIsLoadingTags] = useState(true);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const loadUserMostUsedTags = async () => {
@@ -54,16 +61,16 @@ const Sidebar = ({
     loadUserMostUsedTags();
   }, [user]);
 
-  return (
-    <div className={`${
-      isFocusMode 
+  const sidebarContent = (
+    <div className={`h-full bg-sidebar-background flex flex-col ${
+      !isMobile && (isFocusMode 
         ? 'w-0 overflow-hidden opacity-0' 
-        : isCollapsed ? 'w-16' : 'w-64'
-    } h-screen bg-sidebar-background border-r border-sidebar-border flex flex-col transition-all duration-300 ease-in-out relative`}>
+        : isCollapsed ? 'w-16' : 'w-64')
+    } ${!isMobile && 'border-r border-sidebar-border'} transition-all duration-300 ease-in-out relative`}>
 
       {/* Logo Section */}
-      <div className="p-6 border-b border-sidebar-border">
-        {!isCollapsed ? (
+      <div className={`border-b border-sidebar-border ${isMobile ? 'p-4' : 'p-6'}`}>
+        {(!isCollapsed || isMobile) ? (
           <>
             <h1 className="prompedia-logo">Prompedia.app</h1>
             <p className="text-xs text-muted-foreground mt-1 font-mono">Prompt Engineering Lab</p>
@@ -78,21 +85,21 @@ const Sidebar = ({
       </div>
 
       {/* Main Navigation */}
-      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+      <nav className={`flex-1 space-y-1 overflow-y-auto ${isMobile ? 'p-3' : 'p-4'}`}>
         <div className="mb-4">
           {/* Playground Button */}
           {onNewPrompt && (
             <button
               onClick={onNewPrompt}
-              className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} px-3 py-3 rounded-lg text-sm transition-all duration-200 font-mono mb-2 group ${
+              className={`w-full flex items-center ${isMobile || isCollapsed ? 'justify-center' : 'gap-3'} ${isMobile ? 'px-4 py-4 min-h-[44px]' : 'px-3 py-3'} rounded-lg text-sm transition-all duration-200 font-mono mb-2 group touch-manipulation ${
                 isPlaygroundActive
                   ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-md'
                   : 'text-sidebar-foreground hover:bg-sidebar-accent/20 hover:text-sidebar-accent-foreground hover:shadow-sm'
               }`}
-              title={isCollapsed ? 'Playground' : ''}
+              title={isMobile || isCollapsed ? 'Playground' : ''}
             >
-              <Play className={`w-4 h-4 ${isPlaygroundActive ? '' : 'group-hover:scale-110'} transition-transform`} />
-              {!isCollapsed && 'Playground'}
+              <Play className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${isPlaygroundActive ? '' : 'group-hover:scale-110'} transition-transform`} />
+              {!isMobile && !isCollapsed && 'Playground'}
             </button>
           )}
           
@@ -100,34 +107,34 @@ const Sidebar = ({
           {user && (
             <button
               onClick={() => onViewChange('my-library')}
-              className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} px-3 py-3 rounded-lg text-sm transition-all duration-200 font-mono group ${
+              className={`w-full flex items-center ${isMobile || isCollapsed ? 'justify-center' : 'gap-3'} ${isMobile ? 'px-4 py-4 min-h-[44px]' : 'px-3 py-3'} rounded-lg text-sm transition-all duration-200 font-mono group touch-manipulation ${
                 activeView === 'my-library' && !isPlaygroundActive
                   ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-md'
                   : 'text-sidebar-foreground hover:bg-sidebar-accent/20 hover:text-sidebar-accent-foreground hover:shadow-sm'
               }`}
-              title={isCollapsed ? 'Private Library' : ''}
+              title={isMobile || isCollapsed ? 'Private Library' : ''}
             >
-              <Lock className={`w-4 h-4 ${activeView === 'my-library' && !isPlaygroundActive ? '' : 'group-hover:scale-110'} transition-transform`} />
-              {!isCollapsed && 'Private Library'}
+              <Lock className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${activeView === 'my-library' && !isPlaygroundActive ? '' : 'group-hover:scale-110'} transition-transform`} />
+              {!isMobile && !isCollapsed && 'Private Library'}
             </button>
           )}
 
           <button
             onClick={() => onViewChange('public-library')}
-            className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} px-3 py-3 rounded-lg text-sm transition-all duration-200 font-mono group ${
+            className={`w-full flex items-center ${isMobile || isCollapsed ? 'justify-center' : 'gap-3'} ${isMobile ? 'px-4 py-4 min-h-[44px]' : 'px-3 py-3'} rounded-lg text-sm transition-all duration-200 font-mono group touch-manipulation ${
               activeView === 'public-library' && !isPlaygroundActive
                 ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-md'
                 : 'text-sidebar-foreground hover:bg-sidebar-accent/20 hover:text-sidebar-accent-foreground hover:shadow-sm'
             }`}
-            title={isCollapsed ? 'Public Library' : ''}
+            title={isMobile || isCollapsed ? 'Public Library' : ''}
           >
-            <Users className={`w-4 h-4 ${activeView === 'public-library' && !isPlaygroundActive ? '' : 'group-hover:scale-110'} transition-transform`} />
-            {!isCollapsed && 'Public Library'}
+            <Users className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${activeView === 'public-library' && !isPlaygroundActive ? '' : 'group-hover:scale-110'} transition-transform`} />
+            {!isMobile && !isCollapsed && 'Public Library'}
           </button>
         </div>
 
-        {/* Tags Section */}
-        {!isCollapsed && (
+        {/* Tags Section - Show on mobile, hide when collapsed on desktop */}
+        {(!isCollapsed || isMobile) && (
           <div className="mt-6">
             <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4 font-mono">
               Most Used Tags
@@ -162,10 +169,10 @@ const Sidebar = ({
       </nav>
 
       {/* User Profile Section */}
-      <div className="p-4 border-t border-sidebar-border space-y-2">
+      <div className={`border-t border-sidebar-border space-y-2 ${isMobile ? 'p-3' : 'p-4'}`}>
         {user ? (
           // Logged in user
-          !isCollapsed ? (
+          (!isCollapsed || isMobile) ? (
             <>
               <div className="flex items-center gap-3 px-3 py-3 text-sm text-sidebar-foreground bg-sidebar-accent/10 rounded-lg">
                 <div className="w-9 h-9 rounded-full bg-gradient-to-br from-sidebar-accent to-sidebar-accent/80 flex items-center justify-center shadow-sm">
@@ -211,9 +218,9 @@ const Sidebar = ({
               
               <button
                 onClick={onLogin}
-                className="w-full flex items-center justify-center gap-2 px-3 py-3 rounded-lg text-sm bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-md transition-all duration-200 font-mono group"
+                className={`w-full flex items-center justify-center gap-2 ${isMobile ? 'px-4 py-4 min-h-[44px]' : 'px-3 py-3'} rounded-lg text-sm bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-md transition-all duration-200 font-mono group touch-manipulation`}
               >
-                <User className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                <User className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} group-hover:scale-110 transition-transform`} />
                 Sign In
               </button>
             </>
@@ -221,10 +228,10 @@ const Sidebar = ({
             <div className="flex flex-col items-center gap-2">
               <button
                 onClick={onLogin}
-                className="w-9 h-9 flex items-center justify-center rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-md transition-all duration-200 group"
+                className={`${isMobile ? 'w-11 h-11' : 'w-9 h-9'} flex items-center justify-center rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-md transition-all duration-200 group touch-manipulation`}
                 title="Sign In"
               >
-                <User className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                <User className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} group-hover:scale-110 transition-transform`} />
               </button>
             </div>
           )
@@ -232,6 +239,20 @@ const Sidebar = ({
       </div>
     </div>
   );
+
+  // Mobile: Render as Sheet
+  if (isMobile) {
+    return (
+      <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
+        <SheetContent side="left" className="w-80 p-0 bg-sidebar-background border-sidebar-border">
+          {sidebarContent}
+        </SheetContent>
+      </Sheet>
+    );
+  }
+
+  // Desktop: Render as fixed sidebar
+  return sidebarContent;
 };
 
 export default Sidebar;

@@ -10,6 +10,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface DeletePromptDialogProps {
   promptTitle: string;
@@ -18,21 +19,26 @@ interface DeletePromptDialogProps {
 }
 
 const DeletePromptDialog = ({ promptTitle, onConfirm, children }: DeletePromptDialogProps) => {
+  const isMobile = useIsMobile();
+  
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
         {children}
       </AlertDialogTrigger>
-      <AlertDialogContent>
+      <AlertDialogContent className={isMobile ? 'max-w-[calc(100vw-2rem)] mx-4' : ''}>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete Prompt</AlertDialogTitle>
-          <AlertDialogDescription>
+          <AlertDialogTitle className={isMobile ? 'text-lg' : ''}>Delete Prompt</AlertDialogTitle>
+          <AlertDialogDescription className={isMobile ? 'text-sm' : ''}>
             Are you sure you want to delete "{promptTitle}"? This action cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+        <AlertDialogFooter className={isMobile ? 'gap-2' : ''}>
+          <AlertDialogCancel className={isMobile ? 'min-h-[44px] touch-manipulation' : ''}>Cancel</AlertDialogCancel>
+          <AlertDialogAction 
+            onClick={onConfirm} 
+            className={`bg-destructive text-destructive-foreground hover:bg-destructive/90 ${isMobile ? 'min-h-[44px] touch-manipulation' : ''}`}
+          >
             Delete
           </AlertDialogAction>
         </AlertDialogFooter>

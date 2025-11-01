@@ -19,6 +19,7 @@ export interface AIModel {
   free?: boolean;
 }
 
+// Only 2 models are available for users
 export const AVAILABLE_MODELS: AIModel[] = [
   {
     id: 'meta-llama/llama-4-maverick:free',
@@ -48,38 +49,16 @@ export const AVAILABLE_MODELS: AIModel[] = [
       reasoning: true
     },
     free: true
-  },
-  // Fallback models (not shown in UI but available for API fallbacks)
-  {
-    id: 'qwen/qwen-2.5-72b:free',
-    label: 'Qwen 2.5 72B',
-    provider: 'OpenRouter',
-    type: 'Text',
-    capabilities: {
-      text: true,
-      code: true,
-      math: true,
-      longContext: true,
-      reasoning: true
-    },
-    free: true
-  },
-  {
-    id: 'meta-llama/llama-3.1-70b:free',
-    label: 'Llama 3.1 70B',
-    provider: 'OpenRouter',
-    type: 'Text',
-    capabilities: {
-      text: true,
-      conversational: true,
-      reasoning: true,
-      code: true,
-      math: true,
-      longContext: true
-    },
-    free: true
   }
 ];
+
+// Helper to get only allowed models for user selection
+export const getAllowedModels = (): AIModel[] => {
+  return AVAILABLE_MODELS.filter(model => 
+    model.id === 'meta-llama/llama-4-maverick:free' || 
+    model.id === 'qwen/qwen3-30b-a3b:free'
+  );
+};
 
 export const getModelById = (id: string): AIModel | undefined => {
   return AVAILABLE_MODELS.find(model => model.id === id);

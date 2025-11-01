@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/select';
 import { SupabaseService } from '@/lib/supabase-service';
 import { AVAILABLE_MODELS } from '@/lib/models';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ModelSelectorProps {
   value: string;
@@ -27,6 +28,7 @@ interface DBModel {
 const ModelSelector = ({ value, onChange }: ModelSelectorProps) => {
   const [models, setModels] = useState<DBModel[]>([]);
   const [loading, setLoading] = useState(true);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const loadModels = async () => {
@@ -34,14 +36,17 @@ const ModelSelector = ({ value, onChange }: ModelSelectorProps) => {
         // Try to fetch from database first
         const dbModels = await SupabaseService.getAIModels();
         if (dbModels && dbModels.length > 0) {
-          setModels(dbModels);
+          // Filter to only allow the 2 specified models
+          const allowedModelIds = ['meta-llama/llama-4-maverick:free', 'qwen/qwen3-30b-a3b:free'];
+          const filteredModels = dbModels.filter(model => allowedModelIds.includes(model.id));
+          setModels(filteredModels.length > 0 ? filteredModels : AVAILABLE_MODELS);
         } else {
-          // Fallback to hardcoded data
+          // Fallback to hardcoded data (only 2 models)
           setModels(AVAILABLE_MODELS);
         }
       } catch (error) {
         console.error('Failed to load models from database:', error);
-        // Fallback to hardcoded data
+        // Fallback to hardcoded data (only 2 models)
         setModels(AVAILABLE_MODELS);
       } finally {
         setLoading(false);
@@ -53,16 +58,14 @@ const ModelSelector = ({ value, onChange }: ModelSelectorProps) => {
 
   const selectedModel = models.find(model => model.id === value);
 
-  // Only show main models in UI, not fallback models (filter out by provider if needed)
-  const mainModels = models.filter(model =>
-    !model.id.includes('qwen/qwen-2.5-72b:free') &&
-    !model.id.includes('llama-3.1-70b:free')
-  );
+  // Only show the 2 allowed models: Llama 4 Maverick and Qwen 3 30B
+  const allowedModelIds = ['meta-llama/llama-4-maverick:free', 'qwen/qwen3-30b-a3b:free'];
+  const mainModels = models.filter(model => allowedModelIds.includes(model.id));
 
   if (loading) {
     return (
       <Select disabled>
-        <SelectTrigger className="w-[180px] bg-secondary border-border text-xs">
+        <SelectTrigger className={`${isMobile ? 'w-full min-h-[44px]' : 'w-[180px]'} bg-secondary border-border ${isMobile ? 'text-sm' : 'text-xs'}`}>
           <SelectValue placeholder="Loading models...">
             Loading...
           </SelectValue>
@@ -73,14 +76,14 @@ const ModelSelector = ({ value, onChange }: ModelSelectorProps) => {
 
   return (
     <Select value={value} onValueChange={onChange}>
-      <SelectTrigger className="w-[180px] bg-secondary border-border text-xs">
+      <SelectTrigger className={`${isMobile ? 'w-full min-h-[44px]' : 'w-[180px]'} bg-secondary border-border ${isMobile ? 'text-sm' : 'text-xs'} touch-manipulation`}>
         <SelectValue placeholder="Select model">
           {selectedModel?.name || selectedModel?.id || 'Select model'}
         </SelectValue>
       </SelectTrigger>
       <SelectContent>
         {mainModels.map((model) => (
-          <SelectItem key={model.id} value={model.id} className="text-xs">
+          <SelectItem key={model.id} value={model.id} className={`${isMobile ? 'text-sm min-h-[44px]' : 'text-xs'}`}>
             {model.name || model.id}
           </SelectItem>
         ))}

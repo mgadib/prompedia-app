@@ -171,26 +171,18 @@ serve(async (req) => {
       })
     }
 
-    // Model whitelist validation
+    // Only allow 2 models: Llama 4 Maverick and Qwen 3 30B
     const ALLOWED_MODELS = [
       'meta-llama/llama-4-maverick:free',
-      'qwen/qwen3-30b-a3b:free',
-      'qwen/qwen-2.5-72b-instruct:free',
-      'qwen/qwen-2.5-72b:free',
-      'meta-llama/llama-3.1-8b-instruct:free',
-      'meta-llama/llama-3.1-70b-instruct:free',
-      'meta-llama/llama-3.1-70b:free',
-      'openai/gpt-4o-mini:free',
-      'openai/gpt-4o:free',
-      'anthropic/claude-3.5-sonnet:free',
-      'anthropic/claude-3-haiku:free'
+      'qwen/qwen3-30b-a3b:free'
     ];
 
     const model = options.model || 'meta-llama/llama-4-maverick:free';
     
     if (!ALLOWED_MODELS.includes(model)) {
       return new Response(JSON.stringify({ 
-        error: 'Invalid model selection. Please select from allowed models.' 
+        error: `Model "${model}" is not available. Please select from: ${ALLOWED_MODELS.join(', ')}`,
+        allowed_models: ALLOWED_MODELS
       }), { 
         status: 400, 
         headers: { ...corsHeaders(req.headers.get('origin')), 'Content-Type': 'application/json' } 

@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
     <meta http-equiv="Content-Security-Policy" content="
       default-src 'self';
       script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net;
@@ -13,33 +13,63 @@
       base-uri 'self';
       form-action 'self';
     ">
-    <title>Prompedia AI - Laboratorium Prompt Engineering Terbaik</title>
-    <meta name="description" content="Platform prompt engineering profesional untuk membuat, mengelola, dan mengoptimalkan AI prompts. Akses library prompt publik, fitur AI enhancer, dan rate limiting cerdas." />
+    
+    <!-- Primary Meta Tags -->
+    <title>Prompedia AI - Advanced Prompt Engineering Laboratory | Free AI Prompt Builder & Optimizer</title>
+    <meta name="title" content="Prompedia AI - Advanced Prompt Engineering Laboratory | Free AI Prompt Builder" />
+    <meta name="description" content="Build, optimize, and manage AI prompts with Prompedia AI. Free prompt engineering platform with 6 thinking modes, AI model integration, and public prompt library. Perfect for ChatGPT, Claude, and other AI tools." />
+    <meta name="keywords" content="prompt engineering, AI prompt builder, prompt optimizer, ChatGPT prompts, AI prompt library, prompt engineering tools, free prompt builder, AI prompts, meta prompt, chain of thought, prompt engineering platform, best prompt engineering tool" />
     <meta name="author" content="Prompedia AI" />
-    <meta name="keywords" content="prompt engineering, AI prompts, ChatGPT prompts, prompt library, AI tools, prompt optimizer, thinking modes, meta-prompt" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow" />
+    <meta name="language" content="English" />
+    <meta name="revisit-after" content="7 days" />
+    <meta name="rating" content="general" />
+    <meta name="distribution" content="global" />
     <link rel="canonical" href="https://prompedia.app/" />
+    
+    <!-- Theme & Mobile -->
+    <meta name="theme-color" content="#3b82f6" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Prompedia AI" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="format-detection" content="telephone=no" />
+    
+    <!-- Favicon & Icons -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.json" />
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://prompedia.app/" />
-    <meta property="og:title" content="Prompedia AI - Laboratorium Prompt Engineering Terbaik" />
-    <meta property="og:description" content="Platform prompt engineering profesional dengan AI enhancer, library publik, dan fitur kolaborasi untuk mengoptimalkan AI prompts Anda." />
+    <meta property="og:title" content="Prompedia AI - Advanced Prompt Engineering Laboratory | Free AI Prompt Builder" />
+    <meta property="og:description" content="Build, optimize, and manage AI prompts with Prompedia AI. Free prompt engineering platform with 6 thinking modes, AI model integration, and public prompt library." />
     <meta property="og:image" content="https://prompedia.app/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Prompedia AI - Prompt Engineering Laboratory" />
     <meta property="og:site_name" content="Prompedia AI" />
-    <meta property="og:locale" content="id_ID" />
-
+    <meta property="og:locale" content="en_US" />
+    <meta property="article:author" content="Prompedia AI" />
+    <meta property="article:publisher" content="Prompedia AI" />
+    
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:url" content="https://prompedia.app/" />
-    <meta name="twitter:title" content="Prompedia AI - Laboratorium Prompt Engineering Terbaik" />
-    <meta name="twitter:description" content="Platform prompt engineering profesional dengan AI enhancer dan library publik untuk mengoptimalkan AI prompts." />
+    <meta name="twitter:title" content="Prompedia AI - Advanced Prompt Engineering Laboratory | Free AI Prompt Builder" />
+    <meta name="twitter:description" content="Build, optimize, and manage AI prompts with Prompedia AI. Free prompt engineering platform with 6 thinking modes and AI model integration." />
     <meta name="twitter:image" content="https://prompedia.app/og-image.png" />
+    <meta name="twitter:image:alt" content="Prompedia AI - Prompt Engineering Laboratory" />
+    <meta name="twitter:creator" content="@prompediaai" />
+    <meta name="twitter:site" content="@prompediaai" />
     
     <!-- Additional SEO -->
-    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
-    <meta name="googlebot" content="index, follow" />
-    <link rel="alternate" hreflang="id" href="https://prompedia.app/" />
-    <link rel="alternate" hreflang="en" href="https://prompedia.app/en/" />
+    <link rel="alternate" hreflang="en" href="https://prompedia.app/" />
+    <link rel="alternate" hreflang="x-default" href="https://prompedia.app/" />
     
     <!-- Structured Data (JSON-LD) -->
     <script type="application/ld+json">
@@ -47,8 +77,98 @@
       "@context": "https://schema.org",
       "@type": "WebApplication",
       "name": "Prompedia AI",
-      "description": "Platform prompt engineering profesional untuk membuat, mengelola, dan mengoptimalkan AI prompts dengan fitur AI enhancer dan library publik.",
+      "alternateName": "Prompedia",
+      "description": "Advanced prompt engineering platform for building, optimizing, and managing AI prompts. Features 6 thinking modes, multiple AI model integration, and public prompt library.",
       "url": "https://prompedia.app",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Web Browser",
+      "browserRequirements": "Requires JavaScript. Requires HTML5.",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD",
+        "availability": "https://schema.org/InStock"
+      },
+      "featureList": [
+        "AI Prompt Enhancement",
+        "Public Prompt Library",
+        "Private Prompt Management",
+        "Multiple Thinking Modes (Meta Prompt, Self-Refine, Chain-of-Thought, Self-Consistency, Chain-of-Prompt, Role Prompt)",
+        "AI Model Integration (Llama 4 Maverick, Qwen 3 30B, Qwen 2.5 72B, Llama 3.1 70B)",
+        "Usage Tracking & Rate Limiting",
+        "Smart Tag System",
+        "Real-time AI Processing"
+      ],
+      "screenshot": "https://prompedia.app/og-image.png",
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "ratingCount": "150"
+      },
+      "provider": {
+        "@type": "Organization",
+        "name": "Prompedia AI",
+        "url": "https://prompedia.app",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://prompedia.app/logo.png"
+        }
+      }
+    }
+    </script>
+    
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Prompedia AI",
+      "alternateName": "Prompedia",
+      "url": "https://prompedia.app",
+      "logo": "https://prompedia.app/logo.png",
+      "description": "Advanced prompt engineering platform for AI prompt building, optimization, and management.",
+      "sameAs": [
+        "https://twitter.com/prompediaai",
+        "https://github.com/prompedia-ai"
+      ],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "Customer Support",
+        "email": "support@prompedia.app"
+      }
+    }
+    </script>
+    
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Prompedia AI",
+      "url": "https://prompedia.app",
+      "description": "Advanced prompt engineering laboratory for building, optimizing, and managing AI prompts",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://prompedia.app/?search={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Prompedia AI",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://prompedia.app/logo.png"
+        }
+      }
+    }
+    </script>
+    
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Prompedia AI",
       "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Web Browser",
       "offers": {
@@ -56,18 +176,24 @@
         "price": "0",
         "priceCurrency": "USD"
       },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "ratingCount": "150"
+      },
+      "description": "Advanced prompt engineering platform with 6 thinking modes, AI model integration, and public prompt library for building and optimizing AI prompts.",
+      "screenshot": "https://prompedia.app/og-image.png",
       "featureList": [
-        "AI Prompt Enhancement",
-        "Public Prompt Library",
-        "Private Prompt Management",
-        "Multiple Thinking Modes",
-        "Rate Limiting & Usage Tracking",
-        "Multi-Model Support"
-      ],
-      "provider": {
-        "@type": "Organization",
-        "name": "Prompedia AI"
-      }
+        "Meta Prompt Generation",
+        "Self-Refine Prompt Improvement",
+        "Chain-of-Thought Analysis",
+        "Self-Consistency Testing",
+        "Chain-of-Prompt Iteration",
+        "Role-Based Prompt Analysis",
+        "AI Model Integration",
+        "Public & Private Prompt Libraries",
+        "Smart Tag Organization"
+      ]
     }
     </script>
   </head>

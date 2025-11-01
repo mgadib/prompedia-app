@@ -17,6 +17,7 @@ import ModeSelector from './ModeSelector';
 import TagInput from './TagInput';
 import ActionButtons from './ActionButtons';
 import DeletePromptDialog from './DeletePromptDialog';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 type ViewState = 'original' | 'ai-result';
 
@@ -42,6 +43,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
   const [isActionLoading, setIsActionLoading] = useState(false);
   const [loadingAction, setLoadingAction] = useState<string>('');
   const [userCanUseAI, setUserCanUseAI] = useState(true);
+  const isMobile = useIsMobile();
 
 
   useEffect(() => {
@@ -558,17 +560,17 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-background">
+    <div className="flex-1 flex flex-col h-full bg-background overflow-hidden">
       {/* Header Bar */}
-      <div className="border-b border-border px-6 py-4 bg-card">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            {user && (
+      <div className={`border-b border-border bg-card ${isMobile ? 'px-3 py-3' : 'px-6 py-4'}`}>
+        <div className={`flex ${isMobile ? 'flex-col' : 'items-center justify-between'} gap-3`}>
+          <div className={`flex items-center ${isMobile ? 'flex-wrap' : ''} gap-2`}>
+            {user && !isMobile && (
               <Button
                 onClick={onToggleFocus}
                 variant="ghost"
-                size="sm"
-                className={`font-mono ${
+                size={isMobile ? "default" : "sm"}
+                className={`font-mono touch-manipulation ${isMobile ? 'min-h-[44px]' : ''} ${
                   isFocusMode 
                     ? 'bg-accent text-accent-foreground hover:bg-accent/90' 
                     : 'hover:bg-accent/20 hover:text-accent'
@@ -576,51 +578,51 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
                 title={isFocusMode ? 'Exit Focus Mode' : 'Focus Mode - Hide Sidebar for Clean Editing'}
               >
                 {isFocusMode ? (
-                  <EyeOff className="w-4 h-4 mr-2" />
+                  <EyeOff className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${isMobile ? '' : 'mr-2'}`} />
                 ) : (
-                  <Leaf className="w-4 h-4 mr-2" />
+                  <Leaf className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${isMobile ? '' : 'mr-2'}`} />
                 )}
-                Focus
+                {isMobile ? '' : 'Focus'}
               </Button>
             )}
             <Button
               onClick={handleNew}
               variant="ghost"
-              size="sm"
-              className="hover:bg-accent/20 hover:text-accent font-mono"
+              size={isMobile ? "default" : "sm"}
+              className={`hover:bg-accent/20 hover:text-accent font-mono touch-manipulation ${isMobile ? 'min-h-[44px]' : ''}`}
             >
-              <FileText className="w-4 h-4 mr-2" />
-              New
+              <FileText className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${isMobile ? '' : 'mr-2'}`} />
+              {isMobile ? '' : 'New'}
             </Button>
             <Button
               onClick={handleCopy}
               variant="ghost"
-              size="sm"
-              className="hover:bg-accent/20 hover:text-accent font-mono"
+              size={isMobile ? "default" : "sm"}
+              className={`hover:bg-accent/20 hover:text-accent font-mono touch-manipulation ${isMobile ? 'min-h-[44px]' : ''}`}
               disabled={!content}
             >
-              <Copy className="w-4 h-4 mr-2" />
-              Copy
+              <Copy className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${isMobile ? '' : 'mr-2'}`} />
+              {isMobile ? '' : 'Copy'}
             </Button>
             <Button
               onClick={handleSave}
               variant="ghost"
-              size="sm"
-              className="hover:bg-accent/20 hover:text-accent font-mono"
+              size={isMobile ? "default" : "sm"}
+              className={`hover:bg-accent/20 hover:text-accent font-mono touch-manipulation ${isMobile ? 'min-h-[44px]' : ''}`}
               disabled={!title || !content}
             >
-              <Save className="w-4 h-4 mr-2" />
-              Save
+              <Save className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${isMobile ? '' : 'mr-2'}`} />
+              {isMobile ? '' : 'Save'}
             </Button>
             <Button
               onClick={handleShare}
               variant="ghost"
-              size="sm"
-              className="hover:bg-accent/20 hover:text-accent font-mono"
+              size={isMobile ? "default" : "sm"}
+              className={`hover:bg-accent/20 hover:text-accent font-mono touch-manipulation ${isMobile ? 'min-h-[44px]' : ''}`}
               disabled={!title || !content}
             >
-              <Share2 className="w-4 h-4 mr-2" />
-              {currentPrompt?.is_public ? 'Make Private' : 'Share'}
+              <Share2 className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${isMobile ? '' : 'mr-2'}`} />
+              {isMobile ? '' : (currentPrompt?.is_public ? 'Make Private' : 'Share')}
             </Button>
             <DeletePromptDialog
               promptTitle={currentPrompt?.title || 'Untitled Prompt'}
@@ -629,7 +631,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
 
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className={`flex items-center ${isMobile ? 'flex-wrap' : ''} gap-3`}>
             <ModeSelector value={mode} onChange={setMode} />
             <ModelSelector value={model} onChange={setModel} />
           </div>
@@ -637,11 +639,11 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       </div>
 
       {/* Main Editor Area */}
-      <div className="flex-1 flex flex-col overflow-hidden p-4 space-y-4">
+      <div className={`flex-1 flex flex-col overflow-hidden space-y-4 ${isMobile ? 'p-3' : 'p-4'}`}>
         {/* Title and Tags Section - Clean Layout */}
-        <div className="flex items-center gap-8">
+        <div className={`flex ${isMobile ? 'flex-col gap-3' : 'items-center gap-8'}`}>
           {/* Title Section */}
-          <div className="flex-1">
+          <div className="flex-1 w-full">
             <Input
               value={title}
               onChange={(e) => {
@@ -651,21 +653,21 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
                 }
               }}
               placeholder="Enter prompt title..."
-              className="text-xl font-bold bg-transparent border-none px-3 py-2 focus-visible:ring-0 placeholder:text-muted-foreground/50"
+              className={`${isMobile ? 'text-lg' : 'text-xl'} font-bold bg-transparent border-none px-3 py-2 focus-visible:ring-0 placeholder:text-muted-foreground/50`}
               maxLength={77}
             />
           </div>
 
           {/* Tags Section */}
-          <div className="flex-1">
+          <div className={`flex-1 ${isMobile ? 'w-full' : ''}`}>
             <TagInput selectedTagNames={selectedTags} onChange={setSelectedTags} />
           </div>
         </div>
 
 
         {/* Main Prompt Content */}
-        <div className="flex flex-col flex-1 space-y-3">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-col flex-1 space-y-3 min-h-0">
+          <div className={`flex items-center ${isMobile ? 'flex-wrap' : ''} gap-2`}>
             <ActionButtons
               onAction={handleAction}
               disabled={!content.trim() || viewState === 'ai-result' || !userCanUseAI}
@@ -678,12 +680,12 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
               <Button
                 onClick={handleBack}
                 variant="outline"
-                size="sm"
-                className="text-xs h-8 px-3 hover:bg-secondary/20 transition-all font-mono"
+                size={isMobile ? "default" : "sm"}
+                className={`${isMobile ? 'text-sm min-h-[44px]' : 'text-xs h-8'} px-3 hover:bg-secondary/20 transition-all font-mono touch-manipulation`}
                 title="Back to original prompt"
               >
-                <ArrowLeft className="w-4 h-4 mr-1" />
-                Back
+                <ArrowLeft className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${isMobile ? '' : 'mr-1'}`} />
+                {isMobile ? '' : 'Back'}
               </Button>
             )}
 
@@ -691,12 +693,12 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
               <Button
                 onClick={handleForward}
                 variant="outline"
-                size="sm"
-                className="text-xs h-8 px-3 hover:bg-secondary/20 transition-all font-mono"
+                size={isMobile ? "default" : "sm"}
+                className={`${isMobile ? 'text-sm min-h-[44px]' : 'text-xs h-8'} px-3 hover:bg-secondary/20 transition-all font-mono touch-manipulation`}
                 title="Forward to AI result"
               >
-                <ArrowRight className="w-4 h-4 mr-1" />
-                Forward
+                <ArrowRight className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${isMobile ? '' : 'mr-1'}`} />
+                {isMobile ? '' : 'Forward'}
               </Button>
             )}
 
@@ -753,9 +755,9 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       </div>
 
       {/* Footer Status - Enhanced Info */}
-      <div className="border-t border-border px-4 py-3 bg-card mt-auto">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+      <div className={`border-t border-border bg-card mt-auto ${isMobile ? 'px-3 py-2' : 'px-4 py-3'}`}>
+        <div className={`flex ${isMobile ? 'flex-col gap-2' : 'items-center justify-between'}`}>
+          <div className={`flex items-center ${isMobile ? 'flex-wrap' : ''} ${isMobile ? 'gap-2' : 'gap-4'}`}>
             {/* Word count */}
             <div className="flex items-center gap-1 text-xs text-muted-foreground font-mono">
               <FileText className="w-3 h-3" />
@@ -770,11 +772,13 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
               </span>
             </div>
 
-            {/* Current date */}
-            <div className="flex items-center gap-1 text-xs text-muted-foreground font-mono">
-              <span>📅</span>
-              <span>{new Date().toLocaleDateString()}</span>
-            </div>
+            {/* Current date - Hide on mobile to save space */}
+            {!isMobile && (
+              <div className="flex items-center gap-1 text-xs text-muted-foreground font-mono">
+                <span>📅</span>
+                <span>{new Date().toLocaleDateString()}</span>
+              </div>
+            )}
 
             {/* AI Result indicator */}
             {viewState === 'ai-result' && (
@@ -783,10 +787,9 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
                 <span className="text-xs">AI Generated</span>
               </div>
             )}
-
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className={`flex items-center ${isMobile ? 'flex-wrap' : ''} ${isMobile ? 'gap-2' : 'gap-3'}`}>
             {currentPrompt && (
               <>
                 <div className={`flex items-center gap-2 text-xs font-mono ${currentPrompt.is_public ? 'text-primary' : 'text-muted-foreground'}`}>
