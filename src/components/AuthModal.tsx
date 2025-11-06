@@ -135,13 +135,13 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              minLength={6}
+              minLength={8}
               className="font-mono"
               disabled={loading}
             />
             {!isLogin && (
               <p className="text-xs text-muted-foreground font-mono">
-                Minimum 6 characters
+                Minimum 8 characters
               </p>
             )}
           </div>
