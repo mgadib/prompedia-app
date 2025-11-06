@@ -119,7 +119,8 @@ const TagPage: React.FC = () => {
 
   const handleCopyUrl = (e: React.MouseEvent, promptId: string) => {
     e.stopPropagation();
-    const url = `${window.location.origin}/p/${promptId}`;
+    const base = ENV.SITE_URL || window.location.origin;
+    const url = `${base}/p/${promptId}`;
     navigator.clipboard.writeText(url);
     toast.success('URL prompt disalin ke clipboard');
     trackEvent('copy_prompt_url', { prompt_id: promptId }, userId);
@@ -246,7 +247,16 @@ const TagPage: React.FC = () => {
                 <div
                   key={prompt.id}
                   onClick={() => handleCardClick(prompt)}
-                  className={`group relative bg-card border rounded-lg p-4 sm:p-6 transition-all duration-200 hover:shadow-lg hover:border-primary/50 touch-manipulation hover:bg-accent/10 cursor-pointer`}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleCardClick(prompt);
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Buka detail untuk ${prompt.title || 'Untitled Prompt'}`}
+                  className={`group relative bg-card border rounded-lg p-4 sm:p-6 transition-all duration-200 hover:shadow-lg hover:border-primary/50 touch-manipulation hover:bg-accent/10 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background`}
                 >
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-2">
@@ -313,13 +323,14 @@ const TagPage: React.FC = () => {
                     </div>
 
                     {/* Tombol aksi seperti di PublicLibrary */}
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
                       <Button
                         size="sm"
                         variant="ghost"
                         onClick={(e) => handleCopyUrl(e, prompt.id)}
                         className="h-8 w-8 p-0 hover:bg-primary/20"
                         title="Salin URL"
+                        aria-label="Salin URL"
                       >
                         <LinkIcon className="w-3 h-3" />
                       </Button>
@@ -329,6 +340,7 @@ const TagPage: React.FC = () => {
                         onClick={(e) => handleCopy(e, prompt)}
                         className="h-8 w-8 p-0 hover:bg-primary/20"
                         title="Salin konten"
+                        aria-label="Salin konten"
                       >
                         <Copy className="w-3 h-3" />
                       </Button>
@@ -338,6 +350,7 @@ const TagPage: React.FC = () => {
                         onClick={(e) => handleUse(e, prompt)}
                         className="h-8 w-8 p-0 hover:bg-primary/20"
                         title="Gunakan prompt ini"
+                        aria-label="Gunakan prompt ini"
                       >
                         <Download className="w-3 h-3" />
                       </Button>

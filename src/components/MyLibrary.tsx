@@ -183,7 +183,10 @@ const MyLibrary = ({
           {/* Search Input */}
           <div className="relative flex-1 w-full">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <label htmlFor="my-search" className="sr-only">Search prompts</label>
             <Input
+              id="my-search"
+              aria-label="Search prompts"
               placeholder="Search prompts..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -194,7 +197,10 @@ const MyLibrary = ({
           {/* Tag Filter */}
           <div className="relative w-full sm:w-auto sm:min-w-[200px]">
             <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <label htmlFor="my-tag-filter" className="sr-only">Filter by tag</label>
             <select
+              id="my-tag-filter"
+              aria-label="Filter by tag"
               value={selectedTag}
               onChange={(e) => setSelectedTag(e.target.value)}
               className="w-full pl-10 pr-4 min-h-[44px] text-base sm:text-sm bg-background border border-input rounded-md font-mono focus:outline-none focus:ring-2 focus:ring-ring touch-manipulation"
@@ -266,7 +272,16 @@ const MyLibrary = ({
               <div
                 key={prompt.id}
                 onClick={() => handleCardClick(prompt)}
-                className={`group relative bg-card border rounded-lg p-4 sm:p-6 cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-primary/50 active:scale-[0.98] touch-manipulation ${
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleCardClick(prompt);
+                  }
+                }}
+                role="button"
+                tabIndex={0}
+                aria-label={`Open details for ${prompt.title || 'Untitled Prompt'}`}
+                className={`group relative bg-card border rounded-lg p-4 sm:p-6 cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-primary/50 active:scale-[0.98] touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                   currentPromptId === prompt.id
                     ? 'border-primary bg-accent/20 shadow-md'
                     : 'border-border hover:bg-accent/10'
@@ -341,7 +356,7 @@ const MyLibrary = ({
                   </div>
                   
                   {/* Action buttons */}
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
                     {onCopyPrompt && (
                       <Button
                         size="sm"
@@ -349,6 +364,7 @@ const MyLibrary = ({
                         onClick={(e) => handleCopy(e, prompt)}
                         className="h-8 w-8 p-0 hover:bg-blue-500/20 hover:text-blue-500"
                         title="Copy prompt"
+                        aria-label="Copy prompt"
                       >
                         <Copy className="w-3 h-3" />
                       </Button>
@@ -359,6 +375,7 @@ const MyLibrary = ({
                       onClick={(e) => handleEdit(e, prompt)}
                       className="h-8 w-8 p-0 hover:bg-primary/20"
                       title="Edit prompt"
+                      aria-label="Edit prompt"
                     >
                       <Edit className="w-3 h-3" />
                     </Button>
@@ -371,6 +388,7 @@ const MyLibrary = ({
                       }}
                       className="h-8 w-8 p-0 hover:bg-destructive/20 hover:text-destructive"
                       title="Delete prompt"
+                      aria-label="Delete prompt"
                     >
                       <Trash2 className="w-3 h-3" />
                     </Button>

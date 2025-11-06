@@ -10,6 +10,7 @@ import { SupabaseService } from '@/lib/supabase-service';
 import { TagService } from '@/lib/tag-service';
 import PromptDetailModal from './PromptDetailModal';
 import { trackEvent } from '@/lib/analytics';
+import { ENV } from '@/lib/constants';
 
 interface PromptWithTags extends Prompt {
   tags: Tag[];
@@ -113,7 +114,8 @@ const PublicLibrary = ({
 
   const handleCopyUrl = (e: React.MouseEvent, promptId: string) => {
     e.stopPropagation();
-    const url = `https://prompedia.app/p/${promptId}`;
+    const base = ENV.SITE_URL || window.location.origin;
+    const url = `${base}/p/${promptId}`;
     navigator.clipboard.writeText(url);
     toast.success('URL copied to clipboard');
     trackEvent('copy_prompt_url', { prompt_id: promptId });
@@ -177,7 +179,10 @@ const PublicLibrary = ({
           {/* Search Input */}
           <div className="relative flex-1 w-full">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <label htmlFor="public-search" className="sr-only">Search public prompts</label>
             <Input
+              id="public-search"
+              aria-label="Search public prompts"
               placeholder="Search public prompts..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -188,7 +193,10 @@ const PublicLibrary = ({
           {/* Tag Filter */}
           <div className="relative w-full sm:w-auto sm:min-w-[200px]">
             <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <label htmlFor="public-tag-filter" className="sr-only">Filter by tag</label>
             <select
+              id="public-tag-filter"
+              aria-label="Filter by tag"
               value={selectedTag}
               onChange={(e) => setSelectedTag(e.target.value)}
               className="w-full pl-10 pr-4 min-h-[44px] text-base sm:text-sm bg-background border border-input rounded-md font-mono focus:outline-none focus:ring-2 focus:ring-ring touch-manipulation"
@@ -263,7 +271,16 @@ const PublicLibrary = ({
                 <div
                   key={prompt.id}
                   onClick={() => handleCardClick(prompt)}
-                  className={`group relative bg-card border rounded-lg p-4 sm:p-6 cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-primary/50 active:scale-[0.98] touch-manipulation ${
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleCardClick(prompt);
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Open details for ${prompt.title || 'Untitled Prompt'}`}
+                  className={`group relative bg-card border rounded-lg p-4 sm:p-6 cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-primary/50 active:scale-[0.98] touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                     currentPromptId === prompt.id
                       ? 'border-primary bg-accent/20 shadow-md'
                       : 'border-border hover:bg-accent/10'
@@ -335,13 +352,14 @@ const PublicLibrary = ({
                     </div>
                     
                     {/* Action buttons */}
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
                       <Button
                         size="sm"
                         variant="ghost"
                         onClick={(e) => handleCopyUrl(e, prompt.id)}
                         className="h-8 w-8 p-0 hover:bg-primary/20"
                         title="Copy URL"
+                        aria-label="Copy URL"
                       >
                         <LinkIcon className="w-3 h-3" />
                       </Button>
@@ -351,6 +369,7 @@ const PublicLibrary = ({
                         onClick={(e) => handleCopy(e, prompt)}
                         className="h-8 w-8 p-0 hover:bg-primary/20"
                         title="Copy content to clipboard"
+                        aria-label="Copy content to clipboard"
                       >
                         <Copy className="w-3 h-3" />
                       </Button>
@@ -360,6 +379,7 @@ const PublicLibrary = ({
                         onClick={(e) => handleUse(e, prompt)}
                         className="h-8 w-8 p-0 hover:bg-primary/20"
                         title="Use this prompt"
+                        aria-label="Use this prompt"
                       >
                         <Download className="w-3 h-3" />
                       </Button>
