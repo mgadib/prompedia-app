@@ -8,6 +8,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 const AppPage = React.lazy(() => import('./pages/App'));
 const NotFound = React.lazy(() => import('./pages/NotFound'));
 const PublicPromptDetail = React.lazy(() => import('./pages/PublicPromptDetail'));
+const TagPage = React.lazy(() => import('./pages/Tag'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -53,6 +54,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<AppPage />} />
               <Route path="/p/:id" element={<PublicPromptDetail />} />
+              <Route path="/tags/:name" element={<TagPage />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

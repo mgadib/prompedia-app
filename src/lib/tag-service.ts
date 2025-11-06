@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { Tag } from './storage';
+import { Tag, Prompt } from './storage';
 
 export interface TagInsert {
   name: string;
@@ -244,6 +244,150 @@ export class TagService {
       return (data || []) as Tag[];
     } catch (error) {
       console.error('Failed to search tags:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get all prompts for a given tag name (user-specific)
+   * Returns prompts enriched with their tags for consistent UI display
+   */
+  static async getUserPromptsByTag(userId: string, tagName: string): Promise<(Prompt & { tags: Tag[] })[]> {
+    try {
+      if (!userId || !tagName) {
+        return [];
+      }
+
+      // Find tag by name for this user
+      const { data: tag, error: tagError } = await (supabase as any)
+        .from('tags')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('name', tagName.toLowerCase().trim())
+        .single();
+
+      if (tagError || !tag) {
+        // If tag not found, return empty
+        return [];
+      }
+
+      // Get all prompt_ids for this tag
+      const { data: tagLinks, error: linkError } = await supabase
+        .from('prompt_tags')
+        .select('prompt_id')
+        .eq('tag_id', tag.id);
+
+      if (linkError) throw linkError;
+
+      const promptIds = (tagLinks || []).map((l: any) => l.prompt_id).filter(Boolean);
+      if (promptIds.length === 0) {
+        return [];
+      }
+
+      // Fetch prompts owned by this user matching the IDs
+      const { data: prompts, error: promptsError } = await (supabase as any)
+        .from('prompts')
+        .select(`*
+        , users!prompts_user_id_fkey1(username, display_name)
+        `)
+        .in('id', promptIds)
+        .eq('user_id', userId)
+        .order('id', { ascending: false });
+
+      if (promptsError) throw promptsError;
+
+      const result: (Prompt & { tags: Tag[] })[] = [];
+      for (const p of (prompts || [])) {
+        try {
+          const tags = await this.getPromptTags(p.id);
+          result.push({ ...(p as Prompt), tags });
+        } catch (tErr) {
+          console.warn('Failed to load tags for prompt', p.id, tErr);
+          result.push({ ...(p as Prompt), tags: [] });
+        }
+      }
+
+      return result;
+    } catch (error) {
+      console.error('Failed to get prompts by tag:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get all prompts for a given tag name across all users
+   * - If userId is provided: returns user's own prompts + public prompts
+   * - If no userId: returns only public prompts
+   * Returns prompts enriched with their tags for consistent UI display
+   */
+  static async getPromptsByTagName(tagName: string, userId?: string): Promise<(Prompt & { tags: Tag[] })[]> {
+    try {
+      if (!tagName) {
+        return [];
+      }
+
+      const normalizedName = tagName.toLowerCase().trim();
+
+      // Find all tags by name (across all users)
+      const { data: tags, error: tagsError } = await (supabase as any)
+        .from('tags')
+        .select('id, name, user_id')
+        .eq('name', normalizedName);
+
+      if (tagsError) throw tagsError;
+
+      const tagIds = (tags || []).map((t: any) => t.id).filter(Boolean);
+      if (tagIds.length === 0) {
+        return [];
+      }
+
+      // Get all prompt_ids that have any of these tag IDs
+      const { data: tagLinks, error: linkError } = await supabase
+        .from('prompt_tags')
+        .select('prompt_id, tag_id')
+        .in('tag_id', tagIds);
+
+      if (linkError) throw linkError;
+
+      const promptIds = Array.from(new Set(((tagLinks || []).map((l: any) => l.prompt_id).filter(Boolean))));
+      if (promptIds.length === 0) {
+        return [];
+      }
+
+      // Fetch prompts matching the IDs
+      let query = (supabase as any)
+        .from('prompts')
+        .select(`*
+        , users!prompts_user_id_fkey1(username, display_name)
+        `)
+        .in('id', promptIds)
+        .order('id', { ascending: false });
+
+      if (userId) {
+        // Show public OR owned by user
+        query = query.or(`is_public.eq.true,user_id.eq.${userId}`);
+      } else {
+        // Only public when no user
+        query = query.eq('is_public', true);
+      }
+
+      const { data: prompts, error: promptsError } = await query;
+      if (promptsError) throw promptsError;
+
+      const result: (Prompt & { tags: Tag[] })[] = [];
+      for (const p of (prompts || [])) {
+        try {
+          const tags = await this.getPromptTags(p.id);
+          result.push({ ...(p as Prompt), tags });
+        } catch (tErr) {
+          console.warn('Failed to load tags for prompt', p.id, tErr);
+          result.push({ ...(p as Prompt), tags: [] });
+        }
+      }
+
+      return result;
+    } catch (error) {
+      console.error('Failed to get all prompts by tag name:', error);
       return [];
     }
   }
