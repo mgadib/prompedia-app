@@ -4,10 +4,12 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { FileText, Globe, User, Copy, Download, Search, Filter, Link as LinkIcon } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { SupabaseService } from '@/lib/supabase-service';
 import { TagService } from '@/lib/tag-service';
 import PromptDetailModal from './PromptDetailModal';
+import { trackEvent } from '@/lib/analytics';
 
 interface PromptWithTags extends Prompt {
   tags: Tag[];
@@ -89,6 +91,7 @@ const PublicLibrary = ({
   // Load tags for public prompts
   useEffect(() => {
     loadPublicPromptsWithTags();
+    trackEvent('view_public_library');
   }, [loadPublicPromptsWithTags]);
 
   // allTags already loaded in state via useEffect
@@ -105,6 +108,7 @@ const PublicLibrary = ({
     e.stopPropagation();
     navigator.clipboard.writeText(prompt.content);
     toast.success('Prompt content copied to clipboard');
+    trackEvent('copy_prompt_content', { prompt_id: prompt.id });
   };
 
   const handleCopyUrl = (e: React.MouseEvent, promptId: string) => {
@@ -112,17 +116,20 @@ const PublicLibrary = ({
     const url = `https://prompedia.app/p/${promptId}`;
     navigator.clipboard.writeText(url);
     toast.success('URL copied to clipboard');
+    trackEvent('copy_prompt_url', { prompt_id: promptId });
   };
 
   const handleUse = (e: React.MouseEvent, prompt: PromptWithTags) => {
     e.stopPropagation();
     onUsePrompt(prompt);
     toast.success('Prompt loaded for editing');
+    trackEvent('use_prompt', { prompt_id: prompt.id });
   };
 
   const handleCardClick = (prompt: PromptWithTags) => {
     setSelectedPrompt(prompt);
     setIsModalOpen(true);
+    trackEvent('open_prompt_modal', { prompt_id: prompt.id });
   };
 
   const handleCloseModal = () => {
@@ -133,11 +140,13 @@ const PublicLibrary = ({
   const handleUsePromptFromModal = (prompt: Prompt) => {
     onUsePrompt({ ...prompt, tags: selectedPrompt?.tags || [] });
     toast.success('Prompt loaded for editing');
+    trackEvent('use_prompt', { prompt_id: prompt.id });
   };
 
   const handleCopyPromptFromModal = (prompt: Prompt) => {
     navigator.clipboard.writeText(prompt.content);
     toast.success('Prompt content copied to clipboard');
+    trackEvent('copy_prompt_content', { prompt_id: prompt.id });
   };
 
   // Show loading state while tags are being loaded
@@ -274,9 +283,16 @@ const PublicLibrary = ({
                     </div>
                   </div>
 
-                  {/* Title */}
+                  {/* Title with anchor to detail */}
                   <h3 className="font-bold text-lg mb-2 line-clamp-2 font-mono group-hover:text-primary transition-colors">
-                    {prompt.title || 'Untitled Prompt'}
+                    <Link
+                      to={`/p/${prompt.id}`}
+                      onClick={(e) => e.stopPropagation()}
+                      aria-label={`View details for ${prompt.title || 'Untitled Prompt'}`}
+                      className="hover:underline focus:underline underline-offset-4"
+                    >
+                      {prompt.title || 'Untitled Prompt'}
+                    </Link>
                   </h3>
 
                   {/* Description */}
@@ -347,6 +363,15 @@ const PublicLibrary = ({
                       >
                         <Download className="w-3 h-3" />
                       </Button>
+                      {/* Direct link to detail page */}
+                      <Link
+                        to={`/p/${prompt.id}`}
+                        onClick={(e) => e.stopPropagation()}
+                        aria-label={`Open detail for ${prompt.title || 'Untitled Prompt'}`}
+                        className="text-xs font-mono px-2 py-1 rounded hover:bg-primary/20"
+                      >
+                        View
+                      </Link>
                     </div>
                   </div>
                 </div>

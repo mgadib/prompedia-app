@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Copy, ArrowLeft, Globe, Download } from 'lucide-react';
 import { toast } from 'sonner';
+import SEO from '@/components/SEO';
+import { trackEvent } from '@/lib/analytics';
 
 const PublicPromptDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -66,10 +68,17 @@ const PublicPromptDetail = () => {
     loadPrompt();
   }, [id]);
 
+  useEffect(() => {
+    if (!loading && prompt) {
+      trackEvent('view_prompt_detail', { prompt_id: id });
+    }
+  }, [loading, prompt, id]);
+
   const handleCopyContent = () => {
     if (prompt) {
       navigator.clipboard.writeText(prompt.content);
       toast.success('Prompt content copied to clipboard');
+      trackEvent('copy_prompt_content', { prompt_id: id });
     }
   };
 
@@ -77,10 +86,12 @@ const PublicPromptDetail = () => {
     const url = `https://prompedia.app/p/${id}`;
     navigator.clipboard.writeText(url);
     toast.success('URL copied to clipboard');
+    trackEvent('copy_prompt_url', { prompt_id: id });
   };
 
   const handleUsePrompt = () => {
     // Navigate to home page with prompt ID in URL
+    trackEvent('use_prompt', { prompt_id: id });
     navigate(`/?prompt=${id}`);
   };
 
@@ -116,6 +127,32 @@ const PublicPromptDetail = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* SEO Meta & JSON-LD */}
+      <SEO
+        title={prompt.title || 'Prompt Detail'}
+        description={prompt.description || 'Explore this public prompt on Prompedia.'}
+        url={`https://prompedia.app/p/${id}`}
+        type="article"
+        tags={tags.map(t => t.name)}
+        canonical={`https://prompedia.app/p/${id}`}
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'CreativeWork',
+          name: prompt.title || 'Untitled Prompt',
+          description: prompt.description || '',
+          url: `https://prompedia.app/p/${id}`,
+          keywords: tags.map(t => t.name).join(', '),
+          inLanguage: 'en',
+          dateCreated: prompt.created_at || undefined,
+          dateModified: prompt.updated_at || undefined,
+          author: prompt.user_id ? { '@type': 'Person', identifier: prompt.user_id } : undefined,
+        }}
+        breadcrumbs={[
+          { name: 'Home', url: 'https://prompedia.app/' },
+          { name: 'Public', url: 'https://prompedia.app/' },
+          { name: prompt.title || 'Prompt', url: `https://prompedia.app/p/${id}` },
+        ]}
+      />
       {/* Header */}
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="container max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">

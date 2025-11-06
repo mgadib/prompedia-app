@@ -62,40 +62,6 @@
 - OpenRouter API Key ([Get it here](https://openrouter.ai/))
 - Supabase Project (optional for local development)
 
-### Installation
-
-1. **Clone repository**
-```bash
-git clone <YOUR_GIT_URL>
-cd prompedia-ai
-```
-
-2. **Install dependencies**
-```bash
-npm install
-```
-
-3. **Setup environment variables**
-Create `.env` file in root directory:
-```env
-# Required
-VITE_OPENROUTER_API_KEY=your_openrouter_api_key
-
-# Required for full functionality
-VITE_SUPABASE_URL=your_supabase_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-```
-
-4. **Start development server**
-```bash
-npm run dev
-```
-
-5. **Open browser**
-Navigate to `http://localhost:8080`
-
-## 📖 User Guide
-
 ### Thinking Modes
 
 | Mode | Icon | Purpose | Output Structure |
@@ -175,38 +141,6 @@ prompedia-ai/
 │   │   └── prompt-enhancer/
 │   └── config.toml
 └── public/                 # Static assets
-```
-
-## 🧪 Development
-
-### Available Scripts
-```bash
-npm run dev          # Start development server
-npm run build        # Build for production
-npm run preview      # Preview production build
-npm run lint         # Run ESLint
-npm run test         # Run tests with Vitest
-```
-
-### Code Quality Standards
-- TypeScript strict mode
-- ESLint + Prettier for formatting
-- Zod for runtime validation
-- Error boundaries for error handling
-
-## 🚀 Deployment
-
-### Production Environment Variables
-```env
-VITE_OPENROUTER_API_KEY=your_production_api_key
-VITE_SUPABASE_URL=your_supabase_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-```
-
-### Build & Deploy
-```bash
-npm run build
-# Deploy dist/ folder to hosting platform (Vercel, Netlify, etc.)
 ```
 
 ## 🔒 Security Features

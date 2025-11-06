@@ -5,9 +5,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import AppPage from "./pages/App";
-import NotFound from "./pages/NotFound";
-import PublicPromptDetail from "./pages/PublicPromptDetail";
+const AppPage = React.lazy(() => import('./pages/App'));
+const NotFound = React.lazy(() => import('./pages/NotFound'));
+const PublicPromptDetail = React.lazy(() => import('./pages/PublicPromptDetail'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -43,12 +43,20 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<AppPage />} />
-            <Route path="/p/:id" element={<PublicPromptDetail />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <React.Suspense
+            fallback={
+              <div className="min-h-screen flex items-center justify-center">
+                <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+              </div>
+            }
+          >
+            <Routes>
+              <Route path="/" element={<AppPage />} />
+              <Route path="/p/:id" element={<PublicPromptDetail />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </React.Suspense>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
