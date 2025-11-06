@@ -7,6 +7,8 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "13.0.5"
   }
@@ -18,6 +20,7 @@ export type Database = {
           free: boolean | null
           icon: string | null
           id: string
+          is_active: boolean | null
           name: string
           provider: string
           type: string
@@ -27,6 +30,7 @@ export type Database = {
           free?: boolean | null
           icon?: string | null
           id: string
+          is_active?: boolean | null
           name: string
           provider: string
           type: string
@@ -36,6 +40,7 @@ export type Database = {
           free?: boolean | null
           icon?: string | null
           id?: string
+          is_active?: boolean | null
           name?: string
           provider?: string
           type?: string
@@ -288,6 +293,30 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          granted_at: string
+          granted_by: string | null
+          id: string
+          role: Database["public"]["Enums"]["user_role"]
+          user_id: string
+        }
+        Insert: {
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["user_role"]
+          user_id: string
+        }
+        Update: {
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_sessions: {
         Row: {
           ended_at: string | null
@@ -328,25 +357,40 @@ export type Database = {
         Row: {
           display_name: string | null
           id: string
-          role: Database["public"]["Enums"]["user_role"] | null
           username: string
         }
         Insert: {
           display_name?: string | null
           id: string
-          role?: Database["public"]["Enums"]["user_role"] | null
           username: string
         }
         Update: {
           display_name?: string | null
           id?: string
-          role?: Database["public"]["Enums"]["user_role"] | null
           username?: string
         }
         Relationships: []
       }
     }
     Views: {
+      my_roles: {
+        Row: {
+          granted_at: string | null
+          granted_by: string | null
+          role: Database["public"]["Enums"]["user_role"] | null
+        }
+        Insert: {
+          granted_at?: string | null
+          granted_by?: string | null
+          role?: Database["public"]["Enums"]["user_role"] | null
+        }
+        Update: {
+          granted_at?: string | null
+          granted_by?: string | null
+          role?: Database["public"]["Enums"]["user_role"] | null
+        }
+        Relationships: []
+      }
       users_public: {
         Row: {
           display_name: string | null
@@ -375,6 +419,24 @@ export type Database = {
         }
         Returns: Json
       }
+      get_user_role: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["user_role"]
+      }
+      grant_user_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["user_role"]
+          _target_user_id: string
+        }
+        Returns: boolean
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["user_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       increment_ai_usage: {
         Args: {
           p_is_guest?: boolean
@@ -384,6 +446,13 @@ export type Database = {
         Returns: Json
       }
       reset_daily_usage: { Args: never; Returns: number }
+      revoke_user_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["user_role"]
+          _target_user_id: string
+        }
+        Returns: boolean
+      }
       track_guest_usage: {
         Args: {
           p_ip_address?: string
@@ -526,4 +595,3 @@ export const Constants = {
     },
   },
 } as const
-
