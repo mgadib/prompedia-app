@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Play, User, LogOut, Lock, Users, Hash, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import LogoutDialog from './LogoutDialog';
 import { TagService } from '@/lib/tag-service';
@@ -36,6 +36,11 @@ const Sidebar = ({
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [allTags, setAllTags] = useState<string[]>([]);
   const isMobile = useIsMobile();
+  const location = useLocation();
+  
+  // Check if we're on a tag page
+  const isOnTagPage = location.pathname.startsWith('/tags/');
+  const activeTag = isOnTagPage ? decodeURIComponent(location.pathname.split('/tags/')[1]) : null;
 
   useEffect(() => {
     const loadUserMostUsedTags = async () => {
@@ -89,13 +94,13 @@ const Sidebar = ({
             <button
               onClick={onNewPrompt}
               className={`w-full flex items-center ${isMobile || isCollapsed ? 'justify-center' : 'gap-3'} ${isMobile ? 'px-4 py-3 min-h-[44px]' : 'px-3 py-2'} rounded-lg text-sm transition-all duration-200 font-mono group touch-manipulation ${
-                isPlaygroundActive
+                isPlaygroundActive && !isOnTagPage
                   ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-md font-semibold'
                   : 'text-sidebar-foreground hover:bg-sidebar-accent/20 hover:text-sidebar-accent-foreground hover:shadow-sm'
               }`}
               title={isMobile || isCollapsed ? 'Playground' : ''}
             >
-              <Play className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${isPlaygroundActive ? 'fill-current' : 'group-hover:scale-110'} transition-transform`} />
+              <Play className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${isPlaygroundActive && !isOnTagPage ? 'fill-current' : 'group-hover:scale-110'} transition-transform`} />
               {!isMobile && !isCollapsed && 'Playground'}
             </button>
           )}
@@ -105,13 +110,13 @@ const Sidebar = ({
             <button
               onClick={() => onViewChange('my-library')}
               className={`w-full flex items-center ${isMobile || isCollapsed ? 'justify-center' : 'gap-3'} ${isMobile ? 'px-4 py-3 min-h-[44px]' : 'px-3 py-2'} rounded-lg text-sm transition-all duration-200 font-mono group touch-manipulation ${
-                activeView === 'my-library' && !isPlaygroundActive
+                activeView === 'my-library' && !isPlaygroundActive && !isOnTagPage
                   ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-md font-semibold'
                   : 'text-sidebar-foreground hover:bg-sidebar-accent/20 hover:text-sidebar-accent-foreground hover:shadow-sm'
               }`}
               title={isMobile || isCollapsed ? 'Private Library' : ''}
             >
-              <Lock className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${activeView === 'my-library' && !isPlaygroundActive ? 'fill-current' : 'group-hover:scale-110'} transition-transform`} />
+              <Lock className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${activeView === 'my-library' && !isPlaygroundActive && !isOnTagPage ? 'fill-current' : 'group-hover:scale-110'} transition-transform`} />
               {!isMobile && !isCollapsed && 'Private Library'}
             </button>
           )}
@@ -119,13 +124,13 @@ const Sidebar = ({
           <button
             onClick={() => onViewChange('public-library')}
             className={`w-full flex items-center ${isMobile || isCollapsed ? 'justify-center' : 'gap-3'} ${isMobile ? 'px-4 py-3 min-h-[44px]' : 'px-3 py-2'} rounded-lg text-sm transition-all duration-200 font-mono group touch-manipulation ${
-              activeView === 'public-library' && !isPlaygroundActive
+              activeView === 'public-library' && !isPlaygroundActive && !isOnTagPage
                 ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-md font-semibold'
                 : 'text-sidebar-foreground hover:bg-sidebar-accent/20 hover:text-sidebar-accent-foreground hover:shadow-sm'
             }`}
             title={isMobile || isCollapsed ? 'Public Library' : ''}
           >
-            <Users className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${activeView === 'public-library' && !isPlaygroundActive ? 'fill-current' : 'group-hover:scale-110'} transition-transform`} />
+            <Users className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${activeView === 'public-library' && !isPlaygroundActive && !isOnTagPage ? 'fill-current' : 'group-hover:scale-110'} transition-transform`} />
             {!isMobile && !isCollapsed && 'Public Library'}
           </button>
         </div>
@@ -133,17 +138,24 @@ const Sidebar = ({
         {/* Tags Section - Show on mobile, hide when collapsed on desktop */}
         {(!isCollapsed || isMobile) && allTags.length > 0 && (
           <div className="mt-3 space-y-0.5">
-            {allTags.map(tag => (
-              <Link
-                key={tag}
-                to={`/tags/${encodeURIComponent(tag)}`}
-                className={`w-full flex items-center ${isMobile || isCollapsed ? 'justify-center' : 'gap-3'} ${isMobile ? 'px-4 py-3 min-h-[44px]' : 'px-3 py-2'} rounded-lg text-sm transition-all duration-200 font-mono group touch-manipulation text-sidebar-foreground hover:bg-sidebar-accent/20 hover:text-sidebar-accent-foreground hover:shadow-sm`}
-                title={isMobile || isCollapsed ? tag : ''}
-              >
-                <Hash className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} group-hover:scale-110 transition-transform text-prompedia-green-400`} />
-                {!isMobile && !isCollapsed && <span className="truncate">{tag}</span>}
-              </Link>
-            ))}
+            {allTags.map(tag => {
+              const isActiveTag = activeTag === tag;
+              return (
+                <Link
+                  key={tag}
+                  to={`/tags/${encodeURIComponent(tag)}`}
+                  className={`w-full flex items-center ${isMobile || isCollapsed ? 'justify-center' : 'gap-3'} ${isMobile ? 'px-4 py-3 min-h-[44px]' : 'px-3 py-2'} rounded-lg text-sm transition-all duration-200 font-mono group touch-manipulation ${
+                    isActiveTag
+                      ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-md font-semibold'
+                      : 'text-sidebar-foreground hover:bg-sidebar-accent/20 hover:text-sidebar-accent-foreground hover:shadow-sm'
+                  }`}
+                  title={isMobile || isCollapsed ? tag : ''}
+                >
+                  <Hash className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${isActiveTag ? '' : 'group-hover:scale-110'} transition-transform text-prompedia-green-400`} />
+                  {!isMobile && !isCollapsed && <span className="truncate">{tag}</span>}
+                </Link>
+              );
+            })}
           </div>
         )}
       </nav>
