@@ -143,8 +143,6 @@ const PublicPromptDetail = () => {
           url: `https://prompedia.app/p/${id}`,
           keywords: tags.map(t => t.name).join(', '),
           inLanguage: 'en',
-          dateCreated: prompt.created_at || undefined,
-          dateModified: prompt.updated_at || undefined,
           author: prompt.user_id ? { '@type': 'Person', identifier: prompt.user_id } : undefined,
         }}
         breadcrumbs={[
