@@ -8,6 +8,7 @@ import PublicLibrary from '@/components/PublicLibrary';
 import AuthModal from '@/components/AuthModal';
 import { storage, Prompt, Tag } from '@/lib/storage';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 
 interface PromptWithTags extends Prompt {
   tags: Tag[];
@@ -37,6 +38,8 @@ const AppPage = () => {
   const [isFocusMode, setIsFocusMode] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const isMobile = useIsMobile();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   const checkAuth = useCallback(async () => {
     try {
@@ -62,6 +65,50 @@ const AppPage = () => {
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
+
+  // Load prompt from query param `use` when present
+  useEffect(() => {
+    const promptId = searchParams.get('use');
+    if (!promptId) return;
+
+    const loadPromptById = async () => {
+      try {
+        const prompt = await SupabaseService.getPrompt(promptId);
+        if (!prompt) {
+          toast.error('Prompt tidak ditemukan');
+        } else {
+          const sanitizedPrompt: Prompt = {
+            id: prompt.id || '',
+            user_id: prompt.user_id || '',
+            title: prompt.title || '',
+            content: prompt.content || '',
+            model_id: prompt.model_id || AVAILABLE_MODELS[1].id,
+            mode_id: prompt.mode_id || THINKING_MODES[5].id,
+            color: prompt.color || '#3b82f6',
+            is_public: prompt.is_public || false,
+            is_featured: prompt.is_featured || false,
+            description: prompt.description || null,
+            original_prompt_id: prompt.original_prompt_id || null,
+          };
+
+          setCurrentPrompt(sanitizedPrompt);
+          storage.setCurrentPrompt(sanitizedPrompt.id);
+          setShowEditor(true);
+        }
+      } catch (error) {
+        console.error('Failed to load prompt from query:', error);
+        toast.error('Gagal memuat prompt');
+      } finally {
+        // Bersihkan query `use` dari URL
+        const params = new URLSearchParams(searchParams);
+        params.delete('use');
+        setSearchParams(params, { replace: true });
+      }
+    };
+
+    loadPromptById();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   // Set up auth state listener
   useEffect(() => {

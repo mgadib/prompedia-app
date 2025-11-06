@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Hash, FileText, Globe, Lock, ArrowLeft, Menu } from 'lucide-react';
+import { Hash, FileText, Globe, Lock, ArrowLeft, Menu, Copy, Download, Link as LinkIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import SEO from '@/components/SEO';
@@ -12,6 +12,9 @@ import Sidebar from '@/components/Sidebar';
 import AuthModal from '@/components/AuthModal';
 import { useIsMobile } from '@/hooks/use-mobile';
 import type { User } from '@supabase/supabase-js';
+import PromptDetailModal from '@/components/PromptDetailModal';
+import { toast } from 'sonner';
+import { trackEvent } from '@/lib/analytics';
 
 interface PromptWithTags extends Prompt {
   tags: Tag[];
@@ -30,6 +33,8 @@ const TagPage: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [selectedPrompt, setSelectedPrompt] = useState<PromptWithTags | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const pageTitle = useMemo(() => {
     return tagName ? `Tag: ${tagName} — ${ENV.SITE_TITLE}` : `Tag — ${ENV.SITE_TITLE}`;
@@ -92,6 +97,51 @@ const TagPage: React.FC = () => {
 
   const handleLogin = () => {
     setShowAuthModal(true);
+  };
+
+  const handleCardClick = (prompt: PromptWithTags) => {
+    setSelectedPrompt(prompt);
+    setIsModalOpen(true);
+    trackEvent('open_prompt_modal', { prompt_id: prompt.id }, userId);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedPrompt(null);
+  };
+
+  const handleCopy = (e: React.MouseEvent, prompt: PromptWithTags) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(prompt.content);
+    toast.success('Konten prompt disalin ke clipboard');
+    trackEvent('copy_prompt_content', { prompt_id: prompt.id }, userId);
+  };
+
+  const handleCopyUrl = (e: React.MouseEvent, promptId: string) => {
+    e.stopPropagation();
+    const url = `${window.location.origin}/p/${promptId}`;
+    navigator.clipboard.writeText(url);
+    toast.success('URL prompt disalin ke clipboard');
+    trackEvent('copy_prompt_url', { prompt_id: promptId }, userId);
+  };
+
+  const handleUse = (e: React.MouseEvent, prompt: PromptWithTags) => {
+    e.stopPropagation();
+    navigate(`/?use=${encodeURIComponent(prompt.id)}`);
+    toast.success('Prompt dimuat untuk diedit');
+    trackEvent('use_prompt', { prompt_id: prompt.id }, userId);
+  };
+
+  const handleUsePromptFromModal = (prompt: Prompt) => {
+    navigate(`/?use=${encodeURIComponent(prompt.id)}`);
+    toast.success('Prompt dimuat untuk diedit');
+    trackEvent('use_prompt', { prompt_id: prompt.id }, userId);
+  };
+
+  const handleCopyPromptFromModal = (prompt: Prompt) => {
+    navigator.clipboard.writeText(prompt.content);
+    toast.success('Konten prompt disalin ke clipboard');
+    trackEvent('copy_prompt_content', { prompt_id: prompt.id }, userId);
   };
 
   return (
@@ -195,7 +245,8 @@ const TagPage: React.FC = () => {
               {prompts.map((prompt) => (
                 <div
                   key={prompt.id}
-                  className={`group relative bg-card border rounded-lg p-4 sm:p-6 transition-all duration-200 hover:shadow-lg hover:border-primary/50 touch-manipulation hover:bg-accent/10`}
+                  onClick={() => handleCardClick(prompt)}
+                  className={`group relative bg-card border rounded-lg p-4 sm:p-6 transition-all duration-200 hover:shadow-lg hover:border-primary/50 touch-manipulation hover:bg-accent/10 cursor-pointer`}
                 >
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-2">
@@ -257,8 +308,47 @@ const TagPage: React.FC = () => {
 
                   <div className="flex items-center justify-between pt-4 border-t border-border/50">
                     <div className="text-xs text-muted-foreground font-mono">
-                      <div>{prompt.model || 'Unknown model'}</div>
+                      <div>Model: {prompt.model || 'Llama 4 Maverick'}</div>
                       <div>{prompt.is_featured ? 'Featured' : 'Standard'}</div>
+                    </div>
+
+                    {/* Tombol aksi seperti di PublicLibrary */}
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={(e) => handleCopyUrl(e, prompt.id)}
+                        className="h-8 w-8 p-0 hover:bg-primary/20"
+                        title="Salin URL"
+                      >
+                        <LinkIcon className="w-3 h-3" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={(e) => handleCopy(e, prompt)}
+                        className="h-8 w-8 p-0 hover:bg-primary/20"
+                        title="Salin konten"
+                      >
+                        <Copy className="w-3 h-3" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={(e) => handleUse(e, prompt)}
+                        className="h-8 w-8 p-0 hover:bg-primary/20"
+                        title="Gunakan prompt ini"
+                      >
+                        <Download className="w-3 h-3" />
+                      </Button>
+                      <Link
+                        to={`/p/${prompt.id}`}
+                        onClick={(e) => e.stopPropagation()}
+                        aria-label={`Buka detail untuk ${prompt.title || 'Untitled Prompt'}`}
+                        className="text-xs font-mono px-2 py-1 rounded hover:bg-primary/20"
+                      >
+                        Lihat
+                      </Link>
                     </div>
                   </div>
                 </div>
@@ -266,6 +356,15 @@ const TagPage: React.FC = () => {
             </div>
           )}
         </div>
+
+        {/* Prompt Detail Modal */}
+        <PromptDetailModal
+          prompt={selectedPrompt}
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          onUse={handleUsePromptFromModal}
+          onCopy={handleCopyPromptFromModal}
+        />
 
         {/* Auth Modal */}
         <AuthModal
