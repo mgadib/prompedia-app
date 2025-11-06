@@ -3,7 +3,7 @@ import { Prompt, Tag } from '@/lib/storage';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { FileText, Globe, User, Copy, Download, Search, Filter } from 'lucide-react';
+import { FileText, Globe, User, Copy, Download, Search, Filter, Link as LinkIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { SupabaseService } from '@/lib/supabase-service';
 import { TagService } from '@/lib/tag-service';
@@ -105,6 +105,13 @@ const PublicLibrary = ({
     e.stopPropagation();
     navigator.clipboard.writeText(prompt.content);
     toast.success('Prompt content copied to clipboard');
+  };
+
+  const handleCopyUrl = (e: React.MouseEvent, promptId: string) => {
+    e.stopPropagation();
+    const url = `https://prompedia.app/p/${promptId}`;
+    navigator.clipboard.writeText(url);
+    toast.success('URL copied to clipboard');
   };
 
   const handleUse = (e: React.MouseEvent, prompt: PromptWithTags) => {
@@ -313,6 +320,15 @@ const PublicLibrary = ({
                     
                     {/* Action buttons */}
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={(e) => handleCopyUrl(e, prompt.id)}
+                        className="h-8 w-8 p-0 hover:bg-primary/20"
+                        title="Copy URL"
+                      >
+                        <LinkIcon className="w-3 h-3" />
+                      </Button>
                       <Button
                         size="sm"
                         variant="ghost"

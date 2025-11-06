@@ -1,7 +1,7 @@
 import { Prompt } from '@/lib/storage';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Copy, X, Lock, Globe } from 'lucide-react';
+import { Copy, X, Lock, Globe, Link as LinkIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -34,6 +34,12 @@ const PromptDetailModal = ({
     }
   };
 
+  const handleCopyUrl = () => {
+    const url = `https://prompedia.app/p/${prompt.id}`;
+    navigator.clipboard.writeText(url);
+    toast.success('URL copied to clipboard');
+  };
+
   const handleUse = () => {
     if (onUse) {
       onUse(prompt);
@@ -54,6 +60,19 @@ const PromptDetailModal = ({
 
           {/* Action buttons */}
           <div className={`flex items-center ${isMobile ? 'w-full gap-2' : 'gap-2'}`}>
+            {prompt.is_public && (
+              <Button
+                size={isMobile ? "default" : "sm"}
+                variant="outline"
+                onClick={handleCopyUrl}
+                className={`font-mono touch-manipulation ${isMobile ? 'flex-1 min-h-[44px]' : ''}`}
+                title="Copy URL"
+              >
+                <LinkIcon className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${isMobile ? '' : 'mr-2'}`} />
+                {isMobile ? '' : 'URL'}
+              </Button>
+            )}
+            
             <Button
               size={isMobile ? "default" : "sm"}
               variant="outline"
