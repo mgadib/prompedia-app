@@ -90,12 +90,12 @@ const Sidebar = ({
               onClick={onNewPrompt}
               className={`w-full flex items-center ${isMobile || isCollapsed ? 'justify-center' : 'gap-3'} ${isMobile ? 'px-4 py-3 min-h-[44px]' : 'px-3 py-2'} rounded-lg text-sm transition-all duration-200 font-mono group touch-manipulation ${
                 isPlaygroundActive
-                  ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-md'
+                  ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-md font-semibold'
                   : 'text-sidebar-foreground hover:bg-sidebar-accent/20 hover:text-sidebar-accent-foreground hover:shadow-sm'
               }`}
               title={isMobile || isCollapsed ? 'Playground' : ''}
             >
-              <Play className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${isPlaygroundActive ? '' : 'group-hover:scale-110'} transition-transform`} />
+              <Play className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${isPlaygroundActive ? 'fill-current' : 'group-hover:scale-110'} transition-transform`} />
               {!isMobile && !isCollapsed && 'Playground'}
             </button>
           )}
@@ -106,12 +106,12 @@ const Sidebar = ({
               onClick={() => onViewChange('my-library')}
               className={`w-full flex items-center ${isMobile || isCollapsed ? 'justify-center' : 'gap-3'} ${isMobile ? 'px-4 py-3 min-h-[44px]' : 'px-3 py-2'} rounded-lg text-sm transition-all duration-200 font-mono group touch-manipulation ${
                 activeView === 'my-library' && !isPlaygroundActive
-                  ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-md'
+                  ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-md font-semibold'
                   : 'text-sidebar-foreground hover:bg-sidebar-accent/20 hover:text-sidebar-accent-foreground hover:shadow-sm'
               }`}
               title={isMobile || isCollapsed ? 'Private Library' : ''}
             >
-              <Lock className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${activeView === 'my-library' && !isPlaygroundActive ? '' : 'group-hover:scale-110'} transition-transform`} />
+              <Lock className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${activeView === 'my-library' && !isPlaygroundActive ? 'fill-current' : 'group-hover:scale-110'} transition-transform`} />
               {!isMobile && !isCollapsed && 'Private Library'}
             </button>
           )}
@@ -120,12 +120,12 @@ const Sidebar = ({
             onClick={() => onViewChange('public-library')}
             className={`w-full flex items-center ${isMobile || isCollapsed ? 'justify-center' : 'gap-3'} ${isMobile ? 'px-4 py-3 min-h-[44px]' : 'px-3 py-2'} rounded-lg text-sm transition-all duration-200 font-mono group touch-manipulation ${
               activeView === 'public-library' && !isPlaygroundActive
-                ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-md'
+                ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-md font-semibold'
                 : 'text-sidebar-foreground hover:bg-sidebar-accent/20 hover:text-sidebar-accent-foreground hover:shadow-sm'
             }`}
             title={isMobile || isCollapsed ? 'Public Library' : ''}
           >
-            <Users className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${activeView === 'public-library' && !isPlaygroundActive ? '' : 'group-hover:scale-110'} transition-transform`} />
+            <Users className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${activeView === 'public-library' && !isPlaygroundActive ? 'fill-current' : 'group-hover:scale-110'} transition-transform`} />
             {!isMobile && !isCollapsed && 'Public Library'}
           </button>
         </div>
