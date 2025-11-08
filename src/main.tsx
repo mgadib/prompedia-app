@@ -6,12 +6,8 @@ import "./index.css";
 import "@/lib/i18n"; // Inisialisasi i18n
 
 // Memvalidasi variabel environment saat startup
-try {
-  validateEnv();
-} catch (error) {
-  console.error('Failed to start application:', error);
-  // Error akan ditampilkan di console dengan pesan yang membantu
-}
+// Validasi menggunakan graceful fallback, tidak throw error
+validateEnv();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

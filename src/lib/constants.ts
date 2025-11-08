@@ -114,14 +114,20 @@ export const FEATURES = {
 } as const;
 
 // Environment-specific constants
+// Safe access to import.meta.env for build-time compatibility
+const hasImportMetaEnv = typeof import.meta !== 'undefined' && import.meta.env;
+const getEnvVar = (key: string, defaultValue: string = '') => {
+  return hasImportMetaEnv ? (import.meta.env[key] || defaultValue) : defaultValue;
+};
+
 export const ENV = {
-  IS_DEVELOPMENT: import.meta.env.DEV,
-  IS_PRODUCTION: import.meta.env.PROD,
-  API_BASE_URL: import.meta.env.VITE_API_BASE_URL || '',
-  SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL || '',
-  SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY || '',
-  SITE_URL: (import.meta.env.VITE_SITE_URL || (typeof window !== 'undefined' ? window.location.origin : '')),
-  SITE_TITLE: import.meta.env.VITE_SITE_TITLE || 'Prompedia.app - Prompt Engineering Laboratory',
+  IS_DEVELOPMENT: hasImportMetaEnv ? (import.meta.env.DEV ?? false) : false,
+  IS_PRODUCTION: hasImportMetaEnv ? (import.meta.env.PROD ?? false) : false,
+  API_BASE_URL: getEnvVar('VITE_API_BASE_URL'),
+  SUPABASE_URL: getEnvVar('VITE_SUPABASE_URL'),
+  SUPABASE_ANON_KEY: getEnvVar('VITE_SUPABASE_ANON_KEY'),
+  SITE_URL: (getEnvVar('VITE_SITE_URL') || (typeof window !== 'undefined' ? window.location.origin : '')),
+  SITE_TITLE: getEnvVar('VITE_SITE_TITLE', 'Prompedia.app - Prompt Engineering Laboratory'),
 } as const;
 
 // Type exports for better TypeScript support

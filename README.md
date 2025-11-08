@@ -62,6 +62,46 @@
 - OpenRouter API Key ([Get it here](https://openrouter.ai/))
 - Supabase Project (optional for local development)
 
+### Environment Setup di Lovable.dev
+
+Aplikasi ini di-hosting di **Lovable.dev** dan menggunakan **Supabase Cloud**. Environment variables dikonfigurasi melalui Lovable dashboard, bukan file `.env` lokal.
+
+#### Langkah-langkah Setup:
+
+1. **Buka Project di Lovable Dashboard**
+   - Login ke [Lovable.dev](https://lovable.dev)
+   - Buka project Anda
+
+2. **Konfigurasi Environment Variables**
+   - Pergi ke **Settings** > **Environment Variables**
+   - Tambahkan variabel berikut:
+
+   ```
+   VITE_SUPABASE_URL=https://your-project.supabase.co
+   VITE_SUPABASE_ANON_KEY=your-anon-key-here
+   ```
+
+3. **Mendapatkan Supabase Credentials**
+   - Buka [Supabase Dashboard](https://supabase.com/dashboard)
+   - Pilih project Anda
+   - Pergi ke **Settings** > **API**
+   - Copy **"Project URL"** untuk `VITE_SUPABASE_URL`
+   - Copy **"anon public"** key untuk `VITE_SUPABASE_ANON_KEY`
+
+4. **Catatan Penting**
+   - Environment variables akan otomatis tersedia saat build di Lovable
+   - Untuk development/preview, aplikasi menggunakan fallback values
+   - Di production, pastikan env vars sudah diset dengan benar
+
+#### Optional Environment Variables:
+
+```
+VITE_SITE_URL=https://your-domain.com
+VITE_SITE_TITLE=Prompedia.app - Prompt Engineering Laboratory
+```
+
+**Note:** `MODE`, `DEV`, dan `PROD` diatur otomatis oleh Vite berdasarkan build mode.
+
 ### Thinking Modes
 
 | Mode | Icon | Purpose | Output Structure |
