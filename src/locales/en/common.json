@@ -110,6 +110,32 @@
   "changeLanguage": "Change Language",
   "user": "User",
   "home": "Home",
-  "public": "Public"
+  "public": "Public",
+  "ui": {
+    "toggleSidebar": "Toggle Sidebar",
+    "pagination": "Pagination",
+    "goToPreviousPage": "Go to previous page",
+    "goToNextPage": "Go to next page",
+    "previous": "Previous",
+    "next": "Next",
+    "morePages": "More pages",
+    "breadcrumb": "Breadcrumb",
+    "more": "More",
+    "previousSlide": "Previous slide",
+    "nextSlide": "Next slide"
+  },
+  "languages": {
+    "en": "English",
+    "id": "Bahasa Indonesia"
+  },
+  "error": {
+    "occurred": "An Error Occurred",
+    "description": "The application encountered an unexpected error. Please try reloading the page.",
+    "tryAgain": "Try Again",
+    "tryAgainAria": "Try again to recover from error",
+    "reloadPage": "Reload Page",
+    "reloadPageAria": "Reload the page",
+    "errorDetails": "Error Details (Development)"
+  }
 }
 

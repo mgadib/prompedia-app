@@ -3,6 +3,9 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { clearUser, clearCurrentPrompt } from '@/lib/storage';
+import { toast } from 'sonner';
+import { getSuccessMessage, getErrorMessage } from '@/lib/i18n-helpers';
 import Sidebar from './Sidebar';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -17,6 +20,7 @@ const Layout: React.FC = () => {
   const [isInitializing, setIsInitializing] = useState(true);
   const [appActiveView, setAppActiveView] = useState<'my-library' | 'public-library' | null>(null);
   const [appIsPlaygroundActive, setAppIsPlaygroundActive] = useState<boolean | null>(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   // Check auth on mount
   useEffect(() => {
@@ -106,17 +110,51 @@ const Layout: React.FC = () => {
 
   const handleLogout = useCallback(async () => {
     try {
-      await supabase.auth.signOut();
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Logout error:', error);
+        toast.error(getErrorMessage('auth.logoutFailed'));
+        return;
+      }
+      
+      // Clear user data from local storage
+      clearUser();
+      
+      // Clear current prompt from storage
+      clearCurrentPrompt();
+      
+      // Reset user state
       setUser(null);
+      
+      // Reset app state
+      setAppActiveView(null);
+      setAppIsPlaygroundActive(null);
+      
+      // Show success message
+      toast.success(getSuccessMessage('auth.logoutSuccess'));
+      
+      // Navigate to home if not already there
+      if (location.pathname !== '/') {
+        navigate('/');
+      }
     } catch (error) {
       console.error('Logout error:', error);
+      toast.error(getErrorMessage('auth.logoutFailed'));
     }
-  }, []);
+  }, [navigate, location.pathname]);
 
   const handleLogin = useCallback(() => {
-    // Will be handled by child components
-    navigate('/');
-  }, [navigate]);
+    // Navigate to home if not already there
+    if (location.pathname !== '/') {
+      navigate('/');
+    }
+    // Open auth modal
+    setShowAuthModal(true);
+    // Close mobile sidebar if open
+    if (isMobile) {
+      setMobileSidebarOpen(false);
+    }
+  }, [navigate, location.pathname, isMobile]);
 
   // Don't render until auth is initialized to prevent flicker
   if (isInitializing) {
@@ -189,7 +227,9 @@ const Layout: React.FC = () => {
           activeView: currentActiveView(),
           appActiveView,
           appIsPlaygroundActive,
-          isPlaygroundActive: isPlaygroundActive() 
+          isPlaygroundActive: isPlaygroundActive(),
+          showAuthModal,
+          setShowAuthModal
         }} />
       </div>
     </div>

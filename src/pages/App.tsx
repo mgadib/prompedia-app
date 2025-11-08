@@ -36,18 +36,19 @@ interface OutletContext {
   setAppIsPlaygroundActive: (active: boolean | null) => void;
   appActiveView: 'my-library' | 'public-library' | null;
   appIsPlaygroundActive: boolean | null;
+  showAuthModal: boolean;
+  setShowAuthModal: (show: boolean) => void;
 }
 
 const AppPage = () => {
   const { t } = useTranslation();
   // Get context from Layout
-  const { user, mobileSidebarOpen, setMobileSidebarOpen, setAppActiveView, setAppIsPlaygroundActive, appActiveView, appIsPlaygroundActive } = useOutletContext<OutletContext>();
+  const { user, mobileSidebarOpen, setMobileSidebarOpen, setAppActiveView, setAppIsPlaygroundActive, appActiveView, appIsPlaygroundActive, showAuthModal, setShowAuthModal } = useOutletContext<OutletContext>();
   const [loading, setLoading] = useState(true);
   const [isInitializing, setIsInitializing] = useState(true);
   const [activeView, setActiveView] = useState<'my-library' | 'public-library'>('public-library');
   const [currentPrompt, setCurrentPrompt] = useState<Prompt | null>(null);
   const [showEditor, setShowEditor] = useState(false); // Default to library view
-  const [showAuthModal, setShowAuthModal] = useState(false);
   const [allPrompts, setAllPrompts] = useState<Prompt[]>([]);
   const [publicPrompts, setPublicPrompts] = useState<Prompt[]>([]);
   const [isLoadingPrompts, setIsLoadingPrompts] = useState(false);
@@ -237,6 +238,15 @@ const AppPage = () => {
       setPublicPrompts([]);
     }
   }, []);
+
+  // Reset current prompt when user logs out
+  useEffect(() => {
+    if (!user) {
+      setCurrentPrompt(null);
+      storage.clearCurrentPrompt();
+      setShowEditor(false);
+    }
+  }, [user]);
 
   // Efek gabungan untuk memuat kedua jenis prompt
   // Juga reload saat user state berubah (login/logout)

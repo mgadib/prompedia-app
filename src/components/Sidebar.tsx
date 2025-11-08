@@ -77,7 +77,7 @@ const Sidebar = ({
       <div className={`border-b border-sidebar-border ${isMobile ? 'p-4' : 'p-6'}`}>
         {(!isCollapsed || isMobile) ? (
           <>
-            <h1 className="prompedia-logo">Prompedia.app</h1>
+            <h1 className="prompedia-logo">{t('common:app.name')}</h1>
             <p className="text-xs text-muted-foreground mt-1 font-mono">{t('common:app.tagline')}</p>
           </>
         ) : (

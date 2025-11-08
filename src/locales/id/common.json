@@ -110,6 +110,32 @@
   "changeLanguage": "Ubah Bahasa",
   "user": "Pengguna",
   "home": "Beranda",
-  "public": "Publik"
+  "public": "Publik",
+  "ui": {
+    "toggleSidebar": "Buka/Tutup Sidebar",
+    "pagination": "Navigasi Halaman",
+    "goToPreviousPage": "Ke halaman sebelumnya",
+    "goToNextPage": "Ke halaman berikutnya",
+    "previous": "Sebelumnya",
+    "next": "Selanjutnya",
+    "morePages": "Halaman lainnya",
+    "breadcrumb": "Breadcrumb",
+    "more": "Lainnya",
+    "previousSlide": "Slide sebelumnya",
+    "nextSlide": "Slide berikutnya"
+  },
+  "languages": {
+    "en": "English",
+    "id": "Bahasa Indonesia"
+  },
+  "error": {
+    "occurred": "Terjadi Kesalahan",
+    "description": "Aplikasi mengalami kesalahan yang tidak terduga. Silakan muat ulang halaman.",
+    "tryAgain": "Coba Lagi",
+    "tryAgainAria": "Coba lagi untuk memulihkan dari kesalahan",
+    "reloadPage": "Muat Ulang Halaman",
+    "reloadPageAria": "Muat ulang halaman",
+    "errorDetails": "Detail Kesalahan (Development)"
+  }
 }
 

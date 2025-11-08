@@ -16,8 +16,8 @@ const LanguageSwitcher = ({ isCollapsed = false }: { isCollapsed?: boolean }) =>
   const isMobile = useIsMobile();
 
   const languages = [
-    { code: 'en', label: 'English', flag: '🇺🇸' },
-    { code: 'id', label: 'Bahasa Indonesia', flag: '🇮🇩' },
+    { code: 'en', label: t('common:languages.en'), flag: '🇺🇸' },
+    { code: 'id', label: t('common:languages.id'), flag: '🇮🇩' },
   ];
 
   const currentLang = languages.find(lang => lang.code === currentLanguage) || languages[0];

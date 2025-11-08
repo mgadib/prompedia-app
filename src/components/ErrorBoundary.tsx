@@ -2,8 +2,9 @@ import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { withTranslation, WithTranslation } from 'react-i18next';
 
-interface Props {
+interface Props extends WithTranslation {
   children: ReactNode;
   fallback?: ReactNode;
 }
@@ -18,7 +19,7 @@ interface State {
  * Komponen Error Boundary untuk menangkap dan menangani error React
  * Menyediakan penanganan error yang graceful dan opsi recovery
  */
-export class ErrorBoundary extends Component<Props, State> {
+class ErrorBoundaryBase extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = { hasError: false };
@@ -54,14 +55,15 @@ export class ErrorBoundary extends Component<Props, State> {
       }
 
       // UI error default
+      const { t } = this.props;
       return (
         <div className="min-h-screen flex items-center justify-center p-4 bg-background animate-fade-in">
           <div className="max-w-md w-full space-y-4">
             <Alert variant="destructive" className="animate-scale-in">
               <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5 animate-pulse-slow" />
-              <AlertTitle className="font-mono text-base sm:text-lg">An Error Occurred</AlertTitle>
+              <AlertTitle className="font-mono text-base sm:text-lg">{t('common:error.occurred')}</AlertTitle>
               <AlertDescription className="font-mono text-sm">
-                The application encountered an unexpected error. Please try reloading the page.
+                {t('common:error.description')}
               </AlertDescription>
             </Alert>
 
@@ -70,25 +72,25 @@ export class ErrorBoundary extends Component<Props, State> {
                 onClick={this.handleReset} 
                 className="w-full font-mono touch-manipulation min-h-[44px] sm:min-h-0 transition-smooth"
                 variant="outline"
-                aria-label="Try again to recover from error"
+                aria-label={t('common:error.tryAgainAria')}
               >
                 <RefreshCw className="w-4 h-4 sm:w-5 sm:w-5 mr-2" />
-                Try Again
+                {t('common:error.tryAgain')}
               </Button>
               
               <Button 
                 onClick={() => window.location.reload()} 
                 className="w-full font-mono touch-manipulation min-h-[44px] sm:min-h-0 transition-smooth"
-                aria-label="Reload the page"
+                aria-label={t('common:error.reloadPageAria')}
               >
-                Reload Page
+                {t('common:error.reloadPage')}
               </Button>
             </div>
 
             {process.env.NODE_ENV === 'development' && this.state.error && (
               <details className="mt-4 p-3 sm:p-4 bg-muted rounded-md text-sm font-mono">
                 <summary className="cursor-pointer font-medium touch-manipulation min-h-[44px] flex items-center sm:min-h-0">
-                  Error Details (Development)
+                  {t('common:error.errorDetails')}
                 </summary>
                 <pre className="mt-2 whitespace-pre-wrap text-xs overflow-x-auto">
                   {this.state.error.toString()}
@@ -112,13 +114,19 @@ export const withErrorBoundary = <P extends object>(
   Component: React.ComponentType<P>,
   fallback?: ReactNode
 ) => {
-  const WrappedComponent = (props: P) => (
-    <ErrorBoundary fallback={fallback}>
-      <Component {...props} />
-    </ErrorBoundary>
-  );
+  const WrappedComponent = (props: P) => {
+    const ErrorBoundaryWithTranslation = withTranslation()(ErrorBoundary);
+    return (
+      <ErrorBoundaryWithTranslation fallback={fallback}>
+        <Component {...props} />
+      </ErrorBoundaryWithTranslation>
+    );
+  };
 
   WrappedComponent.displayName = `withErrorBoundary(${Component.displayName || Component.name})`;
   
   return WrappedComponent;
 };
+
+// Export ErrorBoundary dengan translation support
+export const ErrorBoundary = withTranslation()(ErrorBoundaryBase);
