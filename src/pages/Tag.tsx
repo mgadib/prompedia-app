@@ -292,7 +292,7 @@ const TagPage: React.FC = () => {
               {/* Subtle indicator saat refresh di background */}
               {isRefreshing && (
                 <div className="absolute top-4 right-4 z-10 bg-background/80 backdrop-blur-sm rounded-full p-2">
-                  <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                  <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full" />
                 </div>
               )}
               <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 p-3 sm:p-4 md:p-6 transition-opacity duration-300 ${isRefreshing ? 'opacity-75' : 'opacity-100'}`}>

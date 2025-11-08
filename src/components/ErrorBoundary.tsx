@@ -57,17 +57,17 @@ class ErrorBoundaryBase extends Component<Props, State> {
       // UI error default
       const { t } = this.props;
       return (
-        <div className="min-h-screen flex items-center justify-center p-4 bg-background animate-fade-in">
+        <div className="min-h-screen flex items-center justify-center p-4 bg-background">
           <div className="max-w-md w-full space-y-4">
-            <Alert variant="destructive" className="animate-scale-in">
-              <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5 animate-pulse-slow" />
+            <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5" />
               <AlertTitle className="font-mono text-base sm:text-lg">{t('common:error.occurred')}</AlertTitle>
               <AlertDescription className="font-mono text-sm">
                 {t('common:error.description')}
               </AlertDescription>
             </Alert>
 
-            <div className="space-y-2 sm:space-y-3 animate-fade-in" style={{ animationDelay: '100ms' }}>
+            <div className="space-y-2 sm:space-y-3">
               <Button 
                 onClick={this.handleReset} 
                 className="w-full font-mono touch-manipulation min-h-[44px] sm:min-h-0 transition-smooth"

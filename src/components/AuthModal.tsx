@@ -77,7 +77,7 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={`${isMobile ? 'max-w-[calc(100vw-2rem)] mx-4 safe-top safe-bottom' : 'sm:max-w-md'} max-h-[90vh] overflow-y-auto modal-enter`}>
+      <DialogContent className={`${isMobile ? 'max-w-[calc(100vw-2rem)] mx-4 safe-top safe-bottom' : 'sm:max-w-md'} max-h-[90vh] overflow-y-auto`}>
         <DialogHeader>
           <div className={`flex items-center justify-center gap-2 ${isMobile ? 'mb-3' : 'mb-4'}`}>
             <Sparkles className={`${isMobile ? 'w-5 h-5' : 'w-6 h-6'} text-primary`} />
@@ -163,7 +163,7 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
           >
             {loading ? (
               <>
-                <Loader2 className={`${isMobile ? 'mr-2 h-5 w-5' : 'mr-2 h-4 w-4'} animate-spin`} />
+                <Loader2 className={`${isMobile ? 'mr-2 h-5 w-5' : 'mr-2 h-4 w-4'}`} />
                 {t('auth:processing')}
               </>
             ) : isLogin ? (

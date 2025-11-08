@@ -38,7 +38,7 @@ const ActionButtons = ({ onAction, disabled = false, isLoading = false, loadingA
           >
             {isCurrentlyLoading ? (
               <>
-                <Loader2 className={`${isMobile ? 'mr-2 h-5 w-5' : 'mr-1.5 h-4 w-4'} animate-spin`} />
+                <Loader2 className={`${isMobile ? 'mr-2 h-5 w-5' : 'mr-1.5 h-4 w-4'}`} />
                 <span className="sr-only">{t('common:status.processing')}</span>
               </>
             ) : (

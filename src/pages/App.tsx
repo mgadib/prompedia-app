@@ -605,7 +605,7 @@ const AppPage = () => {
         <div className="flex flex-col items-center gap-4">
           <div className="relative">
             <div className="w-12 h-12 border-4 border-primary/20 rounded-full" />
-            <div className="absolute top-0 left-0 w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+            <div className="absolute top-0 left-0 w-12 h-12 border-4 border-primary border-t-transparent rounded-full" />
           </div>
           <div className="text-center">
             <p className="text-sm text-muted-foreground font-mono">Loading Prompedia...</p>
@@ -746,7 +746,7 @@ const AppPage = () => {
       />
 
       {/* Main Content Area */}
-      <div className={`flex-1 flex flex-col transition-opacity duration-300 will-change-opacity ${isInitializing ? 'opacity-0' : 'opacity-100'} min-w-0 overflow-hidden ${isMobile ? 'h-screen' : ''}`}>
+      <div className={`flex-1 flex flex-col ${isInitializing ? 'opacity-0' : 'opacity-100'} min-w-0 overflow-hidden ${isMobile ? 'h-screen' : ''}`}>
         {/* Mobile Hamburger Menu Button */}
         {isMobile && (
           <div className="md:hidden border-b border-border bg-card flex-shrink-0 px-4 py-3 flex items-center gap-3 z-10">
@@ -767,7 +767,7 @@ const AppPage = () => {
 
         <ErrorBoundary>
           {showEditor ? (
-            <div className={`flex-1 flex flex-col min-w-0 overflow-hidden transition-opacity duration-300 will-change-opacity ${isTransitioning ? 'opacity-50' : 'opacity-100'}`}>
+            <div className={`flex-1 flex flex-col min-w-0 overflow-hidden ${isTransitioning ? 'opacity-50' : 'opacity-100'}`}>
               <PromptEditor
                 key="prompt-editor"
                 currentPrompt={currentPrompt}
@@ -780,7 +780,7 @@ const AppPage = () => {
               />
             </div>
           ) : (
-            <div className={`flex-1 flex flex-col min-w-0 overflow-hidden transition-all duration-300 will-change-transform will-change-opacity ${isTransitioning ? 'opacity-50 scale-[0.98]' : 'opacity-100 scale-100'}`}>
+            <div className={`flex-1 flex flex-col min-w-0 overflow-hidden ${isTransitioning ? 'opacity-50' : 'opacity-100'}`}>
               {activeView === 'my-library' ? (
                 <MyLibrary
                   key="my-library"

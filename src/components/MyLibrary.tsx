@@ -161,7 +161,7 @@ const MyLibrary = ({
   // Menampilkan skeleton loading sementara tag sedang dimuat
   if (isLoadingTags) {
     return (
-      <div className="flex flex-col h-full animate-fade-in">
+      <div className="flex flex-col h-full">
         {/* Search and Filter Header Skeleton */}
         <div className="border-b border-border bg-card/50 sm:p-4 md:p-6 p-3">
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center">
@@ -179,7 +179,7 @@ const MyLibrary = ({
         <div className="flex-1 overflow-y-auto">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 p-3 sm:p-4 md:p-6">
             {Array.from({ length: 6 }).map((_, i) => (
-              <SkeletonCard key={i} className="animate-fade-in" style={{ animationDelay: `${i * 50}ms` }} />
+              <SkeletonCard key={i} />
             ))}
           </div>
         </div>
@@ -189,12 +189,12 @@ const MyLibrary = ({
 
   if (prompts.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-8 animate-fade-in">
+      <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-8">
         <div className="flex flex-col items-center gap-4">
           <div className="relative">
-            <FileText className="w-16 h-16 opacity-50 animate-pulse-slow" />
+            <FileText className="w-16 h-16 opacity-50" />
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-8 h-8 border-2 border-primary/30 rounded-full animate-spin" />
+              <div className="w-8 h-8 border-2 border-primary/30 rounded-full" />
             </div>
           </div>
           <div className="text-center space-y-2">
@@ -312,12 +312,11 @@ const MyLibrary = ({
                 role="button"
                 tabIndex={0}
                 aria-label={t('library:openDetails', { title: prompt.title || t('prompt:untitled') })}
-                className={`group relative bg-card border rounded-lg p-4 sm:p-6 cursor-pointer card-hover active:scale-[0.98] touch-manipulation focus-ring will-change-transform animate-fade-in ${
+                className={`group relative bg-card border rounded-lg p-4 sm:p-6 cursor-pointer touch-manipulation focus-ring ${
                   currentPromptId === prompt.id
                     ? 'border-primary bg-accent/20 shadow-md ring-2 ring-primary/20'
                     : 'border-border hover:bg-accent/10'
                 }`}
-                style={{ animationDelay: `${index * 30}ms` }}
               >
                 {/* Header with status indicator */}
                 <div className="flex items-start justify-between mb-4">

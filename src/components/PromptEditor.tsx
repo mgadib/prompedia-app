@@ -691,8 +691,8 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
                 loadingAction={loadingAction}
               />
               {isActionLoading && (
-                <div className="absolute -bottom-8 left-0 right-0 flex items-center justify-center gap-2 text-xs text-muted-foreground animate-fade-in">
-                  <Loader2 className="w-3 h-3 animate-spin" />
+                <div className="absolute -bottom-8 left-0 right-0 flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                  <Loader2 className="w-3 h-3" />
                   <span className="font-mono">{t('common:status.processing')}</span>
                 </div>
               )}

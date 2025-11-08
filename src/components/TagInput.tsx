@@ -188,12 +188,12 @@ const TagInput = ({ selectedTagNames, onChange }: TagInputProps) => {
 
         {/* Tag Suggestions */}
         {showSuggestions && !isLoadingSuggestions && filteredSuggestions.length > 0 && selectedTagNames.length < 3 && (
-          <div className={`absolute top-full left-0 right-0 z-10 mt-1 bg-card border border-border rounded-md shadow-lg max-h-32 overflow-y-auto animate-fade-in animate-slide-in-top ${isMobile ? 'max-h-40' : ''}`}>
+          <div className={`absolute top-full left-0 right-0 z-10 mt-1 bg-card border border-border rounded-md shadow-lg max-h-32 overflow-y-auto ${isMobile ? 'max-h-40' : ''}`}>
             {filteredSuggestions.slice(0, 5).map(tag => (
               <button
                 key={tag}
                 onClick={() => addTag(tag)}
-                className={`w-full text-left ${isMobile ? 'px-4 py-3 text-base min-h-[44px]' : 'px-3 py-2 text-sm'} hover:bg-accent/20 hover:text-accent font-mono flex items-center gap-2 touch-manipulation transition-smooth scale-on-click`}
+                className={`w-full text-left ${isMobile ? 'px-4 py-3 text-base min-h-[44px]' : 'px-3 py-2 text-sm'} hover:bg-accent/20 hover:text-accent font-mono flex items-center gap-2 touch-manipulation transition-smooth`}
                 aria-label={t('common:placeholders.addTag', { tag })}
               >
                 <Hash className={`${isMobile ? 'w-4 h-4' : 'w-3 h-3'}`} />
@@ -203,9 +203,9 @@ const TagInput = ({ selectedTagNames, onChange }: TagInputProps) => {
           </div>
         )}
         {showSuggestions && isLoadingSuggestions && (
-          <div className={`absolute top-full left-0 right-0 z-10 mt-1 bg-card border border-border rounded-md shadow-lg p-2 animate-fade-in ${isMobile ? 'max-h-40' : 'max-h-32'}`}>
+          <div className={`absolute top-full left-0 right-0 z-10 mt-1 bg-card border border-border rounded-md shadow-lg p-2 ${isMobile ? 'max-h-40' : 'max-h-32'}`}>
             <div className="flex items-center justify-center gap-2 py-2">
-              <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+              <Loader2 className="w-4 h-4 text-muted-foreground" />
               <span className="text-xs text-muted-foreground font-mono">{t('common:status.loading')}</span>
             </div>
           </div>
