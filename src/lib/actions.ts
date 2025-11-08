@@ -196,10 +196,10 @@ export const generateModeAwareActionInstructions = (
 
   if (!action) return content;
 
-  // Base instruction dari action
+  // Instruksi dasar dari action
   let instructions = action.instructions;
 
-  // Jika ada mode, gabungkan dengan thinking pattern dari mode
+  // Jika ada mode, gabungkan dengan pola berpikir dari mode
   if (mode) {
     instructions = `POLA BERPIKIR: ${mode.thinkingPattern}
 

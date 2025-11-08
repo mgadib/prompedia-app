@@ -1,6 +1,6 @@
 /**
- * API Configuration for OpenRouter
- * Single source of truth for all API settings
+ * Konfigurasi API untuk OpenRouter
+ * Sumber kebenaran tunggal untuk semua pengaturan API
  */
 
 export interface APIConfig {
@@ -20,7 +20,7 @@ export const getOpenRouterConfig = (): APIConfig => {
   return {
     baseUrl: 'https://openrouter.ai/api/v1',
     apiKey,
-    timeout: 30000, // 30 seconds
+    timeout: 30000, // 30 detik - batas waktu untuk request API
     headers: {
       'Authorization': `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
@@ -30,6 +30,15 @@ export const getOpenRouterConfig = (): APIConfig => {
   };
 };
 
+/**
+ * Membuat request ke API OpenRouter dengan konfigurasi yang aman
+ * @param endpoint - Endpoint API (tidak digunakan, hardcoded ke chat/completions)
+ * @param modelId - ID model AI yang akan digunakan
+ * @param prompt - Prompt yang akan dikirim ke AI
+ * @param options - Opsi tambahan untuk request (temperature, max_tokens, top_p)
+ * @returns Response dari API OpenRouter
+ * @throws Error jika request gagal atau timeout
+ */
 export const makeAPIRequest = async (
   endpoint: string, 
   modelId: string, 
@@ -56,6 +65,7 @@ export const makeAPIRequest = async (
   };
 
   try {
+    // Menggunakan AbortController untuk menghentikan request jika timeout
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), config.timeout);
 
@@ -77,11 +87,12 @@ export const makeAPIRequest = async (
     return data;
   } catch (error) {
     if (error instanceof Error) {
+      // Menangani timeout secara khusus dengan pesan yang jelas
       if (error.name === 'AbortError') {
-        throw new Error('Request timeout: The API request took too long to complete');
+        throw new Error('Request timeout: Permintaan API memakan waktu terlalu lama');
       }
       throw error;
     }
-    throw new Error('Unknown error occurred during API request');
+    throw new Error('Terjadi kesalahan tidak diketahui saat melakukan request API');
   }
 };

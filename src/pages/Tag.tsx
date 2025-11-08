@@ -78,12 +78,12 @@ const TagPage: React.FC = () => {
   }, [loadData]);
 
   const handleViewChange = (view: 'my-library' | 'public-library') => {
-    // Arahkan ke halaman utama; AppPage akan mengelola tampilan pustaka
+    // Mengarahkan ke halaman utama; AppPage akan mengelola tampilan pustaka
     navigate('/', { replace: false });
   };
 
   const handleNewPrompt = () => {
-    // Arahkan ke halaman utama untuk playground
+    // Mengarahkan ke halaman utama untuk playground
     navigate('/', { replace: false });
   };
 
@@ -93,7 +93,7 @@ const TagPage: React.FC = () => {
       setUser(null);
       setUserId(null);
     } catch (e) {
-      // Silent; error ditangani di area lain
+      // Silent; error ditangani di tempat lain
     }
   };
 
@@ -181,7 +181,7 @@ const TagPage: React.FC = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <SEO title={pageTitle} description={`Daftar prompt dengan tag \"${tagName}\"`} tags={[tagName]} />
+        <SEO title={pageTitle} description={t('library:tagPageDescription', { tag: tagName })} tags={[tagName]} />
 
         {/* Mobile top bar */}
         {isMobile && (

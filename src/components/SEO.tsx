@@ -11,7 +11,7 @@ interface SEOProps {
   description?: string;
   url?: string;
   image?: string;
-  type?: string; // Open Graph type
+  type?: string; // Tipe Open Graph
   tags?: string[];
   canonical?: string;
   jsonLd?: Record<string, any> | null;
@@ -71,12 +71,12 @@ export const SEO = ({
 }: SEOProps) => {
   useEffect(() => {
     const pageTitle = title || ENV.SITE_TITLE;
-    // Title
+    // Judul
     document.title = pageTitle;
-    // Base title meta for consistency
+    // Meta title dasar untuk konsistensi
     setOrCreateMeta('meta[name="title"]', { name: 'title', content: pageTitle });
 
-    // Basic meta
+    // Meta dasar
     if (description) {
       setOrCreateMeta('meta[name="description"]', { name: 'description', content: description });
       setOrCreateMeta('meta[name="twitter:description"]', { name: 'twitter:description', content: description });
@@ -87,12 +87,12 @@ export const SEO = ({
       setOrCreateMeta('meta[name="keywords"]', { name: 'keywords', content: tags.join(', ') });
     }
 
-    // Canonical
+    // URL kanonik
     if (canonical || url) {
       setOrCreateLink('canonical', canonical || url!);
     }
 
-    // OpenGraph
+    // OpenGraph metadata
     setOrCreateMeta('meta[property="og:type"]', { property: 'og:type', content: type });
     if (pageTitle) {
       setOrCreateMeta('meta[property="og:title"]', { property: 'og:title', content: pageTitle });
@@ -109,7 +109,7 @@ export const SEO = ({
       setOrCreateMeta('meta[name="twitter:card"]', { name: 'twitter:card', content: 'summary' });
     }
 
-    // JSON-LD
+    // JSON-LD untuk structured data
     if (jsonLd) {
       setOrCreateJsonLd('seo-jsonld', jsonLd);
     }
@@ -128,7 +128,7 @@ export const SEO = ({
       setOrCreateJsonLd('seo-breadcrumbs', payload);
     }
 
-    // Cleanup to avoid stale tags across SPA navigations
+    // Pembersihan untuk menghindari tag yang stale di navigasi SPA
     return () => {
       const cleanupIds = ['seo-jsonld', 'seo-breadcrumbs'];
       cleanupIds.forEach((id) => {

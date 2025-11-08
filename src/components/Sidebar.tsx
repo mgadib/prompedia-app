@@ -41,7 +41,7 @@ const Sidebar = ({
   const isMobile = useIsMobile();
   const location = useLocation();
   
-  // Check if we're on a tag page
+  // Mengecek apakah kita berada di halaman tag
   const isOnTagPage = location.pathname.startsWith('/tags/');
   const activeTag = isOnTagPage ? decodeURIComponent(location.pathname.split('/tags/')[1]) : null;
 
@@ -50,7 +50,7 @@ const Sidebar = ({
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
-          // Get user's most frequently used tags (exactly 7)
+          // Mendapatkan tag yang paling sering digunakan user (tepat 7)
           const userTags = await TagService.getUserMostUsedTags(user.id, 7);
           const tagNames = userTags.map(tag => tag.name);
           setAllTags(tagNames);
@@ -73,7 +73,7 @@ const Sidebar = ({
         : isCollapsed ? 'w-16' : 'w-64')
     } ${!isMobile && 'border-r border-sidebar-border'} transition-all duration-300 ease-in-out relative`}>
 
-      {/* Logo Section */}
+      {/* Bagian Logo */}
       <div className={`border-b border-sidebar-border ${isMobile ? 'p-4' : 'p-6'}`}>
         {(!isCollapsed || isMobile) ? (
           <>
@@ -89,10 +89,10 @@ const Sidebar = ({
         )}
       </div>
 
-      {/* Main Navigation */}
+      {/* Navigasi Utama */}
       <nav className={`flex-1 space-y-0.5 overflow-y-auto ${isMobile ? 'p-3' : 'p-4'}`}>
         <div className="mb-2 space-y-0.5">
-          {/* Playground Button */}
+          {/* Tombol Playground */}
           {onNewPrompt && (
             <button
               onClick={onNewPrompt}
@@ -163,10 +163,10 @@ const Sidebar = ({
         )}
       </nav>
 
-      {/* User Profile Section */}
+      {/* Bagian Profil User */}
       <div className={`border-t border-sidebar-border space-y-2 ${isMobile ? 'p-3' : 'p-4'}`}>
         {user ? (
-          // Logged in user
+          // User yang sudah login
           (!isCollapsed || isMobile) ? (
             <>
               <div className="flex items-center gap-3 px-3 py-3 text-sm text-sidebar-foreground bg-sidebar-accent/10 rounded-lg">
@@ -195,7 +195,7 @@ const Sidebar = ({
             <div className="flex flex-col items-center gap-2">
               <div
                 className="w-9 h-9 rounded-full bg-gradient-to-br from-sidebar-accent to-sidebar-accent/80 flex items-center justify-center shadow-sm"
-                title={user.email || 'User'}
+                title={user.email || t('common:user')}
               >
                 <User className="w-4 h-4 text-sidebar-accent-foreground" />
               </div>
@@ -209,7 +209,7 @@ const Sidebar = ({
             </div>
           )
         ) : (
-          // Guest user
+          // User guest
           !isCollapsed ? (
             <>
               <LanguageSwitcher isCollapsed={false} />
@@ -238,7 +238,7 @@ const Sidebar = ({
     </div>
   );
 
-  // Mobile: Render as Sheet
+  // Mobile: Render sebagai Sheet
   if (isMobile) {
     return (
       <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
@@ -249,7 +249,7 @@ const Sidebar = ({
     );
   }
 
-  // Desktop: Render as fixed sidebar
+  // Desktop: Render sebagai sidebar tetap
   return sidebarContent;
 };
 

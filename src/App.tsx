@@ -14,7 +14,7 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: (failureCount, error) => {
-        // Don't retry on 4xx errors
+        // Jangan retry pada error 4xx
         if (error && typeof error === 'object' && 'status' in error) {
           const status = (error as any).status;
           if (status >= 400 && status < 500) {
@@ -24,7 +24,7 @@ const queryClient = new QueryClient({
         return failureCount < 3;
       },
       retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
-      staleTime: 5 * 60 * 1000, // 5 minutes
+      staleTime: 5 * 60 * 1000, // 5 menit
       refetchOnWindowFocus: false,
       refetchOnMount: true,
       refetchOnReconnect: true,
@@ -55,7 +55,7 @@ const App = () => (
               <Route path="/" element={<AppPage />} />
               <Route path="/p/:id" element={<PublicPromptDetail />} />
               <Route path="/tags/:name" element={<TagPage />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              {/* TAMBAHKAN SEMUA ROUTE CUSTOM DI ATAS ROUTE CATCH-ALL "*" */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </React.Suspense>

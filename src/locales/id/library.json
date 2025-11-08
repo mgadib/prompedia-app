@@ -31,6 +31,7 @@
   "viewDetails": "Lihat detail untuk {{title}}",
   "noPromptsWithTag": "Belum ada prompt dengan tag ini",
   "problemOccurred": "Terjadi masalah",
-  "backToHome": "Kembali ke beranda"
+  "backToHome": "Kembali ke beranda",
+  "tagPageDescription": "Daftar prompt dengan tag \"{{tag}}\""
 }
 

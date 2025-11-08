@@ -57,6 +57,13 @@
   "tag": {
     "loadFailed": "Gagal memuat data tag",
     "notFound": "Tag tidak ditemukan"
+  },
+  "promptOperations": {
+    "promptCreateFailed": "Gagal membuat prompt",
+    "promptUpdateFailed": "Gagal memperbarui prompt",
+    "promptRemoveFailed": "Gagal menghapus prompt",
+    "promptCopyFailed": "Gagal menyalin prompt",
+    "promptDuplicateFailed": "Gagal menduplikasi prompt"
   }
 }
 

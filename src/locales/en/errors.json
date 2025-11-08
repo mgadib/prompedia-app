@@ -57,6 +57,13 @@
   "tag": {
     "loadFailed": "Failed to load tag data",
     "notFound": "Tag not found"
+  },
+  "promptOperations": {
+    "promptCreateFailed": "Failed to create prompt",
+    "promptUpdateFailed": "Failed to update prompt",
+    "promptRemoveFailed": "Failed to remove prompt",
+    "promptCopyFailed": "Failed to copy prompt",
+    "promptDuplicateFailed": "Failed to duplicate prompt"
   }
 }
 

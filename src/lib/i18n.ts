@@ -1,92 +1,147 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
-
-// Import translation files
-import enCommon from '@/locales/en/common.json';
-import enErrors from '@/locales/en/errors.json';
-import enSuccess from '@/locales/en/success.json';
-import enAuth from '@/locales/en/auth.json';
-import enPrompt from '@/locales/en/prompt.json';
-import enLibrary from '@/locales/en/library.json';
-import enModes from '@/locales/en/modes.json';
-import enActions from '@/locales/en/actions.json';
-import enValidation from '@/locales/en/validation.json';
-
-import idCommon from '@/locales/id/common.json';
-import idErrors from '@/locales/id/errors.json';
-import idSuccess from '@/locales/id/success.json';
-import idAuth from '@/locales/id/auth.json';
-import idPrompt from '@/locales/id/prompt.json';
-import idLibrary from '@/locales/id/library.json';
-import idModes from '@/locales/id/modes.json';
-import idActions from '@/locales/id/actions.json';
-import idValidation from '@/locales/id/validation.json';
-
 import { STORAGE_KEYS } from './constants';
 
-// Configure number formatting
-i18n.services.formatter?.add('number', (value, lng, options) => {
-  const locale = lng?.split('-')[0] || 'en';
-  return new Intl.NumberFormat(locale, options as Intl.NumberFormatOptions).format(value);
+// Namespaces yang digunakan
+const NAMESPACES = ['common', 'errors', 'success', 'auth', 'prompt', 'library', 'modes', 'actions', 'validation'] as const;
+const LANGUAGES = ['en', 'id'] as const;
+
+/**
+ * Load semua translation files menggunakan import.meta.glob
+ * Ini menghindari masalah build dengan static import JSON
+ * Menggunakan eager: true untuk load semua files sekaligus (normal untuk i18n)
+ */
+const translationModules = import.meta.glob<{ default: Record<string, unknown> }>('@/locales/**/*.json', {
+  eager: true,
+  import: 'default',
 });
 
-i18n
-  .use(LanguageDetector)
-  .use(initReactI18next)
-  .init({
-    resources: {
-      en: {
-        common: enCommon,
-        errors: enErrors,
-        success: enSuccess,
-        auth: enAuth,
-        prompt: enPrompt,
-        library: enLibrary,
-        modes: enModes,
-        actions: enActions,
-        validation: enValidation,
-      },
-      id: {
-        common: idCommon,
-        errors: idErrors,
-        success: idSuccess,
-        auth: idAuth,
-        prompt: idPrompt,
-        library: idLibrary,
-        modes: idModes,
-        actions: idActions,
-        validation: idValidation,
-      },
-    },
-    fallbackLng: 'en',
-    defaultNS: 'common',
-    ns: ['common', 'errors', 'success', 'auth', 'prompt', 'library', 'modes', 'actions', 'validation'],
-    interpolation: {
-      escapeValue: false, // React already escapes values
-    },
-    detection: {
-      // Order of detection methods
-      order: ['localStorage', 'navigator', 'htmlTag'],
-      // Keys to lookup language from
-      lookupLocalStorage: STORAGE_KEYS.LANGUAGE,
-      // Cache user language preference
-      caches: ['localStorage'],
-    },
-    react: {
-      useSuspense: false, // Disable suspense for better error handling
-    },
+/**
+ * Load translation file untuk bahasa dan namespace tertentu
+ */
+function loadTranslation(language: string, namespace: string): Record<string, unknown> {
+  try {
+    // Cari module yang cocok dengan path
+    // import.meta.glob akan menghasilkan path seperti '@/locales/en/common.json'
+    const moduleEntry = Object.entries(translationModules).find(([path]) => 
+      path.endsWith(`/${language}/${namespace}.json`) || path.includes(`/locales/${language}/${namespace}.json`)
+    );
+    
+    if (!moduleEntry) {
+      console.warn(`Translation module not found: ${language}/${namespace}`);
+      return {};
+    }
+    
+    const module = moduleEntry[1];
+    
+    // Module sudah loaded (eager), langsung return
+    // Dengan import: 'default', module langsung berisi default export (object JSON)
+    return (module as Record<string, unknown>) || {};
+  } catch (error) {
+    console.error(`Error loading translation ${language}/${namespace}:`, error);
+    // Return empty object sebagai fallback
+    return {};
+  }
+}
+
+/**
+ * Load semua translation files untuk bahasa tertentu
+ */
+function loadLanguageResources(language: string): Record<string, Record<string, unknown>> {
+  const resources: Record<string, Record<string, unknown>> = {};
+  
+  // Load semua namespaces untuk bahasa ini
+  NAMESPACES.forEach((namespace) => {
+    const translation = loadTranslation(language, namespace);
+    resources[namespace] = translation;
+  });
+  
+  return resources;
+}
+
+/**
+ * Initialize i18n dengan dynamic loading
+ */
+function initializeI18n(): void {
+  // Load resources untuk semua bahasa
+  const resources: Record<string, Record<string, Record<string, unknown>>> = {};
+  
+  LANGUAGES.forEach((language) => {
+    resources[language] = loadLanguageResources(language);
   });
 
-// Update HTML lang attribute when language changes
-i18n.on('languageChanged', (lng) => {
-  document.documentElement.lang = lng;
-  localStorage.setItem(STORAGE_KEYS.LANGUAGE, lng);
-});
+  // Configure number formatting
+  i18n.services.formatter?.add('number', (value, lng, options) => {
+    const locale = lng?.split('-')[0] || 'en';
+    return new Intl.NumberFormat(locale, options as Intl.NumberFormatOptions).format(value);
+  });
 
-// Set initial HTML lang attribute
-if (typeof document !== 'undefined') {
-  document.documentElement.lang = i18n.language;
+  // Initialize i18n
+  i18n
+    .use(LanguageDetector)
+    .use(initReactI18next)
+    .init({
+      resources,
+      fallbackLng: 'en',
+      defaultNS: 'common',
+      ns: NAMESPACES,
+      interpolation: {
+        escapeValue: false, // React already escapes values
+      },
+      detection: {
+        // Order of detection methods
+        order: ['localStorage', 'navigator', 'htmlTag'],
+        // Keys to lookup language from
+        lookupLocalStorage: STORAGE_KEYS.LANGUAGE,
+        // Cache user language preference
+        caches: ['localStorage'],
+      },
+      react: {
+        useSuspense: false, // Disable suspense for better error handling
+      },
+    });
+
+  // Update HTML lang attribute when language changes
+  i18n.on('languageChanged', (lng) => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = lng;
+      localStorage.setItem(STORAGE_KEYS.LANGUAGE, lng);
+    }
+  });
+
+  // Set initial HTML lang attribute
+  if (typeof document !== 'undefined') {
+    document.documentElement.lang = i18n.language;
+  }
+}
+
+// Initialize i18n immediately
+try {
+  initializeI18n();
+} catch (error) {
+  console.error('Failed to initialize i18n:', error);
+  // Fallback: initialize with empty resources
+  i18n
+    .use(LanguageDetector)
+    .use(initReactI18next)
+    .init({
+      fallbackLng: 'en',
+      defaultNS: 'common',
+      ns: NAMESPACES,
+      resources: {},
+      interpolation: {
+        escapeValue: false,
+      },
+      detection: {
+        order: ['localStorage', 'navigator', 'htmlTag'],
+        lookupLocalStorage: STORAGE_KEYS.LANGUAGE,
+        caches: ['localStorage'],
+      },
+      react: {
+        useSuspense: false,
+      },
+    });
 }
 
 export default i18n;

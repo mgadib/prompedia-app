@@ -30,7 +30,7 @@ const PromptDetailModal = ({
     if (onCopy) {
       onCopy(prompt);
     } else {
-      // Default copy behavior - copy prompt content to clipboard
+      // Perilaku copy default - menyalin konten prompt ke clipboard
       navigator.clipboard.writeText(prompt.content);
       toast.success(t('success:prompt.contentCopied'));
     }

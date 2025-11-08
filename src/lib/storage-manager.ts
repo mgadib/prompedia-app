@@ -6,8 +6,8 @@ import { promptSchema } from './validation';
 import { z } from 'zod';
 
 /**
- * Unified storage manager that handles both Supabase and localStorage
- * Automatically detects authentication state and routes to appropriate storage
+ * Storage manager terpadu yang menangani Supabase dan localStorage
+ * Secara otomatis mendeteksi state autentikasi dan mengarahkan ke storage yang sesuai
  */
 
 export class StorageError extends Error {
@@ -34,11 +34,12 @@ class StorageManager {
   }
 
   /**
-   * Initialize authentication state monitoring
+   * Inisialisasi monitoring state autentikasi
+   * Mendengarkan perubahan auth state dan memperbarui user yang terautentikasi
    */
   private async initializeAuth(): Promise<void> {
     try {
-      // Get initial session
+      // Mendapatkan session awal
       const { data: { session }, error } = await supabase.auth.getSession();
       if (error) {
         supabaseLogger.error('Failed to get initial session', error);
@@ -47,7 +48,7 @@ class StorageManager {
         supabaseLogger.info('Initial auth state', { userId: this.authUser?.id });
       }
 
-      // Listen for auth changes
+      // Mendengarkan perubahan auth state
       supabase.auth.onAuthStateChange((event, session) => {
         const previousUserId = this.authUser?.id;
         this.authUser = session?.user ?? null;
@@ -62,12 +63,13 @@ class StorageManager {
       this.isInitialized = true;
     } catch (error) {
       supabaseLogger.error('Failed to initialize auth', error as Error);
-      this.isInitialized = true; // Continue with localStorage fallback
+      this.isInitialized = true; // Lanjutkan dengan localStorage fallback
     }
   }
 
   /**
-   * Wait for initialization to complete
+   * Menunggu inisialisasi selesai
+   * Mencegah operasi storage sebelum auth state siap
    */
   private async waitForInitialization(): Promise<void> {
     while (!this.isInitialized) {
@@ -76,21 +78,24 @@ class StorageManager {
   }
 
   /**
-   * Check if user is authenticated
+   * Mengecek apakah user terautentikasi
+   * @returns true jika user terautentikasi, false jika tidak
    */
   public isAuthenticated(): boolean {
     return !!this.authUser;
   }
 
   /**
-   * Get current user
+   * Mendapatkan user saat ini
+   * @returns User yang terautentikasi atau null jika tidak ada
    */
   public getCurrentUser(): User | null {
     return this.authUser;
   }
 
   /**
-   * Get authentication debug info
+   * Mendapatkan info debug autentikasi
+   * Berguna untuk troubleshooting masalah auth
    */
   public getAuthDebugInfo(): {
     isAuthenticated: boolean;
@@ -105,7 +110,8 @@ class StorageManager {
   }
 
   /**
-   * Refresh authentication state
+   * Memperbarui state autentikasi
+   * Berguna ketika perlu memastikan state auth terbaru
    */
   public async refreshAuthState(): Promise<void> {
     try {
@@ -126,7 +132,8 @@ class StorageManager {
   }
 
   /**
-   * Queue storage operations to prevent race conditions
+   * Mengantri operasi storage untuk mencegah race conditions
+   * Memastikan operasi storage dieksekusi secara berurutan
    */
   private queueOperation<T>(operation: () => Promise<T>): Promise<T> {
     this.storageOperationQueue = this.storageOperationQueue
@@ -140,7 +147,8 @@ class StorageManager {
   }
 
   /**
-   * Check localStorage capacity and availability
+   * Mengecek kapasitas dan ketersediaan localStorage
+   * Menggunakan test write untuk menentukan space yang tersedia
    */
   private checkLocalStorageCapacity(): StorageCapacityInfo {
     try {
@@ -148,14 +156,14 @@ class StorageManager {
       const testValue = 'x';
       let used = 0;
       
-      // Calculate current usage
+      // Menghitung penggunaan saat ini
       for (const key in localStorage) {
         if (Object.prototype.hasOwnProperty.call(localStorage, key)) {
           used += localStorage[key].length + key.length;
         }
       }
 
-      // Test available space
+      // Menguji space yang tersedia dengan test write
       let available = 0;
       try {
         let testString = testValue;
@@ -164,11 +172,11 @@ class StorageManager {
           testString += testValue.repeat(1000);
           available += 1000;
           
-          // Safety limit to prevent browser freeze
-          if (available > 10 * 1024 * 1024) break; // 10MB limit
+          // Batas keamanan untuk mencegah browser freeze
+          if (available > 10 * 1024 * 1024) break; // Batas 10MB
         }
       } catch {
-        // Storage full
+        // Storage penuh atau error
       } finally {
         localStorage.removeItem(testKey);
       }
@@ -184,7 +192,8 @@ class StorageManager {
   }
 
   /**
-   * Safe localStorage operations with fallback
+   * Operasi localStorage yang aman dengan fallback
+   * Mengecek kapasitas sebelum write dan menangani error dengan graceful
    */
   private safeLocalStorageSet(key: string, value: string): void {
     try {

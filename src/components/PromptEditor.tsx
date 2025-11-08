@@ -50,7 +50,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
 
   useEffect(() => {
     if (currentPrompt) {
-      // Sanitize currentPrompt to match new schema
+      // Menyucikan currentPrompt agar sesuai dengan schema baru
       const sanitizedPrompt: Prompt = {
         id: currentPrompt.id || '',
         user_id: currentPrompt.user_id || '',
@@ -70,29 +70,29 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       setModel(sanitizedPrompt.model);
       setMode(sanitizedPrompt.mode);
       
-      // Load existing tags for the prompt
+      // Memuat tag yang sudah ada untuk prompt
       loadPromptTags(sanitizedPrompt.id);
 
-      // Reset AI result state when loading a new prompt
+      // Reset state hasil AI saat memuat prompt baru
       setOriginalContent('');
       setAiResultContent('');
       setViewState('original');
     } else {
-      // Reset form when no prompt is selected
+      // Reset form ketika tidak ada prompt yang dipilih
       setTitle('');
       setContent('');
       setModel(AVAILABLE_MODELS[1].id);
       setMode(THINKING_MODES[5].id);
       setSelectedTags([]);
 
-      // Reset AI result state
+      // Reset state hasil AI
       setOriginalContent('');
       setAiResultContent('');
       setViewState('original');
     }
   }, [currentPrompt]);
 
-  // Load tags for a prompt
+  // Memuat tag untuk sebuah prompt
   const loadPromptTags = async (promptId: string) => {
     try {
       const tags = await TagService.getPromptTags(promptId);
@@ -103,7 +103,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
     }
   };
 
-  // Handle back to original prompt
+  // Menangani kembali ke prompt original
   const handleBack = useCallback(() => {
     if (originalContent && viewState === 'ai-result') {
       setContent(originalContent);
@@ -111,7 +111,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
     }
   }, [originalContent, viewState]);
 
-  // Handle forward to AI result
+  // Menangani maju ke hasil AI
   const handleForward = useCallback(() => {
     if (aiResultContent && viewState === 'original') {
       setContent(aiResultContent);
@@ -119,7 +119,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
     }
   }, [aiResultContent, viewState]);
 
-  // Check rate limits periodically for real-time UI updates
+  // Mengecek batas penggunaan secara berkala untuk update UI real-time
   useEffect(() => {
     const checkRateLimits = async () => {
       try {
@@ -134,7 +134,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
 
     checkRateLimits();
 
-    // Check every 30 seconds for real-time updates
+    // Mengecek setiap 30 detik untuk update real-time
     const interval = setInterval(checkRateLimits, 30000);
 
     return () => clearInterval(interval);
@@ -144,10 +144,10 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
 
   const handleNew = async () => {
     if (onNewPrompt) {
-      // Use the parent's new prompt handler
+      // Menggunakan handler prompt baru dari parent
       onNewPrompt();
     } else {
-      // Fallback to local implementation
+      // Fallback ke implementasi lokal
       try {
         const user = await supabase.auth.getUser().then(({ data }) => data.user);
         
@@ -210,31 +210,31 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
         storageManagerAuth: storageManager.getAuthDebugInfo()
       });
 
-      // Guest users cannot save prompts (only localStorage auto-save for current session)
+      // User guest tidak bisa menyimpan prompt (hanya localStorage auto-save untuk session saat ini)
       if (!user) {
         toast.error(t('errors:actions.signInToSave'));
         return;
       }
 
-      // Check if user can make AI calls (they need quota for saving)
+      // Mengecek apakah user bisa melakukan panggilan AI (mereka perlu quota untuk menyimpan)
       const rateLimitCheck = await rateLimitingService.canMakeAICall(user);
       if (!rateLimitCheck.allowed) {
         toast.error(t('errors:usage.waitBeforeSaving'));
         return;
       }
 
-      // Create or update prompt
+      // Membuat atau memperbarui prompt
       const promptToSave: Prompt = {
         id: currentPrompt?.id || crypto.randomUUID(),
         user_id: user.id,
         title: title || '',
         content: content || '',
         
-        // Use NEW FK columns
+        // Menggunakan kolom FK baru
         model_id: model || AVAILABLE_MODELS[1].id,
         mode_id: mode || THINKING_MODES[5].id,
         
-        // Keep old fields for backward compat (dual-write)
+        // Menjaga field lama untuk backward compat (dual-write)
         model: model || AVAILABLE_MODELS[1].id,
         mode: (mode || THINKING_MODES[5].id) as 'meta-prompt' | 'thinking' | 'normal',
         
@@ -249,7 +249,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
 
       await storageManager.savePrompt(promptToSave);
       
-      // Save tags for the prompt
+      // Menyimpan tag untuk prompt
       if (selectedTags.length > 0) {
         await TagService.savePromptTags(promptToSave.id, selectedTags, user.id);
       }
@@ -262,7 +262,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       }
       toast.success(t('success:prompt.saved'));
 
-      // Increment usage counter after successful save
+      // Menambah counter penggunaan setelah save berhasil
       await rateLimitingService.incrementUsage(user);
     } catch (error) {
       console.error('Failed to save prompt:', error);
@@ -323,13 +323,13 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
         storageManagerAuth: storageManager.getAuthDebugInfo()
       });
 
-      // Guest users cannot make prompts public or save prompts
+      // User guest tidak bisa membuat prompt public atau menyimpan prompt
       if (!user) {
         toast.error(t('errors:actions.signInToShare'));
         return;
       }
 
-      // Check if user can make AI calls (they need to be authenticated)
+      // Mengecek apakah user bisa melakukan panggilan AI (mereka perlu terautentikasi)
       const rateLimitCheck = await rateLimitingService.canMakeAICall(user);
       if (!rateLimitCheck.allowed) {
         toast.error(t('errors:usage.waitBeforeChanges'));
@@ -354,7 +354,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
 
       await storageManager.savePrompt(updatedPrompt);
       
-      // Save tags for the prompt
+      // Menyimpan tag untuk prompt
       if (selectedTags.length > 0) {
         await TagService.savePromptTags(updatedPrompt.id, selectedTags, user.id);
       }
@@ -386,13 +386,13 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
     try {
       const user = await supabase.auth.getUser().then(({ data }) => data.user);
 
-      // Guest users cannot delete prompts
+      // User guest tidak bisa menghapus prompt
       if (!user) {
         toast.error(t('errors:actions.signInToDelete'));
         return;
       }
 
-      // Check if user can make AI calls (deleting requires quota)
+      // Mengecek apakah user bisa melakukan panggilan AI (menghapus memerlukan quota)
       const rateLimitCheck = await rateLimitingService.canMakeAICall(user);
       if (!rateLimitCheck.allowed) {
         toast.error(t('errors:usage.waitBeforeDeleting'));
@@ -422,7 +422,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       }
       toast.success(t('success:prompt.deleted'));
 
-      // Increment usage counter after successful delete
+      // Menambah counter penggunaan setelah delete berhasil
       await rateLimitingService.incrementUsage(user);
     } catch (error) {
       console.error('Failed to delete prompt:', error);
@@ -441,7 +441,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       setIsActionLoading(true);
       setLoadingAction(actionId);
 
-      // Check rate limits before making AI call
+      // Mengecek batas penggunaan sebelum melakukan panggilan AI
       const user = await supabase.auth.getUser().then(({ data }) => data.user);
       const rateLimitCheck = await rateLimitingService.canMakeAICall(user);
 
@@ -456,7 +456,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
         return;
       }
 
-      // Show remaining usage warning when approaching limit
+      // Menampilkan peringatan penggunaan tersisa ketika mendekati batas
       if (rateLimitCheck.usage.remaining <= 3) {
         if (user) {
           toast.warning(t('common:warnings.remainingDailyCalls', { count: rateLimitCheck.usage.remaining }));
@@ -465,19 +465,19 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
         }
       }
 
-      // Generate action-specific instructions WITH MODE
+      // Menghasilkan instruksi spesifik action DENGAN MODE
       const actionInstructions = generateModeAwareActionInstructions(
         actionId,
-        mode,  // Pass current selected mode
+        mode,  // Meneruskan mode yang dipilih saat ini
         content
       );
 
-      // Call edge function with mode parameter
+      // Memanggil edge function dengan parameter mode
       const { data, error } = await supabase.functions.invoke('ai-processor', {
         body: {
           model: model,
           prompt: actionInstructions,
-          mode: mode,  // Add mode to request
+          mode: mode,  // Menambahkan mode ke request
           options: {
             temperature: 0.7,
             max_tokens: 8192
@@ -485,11 +485,11 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
         }
       });
 
-      // Enhanced error handling
+      // Penanganan error yang ditingkatkan
       if (error) {
         console.error('Edge function error:', error);
         
-        // Try to extract more meaningful error message
+        // Mencoba mengekstrak pesan error yang lebih bermakna
         let errorMessage = t('errors:actions.failedToProcess');
         
         if (error.message) {
@@ -507,7 +507,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
         throw new Error(t('errors:actions.noResponse'));
       }
 
-      // Check for API error in response
+      // Mengecek error API dalam response
       if (data.error) {
         console.error('API error response:', data);
         throw new Error(data.error);
@@ -519,14 +519,14 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
         throw new Error(t('errors:actions.noContentResponse'));
       }
       
-      // Prefer extracted refined content when available
+      // Lebih memilih konten refined yang diekstrak ketika tersedia
       let nextContent = processedContent;
       const refinedMatch = processedContent.match(/##\s*Hasil\s*Refined\s*([\s\S]*?)(?:\n##|$)/i);
       if (refinedMatch) {
         nextContent = refinedMatch[1].trim();
       }
       
-      // Store original content and show AI result
+      // Menyimpan konten original dan menampilkan hasil AI
       if (viewState === 'original') {
         setOriginalContent(content);
       }
@@ -537,18 +537,18 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       
       toast.success(t('success:actions.actionSuccess', { action: actionId }));
 
-      // Increment usage counter after successful AI response
+      // Menambah counter penggunaan setelah response AI berhasil
       await rateLimitingService.incrementUsage(user);
 
     } catch (error) {
       console.error(`Error processing ${actionId}:`, error);
       
-      // More detailed error message
+      // Pesan error yang lebih detail
       let errorMsg = t('errors:actions.actionFailed', { action: actionId });
       if (error instanceof Error) {
         errorMsg = error.message;
         
-        // Show specific error types
+        // Menampilkan tipe error spesifik
         if (errorMsg.includes('rate limit') || errorMsg.includes('429')) {
           errorMsg = t('errors:actions.serviceLimitReached');
         } else if (errorMsg.includes('API key') || errorMsg.includes('401')) {
@@ -753,7 +753,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
               const newContent = e.target.value;
               setContent(newContent);
 
-              // Update the corresponding state based on current view
+              // Memperbarui state yang sesuai berdasarkan view saat ini
               if (viewState === 'original') {
                 setOriginalContent(newContent);
               } else if (viewState === 'ai-result') {

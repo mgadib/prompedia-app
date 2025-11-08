@@ -4,8 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { clearUser } from '@/lib/storage';
 
 /**
- * Custom hook for managing authentication state and operations
- * Follows Single Responsibility Principle by isolating auth logic
+ * Custom hook untuk mengelola state dan operasi autentikasi
+ * Mengikuti Single Responsibility Principle dengan mengisolasi logika auth
  */
 export const useAuth = () => {
   const [user, setUserState] = useState<SupabaseUser | null>(null);
@@ -13,7 +13,7 @@ export const useAuth = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Get initial session
+    // Mendapatkan session awal
     const getInitialSession = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
@@ -33,7 +33,7 @@ export const useAuth = () => {
 
     getInitialSession();
 
-    // Listen for auth changes
+    // Mendengarkan perubahan auth state
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         try {

@@ -35,20 +35,20 @@ const ModelSelector = ({ value, onChange }: ModelSelectorProps) => {
   useEffect(() => {
     const loadModels = async () => {
       try {
-        // Try to fetch from database first
+        // Mencoba mengambil dari database terlebih dahulu
         const dbModels = await SupabaseService.getAIModels();
         if (dbModels && dbModels.length > 0) {
-          // Filter to only allow the 2 specified models
+          // Filter untuk hanya mengizinkan 2 model yang ditentukan
           const allowedModelIds = ['meta-llama/llama-4-maverick:free', 'qwen/qwen3-30b-a3b:free'];
           const filteredModels = dbModels.filter(model => allowedModelIds.includes(model.id));
           setModels(filteredModels.length > 0 ? filteredModels : AVAILABLE_MODELS);
         } else {
-          // Fallback to hardcoded data (only 2 models)
+          // Fallback ke data hardcoded (hanya 2 model)
           setModels(AVAILABLE_MODELS);
         }
       } catch (error) {
         console.error('Failed to load models from database:', error);
-        // Fallback to hardcoded data (only 2 models)
+        // Fallback ke data hardcoded (hanya 2 model)
         setModels(AVAILABLE_MODELS);
       } finally {
         setLoading(false);
@@ -60,7 +60,7 @@ const ModelSelector = ({ value, onChange }: ModelSelectorProps) => {
 
   const selectedModel = models.find(model => model.id === value);
 
-  // Only show the 2 allowed models: Llama 4 Maverick and Qwen 3 30B
+  // Hanya menampilkan 2 model yang diizinkan: Llama 4 Maverick dan Qwen 3 30B
   const allowedModelIds = ['meta-llama/llama-4-maverick:free', 'qwen/qwen3-30b-a3b:free'];
   const mainModels = models.filter(model => allowedModelIds.includes(model.id));
 

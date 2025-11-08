@@ -1,53 +1,53 @@
 /**
- * Application Constants
- * Centralized configuration values following DRY principle
+ * Konstanta Aplikasi
+ * Nilai konfigurasi terpusat mengikuti prinsip DRY
  */
 
-// Application Configuration
+// Konfigurasi Aplikasi
 export const APP_CONFIG = {
   NAME: 'Prompedia AI',
   DESCRIPTION: 'Prompt Engineering Laboratory',
   VERSION: '1.0.0',
-  // Rate limiting configuration
+  // Konfigurasi pembatasan penggunaan
   RATE_LIMITS: {
-    GUEST_DAILY_LIMIT: 7,     // Guest users: 7 AI calls
-    AUTH_DAILY_LIMIT: 27,     // Authenticated users: 27 AI calls per day
-    RESET_HOUR_GMT7: 17,      // Reset at 00:00 GMT+7 (17:00 UTC)
+    GUEST_DAILY_LIMIT: 7,     // User guest: 7 panggilan AI per hari
+    AUTH_DAILY_LIMIT: 27,     // User terautentikasi: 27 panggilan AI per hari
+    RESET_HOUR_GMT7: 17,      // Reset pada 00:00 GMT+7 (17:00 UTC)
   },
-  TIMEZONE: 'Asia/Jakarta',   // GMT+7 timezone
+  TIMEZONE: 'Asia/Jakarta',   // Zona waktu GMT+7
 } as const;
 
-// API Configuration
+// Konfigurasi API
 export const API_CONFIG = {
-  TIMEOUT: 30000, // 30 seconds
+  TIMEOUT: 30000, // 30 detik
   RETRY_ATTEMPTS: 3,
-  RETRY_DELAY: 1000, // 1 second
+  RETRY_DELAY: 1000, // 1 detik
 } as const;
 
-// Storage Keys
+// Kunci Storage
 export const STORAGE_KEYS = {
   USER: 'prompedia_user',
   PROMPTS: 'prompedia_prompts',
   CURRENT_PROMPT: 'prompedia_current_prompt',
   PLAYGROUND_COUNT: 'prompedia_playground_count',
-  GUEST_USAGE: 'prompedia_guest_usage',  // Track guest usage locally
+  GUEST_USAGE: 'prompedia_guest_usage',  // Melacak penggunaan guest secara lokal
   THEME: 'prompedia_theme',
-  LANGUAGE: 'prompedia_language',  // Language preference for i18n
-  // Note: PREFERENCES removed - preferences field eliminated from database schema
+  LANGUAGE: 'prompedia_language',  // Preferensi bahasa untuk i18n
+  // Catatan: PREFERENCES dihapus - field preferences dihilangkan dari schema database
 } as const;
 
-// UI Constants
+// Konstanta UI
 export const UI_CONFIG = {
   SIDEBAR_WIDTH: {
     EXPANDED: 256, // 16rem
     COLLAPSED: 64,  // 4rem
   },
-  DEBOUNCE_DELAY: 500, // Auto-save debounce delay in ms
-  TOAST_DURATION: 3000, // Toast notification duration
-  ANIMATION_DURATION: 300, // Standard animation duration
+  DEBOUNCE_DELAY: 500, // Delay debounce auto-save dalam ms
+  TOAST_DURATION: 3000, // Durasi notifikasi toast
+  ANIMATION_DURATION: 300, // Durasi animasi standar
 } as const;
 
-// Validation Rules
+// Aturan Validasi
 export const VALIDATION = {
   PROMPT: {
     TITLE_MIN_LENGTH: 1,

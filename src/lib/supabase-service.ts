@@ -2,7 +2,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { Database } from '@/integrations/supabase/types'
 import { storage } from './storage'
 
-// Type aliases for better readability (updated for minimalist schema)
+// Type aliases untuk readability yang lebih baik (diperbarui untuk schema minimalis)
 type User = Database['public']['Tables']['users']['Row']
 type Prompt = Database['public']['Tables']['prompts']['Row']
 type Tag = Database['public']['Tables']['tags']['Row']
@@ -11,7 +11,7 @@ type ThinkingMode = Database['public']['Tables']['thinking_modes']['Row']
 type UserSession = Database['public']['Tables']['user_sessions']['Row']
 type PromptTag = Database['public']['Tables']['prompt_tags']['Row']
 
-// Insert types
+// Type untuk operasi insert
 type UserInsert = Database['public']['Tables']['users']['Insert']
 type PromptInsert = Database['public']['Tables']['prompts']['Insert']
 type TagInsert = Database['public']['Tables']['tags']['Insert']
@@ -20,7 +20,7 @@ type PromptTagInsert = Database['public']['Tables']['prompt_tags']['Insert']
 
 export class SupabaseService {
   // ========================================
-  // AUTHENTICATION
+  // AUTENTIKASI
   // ========================================
 
   static async signUp(email: string, password: string, username?: string) {
@@ -60,7 +60,7 @@ export class SupabaseService {
   }
 
   // ========================================
-  // USERS (formerly profiles)
+  // USERS (sebelumnya profiles)
   // ========================================
 
   static async getUser(userId: string): Promise<User | null> {
@@ -97,7 +97,7 @@ export class SupabaseService {
     return data
   }
 
-  // Legacy methods for backward compatibility
+  // Method legacy untuk backward compatibility dengan kode lama
   static async getProfile(userId: string): Promise<User | null> {
     return this.getUser(userId)
   }
@@ -121,7 +121,7 @@ export class SupabaseService {
         *,
         users!prompts_user_id_fkey1(username, display_name)
       `)
-      // Note: updated_at field removed in minimalist schema
+      // Catatan: field updated_at dihapus dalam schema minimalis
 
     if (userId) {
       query = query.eq('user_id', userId)
@@ -210,13 +210,13 @@ export class SupabaseService {
   }
 
   static async forkPrompt(originalPromptId: string, newTitle?: string): Promise<Prompt> {
-    // Get original prompt
+    // Mengambil prompt original untuk di-fork
     const originalPrompt = await this.getPrompt(originalPromptId)
     if (!originalPrompt) {
       throw new Error('Original prompt not found')
     }
 
-    // Create forked prompt (simplified - no computed fields)
+    // Membuat prompt fork (disederhanakan - tanpa computed fields)
     const forkedPrompt: PromptInsert = {
       user_id: (await this.getCurrentUser())?.id || '',
       title: newTitle || `Fork of ${originalPrompt.title}`,
@@ -225,13 +225,13 @@ export class SupabaseService {
       model_id: originalPrompt.model_id,
       mode_id: originalPrompt.mode_id,
       color: originalPrompt.color,
-      is_public: false, // Forks start as private
+      is_public: false, // Fork dimulai sebagai private untuk keamanan
       original_prompt_id: originalPromptId
     }
 
     const newPrompt = await this.createPrompt(forkedPrompt)
 
-    // Copy tags from original prompt to forked prompt
+    // Menyalin tag dari prompt original ke prompt fork
     const originalTags = await this.getPromptTags(originalPromptId)
     if (originalTags.length > 0) {
       const tagInserts: PromptTagInsert[] = originalTags.map(tag => ({
@@ -248,7 +248,7 @@ export class SupabaseService {
   }
 
   // ========================================
-  // PROMPT TAGS (new junction table)
+  // PROMPT TAGS (junction table baru untuk many-to-many)
   // ========================================
 
   static async getPromptTags(promptId: string): Promise<Tag[]> {
@@ -282,8 +282,8 @@ export class SupabaseService {
   }
 
   static async incrementViewCount(id: string): Promise<void> {
-    // Note: View count tracking removed in minimalist schema
-    // Views are now tracked externally if needed
+    // Catatan: Tracking view count dihapus dalam schema minimalis
+    // Views sekarang ditrack secara eksternal jika diperlukan
     console.log('View count increment called for prompt:', id)
   }
 
@@ -328,7 +328,7 @@ export class SupabaseService {
   // AI MODELS
   // ========================================
 
-  // Cache for models and modes to avoid repeated DB calls
+  // Cache untuk models dan modes untuk menghindari panggilan DB berulang
   private static aiModelsCache: AIModel[] | null = null
   private static thinkingModesCache: ThinkingMode[] | null = null
 
@@ -346,7 +346,7 @@ export class SupabaseService {
       .order('name')
     
     if (error) {
-      // If is_active column doesn't exist yet, filter in memory
+      // Jika kolom is_active belum ada, filter di memory
       const { data: allData, error: allError } = await supabase
         .from('ai_models')
         .select('*')
@@ -354,12 +354,12 @@ export class SupabaseService {
       
       if (allError) throw allError
       
-      // Filter to only allow the 2 specified models
+      // Filter untuk hanya mengizinkan 2 model yang ditentukan
       this.aiModelsCache = (allData || []).filter(model => allowedModelIds.includes(model.id))
       return this.aiModelsCache
     }
     
-    // Filter to only allow the 2 specified models (double check)
+    // Filter untuk hanya mengizinkan 2 model yang ditentukan (double check)
     this.aiModelsCache = (data || []).filter(model => allowedModelIds.includes(model.id))
     return this.aiModelsCache
   }
@@ -394,14 +394,14 @@ export class SupabaseService {
     return modes.find(mode => mode.id === id) || null
   }
 
-  // Clear caches (useful for development/testing)
+  // Membersihkan cache (berguna untuk development/testing)
   static clearCaches(): void {
     this.aiModelsCache = null
     this.thinkingModesCache = null
   }
 
   // ========================================
-  // USER SESSIONS (ANALYTICS)
+  // USER SESSIONS (ANALITIK)
   // ========================================
 
   static async createUserSession(sessionData: UserSessionInsert): Promise<UserSession> {
@@ -459,7 +459,7 @@ export class SupabaseService {
   }
 
   // ========================================
-  // STORAGE
+  // STORAGE (PENYIMPANAN FILE)
   // ========================================
 
   static async uploadAvatar(file: File, userId: string): Promise<string> {
@@ -472,7 +472,7 @@ export class SupabaseService {
 
     if (error) throw error
 
-    // Get public URL
+    // Mendapatkan URL public untuk avatar
     const { data: { publicUrl } } = supabase.storage
       .from('avatars')
       .getPublicUrl(fileName)
@@ -490,7 +490,7 @@ export class SupabaseService {
 
     if (error) throw error
 
-    // Get public URL (though this bucket is private, we can generate signed URLs)
+    // Mendapatkan URL public (meskipun bucket ini private, kita bisa generate signed URLs)
     const { data: { publicUrl } } = supabase.storage
       .from('prompt-assets')
       .getPublicUrl(fileName)
@@ -499,30 +499,30 @@ export class SupabaseService {
   }
 
   // ========================================
-  // UTILITY FUNCTIONS
+  // FUNGSI UTILITAS
   // ========================================
 
   static async syncWithLocalStorage() {
-    // This function helps migrate from local storage to Supabase
-    // Get current user
+    // Fungsi ini membantu migrasi dari local storage ke Supabase
+    // Mengambil user saat ini
     const user = await this.getCurrentUser()
     if (!user) return
 
-    // Get local prompts
+    // Mengambil prompt dari local storage
     const localPrompts = storage.getPrompts()
     const userLocalPrompts = localPrompts.filter(p => p.user_id === user.id)
 
     if (userLocalPrompts.length === 0) return
 
-    // Check if user already has prompts in Supabase
+    // Mengecek apakah user sudah memiliki prompt di Supabase
     const existingPrompts = await this.getPrompts(user.id)
 
     if (existingPrompts.length > 0) {
-      // User already has data in Supabase, don't sync
+      // User sudah memiliki data di Supabase, jangan sync untuk menghindari duplikasi
       return
     }
 
-    // Sync local prompts to Supabase
+    // Sinkronisasi prompt lokal ke Supabase
     for (const localPrompt of userLocalPrompts) {
       try {
         const newPrompt = await this.createPrompt({
@@ -536,8 +536,8 @@ export class SupabaseService {
           is_public: localPrompt.is_public
         })
 
-        // Tags are handled separately via prompt_tags table
-        // No tags property on Prompt interface anymore
+        // Tag ditangani terpisah melalui tabel prompt_tags
+        // Tidak ada property tags di interface Prompt lagi
       } catch (error) {
         console.error('Error syncing prompt:', error)
       }
@@ -547,25 +547,27 @@ export class SupabaseService {
   }
 
   // ========================================
-  // SECURE USER QUERY METHODS
+  // METODE QUERY USER YANG AMAN
   // ========================================
 
   /**
-   * Get public profile (safe fields only - excludes role field)
-   * Used for displaying other users' profiles
+   * Mendapatkan profil public (hanya field aman - tidak termasuk role)
+   * Digunakan untuk menampilkan profil user lain
+   * @param userId - ID user yang ingin diambil profilnya
    */
   static async getUserPublicProfile(userId: string) {
     const { data, error } = await supabase
       .from('users')
-      .select('id, username, display_name') // Exclude role field
+      .select('id, username, display_name') // Tidak termasuk role untuk keamanan
       .eq('id', userId)
       .single();
     return { data, error };
   }
 
   /**
-   * Get own profile (includes role field)
-   * Used for authenticated user's own profile
+   * Mendapatkan profil sendiri (termasuk field role)
+   * Digunakan untuk profil user yang terautentikasi sendiri
+   * @param userId - ID user yang terautentikasi
    */
   static async getUserOwnProfile(userId: string) {
     const { data, error } = await supabase
@@ -577,13 +579,13 @@ export class SupabaseService {
   }
 
   /**
-   * Get all users for public display (safe fields only)
-   * Used for user lists, mentions, etc.
+   * Mendapatkan semua user untuk tampilan public (hanya field aman)
+   * Digunakan untuk daftar user, mentions, dll
    */
   static async getAllUsersPublic() {
     const { data, error } = await supabase
       .from('users')
-      .select('id, username, display_name') // Exclude role field
+      .select('id, username, display_name') // Tidak termasuk role untuk keamanan
       .order('username');
     return { data, error };
   }

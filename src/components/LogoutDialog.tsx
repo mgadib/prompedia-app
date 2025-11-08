@@ -21,9 +21,10 @@ interface LogoutDialogProps {
   isCollapsed?: boolean;
 }
 
-const LogoutDialog = ({ userName = 'User', onConfirm, isCollapsed = false }: LogoutDialogProps) => {
+const LogoutDialog = ({ userName, onConfirm, isCollapsed = false }: LogoutDialogProps) => {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
+  const displayName = userName || t('common:user');
   
   return (
     <AlertDialog>
@@ -41,7 +42,7 @@ const LogoutDialog = ({ userName = 'User', onConfirm, isCollapsed = false }: Log
         <AlertDialogHeader>
           <AlertDialogTitle className={`font-mono ${isMobile ? 'text-lg' : ''}`}>{t('auth:confirmLogout')}</AlertDialogTitle>
           <AlertDialogDescription className={`font-mono ${isMobile ? 'text-sm' : ''}`}>
-            {t('auth:confirmLogoutMessage', { userName })}
+            {t('auth:confirmLogoutMessage', { userName: displayName })}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className={isMobile ? 'gap-2' : ''}>

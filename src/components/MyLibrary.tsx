@@ -70,11 +70,11 @@ const MyLibrary = ({
           const tags = await TagService.getPromptTags(prompt.id);
           promptsWithTagsData.push({ ...prompt, tags });
 
-          // Collect all unique tag names
+          // Mengumpulkan semua nama tag yang unik
           tags.forEach(tag => tagSet.add(tag.name));
         } catch (tagError) {
           console.warn(`Failed to load tags for prompt ${prompt.id}:`, tagError);
-          // Continue with empty tags for this prompt
+          // Lanjutkan dengan tag kosong untuk prompt ini
           promptsWithTagsData.push({ ...prompt, tags: [] });
         }
       }
@@ -83,7 +83,7 @@ const MyLibrary = ({
       setAllTags(Array.from(tagSet));
     } catch (error) {
       console.error('Failed to load tags:', error);
-      // Fallback: use prompts without tags
+      // Fallback: gunakan prompt tanpa tag
       setPromptsWithTags(prompts.map(p => ({ ...p, tags: [] })));
       setAllTags([]);
     } finally {
@@ -91,12 +91,12 @@ const MyLibrary = ({
     }
   }, [prompts]);
 
-  // Load tags from database for all prompts
+  // Memuat tag dari database untuk semua prompt
   useEffect(() => {
     loadTagsForPrompts();
   }, [loadTagsForPrompts]);
 
-  // Filter prompts based on search and tag
+  // Memfilter prompt berdasarkan pencarian dan tag
   const filteredPrompts = promptsWithTags.filter(prompt => {
     const matchesSearch = prompt.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          (prompt.description?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
@@ -104,7 +104,7 @@ const MyLibrary = ({
     return matchesSearch && matchesTag;
   });
 
-  // New delete UX flow handlers
+  // Handler flow UX delete baru
   const handleDeleteClick = (prompt: PromptWithTags) => {
     setPromptToDelete(prompt);
     setIsDeleteDialogOpen(true);
@@ -157,7 +157,7 @@ const MyLibrary = ({
     toast.success(t('success:prompt.loaded'));
   };
 
-  // Show loading state while tags are being loaded
+  // Menampilkan state loading sementara tag sedang dimuat
   if (isLoadingTags) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-8">

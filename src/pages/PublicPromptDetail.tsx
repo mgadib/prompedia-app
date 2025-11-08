@@ -32,7 +32,7 @@ const PublicPromptDetail = () => {
         setLoading(true);
         setError(null);
 
-        // Load prompt from Supabase
+        // Memuat prompt dari Supabase
         const publicPrompt = await SupabaseService.getPrompt(id);
         
         if (!publicPrompt) {
@@ -41,7 +41,7 @@ const PublicPromptDetail = () => {
           return;
         }
 
-        // Check if prompt is public
+        // Mengecek apakah prompt adalah public
         if (!publicPrompt.is_public) {
           setError(t('prompt:notPublic'));
           setLoading(false);
@@ -50,7 +50,7 @@ const PublicPromptDetail = () => {
 
         setPrompt(publicPrompt);
 
-        // Load tags
+        // Memuat tag
         try {
           const promptTags = await TagService.getPromptTags(id);
           setTags(promptTags);
@@ -92,7 +92,7 @@ const PublicPromptDetail = () => {
   };
 
   const handleUsePrompt = () => {
-    // Navigate to home page with prompt ID in URL
+    // Navigasi ke halaman utama dengan ID prompt di URL
     trackEvent('use_prompt', { prompt_id: id });
     navigate(`/?prompt=${id}`);
   };
@@ -131,8 +131,8 @@ const PublicPromptDetail = () => {
     <div className="min-h-screen bg-background">
       {/* SEO Meta & JSON-LD */}
       <SEO
-        title={prompt.title || 'Prompt Detail'}
-        description={prompt.description || 'Explore this public prompt on Prompedia.'}
+        title={prompt.title || t('prompt:seoTitle')}
+        description={prompt.description || t('prompt:seoDescription')}
         url={`https://prompedia.app/p/${id}`}
         type="article"
         tags={tags.map(t => t.name)}
@@ -148,9 +148,9 @@ const PublicPromptDetail = () => {
           author: prompt.user_id ? { '@type': 'Person', identifier: prompt.user_id } : undefined,
         }}
         breadcrumbs={[
-          { name: 'Home', url: 'https://prompedia.app/' },
-          { name: 'Public', url: 'https://prompedia.app/' },
-          { name: prompt.title || 'Prompt', url: `https://prompedia.app/p/${id}` },
+          { name: t('common:home'), url: 'https://prompedia.app/' },
+          { name: t('common:public'), url: 'https://prompedia.app/' },
+          { name: prompt.title || t('prompt:title'), url: `https://prompedia.app/p/${id}` },
         ]}
       />
       {/* Header */}

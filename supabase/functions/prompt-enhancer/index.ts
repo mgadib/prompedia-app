@@ -9,7 +9,7 @@ const ALLOWED_ORIGINS = [
 ];
 
 const corsHeaders = (origin: string | null): Record<string, string> => {
-  // Allow Lovable preview domains and configured origins
+  // Mengizinkan domain preview Lovable dan origin yang dikonfigurasi
   const isLovablePreview = origin?.includes('.lovableproject.com') || false;
   const isAllowedOrigin = origin ? ALLOWED_ORIGINS.includes(origin) : false;
   
@@ -23,7 +23,7 @@ const corsHeaders = (origin: string | null): Record<string, string> => {
 };
 
 serve(async (req) => {
-  // Security logging
+  // Logging keamanan untuk audit trail
   const requestId = crypto.randomUUID();
   const timestamp = new Date().toISOString();
   const userAgent = req.headers.get('user-agent') || 'unknown';
@@ -33,12 +33,12 @@ serve(async (req) => {
   console.log(`[${timestamp}] [${requestId}] Prompt Enhancer Request:`, {
     method: req.method,
     origin,
-    userAgent: userAgent.substring(0, 100), // Truncate for security
-    ip: ip.substring(0, 50), // Truncate for security
+    userAgent: userAgent.substring(0, 100), // Potong untuk keamanan
+    ip: ip.substring(0, 50), // Potong untuk keamanan
     url: req.url
   });
 
-  // Handle CORS preflight requests
+  // Menangani request CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders(req.headers.get('origin')) })
   }
@@ -54,7 +54,7 @@ serve(async (req) => {
       }
     )
 
-    // Get the current user
+    // Mendapatkan user saat ini
     const {
       data: { user },
     } = await supabaseClient.auth.getUser()
@@ -66,7 +66,7 @@ serve(async (req) => {
       })
     }
 
-    // Check rate limits before processing
+    // Mengecek batas penggunaan sebelum memproses
     const { data: usageCheck, error: usageError } = await supabaseClient.rpc('get_current_usage', {
       p_user_id: user.id,
       p_is_guest: false,
@@ -80,7 +80,7 @@ serve(async (req) => {
       });
     }
 
-    const dailyLimit = 27; // Authenticated user daily limit
+    const dailyLimit = 27; // Batas harian untuk user terautentikasi
     const currentUsage = usageCheck?.usage_count || 0;
     const remainingUsage = dailyLimit - currentUsage;
 
@@ -93,14 +93,14 @@ serve(async (req) => {
       });
     }
 
-    // Show warning when approaching limit
+    // Menampilkan peringatan ketika mendekati batas
     if (remainingUsage <= 3) {
       console.log(`[Rate Limit Warning] User ${user.id} has ${remainingUsage} calls remaining`);
     }
 
     const { prompts, operation, options = {} } = await req.json()
 
-    // ENHANCED VALIDATION - Security improvements
+    // VALIDASI YANG DITINGKATKAN - Peningkatan keamanan
     if (!prompts || !Array.isArray(prompts) || prompts.length === 0) {
       return new Response(JSON.stringify({ error: 'Prompts array is required' }), {
         status: 400,
@@ -108,7 +108,7 @@ serve(async (req) => {
       })
     }
 
-    // Validate operation parameter
+    // Memvalidasi parameter operation
     const ALLOWED_OPERATIONS = ['enhance', 'summarize', 'expand', 'refine', 'translate'];
     if (!operation || !ALLOWED_OPERATIONS.includes(operation)) {
       return new Response(JSON.stringify({ 
@@ -119,7 +119,7 @@ serve(async (req) => {
       })
     }
 
-    // Validate options object type
+    // Memvalidasi tipe object options
     if (options && typeof options !== 'object') {
       return new Response(JSON.stringify({ 
         error: 'Invalid options parameter. Must be an object.' 
@@ -129,7 +129,7 @@ serve(async (req) => {
       })
     }
 
-    // Validate prompts array structure and content
+    // Memvalidasi struktur dan konten array prompts
     for (const promptItem of prompts) {
       if (!promptItem || typeof promptItem !== 'object') {
         return new Response(JSON.stringify({ error: 'Invalid prompt item structure' }), {
@@ -152,7 +152,7 @@ serve(async (req) => {
         })
       }
 
-      // Length validation for each prompt
+      // Validasi panjang untuk setiap prompt
       const MAX_PROMPT_LENGTH = 50000;
       if (promptItem.content.length > MAX_PROMPT_LENGTH) {
         return new Response(JSON.stringify({ 
@@ -171,7 +171,7 @@ serve(async (req) => {
       })
     }
 
-    // Only allow 2 models: Llama 4 Maverick and Qwen 3 30B
+    // Hanya mengizinkan 2 model: Llama 4 Maverick dan Qwen 3 30B
     const ALLOWED_MODELS = [
       'meta-llama/llama-4-maverick:free',
       'qwen/qwen3-30b-a3b:free'
@@ -189,14 +189,14 @@ serve(async (req) => {
       })
     }
 
-    // Map model to appropriate API key and validate
+    // Memetakan model ke API key yang sesuai dan memvalidasi
     const getApiKeyForModel = (modelId: string): string | undefined => {
       if (modelId.includes('llama-4-maverick') || modelId.includes('llama4') || modelId.includes('llama-3.1')) {
         return Deno.env.get('OPENROUTER_API_KEY_LLAMA4_MAVERICK')
       } else if (modelId.includes('qwen3') || modelId.includes('qwen-2.5') || modelId.includes('qwen/')) {
         return Deno.env.get('OPENROUTER_API_KEY_QWEN3_30B')
       }
-      // Fallback to default key
+      // Fallback ke default key
       return Deno.env.get('OPENROUTER_API_KEY')
     }
 
@@ -210,19 +210,19 @@ serve(async (req) => {
     }
     const results = []
 
-    // Process each prompt
+    // Memproses setiap prompt
     for (const promptItem of prompts) {
       try {
         const { id, content, currentMode } = promptItem
 
-        // Sanitize prompt content
+        // Menyucikan konten prompt
         const sanitizedContent = content
           .trim()
           .replace(/<[^>]*>/g, '')
           .replace(/javascript:/gi, '')
           .replace(/data:/gi, '');
 
-        // Verify the prompt belongs to the user
+        // Memverifikasi bahwa prompt milik user
         const { data: promptData } = await supabaseClient
           .from('prompts')
           .select('id, content, user_id, usage_stats')
@@ -239,7 +239,7 @@ serve(async (req) => {
           continue
         }
 
-        // Create enhanced prompt based on operation
+        // Membuat prompt yang ditingkatkan berdasarkan operasi
         const enhancedPrompt = sanitizedContent
         let modeInstructions = ''
 
@@ -374,7 +374,7 @@ FORMAT OUTPUT:
             break
         }
 
-        // Call OpenRouter API for enhancement
+        // Memanggil API OpenRouter untuk peningkatan
         const openRouterResponse = await fetch('https://openrouter.ai/api/v1/chat/completions', {
           method: 'POST',
           headers: {
@@ -399,7 +399,7 @@ FORMAT OUTPUT:
         const aiResponse = await openRouterResponse.json()
         const enhancedContent = aiResponse.choices[0]?.message?.content || ''
 
-        // Update the prompt with enhanced content
+        // Memperbarui prompt dengan konten yang ditingkatkan
         const { error: updateError } = await supabaseClient
           .from('prompts')
           .update({
@@ -440,14 +440,14 @@ FORMAT OUTPUT:
       }
     }
 
-    // Increment usage counter after successful batch processing
+    // Menambah counter penggunaan setelah batch processing berhasil
     await supabaseClient.rpc('increment_ai_usage', {
       p_user_id: user.id,
       p_is_guest: false,
       p_session_id: null
     });
 
-    // Log the batch operation
+    // Mencatat operasi batch
     await supabaseClient.from('user_sessions').insert({
       user_id: user.id,
       session_data: {

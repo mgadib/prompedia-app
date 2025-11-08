@@ -8,7 +8,9 @@ export interface TagInsert {
 
 export class TagService {
   /**
-   * Get all tags created by the current user
+   * Mendapatkan semua tag yang dibuat oleh user saat ini
+   * @param userId - ID user yang ingin diambil tag-nya
+   * @returns Array tag milik user
    */
   static async getUserTags(userId: string): Promise<Tag[]> {
     try {
@@ -27,11 +29,14 @@ export class TagService {
   }
 
   /**
-   * Get user's most frequently used tags (max 7)
+   * Mendapatkan tag yang paling sering digunakan user (maksimal 7)
+   * @param userId - ID user
+   * @param limit - Jumlah maksimal tag yang dikembalikan (default: 7)
+   * @returns Array tag yang diurutkan berdasarkan frekuensi penggunaan
    */
   static async getUserMostUsedTags(userId: string, limit: number = 7): Promise<Tag[]> {
     try {
-      // First get all user's tags with usage count
+      // Pertama, ambil semua tag user dengan jumlah penggunaan
       const { data: tagUsage, error } = await supabase
         .from('prompt_tags')
         .select(`
@@ -41,7 +46,7 @@ export class TagService {
 
       if (error) throw error;
 
-      // Count usage for each tag
+      // Menghitung penggunaan untuk setiap tag
       const tagCounts: { [key: string]: { tag: Tag; count: number } } = {};
       
       tagUsage?.forEach(item => {
@@ -55,7 +60,7 @@ export class TagService {
         }
       });
 
-      // Sort by usage count and return top tags
+      // Mengurutkan berdasarkan jumlah penggunaan dan mengembalikan tag teratas
       const sortedTags = Object.values(tagCounts)
         .sort((a, b) => b.count - a.count)
         .slice(0, limit)
@@ -64,13 +69,14 @@ export class TagService {
       return sortedTags;
     } catch (error) {
       console.error('Failed to get user most used tags:', error);
-      // Fallback to regular user tags if counting fails
+      // Fallback ke tag user biasa jika penghitungan gagal
       return await this.getUserTags(userId);
     }
   }
 
   /**
-   * Get all public tags (for suggestions)
+   * Mendapatkan semua tag public (untuk saran)
+   * @returns Array semua tag yang tersedia
    */
   static async getAllTags(): Promise<Tag[]> {
     try {
@@ -88,7 +94,10 @@ export class TagService {
   }
 
   /**
-   * Create a new tag (user-specific)
+   * Membuat tag baru (spesifik user)
+   * @param tagData - Data tag yang akan dibuat
+   * @param userId - ID user yang membuat tag
+   * @returns Tag yang baru dibuat
    */
   static async createTag(tagData: TagInsert, userId: string): Promise<Tag> {
     const { data, error } = await supabase
@@ -110,7 +119,7 @@ export class TagService {
    */
   static async findOrCreateTag(tagName: string, userId: string): Promise<Tag> {
     try {
-      // First, try to find existing tag for this user
+      // Pertama, coba cari tag yang sudah ada untuk user ini
       const { data: existingTag, error: findError } = await (supabase as any)
         .from('tags')
         .select('*')
@@ -122,7 +131,7 @@ export class TagService {
         return existingTag as Tag;
       }
 
-      // If not found, create new tag for this user
+      // Jika tidak ditemukan, buat tag baru untuk user ini
       return await this.createTag({ name: tagName.toLowerCase().trim() }, userId);
     } catch (error) {
       console.error('Failed to find or create tag:', error);
@@ -136,7 +145,7 @@ export class TagService {
    */
   static async savePromptTags(promptId: string, tagNames: string[], userId: string): Promise<void> {
     try {
-      // SECURITY FIX: Verify prompt ownership BEFORE updating tags
+      // PERBAIKAN KEAMANAN: Verifikasi kepemilikan prompt SEBELUM memperbarui tag
       const { data: prompt, error: promptError } = await supabase
         .from('prompts')
         .select('id, user_id')
@@ -147,12 +156,12 @@ export class TagService {
         throw new Error('Prompt not found');
       }
 
-      // Check if user owns this prompt
+      // Mengecek apakah user memiliki prompt ini
       if (prompt.user_id !== userId) {
         throw new Error('Unauthorized: You do not own this prompt');
       }
 
-      // Now safe to update tags
+      // Sekarang aman untuk memperbarui tag
       await this.removeAllPromptTags(promptId);
 
       for (const tagName of tagNames) {
@@ -258,7 +267,7 @@ export class TagService {
         return [];
       }
 
-      // Find tag by name for this user
+      // Mencari tag berdasarkan nama untuk user ini
       const { data: tag, error: tagError } = await (supabase as any)
         .from('tags')
         .select('*')
@@ -267,11 +276,11 @@ export class TagService {
         .single();
 
       if (tagError || !tag) {
-        // If tag not found, return empty
+        // Jika tag tidak ditemukan, kembalikan array kosong
         return [];
       }
 
-      // Get all prompt_ids for this tag
+      // Mengambil semua prompt_id untuk tag ini
       const { data: tagLinks, error: linkError } = await supabase
         .from('prompt_tags')
         .select('prompt_id')
@@ -284,7 +293,7 @@ export class TagService {
         return [];
       }
 
-      // Fetch prompts owned by this user matching the IDs
+      // Mengambil prompt yang dimiliki user ini yang sesuai dengan ID
       const { data: prompts, error: promptsError } = await (supabase as any)
         .from('prompts')
         .select(`*
@@ -328,7 +337,7 @@ export class TagService {
 
       const normalizedName = tagName.toLowerCase().trim();
 
-      // Find all tags by name (across all users)
+      // Mencari semua tag berdasarkan nama (di semua user)
       const { data: tags, error: tagsError } = await (supabase as any)
         .from('tags')
         .select('id, name, user_id')
@@ -341,7 +350,7 @@ export class TagService {
         return [];
       }
 
-      // Get all prompt_ids that have any of these tag IDs
+      // Mengambil semua prompt_id yang memiliki salah satu dari ID tag ini
       const { data: tagLinks, error: linkError } = await supabase
         .from('prompt_tags')
         .select('prompt_id, tag_id')
@@ -354,7 +363,7 @@ export class TagService {
         return [];
       }
 
-      // Fetch prompts matching the IDs
+      // Mengambil prompt yang sesuai dengan ID
       let query = (supabase as any)
         .from('prompts')
         .select(`*
@@ -364,10 +373,10 @@ export class TagService {
         .order('id', { ascending: false });
 
       if (userId) {
-        // Show public OR owned by user
+        // Menampilkan public ATAU milik user
         query = query.or(`is_public.eq.true,user_id.eq.${userId}`);
       } else {
-        // Only public when no user
+        // Hanya public ketika tidak ada user
         query = query.eq('is_public', true);
       }
 

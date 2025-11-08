@@ -36,17 +36,17 @@ const ModeSelector = ({ value, onChange }: ModeSelectorProps) => {
   useEffect(() => {
     const loadModes = async () => {
       try {
-        // Try to fetch from database first
+        // Mencoba mengambil dari database terlebih dahulu
         const dbModes = await SupabaseService.getThinkingModes();
         if (dbModes && dbModes.length > 0) {
           setModes(dbModes);
         } else {
-          // Fallback to hardcoded data
+          // Fallback ke data hardcoded
           setModes(THINKING_MODES);
         }
       } catch (error) {
         console.error('Failed to load modes from database:', error);
-        // Fallback to hardcoded data
+        // Fallback ke data hardcoded
         setModes(THINKING_MODES);
       } finally {
         setLoading(false);

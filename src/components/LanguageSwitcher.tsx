@@ -1,4 +1,5 @@
 import { Languages } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -10,6 +11,7 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const LanguageSwitcher = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
+  const { t } = useTranslation();
   const { currentLanguage, changeLanguage } = useLanguage();
   const isMobile = useIsMobile();
 
@@ -26,7 +28,7 @@ const LanguageSwitcher = ({ isCollapsed = false }: { isCollapsed?: boolean }) =>
         <Button
           variant="ghost"
           className={`flex items-center ${isCollapsed || isMobile ? 'w-9 h-9 justify-center px-0' : 'w-full justify-start gap-3 px-3 py-3'} ${isMobile ? 'min-h-[44px]' : ''} rounded-lg text-sm text-sidebar-foreground hover:bg-sidebar-accent/20 hover:text-sidebar-accent-foreground font-mono group touch-manipulation`}
-          title={isCollapsed || isMobile ? 'Change Language' : ''}
+          title={isCollapsed || isMobile ? t('common:changeLanguage') : ''}
         >
           <Languages className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${isCollapsed || isMobile ? 'group-hover:scale-110 transition-transform' : ''}`} />
           {!isCollapsed && !isMobile && (

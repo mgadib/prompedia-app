@@ -7,13 +7,13 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
+  // Menangani request CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    // Create Supabase client with service role key for admin operations
+    // Membuat Supabase client dengan service role key untuk operasi admin
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
@@ -25,7 +25,7 @@ serve(async (req) => {
       }
     )
 
-    // Call the reset function
+    // Memanggil fungsi reset
     const { data: resetCount, error } = await supabaseClient.rpc('reset_daily_usage')
 
     if (error) {

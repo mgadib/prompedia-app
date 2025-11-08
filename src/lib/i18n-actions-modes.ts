@@ -3,8 +3,8 @@ import { PROMPT_ACTIONS, PromptAction } from './actions';
 import { THINKING_MODES, ThinkingMode } from './modes';
 
 /**
- * Get translated action description for UI display
- * AI instructions remain in English for processing
+ * Mendapatkan deskripsi action yang diterjemahkan untuk tampilan UI
+ * Instruksi AI tetap dalam bahasa Inggris untuk pemrosesan
  */
 export const getTranslatedAction = (actionId: string): PromptAction | undefined => {
   const action = PROMPT_ACTIONS.find(a => a.id === actionId);
@@ -16,14 +16,14 @@ export const getTranslatedAction = (actionId: string): PromptAction | undefined 
     ...action,
     description: i18n.t(`actions:${actionKey}.description`, { defaultValue: action.description }),
     purpose: i18n.t(`actions:${actionKey}.purpose`, { defaultValue: action.purpose }),
-    // Keep instructions in English for AI processing
+    // Menjaga instruksi dalam bahasa Inggris untuk pemrosesan AI
     // instructions: action.instructions,
     // rules: action.rules,
   };
 };
 
 /**
- * Get all actions with translated descriptions
+ * Mendapatkan semua action dengan deskripsi yang diterjemahkan
  */
 export const getTranslatedActions = (): PromptAction[] => {
   return PROMPT_ACTIONS.map(action => {
@@ -37,8 +37,8 @@ export const getTranslatedActions = (): PromptAction[] => {
 };
 
 /**
- * Get translated mode description for UI display
- * AI instructions remain in English for processing
+ * Mendapatkan deskripsi mode yang diterjemahkan untuk tampilan UI
+ * Instruksi AI tetap dalam bahasa Inggris untuk pemrosesan
  */
 export const getTranslatedMode = (modeId: string): ThinkingMode | undefined => {
   const mode = THINKING_MODES.find(m => m.id === modeId);
@@ -60,7 +60,7 @@ export const getTranslatedMode = (modeId: string): ThinkingMode | undefined => {
     description: i18n.t(`modes:${modeKey}.description`, { defaultValue: mode.description }),
     purpose: i18n.t(`modes:${modeKey}.purpose`, { defaultValue: mode.purpose }),
     thinkingPattern: i18n.t(`modes:${modeKey}.thinkingPattern`, { defaultValue: mode.thinkingPattern }),
-    // Keep instructions in English for AI processing
+    // Menjaga instruksi dalam bahasa Inggris untuk pemrosesan AI
     // instructions: mode.instructions,
   };
 };

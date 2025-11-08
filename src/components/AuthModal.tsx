@@ -31,7 +31,7 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
 
     try {
       if (isLogin) {
-        // Login
+        // Login user
         const { error } = await supabase.auth.signInWithPassword({
           email,
           password,
@@ -43,7 +43,7 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
         onSuccess();
         onClose();
       } else {
-        // Register
+        // Registrasi user baru
         if (!username.trim()) {
           toast.error(t('auth:usernameRequired'));
           setLoading(false);

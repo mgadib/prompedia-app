@@ -1,6 +1,6 @@
 /**
- * Comprehensive logging system for monitoring data storage flow
- * Provides different log levels and structured logging for debugging
+ * Sistem logging komprehensif untuk memantau alur penyimpanan data
+ * Menyediakan berbagai level log dan structured logging untuk debugging
  */
 
 export enum LogLevel {
@@ -25,7 +25,7 @@ class Logger {
   private currentLevel: LogLevel = LogLevel.INFO;
 
   constructor() {
-    // Set log level based on environment
+    // Set level log berdasarkan environment: DEBUG di development, INFO di production
     if (import.meta.env.DEV) {
       this.currentLevel = LogLevel.DEBUG;
     }
@@ -49,12 +49,12 @@ class Logger {
   private addLog(entry: LogEntry): void {
     this.logs.push(entry);
     
-    // Keep only the most recent logs
+    // Menjaga hanya log terbaru untuk mencegah memory leak
     if (this.logs.length > this.maxLogs) {
       this.logs = this.logs.slice(-this.maxLogs);
     }
 
-    // Console output in development
+    // Output ke console hanya di development untuk debugging
     if (import.meta.env.DEV) {
       const logMethod = this.getConsoleMethod(entry.level);
       const prefix = `[${entry.category}] ${entry.message}`;
@@ -111,38 +111,44 @@ class Logger {
   }
 
   /**
-   * Get recent logs for debugging
+   * Mendapatkan log terbaru untuk debugging
+   * @param count - Jumlah log terbaru yang ingin diambil (default: 50)
+   * @returns Array log entries
    */
   getRecentLogs(count: number = 50): LogEntry[] {
     return this.logs.slice(-count);
   }
 
   /**
-   * Get logs by category
+   * Mendapatkan log berdasarkan kategori
+   * @param category - Kategori log yang ingin difilter
+   * @returns Array log entries dengan kategori yang sesuai
    */
   getLogsByCategory(category: string): LogEntry[] {
     return this.logs.filter(log => log.category === category);
   }
 
   /**
-   * Clear all logs
+   * Menghapus semua log dari memory
+   * Berguna untuk reset state saat testing atau debugging
    */
   clearLogs(): void {
     this.logs = [];
   }
 
   /**
-   * Export logs as JSON for debugging
+   * Mengekspor log sebagai JSON untuk debugging
+   * @returns String JSON yang berisi semua log entries
    */
   exportLogs(): string {
     return JSON.stringify(this.logs, null, 2);
   }
 }
 
-// Create singleton instance
+// Membuat singleton instance untuk digunakan di seluruh aplikasi
 export const logger = new Logger();
 
-// Convenience functions for common categories
+// Fungsi convenience untuk kategori umum yang sering digunakan
 export const storageLogger = {
   debug: (message: string, data?: any) => logger.debug('STORAGE', message, data),
   info: (message: string, data?: any) => logger.info('STORAGE', message, data),

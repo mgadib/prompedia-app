@@ -17,8 +17,8 @@ export interface AnalyticsEvent {
 }
 
 const generateRequestId = () => {
-  // Simple UUID v4 generator without external deps
-  // Not cryptographically secure; acceptable for telemetry correlation
+  // Generator UUID v4 sederhana tanpa dependency eksternal
+  // Tidak cryptographically secure; dapat diterima untuk korelasi telemetri
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
     const r = (Math.random() * 16) | 0,
       v = c === 'x' ? r : (r & 0x3) | 0x8;
@@ -35,6 +35,6 @@ export const trackEvent = (name: AnalyticsEventName | string, payload?: Record<s
     payload: payload ?? {},
   };
 
-  // Structured JSON log; can be shipped to external collector later
+  // Log JSON terstruktur; bisa dikirim ke external collector nanti
   logger.info('ANALYTICS', `Event: ${name}`, evt);
 };

@@ -106,6 +106,10 @@
     "remainingCalls": "{{count}} panggilan AI tersisa.",
     "remainingCallsWithSignIn": "{{count}} panggilan AI tersisa. Masuk untuk akses tak terbatas!",
     "remainingDailyCalls": "{{count}} panggilan AI harian tersisa."
-  }
+  },
+  "changeLanguage": "Ubah Bahasa",
+  "user": "Pengguna",
+  "home": "Beranda",
+  "public": "Publik"
 }
 

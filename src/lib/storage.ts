@@ -15,22 +15,22 @@ export interface Prompt {
   title: string;
   content: string;
   
-  // Dual support - old and new fields for backward compatibility
-  model?: string | null;        // OLD - keep for backward compatibility
-  mode?: 'meta-prompt' | 'thinking' | 'normal';  // OLD
-  model_id?: string | null;     // NEW - FK to ai_models
-  mode_id?: string | null;      // NEW - FK to thinking_modes
+  // Dukungan ganda - field lama dan baru untuk backward compatibility
+  model?: string | null;        // LAMA - tetap untuk backward compatibility
+  mode?: 'meta-prompt' | 'thinking' | 'normal';  // LAMA
+  model_id?: string | null;     // BARU - FK ke ai_models
+  mode_id?: string | null;      // BARU - FK ke thinking_modes
   
   color: string;
   is_public: boolean;
   is_featured: boolean;
   description?: string | null;
   original_prompt_id?: string | null;
-  // Note: tags are now handled via prompt_tags junction table
-  // created_at and updated_at are not stored in the minimal schema
+  // Catatan: tag sekarang ditangani melalui tabel prompt_tags (junction table)
+  // created_at dan updated_at tidak disimpan dalam schema minimalis
 }
 
-// Tag interface for local use
+// Interface Tag untuk penggunaan lokal
 export interface Tag {
   id: string;
   name: string;
@@ -39,7 +39,7 @@ export interface Tag {
 }
 
 /**
- * Storage error class for better error handling
+ * Class error storage untuk penanganan error yang lebih baik
  */
 export class StorageError extends Error {
   constructor(message: string, public operation: string) {
@@ -49,7 +49,7 @@ export class StorageError extends Error {
 }
 
 /**
- * Safe JSON parsing with error handling
+ * Parsing JSON yang aman dengan penanganan error
  */
 function safeJsonParse<T>(data: string | null, fallback: T): T {
   if (!data) return fallback;
@@ -63,7 +63,7 @@ function safeJsonParse<T>(data: string | null, fallback: T): T {
 }
 
 /**
- * Safe localStorage operations with error handling
+ * Operasi localStorage yang aman dengan penanganan error
  */
 function safeLocalStorageSet(key: string, value: string): void {
   try {
@@ -95,7 +95,7 @@ function safeLocalStorageRemove(key: string): void {
 }
 
 /**
- * User storage operations
+ * Operasi storage untuk user
  */
 export const userStorage = {
   setUser: (user: User): void => {
@@ -129,7 +129,7 @@ export const promptStorage = {
     const data = safeLocalStorageGet(STORAGE_KEYS.PROMPTS);
     const parsed = safeJsonParse(data, []);
     
-    // Validate each prompt and filter out invalid ones
+    // Memvalidasi setiap prompt dan memfilter yang tidak valid
     return parsed.filter((prompt: unknown) => {
       try {
         validateData(promptSchema, prompt);
@@ -172,7 +172,7 @@ export const promptStorage = {
       const prompts = promptStorage.getPrompts().filter(p => p.id !== id);
       safeLocalStorageSet(STORAGE_KEYS.PROMPTS, JSON.stringify(prompts));
       
-      // Clear current prompt if it was deleted
+      // Membersihkan prompt saat ini jika dihapus
       if (promptStorage.getCurrentPromptId() === id) {
         promptStorage.clearCurrentPrompt();
       }
@@ -195,7 +195,7 @@ export const promptStorage = {
     return promptStorage.getPrompts().find(p => p.id === id) || null;
   },
   
-  // Current prompt management
+  // Manajemen prompt saat ini
   setCurrentPrompt: (promptId: string): void => {
     if (!promptId) {
       throw new StorageError('Prompt ID is required', 'setCurrentPrompt');
@@ -221,7 +221,7 @@ export const storage = {
   ...promptStorage,
 };
 
-// Named exports for better tree shaking
+// Named exports untuk tree shaking yang lebih baik
 export const { setUser, getUser, clearUser } = userStorage;
 export const { 
   getPrompts, 

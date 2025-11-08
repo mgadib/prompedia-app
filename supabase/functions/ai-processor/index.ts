@@ -10,7 +10,7 @@ const ALLOWED_ORIGINS = [
 ];
 
 const corsHeaders = (origin: string | null): Record<string, string> => {
-  // Allow Lovable preview domains and configured origins
+  // Mengizinkan domain preview Lovable dan origin yang dikonfigurasi
   const isLovablePreview = origin?.includes('.lovable.app') || origin?.includes('.lovableproject.com') || false;
   const isAllowedOrigin = origin ? ALLOWED_ORIGINS.includes(origin) : false;
   
@@ -23,8 +23,8 @@ const corsHeaders = (origin: string | null): Record<string, string> => {
   };
 };
 
-// Input validation schema using Zod for security
-// Only allow 2 models: Llama 4 Maverick and Qwen 3 30B
+// Schema validasi input menggunakan Zod untuk keamanan
+// Hanya mengizinkan 2 model: Llama 4 Maverick dan Qwen 3 30B
 const ALLOWED_MODELS = [
   'meta-llama/llama-4-maverick:free',
   'qwen/qwen3-30b-a3b:free'
@@ -47,7 +47,7 @@ const RequestSchema = z.object({
 });
 
 serve(async (req) => {
-  // Security logging
+  // Logging keamanan untuk audit trail
   const requestId = crypto.randomUUID();
   const timestamp = new Date().toISOString();
   const userAgent = req.headers.get('user-agent') || 'unknown';
@@ -57,12 +57,12 @@ serve(async (req) => {
   console.log(`[${timestamp}] [${requestId}] AI Processor Request:`, {
     method: req.method,
     origin,
-    userAgent: userAgent.substring(0, 100), // Truncate for security
-    ip: ip.substring(0, 50), // Truncate for security
+    userAgent: userAgent.substring(0, 100), // Potong untuk keamanan
+    ip: ip.substring(0, 50), // Potong untuk keamanan
     url: req.url
   });
 
-  // Handle CORS preflight requests
+  // Menangani request CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders(req.headers.get('origin')) })
   }
@@ -78,7 +78,7 @@ serve(async (req) => {
       }
     )
 
-    // Get the current user (optional for guest users)
+    // Mendapatkan user saat ini (opsional untuk guest user)
     const {
       data: { user },
     } = await supabaseClient.auth.getUser()
@@ -97,7 +97,7 @@ serve(async (req) => {
       })
     }
 
-    // Validate request body using Zod schema
+    // Memvalidasi request body menggunakan schema Zod
     const validation = RequestSchema.safeParse(requestBody);
     if (!validation.success) {
       console.error(`[${requestId}] Request validation failed:`, validation.error.errors)
@@ -113,7 +113,7 @@ serve(async (req) => {
       })
     }
     
-    // Use validated data
+    // Menggunakan data yang sudah divalidasi
     const validatedData = validation.data
     
     console.log(`[${requestId}] Request body validated:`, { 
@@ -125,24 +125,24 @@ serve(async (req) => {
 
     const { model, prompt, mode, options = {} } = validatedData
 
-    // Sanitize prompt input (additional layer after validation)
+    // Menyucikan input prompt (lapisan tambahan setelah validasi)
     const sanitizedPrompt = prompt
       .trim()
-      .normalize('NFKC')  // Prevent Unicode exploits
-      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')  // Remove control characters
-      .replace(/<[^>]*>/g, '')  // Remove HTML tags
-      .replace(/javascript:/gi, '')  // Remove javascript: protocol
-      .replace(/data:/gi, '')  // Remove data: protocol
-      .replace(/on\w+\s*=/gi, '');  // Remove event handlers
+      .normalize('NFKC')  // Mencegah Unicode exploits
+      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')  // Menghapus karakter kontrol
+      .replace(/<[^>]*>/g, '')  // Menghapus tag HTML
+      .replace(/javascript:/gi, '')  // Menghapus protocol javascript:
+      .replace(/data:/gi, '')  // Menghapus protocol data:
+      .replace(/on\w+\s*=/gi, '');  // Menghapus event handlers
 
-    // Map model to appropriate API key
+    // Memetakan model ke API key yang sesuai
     const getApiKeyForModel = (modelId: string): string | undefined => {
       if (modelId.includes('llama-4-maverick') || modelId.includes('llama4') || modelId.includes('llama-3.1')) {
         return Deno.env.get('OPENROUTER_API_KEY_LLAMA4_MAVERICK')
       } else if (modelId.includes('qwen3') || modelId.includes('qwen-2.5') || modelId.includes('qwen/')) {
         return Deno.env.get('OPENROUTER_API_KEY_QWEN3_30B')
       }
-      // Fallback to default key
+      // Fallback ke default key
       return Deno.env.get('OPENROUTER_API_KEY')
     }
 
@@ -161,7 +161,7 @@ serve(async (req) => {
     
     console.log(`[${requestId}] Using API key for model:`, model)
 
-    // Optional: try to map model id to friendly name if table exists
+    // Opsional: mencoba memetakan model id ke nama yang ramah jika tabel ada
     let modelName = model
     try {
       const { data: modelData } = await supabaseClient
@@ -171,15 +171,15 @@ serve(async (req) => {
         .single()
       if (modelData?.name) modelName = modelData.name
     } catch (_) {
-      // Ignore if table doesn't exist or query fails
+      // Abaikan jika tabel tidak ada atau query gagal
     }
 
-    // Get thinking mode instructions if provided
+    // Mendapatkan instruksi thinking mode jika disediakan
     let enhancedPrompt = sanitizedPrompt
     let modeContext = ''
 
     if (mode) {
-      // Be resilient to schemas without `is_active` column
+      // Tahan terhadap schema tanpa kolom `is_active`
       const { data: modeData, error: modeErr } = await supabaseClient
         .from('thinking_modes')
         .select('instructions, thinking_pattern, description')
@@ -187,21 +187,21 @@ serve(async (req) => {
         .single()
 
       if (!modeErr && modeData) {
-        // Mode context ditambahkan sebagai system message
+        // Konteks mode ditambahkan sebagai system message
         modeContext = `Anda sedang beroperasi dalam mode "${mode}".
 Pola berpikir: ${modeData.thinking_pattern}
 Instruksi mode: ${modeData.instructions}`;
 
-        // Enhanced prompt menggunakan sanitized prompt
+        // Prompt yang ditingkatkan menggunakan prompt yang sudah disucikan
         enhancedPrompt = sanitizedPrompt
       }
     }
 
-    // Call OpenRouter API with model-specific fallbacks
-    // Only allow 2 models: Llama 4 Maverick and Qwen 3 30B
+    // Memanggil API OpenRouter dengan fallback spesifik model
+    // Hanya mengizinkan 2 model: Llama 4 Maverick dan Qwen 3 30B
     const ALLOWED_MODELS = ['meta-llama/llama-4-maverick:free', 'qwen/qwen3-30b-a3b:free'];
     
-    // Validate model is allowed
+    // Memvalidasi model yang diizinkan
     if (!ALLOWED_MODELS.includes(model)) {
       console.error(`[${requestId}] Model not allowed: ${model}. Only ${ALLOWED_MODELS.join(', ')} are allowed.`);
       return new Response(JSON.stringify({ 
@@ -214,19 +214,19 @@ Instruksi mode: ${modeData.instructions}`;
     }
     
     const getModelFallbacks = (modelId: string): string[] => {
-      // Only allow fallback within the 2 allowed models
+      // Hanya mengizinkan fallback di dalam 2 model yang diizinkan
       if (modelId === 'qwen/qwen3-30b-a3b:free') {
         return [
-          'qwen/qwen3-30b-a3b:free', // Primary
-          'meta-llama/llama-4-maverick:free' // Fallback to other allowed model
+          'qwen/qwen3-30b-a3b:free', // Utama
+          'meta-llama/llama-4-maverick:free' // Fallback ke model lain yang diizinkan
         ];
       } else if (modelId === 'meta-llama/llama-4-maverick:free') {
         return [
-          'meta-llama/llama-4-maverick:free', // Primary
-          'qwen/qwen3-30b-a3b:free' // Fallback to other allowed model
+          'meta-llama/llama-4-maverick:free', // Utama
+          'qwen/qwen3-30b-a3b:free' // Fallback ke model lain yang diizinkan
         ];
       }
-      // If somehow an invalid model is passed, return empty array
+      // Jika model tidak valid terlewat, kembalikan array kosong
       return [];
     };
 
@@ -267,7 +267,7 @@ Instruksi mode: ${modeData.instructions}`;
         const aiResponse = await resp.json()
         const usedModelName = candidate
 
-        // Log the session for analytics (only for authenticated users)
+        // Mencatat session untuk analitik (hanya untuk user terautentikasi)
         if (user) {
           await supabaseClient.from('user_sessions').insert({
             user_id: user.id,
@@ -283,7 +283,7 @@ Instruksi mode: ${modeData.instructions}`;
           })
         }
 
-        // Return the AI response
+        // Mengembalikan response AI
         return new Response(JSON.stringify({
           ...aiResponse,
           metadata: {
@@ -304,7 +304,7 @@ Instruksi mode: ${modeData.instructions}`;
         error: lastErrorText.substring(0, 500)
       })
       
-      // If rate-limited, payment required, or content moderation issue, try next model; otherwise stop and return
+      // Jika rate-limited, payment required, atau masalah content moderation, coba model berikutnya; jika tidak, berhenti dan kembalikan
       if (resp.status !== 429 && resp.status !== 402 && resp.status !== 403) {
         return new Response(JSON.stringify({
           error: 'OpenRouter API error',
@@ -319,7 +319,7 @@ Instruksi mode: ${modeData.instructions}`;
       console.log(`[${requestId}] Trying fallback model after ${resp.status} error...`)
     }
 
-    // If all candidates failed due to rate limits or payment
+    // Jika semua kandidat gagal karena rate limit atau payment
     return new Response(JSON.stringify({
       error: 'All providers are temporarily rate-limited. Please retry in a moment.',
       status: lastStatus || 429,

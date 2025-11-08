@@ -106,6 +106,10 @@
     "remainingCalls": "{{count}} AI calls remaining.",
     "remainingCallsWithSignIn": "{{count}} AI calls remaining. Sign in for unlimited access!",
     "remainingDailyCalls": "{{count}} daily AI calls remaining."
-  }
+  },
+  "changeLanguage": "Change Language",
+  "user": "User",
+  "home": "Home",
+  "public": "Public"
 }
 

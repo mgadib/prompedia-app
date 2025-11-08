@@ -24,7 +24,7 @@ interface PublicLibraryProps {
   currentPromptId?: string;
 }
 
-// Mock data for demonstration - in real app this would come from API
+// Data mock untuk demonstrasi - di aplikasi nyata ini akan datang dari API
 const getMockUserData = (userId: string) => {
   const users = {
     'user1': { username: 'alex_dev', avatar: '👨‍💻' },
@@ -50,7 +50,7 @@ const PublicLibrary = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoadingTags, setIsLoadingTags] = useState(false);
 
-  // Public prompts are already filtered in App.tsx and passed as props
+  // Prompt public sudah difilter di App.tsx dan diteruskan sebagai props
 
   const loadPublicPromptsWithTags = useCallback(async () => {
     if (prompts.length === 0) {
@@ -70,11 +70,11 @@ const PublicLibrary = ({
           const tags = await TagService.getPromptTags(prompt.id);
           promptsWithTagsData.push({ ...prompt, tags });
 
-          // Collect all unique tag names
+          // Mengumpulkan semua nama tag yang unik
           tags.forEach(tag => tagSet.add(tag.name));
         } catch (tagError) {
           console.warn(`Failed to load tags for prompt ${prompt.id}:`, tagError);
-          // Continue with empty tags for this prompt
+          // Lanjutkan dengan tag kosong untuk prompt ini
           promptsWithTagsData.push({ ...prompt, tags: [] });
         }
       }
@@ -83,7 +83,7 @@ const PublicLibrary = ({
       setAllTags(Array.from(tagSet));
     } catch (error) {
       console.error('Failed to load tags for public prompts:', error);
-      // Fallback: use prompts without tags
+      // Fallback: gunakan prompt tanpa tag
       setPromptsWithTags(prompts.map(p => ({ ...p, tags: [] })));
       setAllTags([]);
     } finally {
@@ -91,15 +91,15 @@ const PublicLibrary = ({
     }
   }, [prompts]);
 
-  // Load tags for public prompts
+  // Memuat tag untuk prompt public
   useEffect(() => {
     loadPublicPromptsWithTags();
     trackEvent('view_public_library');
   }, [loadPublicPromptsWithTags]);
 
-  // allTags already loaded in state via useEffect
+  // allTags sudah dimuat di state melalui useEffect
 
-  // Filter prompts based on search and tag
+  // Memfilter prompt berdasarkan pencarian dan tag
   let filteredPrompts = promptsWithTags.filter(prompt => {
     const matchesSearch = prompt.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          (prompt.description?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
@@ -153,7 +153,7 @@ const PublicLibrary = ({
     trackEvent('copy_prompt_content', { prompt_id: prompt.id });
   };
 
-  // Show loading state while tags are being loaded
+  // Menampilkan state loading sementara tag sedang dimuat
   if (isLoadingTags) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-8">

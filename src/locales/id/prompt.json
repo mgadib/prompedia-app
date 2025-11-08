@@ -25,6 +25,8 @@
   "focusMode": "Mode Fokus - Sembunyikan Sidebar untuk Editing Bersih",
   "exitFocusMode": "Keluar dari Mode Fokus",
   "backToOriginalTitle": "Kembali ke prompt asli",
-  "forwardToResultTitle": "Maju ke hasil AI"
+  "forwardToResultTitle": "Maju ke hasil AI",
+  "seoTitle": "Detail Prompt",
+  "seoDescription": "Jelajahi prompt publik ini di Prompedia."
 }
 

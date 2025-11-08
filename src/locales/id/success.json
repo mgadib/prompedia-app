@@ -24,6 +24,13 @@
     "reformatted": "Konten berhasil diformat ulang",
     "selfReviewed": "Konten berhasil direview sendiri",
     "actionSuccess": "Konten berhasil di{{action}}"
+  },
+  "prompt": {
+    "promptCreated": "Prompt berhasil dibuat",
+    "promptUpdated": "Prompt berhasil diperbarui",
+    "promptRemoved": "Prompt berhasil dihapus",
+    "promptCopied": "Prompt berhasil disalin",
+    "promptDuplicated": "Prompt berhasil diduplikasi"
   }
 }
 

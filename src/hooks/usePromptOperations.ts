@@ -3,10 +3,11 @@ import { Prompt } from '@/lib/storage';
 import { storageManager } from '@/lib/storage-manager';
 import { setCurrentPrompt } from '@/lib/storage';
 import { toast } from 'sonner';
+import i18n from '@/lib/i18n';
 
 /**
- * Custom hook for managing prompt operations
- * Encapsulates CRUD operations and business logic for prompts
+ * Custom hook untuk mengelola operasi prompt
+ * Mengenkapsulasi operasi CRUD dan business logic untuk prompt
  */
 export const usePromptOperations = () => {
   const [loading, setLoading] = useState(false);
@@ -32,10 +33,10 @@ export const usePromptOperations = () => {
       await storageManager.savePrompt(newPrompt);
       setCurrentPrompt(newPrompt.id);
       
-      toast.success('Prompt berhasil dibuat');
+      toast.success(i18n.t('success:prompt.promptCreated'));
       return newPrompt;
     } catch (err) {
-      handleError(err, 'Gagal membuat prompt');
+      handleError(err, i18n.t('errors:promptOperations.promptCreateFailed'));
       throw err;
     } finally {
       setLoading(false);
@@ -63,10 +64,10 @@ export const usePromptOperations = () => {
 
       await storageManager.savePrompt(updatedPrompt);
       
-      toast.success('Prompt berhasil diperbarui');
+      toast.success(i18n.t('success:prompt.promptUpdated'));
       return updatedPrompt;
     } catch (err) {
-      handleError(err, 'Gagal memperbarui prompt');
+      handleError(err, i18n.t('errors:promptOperations.promptUpdateFailed'));
       throw err;
     } finally {
       setLoading(false);
@@ -80,9 +81,9 @@ export const usePromptOperations = () => {
 
       await storageManager.deletePrompt(promptId);
       
-      toast.success('Prompt berhasil dihapus');
+      toast.success(i18n.t('success:prompt.promptRemoved'));
     } catch (err) {
-      handleError(err, 'Gagal menghapus prompt');
+      handleError(err, i18n.t('errors:promptOperations.promptRemoveFailed'));
       throw err;
     } finally {
       setLoading(false);
@@ -98,15 +99,15 @@ export const usePromptOperations = () => {
         ...originalPrompt,
         id: crypto.randomUUID(),
         title: `${originalPrompt.title} (Copy)`,
-        is_public: false // Copies are private by default
+        is_public: false // Salinan bersifat private secara default
       };
 
       await storageManager.savePrompt(copiedPrompt);
       
-      toast.success('Prompt berhasil disalin');
+      toast.success(i18n.t('success:prompt.promptCopied'));
       return copiedPrompt;
     } catch (err) {
-      handleError(err, 'Gagal menyalin prompt');
+      handleError(err, i18n.t('errors:promptOperations.promptCopyFailed'));
       throw err;
     } finally {
       setLoading(false);
@@ -118,8 +119,8 @@ export const usePromptOperations = () => {
       setLoading(true);
       setError(null);
 
-      // This would need to be implemented with actual data fetching
-      // For now, this is a placeholder structure
+      // Ini perlu diimplementasikan dengan pengambilan data yang sebenarnya
+      // Untuk saat ini, ini adalah struktur placeholder
       const duplicatedPrompt: Prompt = {
         id: crypto.randomUUID(),
         title: newTitle || `Duplicated Prompt`,
@@ -134,10 +135,10 @@ export const usePromptOperations = () => {
 
       await storageManager.savePrompt(duplicatedPrompt);
       
-      toast.success('Prompt berhasil diduplikasi');
+      toast.success(i18n.t('success:prompt.promptDuplicated'));
       return duplicatedPrompt;
     } catch (err) {
-      handleError(err, 'Gagal menduplikasi prompt');
+      handleError(err, i18n.t('errors:promptOperations.promptDuplicateFailed'));
       throw err;
     } finally {
       setLoading(false);

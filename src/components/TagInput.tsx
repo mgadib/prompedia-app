@@ -21,21 +21,21 @@ const TagInput = ({ selectedTagNames, onChange }: TagInputProps) => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const isMobile = useIsMobile();
 
-  // Get user's tags for suggestions
+  // Mendapatkan tag user untuk saran
   useEffect(() => {
     const loadSuggestions = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
-          // Get user's tags for suggestions
+          // Mendapatkan tag user untuk saran
           const userTags = await TagService.getUserTags(user.id);
           const tagNames = userTags.map(tag => tag.name);
           
-          // Filter out already selected tags
+          // Memfilter tag yang sudah dipilih
           const availableTags = tagNames.filter(tag => !selectedTagNames.includes(tag));
           setSuggestions(availableTags.slice(0, 10));
         } else {
-          // For guest users, use some default suggestions
+          // Untuk user guest, gunakan beberapa saran default
           setSuggestions(['ai', 'writing', 'creative', 'productivity', 'coding']);
         }
       } catch (error) {
@@ -56,7 +56,7 @@ const TagInput = ({ selectedTagNames, onChange }: TagInputProps) => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     
-    // Check if comma was typed
+    // Mengecek apakah koma diketik
     if (value.includes(',')) {
       const parts = value.split(',');
       const newTag = parts[0].trim();
@@ -65,7 +65,7 @@ const TagInput = ({ selectedTagNames, onChange }: TagInputProps) => {
         onChange([...selectedTagNames, newTag]);
       }
 
-      // Set remaining text after comma as new input
+      // Mengatur teks yang tersisa setelah koma sebagai input baru
       const remainingText = parts.slice(1).join(',').trim();
       setInput(remainingText);
       setShowSuggestions(remainingText.length > 0);
@@ -94,7 +94,7 @@ const TagInput = ({ selectedTagNames, onChange }: TagInputProps) => {
   return (
     <div className="space-y-1">
       <div className="relative">
-        {/* Main input area with tags inline - matching title design */}
+        {/* Area input utama dengan tag inline - sesuai desain title */}
         <div className={`relative flex ${isMobile ? 'flex-wrap' : 'items-center'} gap-2 ${isMobile ? 'min-h-[44px]' : 'min-h-[40px]'} bg-transparent border-none ${isMobile ? 'px-2 py-2' : 'px-3 py-2'} focus-within:ring-0`}>
           <Hash className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} text-muted-foreground flex-shrink-0 ${isMobile ? 'self-start mt-2' : ''}`} />
           

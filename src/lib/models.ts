@@ -13,19 +13,19 @@ export interface ModelCapabilities {
 export interface AIModel {
   id: string;
   label: string;
-  name: string; // Add name for DB compatibility
+  name: string; // Nama untuk kompatibilitas dengan database
   provider: string;
   type: 'Text' | 'Multimodal';
   capabilities: ModelCapabilities;
   free?: boolean;
 }
 
-// Only 2 models are available for users
+// Hanya 2 model yang tersedia untuk user
 export const AVAILABLE_MODELS: AIModel[] = [
   {
     id: 'meta-llama/llama-4-maverick:free',
     label: 'Llama 4 Maverick',
-    name: 'Llama 4 Maverick', // Add name for DB compatibility
+    name: 'Llama 4 Maverick', // Nama untuk kompatibilitas dengan database
     provider: 'OpenRouter',
     type: 'Multimodal',
     capabilities: {
@@ -41,7 +41,7 @@ export const AVAILABLE_MODELS: AIModel[] = [
   {
     id: 'qwen/qwen3-30b-a3b:free',
     label: 'Qwen 3 30B',
-    name: 'Qwen 3 30B', // Add name for DB compatibility
+    name: 'Qwen 3 30B', // Nama untuk kompatibilitas dengan database
     provider: 'OpenRouter',
     type: 'Text',
     capabilities: {
@@ -55,7 +55,7 @@ export const AVAILABLE_MODELS: AIModel[] = [
   }
 ];
 
-// Helper to get only allowed models for user selection
+// Helper untuk mendapatkan hanya model yang diizinkan untuk seleksi user
 export const getAllowedModels = (): AIModel[] => {
   return AVAILABLE_MODELS.filter(model => 
     model.id === 'meta-llama/llama-4-maverick:free' || 

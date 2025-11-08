@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
 
 /**
- * AI Usage tracking interface
+ * Interface untuk tracking penggunaan AI
  */
 export interface AIUsage {
   usage_count: number;
@@ -14,7 +14,8 @@ export interface AIUsage {
 }
 
 /**
- * Rate limiting service for AI usage
+ * Service untuk membatasi penggunaan AI berdasarkan batas harian
+ * Menggunakan singleton pattern untuk memastikan konsistensi state
  */
 export class RateLimitingService {
   private static instance: RateLimitingService;
@@ -32,14 +33,15 @@ export class RateLimitingService {
   }
 
   /**
-   * Initialize guest session for tracking
+   * Inisialisasi session untuk guest user
+   * Mengecek apakah sudah ada data di localStorage dan melakukan reset jika sudah hari baru
    */
   private initializeGuestSession(): void {
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem(STORAGE_KEYS.GUEST_USAGE);
       if (stored) {
         const usageData = JSON.parse(stored);
-        // Check if it's a new day (reset if needed)
+        // Reset jika sudah hari baru untuk memastikan batas harian dihitung ulang
         const today = new Date().toDateString();
         if (usageData.date !== today) {
           this.resetGuestUsage();
@@ -53,7 +55,8 @@ export class RateLimitingService {
   }
 
   /**
-   * Reset guest usage for new day
+   * Reset penggunaan guest untuk hari baru
+   * Membuat session ID baru dan mengatur ulang counter
    */
   private resetGuestUsage(): void {
     this.guestSessionId = crypto.randomUUID();
@@ -67,7 +70,9 @@ export class RateLimitingService {
   }
 
   /**
-   * Check if user can make AI call
+   * Mengecek apakah user dapat melakukan panggilan AI
+   * @param user - User yang terautentikasi atau null untuk guest
+   * @returns Object berisi status allowed, usage info, dan error jika ada
    */
   public async canMakeAICall(user: User | null): Promise<{
     allowed: boolean;
@@ -76,10 +81,10 @@ export class RateLimitingService {
   }> {
     try {
       if (user) {
-        // Authenticated user - check database
+        // User terautentikasi: cek dari database untuk akurasi yang lebih baik
         return await this.checkAuthenticatedUserUsage(user.id);
       } else {
-        // Guest user - check server-side validation
+        // Guest user: validasi di server-side untuk mencegah manipulasi client-side
         return await this.checkGuestUsage();
       }
     } catch (error) {
@@ -93,7 +98,9 @@ export class RateLimitingService {
   }
 
   /**
-   * Increment AI usage counter
+   * Menambah counter penggunaan AI setelah panggilan berhasil
+   * @param user - User yang terautentikasi atau null untuk guest
+   * @returns Object berisi status success, usage info, dan error jika ada
    */
   public async incrementUsage(user: User | null): Promise<{
     success: boolean;
@@ -102,10 +109,10 @@ export class RateLimitingService {
   }> {
     try {
       if (user) {
-        // Authenticated user - update database
+        // User terautentikasi: update di database untuk persistensi
         return await this.incrementAuthenticatedUserUsage(user.id);
       } else {
-        // Guest user - update server-side validation
+        // Guest user: update melalui server-side untuk validasi yang aman
         return await this.incrementGuestUsage();
       }
     } catch (error) {
@@ -119,7 +126,8 @@ export class RateLimitingService {
   }
 
   /**
-   * Check authenticated user usage from database
+   * Mengecek penggunaan user terautentikasi dari database
+   * Menggunakan RPC function untuk mendapatkan data real-time
    */
   private async checkAuthenticatedUserUsage(userId: string): Promise<{
     allowed: boolean;
@@ -150,7 +158,8 @@ export class RateLimitingService {
   }
 
   /**
-   * Increment authenticated user usage in database
+   * Menambah penggunaan user terautentikasi di database
+   * Menggunakan RPC function yang menangani reset harian otomatis
    */
   private async incrementAuthenticatedUserUsage(userId: string): Promise<{
     success: boolean;
@@ -193,7 +202,8 @@ export class RateLimitingService {
   }
 
   /**
-   * Check guest user usage from server-side validation
+   * Mengecek penggunaan guest user melalui validasi server-side
+   * Fallback ke localStorage jika server tidak tersedia
    */
   private async checkGuestUsage(): Promise<{
     allowed: boolean;
@@ -201,11 +211,11 @@ export class RateLimitingService {
     error?: string;
   }> {
     try {
-      // Get client info for tracking
+      // Mengumpulkan info client untuk tracking dan validasi
       const ipAddress = await this.getClientIP();
       const userAgent = navigator.userAgent;
       
-      // Use server-side validation
+      // Validasi di server-side untuk mencegah manipulasi
       const { data, error } = await supabase.rpc('track_guest_usage' as any, {
         p_session_id: this.guestSessionId || crypto.randomUUID(),
         p_ip_address: ipAddress,
@@ -228,13 +238,14 @@ export class RateLimitingService {
       };
     } catch (error) {
       console.error('Error checking guest usage:', error);
-      // Fallback to localStorage if server fails
+      // Fallback ke localStorage jika server tidak tersedia (untuk offline support)
       return this.checkGuestUsageFallback();
     }
   }
 
   /**
-   * Fallback guest usage check from localStorage
+   * Fallback: cek penggunaan guest dari localStorage
+   * Digunakan ketika server-side validation tidak tersedia
    */
   private checkGuestUsageFallback(): {
     allowed: boolean;
@@ -272,7 +283,8 @@ export class RateLimitingService {
   }
 
   /**
-   * Increment guest user usage with server-side validation
+   * Menambah penggunaan guest user dengan validasi server-side
+   * Fallback ke localStorage jika server tidak tersedia
    */
   private async incrementGuestUsage(): Promise<{
     success: boolean;
@@ -280,11 +292,11 @@ export class RateLimitingService {
     error?: string;
   }> {
     try {
-      // Get client info for tracking
+      // Mengumpulkan info client untuk tracking
       const ipAddress = await this.getClientIP();
       const userAgent = navigator.userAgent;
       
-      // Use server-side validation and increment
+      // Validasi dan increment di server-side untuk keamanan
       const { data, error } = await supabase.rpc('track_guest_usage' as any, {
         p_session_id: this.guestSessionId || crypto.randomUUID(),
         p_ip_address: ipAddress,
@@ -307,13 +319,14 @@ export class RateLimitingService {
       };
     } catch (error) {
       console.error('Error incrementing guest usage:', error);
-      // Fallback to localStorage if server fails
+      // Fallback ke localStorage jika server tidak tersedia
       return this.incrementGuestUsageFallback();
     }
   }
 
   /**
-   * Fallback guest usage increment from localStorage
+   * Fallback: increment penggunaan guest dari localStorage
+   * Digunakan ketika server-side validation tidak tersedia
    */
   private incrementGuestUsageFallback(): {
     success: boolean;
@@ -326,7 +339,7 @@ export class RateLimitingService {
     if (stored) {
       usageData = JSON.parse(stored);
 
-      // Check if it's a new day
+      // Reset jika sudah hari baru untuk memastikan batas harian dihitung ulang
       const today = new Date().toDateString();
       if (usageData.date !== today) {
         this.resetGuestUsage();
@@ -351,7 +364,7 @@ export class RateLimitingService {
       };
     }
 
-    // Increment count
+    // Menambah counter penggunaan
     usageData.count += 1;
     usageData.lastUsedAt = new Date().toISOString();
 
@@ -370,13 +383,14 @@ export class RateLimitingService {
   }
 
   /**
-   * Get client IP address (simplified for browser environment)
+   * Mendapatkan IP address client (disederhanakan untuk environment browser)
+   * Di browser, kita tidak bisa langsung mendapatkan IP asli
+   * Di production, bisa menggunakan service seperti ipify.org atau mengambil dari server headers
    */
   private async getClientIP(): Promise<string | null> {
     try {
-      // In browser environment, we can't directly get real IP
-      // This is a simplified approach - in production, you might want to
-      // use a service like ipify.org or get it from server headers
+      // Di browser, kita tidak bisa langsung mendapatkan IP asli
+      // Pendekatan ini disederhanakan - di production bisa menggunakan service eksternal
       return 'browser-client';
     } catch (error) {
       console.error('Error getting client IP:', error);
@@ -385,7 +399,8 @@ export class RateLimitingService {
   }
 
   /**
-   * Get default usage info based on user type
+   * Mendapatkan info penggunaan default berdasarkan tipe user
+   * Digunakan sebagai fallback ketika terjadi error
    */
   private getDefaultUsage(user: User | null): AIUsage {
     return {
@@ -403,11 +418,12 @@ export class RateLimitingService {
 
 
   /**
-   * Reset usage (for testing purposes)
+   * Reset penggunaan (untuk keperluan testing)
+   * @param user - User yang terautentikasi atau null untuk guest
    */
   public async resetUsage(user: User | null): Promise<void> {
     if (user) {
-      // For authenticated users, delete today's usage record
+      // Untuk user terautentikasi: hapus record penggunaan hari ini
       const today = new Date().toISOString().split('T')[0];
       await (supabase as any)
         .from('ai_usage')
@@ -415,11 +431,11 @@ export class RateLimitingService {
         .eq('user_id', user.id)
         .eq('usage_date', today);
     } else {
-      // For guest users, reset localStorage
+      // Untuk guest user: reset localStorage
       this.resetGuestUsage();
     }
   }
 }
 
-// Export singleton instance
+// Export singleton instance untuk digunakan di seluruh aplikasi
 export const rateLimitingService = RateLimitingService.getInstance();

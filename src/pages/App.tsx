@@ -48,12 +48,12 @@ const AppPage = () => {
       const { data: { session } } = await supabase.auth.getSession();
       setUser(session?.user ?? null);
 
-      // Don't automatically load last opened prompt - keep playground as default
-      // Users can manually load prompts from the library if needed
+      // Jangan otomatis memuat prompt terakhir yang dibuka - tetap playground sebagai default
+      // User bisa memuat prompt secara manual dari library jika diperlukan
 
       setLoading(false);
       
-      // Add a small delay to ensure smooth transition
+      // Menambahkan delay kecil untuk memastikan transisi yang mulus
       setTimeout(() => {
         setIsInitializing(false);
       }, 300);
@@ -68,7 +68,7 @@ const AppPage = () => {
     checkAuth();
   }, [checkAuth]);
 
-  // Load prompt from query param `use` when present
+  // Memuat prompt dari query param `use` ketika ada
   useEffect(() => {
     const promptId = searchParams.get('use');
     if (!promptId) return;
@@ -112,19 +112,19 @@ const AppPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
-  // Set up auth state listener
+  // Mengatur listener untuk perubahan state autentikasi
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         const newUser = session?.user ?? null;
         setUser(newUser);
 
-        // Update default view based on authentication status
+        // Memperbarui tampilan default berdasarkan status autentikasi
         if (newUser) {
-          // User just logged in - keep playground as default, don't force switch to library
-          // Only switch if user explicitly navigates to library views
+          // User baru login - tetap playground sebagai default, jangan paksa pindah ke library
+          // Hanya pindah jika user secara eksplisit navigasi ke tampilan library
         } else {
-          // User just logged out - keep playground as default
+          // User baru logout - tetap playground sebagai default
         }
       }
     );
@@ -142,7 +142,7 @@ const AppPage = () => {
     } catch (error) {
       console.error('Failed to load prompts:', error);
       setAllPrompts([]);
-      // Don't show error toast for this as it's not critical for playground
+      // Jangan tampilkan error toast karena tidak kritis untuk playground
     }
   }, []);
 
@@ -159,13 +159,13 @@ const AppPage = () => {
     }
   }, []);
 
-  // Combined effect to load both types of prompts
+  // Efek gabungan untuk memuat kedua jenis prompt
   useEffect(() => {
     loadAllPrompts();
     loadPublicPrompts();
   }, [loadAllPrompts, loadPublicPrompts]);
 
-  // Separate effect for periodic refresh of public prompts only
+  // Efek terpisah untuk refresh berkala hanya untuk prompt public
   useEffect(() => {
     const interval = setInterval(() => {
       loadPublicPrompts();
@@ -179,11 +179,11 @@ const AppPage = () => {
     [allPrompts, user]
   );
 
-  // Convert to PromptWithTags format (tags loaded separately via junction table)
+  // Mengonversi ke format PromptWithTags (tag dimuat terpisah melalui junction table)
   const myPromptsWithTags: PromptWithTags[] = useMemo(() =>
     myPrompts.map(prompt => ({
       ...prompt,
-      tags: [] // Tags will be loaded separately in MyLibrary component
+      tags: [] // Tag akan dimuat terpisah di komponen MyLibrary
     })),
     [myPrompts]
   );
@@ -191,7 +191,7 @@ const AppPage = () => {
   const publicPromptsWithTags: PromptWithTags[] = useMemo(() =>
     publicPrompts.map(prompt => ({
       ...prompt,
-      tags: [] // Tags will be loaded separately in PublicLibrary component
+      tags: [] // Tag akan dimuat terpisah di komponen PublicLibrary
     })),
     [publicPrompts]
   );
@@ -200,16 +200,16 @@ const AppPage = () => {
     setCurrentPrompt(prompt);
     storage.setCurrentPrompt(prompt.id);
     
-    // Update the allPrompts array to reflect the changes
+    // Memperbarui array allPrompts untuk mencerminkan perubahan
     setAllPrompts(prevPrompts => {
       const existingIndex = prevPrompts.findIndex(p => p.id === prompt.id);
       if (existingIndex >= 0) {
-        // Update existing prompt
+        // Memperbarui prompt yang sudah ada
         const updatedPrompts = [...prevPrompts];
         updatedPrompts[existingIndex] = prompt;
         return updatedPrompts;
       } else {
-        // Add new prompt
+        // Menambahkan prompt baru
         return [...prevPrompts, prompt];
       }
     });
@@ -268,7 +268,7 @@ const AppPage = () => {
         setCurrentPrompt(null);
         setShowEditor(false);
       }
-      // Reload prompts after successful delete
+      // Memuat ulang prompt setelah penghapusan berhasil
       await loadAllPrompts();
     } catch (error) {
       console.error('Failed to delete prompt:', error);
@@ -286,7 +286,7 @@ const AppPage = () => {
     }
 
     try {
-      // Check if user can make AI calls (copying requires quota)
+      // Mengecek apakah user bisa melakukan panggilan AI (menyalin memerlukan quota)
       const rateLimitCheck = await rateLimitingService.canMakeAICall(user);
       if (!rateLimitCheck.allowed) {
         toast.error(t('errors:usage.waitBeforeCopying'));
@@ -302,7 +302,7 @@ const AppPage = () => {
         }
       }
 
-      // Sanitize prompt to match new schema
+      // Menyucikan prompt agar sesuai dengan schema baru
       const sanitizedPrompt: Prompt = {
         id: prompt.id || '',
         user_id: prompt.user_id || '',
@@ -329,7 +329,7 @@ const AppPage = () => {
       handlePromptChange(copiedPrompt);
       toast.success(t('success:prompt.copiedSuccessfully'));
 
-      // Increment usage counter after successful copy
+      // Menambah counter penggunaan setelah salinan berhasil
       await rateLimitingService.incrementUsage(user);
     } catch (error) {
       console.error('Failed to copy prompt:', error);
@@ -338,7 +338,7 @@ const AppPage = () => {
   };
 
   const handleUsePrompt = (prompt: PromptWithTags) => {
-    // Guest users can only use prompts for viewing, not for AI processing
+    // User guest hanya bisa menggunakan prompt untuk melihat, bukan untuk pemrosesan AI
     if (!user) {
       toast.warning(t('common:warnings.signInForAI'));
     }
@@ -365,13 +365,13 @@ const AppPage = () => {
 
   const handleViewChange = (view: 'my-library' | 'public-library') => {
     try {
-      // Guest users cannot access private library
+      // User guest tidak bisa mengakses library private
       if (!user && view === 'my-library') {
         toast.error(t('errors:actions.signInToAccessLibrary'));
         return;
       }
 
-      // Reset playground state when switching to library views
+      // Mereset state playground saat beralih ke tampilan library
       setCurrentPrompt(null);
       storage.clearCurrentPrompt();
       setActiveView(view);
@@ -427,7 +427,7 @@ const AppPage = () => {
       is_featured: false,
     };
 
-    // Reset all playground state atomically
+    // Mereset semua state playground secara atomik
     setCurrentPrompt(newPrompt);
     storage.setCurrentPrompt(newPrompt.id);
     setShowEditor(true);
@@ -449,7 +449,7 @@ const AppPage = () => {
   };
 
   const handleAuthSuccess = () => {
-    // Reset playground count after successful login
+    // Mereset counter playground setelah login berhasil
     localStorage.removeItem(STORAGE_KEYS.GUEST_USAGE);
     toast.success(t('success:auth.welcomeUnlimited'));
   };
@@ -462,7 +462,7 @@ const AppPage = () => {
     setIsFocusMode(prev => !prev);
   };
 
-  // Show loading state
+  // Menampilkan state loading
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
@@ -548,7 +548,7 @@ const AppPage = () => {
               size="icon"
               onClick={() => setMobileSidebarOpen(true)}
               className="h-9 w-9 touch-manipulation"
-              aria-label="Open menu"
+              aria-label={t('common:labels.openMenu')}
             >
               <Menu className="h-5 w-5" />
             </Button>
