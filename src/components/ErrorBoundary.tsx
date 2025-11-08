@@ -55,29 +55,31 @@ export class ErrorBoundary extends Component<Props, State> {
 
       // UI error default
       return (
-        <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+        <div className="min-h-screen flex items-center justify-center p-4 bg-background animate-fade-in">
           <div className="max-w-md w-full space-y-4">
-            <Alert variant="destructive">
-              <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5" />
+            <Alert variant="destructive" className="animate-scale-in">
+              <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5 animate-pulse-slow" />
               <AlertTitle className="font-mono text-base sm:text-lg">An Error Occurred</AlertTitle>
               <AlertDescription className="font-mono text-sm">
                 The application encountered an unexpected error. Please try reloading the page.
               </AlertDescription>
             </Alert>
 
-            <div className="space-y-2 sm:space-y-3">
+            <div className="space-y-2 sm:space-y-3 animate-fade-in" style={{ animationDelay: '100ms' }}>
               <Button 
                 onClick={this.handleReset} 
-                className="w-full font-mono touch-manipulation min-h-[44px] sm:min-h-0"
+                className="w-full font-mono touch-manipulation min-h-[44px] sm:min-h-0 transition-smooth"
                 variant="outline"
+                aria-label="Try again to recover from error"
               >
-                <RefreshCw className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                <RefreshCw className="w-4 h-4 sm:w-5 sm:w-5 mr-2" />
                 Try Again
               </Button>
               
               <Button 
                 onClick={() => window.location.reload()} 
-                className="w-full font-mono touch-manipulation min-h-[44px] sm:min-h-0"
+                className="w-full font-mono touch-manipulation min-h-[44px] sm:min-h-0 transition-smooth"
+                aria-label="Reload the page"
               >
                 Reload Page
               </Button>

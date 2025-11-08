@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Prompt, Tag } from '@/lib/storage';
 import { Badge } from '@/components/ui/badge';
@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { SupabaseService } from '@/lib/supabase-service';
 import { TagService } from '@/lib/tag-service';
 import PromptDetailModal from './PromptDetailModal';
+import { SkeletonCard } from '@/components/ui/skeleton';
 import { trackEvent } from '@/lib/analytics';
 import { ENV } from '@/lib/constants';
 
@@ -153,22 +154,50 @@ const PublicLibrary = ({
     trackEvent('copy_prompt_content', { prompt_id: prompt.id });
   };
 
-  // Menampilkan state loading sementara tag sedang dimuat
+  // Menampilkan skeleton loading sementara tag sedang dimuat
   if (isLoadingTags) {
     return (
-      <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-8">
-        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4" />
-        <p className="text-sm font-mono">{t('library:loadingPrompts')}</p>
+      <div className="flex flex-col h-full animate-fade-in">
+        {/* Search and Filter Header Skeleton */}
+        <div className="border-b border-border bg-card/50 sm:p-4 md:p-6 p-3">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center">
+            <div className="relative flex-1 w-full">
+              <div className="h-10 bg-muted rounded-md animate-pulse" />
+            </div>
+            <div className="relative w-full sm:w-auto sm:min-w-[200px]">
+              <div className="h-10 bg-muted rounded-md animate-pulse" />
+            </div>
+            <div className="h-6 w-32 bg-muted rounded animate-pulse" />
+          </div>
+        </div>
+
+        {/* Skeleton Cards Grid */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 p-3 sm:p-4 md:p-6">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <SkeletonCard key={i} className="animate-fade-in" style={{ animationDelay: `${i * 50}ms` }} />
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
 
   if (promptsWithTags.length === 0 && prompts.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-8">
-        <Globe className="w-16 h-16 mb-4 opacity-50" />
-        <h3 className="text-lg font-semibold mb-2 font-mono">{t('library:noPublicPrompts')}</h3>
-        <p className="text-sm text-center">{t('library:beFirstToShare')}</p>
+      <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-8 animate-fade-in">
+        <div className="flex flex-col items-center gap-4">
+          <div className="relative">
+            <Globe className="w-16 h-16 opacity-50 animate-pulse-slow" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-8 h-8 border-2 border-primary/30 rounded-full animate-spin" />
+            </div>
+          </div>
+          <div className="text-center space-y-2">
+            <h3 className="text-lg font-semibold font-mono">{t('library:noPublicPrompts')}</h3>
+            <p className="text-sm">{t('library:beFirstToShare')}</p>
+          </div>
+        </div>
       </div>
     );
   }
@@ -266,7 +295,7 @@ const PublicLibrary = ({
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 p-3 sm:p-4 md:p-6">
-            {filteredPrompts.map((prompt) => {
+            {filteredPrompts.map((prompt, index) => {
               const userData = getMockUserData(prompt.user_id || '');
               
               return (
@@ -282,11 +311,12 @@ const PublicLibrary = ({
                   role="button"
                   tabIndex={0}
                   aria-label={t('library:openDetails', { title: prompt.title || t('prompt:untitled') })}
-                  className={`group relative bg-card border rounded-lg p-4 sm:p-6 cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-primary/50 active:scale-[0.98] touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
+                  className={`group relative bg-card border rounded-lg p-4 sm:p-6 cursor-pointer card-hover active:scale-[0.98] touch-manipulation focus-ring will-change-transform animate-fade-in ${
                     currentPromptId === prompt.id
-                      ? 'border-primary bg-accent/20 shadow-md'
+                      ? 'border-primary bg-accent/20 shadow-md ring-2 ring-primary/20'
                       : 'border-border hover:bg-accent/10'
                   }`}
+                  style={{ animationDelay: `${index * 30}ms` }}
                 >
                   {/* Header with creator info */}
                   <div className="flex items-center gap-2 mb-4">
@@ -415,4 +445,4 @@ const PublicLibrary = ({
   );
 };
 
-export default PublicLibrary;
+export default memo(PublicLibrary);

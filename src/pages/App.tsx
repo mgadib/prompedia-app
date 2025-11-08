@@ -742,7 +742,7 @@ const AppPage = () => {
       />
 
       {/* Main Content Area */}
-      <div className={`flex-1 flex flex-col transition-opacity duration-300 will-change-[opacity] ${isInitializing ? 'opacity-0' : 'opacity-100'} min-w-0 overflow-hidden ${isMobile ? 'h-screen' : ''}`}>
+      <div className={`flex-1 flex flex-col transition-opacity duration-300 will-change-opacity ${isInitializing ? 'opacity-0' : 'opacity-100'} min-w-0 overflow-hidden ${isMobile ? 'h-screen' : ''}`}>
         {/* Mobile Hamburger Menu Button */}
         {isMobile && (
           <div className="md:hidden border-b border-border bg-card flex-shrink-0 px-4 py-3 flex items-center gap-3 z-10">
@@ -763,7 +763,7 @@ const AppPage = () => {
 
         <ErrorBoundary>
           {showEditor ? (
-            <div className={`flex-1 flex flex-col min-w-0 overflow-hidden transition-opacity duration-300 ${isTransitioning ? 'opacity-50' : 'opacity-100'}`}>
+            <div className={`flex-1 flex flex-col min-w-0 overflow-hidden transition-opacity duration-300 will-change-opacity ${isTransitioning ? 'opacity-50' : 'opacity-100'}`}>
               <PromptEditor
                 key="prompt-editor"
                 currentPrompt={currentPrompt}
@@ -776,7 +776,7 @@ const AppPage = () => {
               />
             </div>
           ) : (
-            <div className={`flex-1 flex flex-col min-w-0 overflow-hidden transition-all duration-300 ${isTransitioning ? 'opacity-50 scale-[0.98]' : 'opacity-100 scale-100'}`}>
+            <div className={`flex-1 flex flex-col min-w-0 overflow-hidden transition-all duration-300 will-change-transform will-change-opacity ${isTransitioning ? 'opacity-50 scale-[0.98]' : 'opacity-100 scale-100'}`}>
               {activeView === 'my-library' ? (
                 <MyLibrary
                   key="my-library"

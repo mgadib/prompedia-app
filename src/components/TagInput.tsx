@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { X, Hash, Plus } from 'lucide-react';
+import { X, Hash, Plus, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { storage } from '@/lib/storage';
 import { TagService } from '@/lib/tag-service';
 import { supabase } from '@/integrations/supabase/client';
@@ -19,11 +20,13 @@ const TagInput = ({ selectedTagNames, onChange }: TagInputProps) => {
   const [input, setInput] = useState('');
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
   const isMobile = useIsMobile();
 
   // Mendapatkan tag user untuk saran
   useEffect(() => {
     const loadSuggestions = async () => {
+      setIsLoadingSuggestions(true);
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
@@ -41,6 +44,8 @@ const TagInput = ({ selectedTagNames, onChange }: TagInputProps) => {
       } catch (error) {
         console.error('Failed to load tag suggestions:', error);
         setSuggestions(['ai', 'writing', 'creative', 'productivity', 'coding']);
+      } finally {
+        setIsLoadingSuggestions(false);
       }
     };
 
@@ -131,7 +136,7 @@ const TagInput = ({ selectedTagNames, onChange }: TagInputProps) => {
           />
 
           {/* Popular Tags Quick Add - inline on same row, wrap on mobile */}
-          {selectedTagNames.length < 3 && suggestions.length > 0 && !isMobile && (
+          {selectedTagNames.length < 3 && !isLoadingSuggestions && suggestions.length > 0 && !isMobile && (
             <div className="flex items-center gap-1 ml-2">
               {suggestions.slice(0, 3 - selectedTagNames.length).map(tag => (
                 <Button
@@ -139,7 +144,8 @@ const TagInput = ({ selectedTagNames, onChange }: TagInputProps) => {
                   variant="ghost"
                   size="sm"
                   onClick={() => addTag(tag)}
-                  className="h-6 px-2 text-xs bg-accent/10 hover:bg-accent/20 hover:text-accent font-mono flex-shrink-0 touch-manipulation"
+                  className="h-6 px-2 text-xs bg-accent/10 hover:bg-accent/20 hover:text-accent font-mono flex-shrink-0 touch-manipulation transition-smooth"
+                  aria-label={t('common:placeholders.addTag', { tag })}
                 >
                   <Plus className="w-3 h-3 mr-1" />
                   {tag}
@@ -147,10 +153,16 @@ const TagInput = ({ selectedTagNames, onChange }: TagInputProps) => {
               ))}
             </div>
           )}
+          {isLoadingSuggestions && !isMobile && (
+            <div className="flex items-center gap-1 ml-2">
+              <Skeleton className="h-6 w-16 rounded-full" />
+              <Skeleton className="h-6 w-20 rounded-full" />
+            </div>
+          )}
         </div>
         
         {/* Popular Tags Quick Add - separate row on mobile */}
-        {selectedTagNames.length < 3 && suggestions.length > 0 && isMobile && (
+        {selectedTagNames.length < 3 && !isLoadingSuggestions && suggestions.length > 0 && isMobile && (
           <div className="flex items-center gap-2 mt-2 px-2">
             {suggestions.slice(0, 3 - selectedTagNames.length).map(tag => (
               <Button
@@ -158,7 +170,8 @@ const TagInput = ({ selectedTagNames, onChange }: TagInputProps) => {
                 variant="ghost"
                 size="default"
                 onClick={() => addTag(tag)}
-                className="h-9 px-3 text-sm bg-accent/10 hover:bg-accent/20 hover:text-accent font-mono flex-shrink-0 touch-manipulation"
+                className="h-9 px-3 text-sm bg-accent/10 hover:bg-accent/20 hover:text-accent font-mono flex-shrink-0 touch-manipulation transition-smooth"
+                aria-label={t('common:placeholders.addTag', { tag })}
               >
                 <Plus className="w-4 h-4 mr-1" />
                 {tag}
@@ -166,20 +179,35 @@ const TagInput = ({ selectedTagNames, onChange }: TagInputProps) => {
             ))}
           </div>
         )}
+        {isLoadingSuggestions && isMobile && (
+          <div className="flex items-center gap-2 mt-2 px-2">
+            <Skeleton className="h-9 w-20 rounded-md" />
+            <Skeleton className="h-9 w-24 rounded-md" />
+          </div>
+        )}
 
         {/* Tag Suggestions */}
-        {showSuggestions && filteredSuggestions.length > 0 && selectedTagNames.length < 3 && (
-          <div className={`absolute top-full left-0 right-0 z-10 mt-1 bg-card border border-border rounded-md shadow-lg max-h-32 overflow-y-auto ${isMobile ? 'max-h-40' : ''}`}>
+        {showSuggestions && !isLoadingSuggestions && filteredSuggestions.length > 0 && selectedTagNames.length < 3 && (
+          <div className={`absolute top-full left-0 right-0 z-10 mt-1 bg-card border border-border rounded-md shadow-lg max-h-32 overflow-y-auto animate-fade-in animate-slide-in-top ${isMobile ? 'max-h-40' : ''}`}>
             {filteredSuggestions.slice(0, 5).map(tag => (
               <button
                 key={tag}
                 onClick={() => addTag(tag)}
-                className={`w-full text-left ${isMobile ? 'px-4 py-3 text-base min-h-[44px]' : 'px-3 py-2 text-sm'} hover:bg-accent/20 hover:text-accent font-mono flex items-center gap-2 touch-manipulation`}
+                className={`w-full text-left ${isMobile ? 'px-4 py-3 text-base min-h-[44px]' : 'px-3 py-2 text-sm'} hover:bg-accent/20 hover:text-accent font-mono flex items-center gap-2 touch-manipulation transition-smooth scale-on-click`}
+                aria-label={t('common:placeholders.addTag', { tag })}
               >
                 <Hash className={`${isMobile ? 'w-4 h-4' : 'w-3 h-3'}`} />
                 {tag}
               </button>
             ))}
+          </div>
+        )}
+        {showSuggestions && isLoadingSuggestions && (
+          <div className={`absolute top-full left-0 right-0 z-10 mt-1 bg-card border border-border rounded-md shadow-lg p-2 animate-fade-in ${isMobile ? 'max-h-40' : 'max-h-32'}`}>
+            <div className="flex items-center justify-center gap-2 py-2">
+              <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+              <span className="text-xs text-muted-foreground font-mono">{t('common:status.loading')}</span>
+            </div>
           </div>
         )}
       </div>

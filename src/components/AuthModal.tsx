@@ -77,7 +77,7 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={`${isMobile ? 'max-w-[calc(100vw-2rem)] mx-4' : 'sm:max-w-md'} max-h-[90vh] overflow-y-auto`}>
+      <DialogContent className={`${isMobile ? 'max-w-[calc(100vw-2rem)] mx-4 safe-top safe-bottom' : 'sm:max-w-md'} max-h-[90vh] overflow-y-auto modal-enter`}>
         <DialogHeader>
           <div className={`flex items-center justify-center gap-2 ${isMobile ? 'mb-3' : 'mb-4'}`}>
             <Sparkles className={`${isMobile ? 'w-5 h-5' : 'w-6 h-6'} text-primary`} />
@@ -105,8 +105,10 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required={!isLogin}
-                className="font-mono"
+                className="font-mono transition-smooth focus:ring-2 focus:ring-ring focus:ring-offset-2"
                 disabled={loading}
+                aria-label={t('auth:username')}
+                aria-required={!isLogin}
               />
             </div>
           )}
@@ -122,8 +124,10 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="font-mono"
+              className="font-mono transition-smooth focus:ring-2 focus:ring-ring focus:ring-offset-2"
               disabled={loading}
+              aria-label={t('auth:email')}
+              aria-required
             />
           </div>
 
@@ -139,11 +143,14 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={8}
-              className="font-mono"
+              className="font-mono transition-smooth focus:ring-2 focus:ring-ring focus:ring-offset-2"
               disabled={loading}
+              aria-label={t('auth:password')}
+              aria-required
+              aria-describedby={!isLogin ? "password-help" : undefined}
             />
             {!isLogin && (
-              <p className="text-xs text-muted-foreground font-mono">
+              <p id="password-help" className="text-xs text-muted-foreground font-mono">
                 {t('auth:minimumCharacters')}
               </p>
             )}

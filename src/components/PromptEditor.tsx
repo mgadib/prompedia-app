@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Copy, Save, Share2, FileText, Trash2, ArrowLeft, ArrowRight, CheckCircle, Lock, Globe, Leaf, EyeOff } from 'lucide-react';
+import { Copy, Save, Share2, FileText, Trash2, ArrowLeft, ArrowRight, CheckCircle, Lock, Globe, Leaf, EyeOff, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -667,8 +667,9 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
                 }
               }}
               placeholder={t('common:placeholders.enterTitle')}
-              className={`${isMobile ? 'text-base' : 'text-xl'} font-bold bg-transparent border-none ${isMobile ? 'px-2 py-1.5' : 'px-3 py-2'} focus-visible:ring-0 placeholder:text-muted-foreground/50`}
+              className={`${isMobile ? 'text-base' : 'text-xl'} font-bold bg-transparent border-none ${isMobile ? 'px-2 py-1.5' : 'px-3 py-2'} transition-smooth focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 placeholder:text-muted-foreground/50`}
               maxLength={77}
+              aria-label={t('common:placeholders.enterTitle')}
             />
           </div>
 
@@ -682,12 +683,20 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
         {/* Main Prompt Content */}
         <div className={`flex flex-col flex-1 min-h-0 ${isMobile ? 'space-y-2' : 'space-y-3'}`}>
           <div className={`flex items-center ${isMobile ? 'flex-wrap' : ''} gap-2`}>
-            <ActionButtons
-              onAction={handleAction}
-              disabled={!content.trim() || viewState === 'ai-result' || !userCanUseAI}
-              isLoading={isActionLoading}
-              loadingAction={loadingAction}
-            />
+            <div className="relative">
+              <ActionButtons
+                onAction={handleAction}
+                disabled={!content.trim() || viewState === 'ai-result' || !userCanUseAI}
+                isLoading={isActionLoading}
+                loadingAction={loadingAction}
+              />
+              {isActionLoading && (
+                <div className="absolute -bottom-8 left-0 right-0 flex items-center justify-center gap-2 text-xs text-muted-foreground animate-fade-in">
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                  <span className="font-mono">{t('common:status.processing')}</span>
+                </div>
+              )}
+            </div>
 
             {/* Navigation buttons */}
             {viewState === 'ai-result' && (
@@ -761,8 +770,9 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
               }
             }}
             placeholder={t('common:placeholders.startWriting')}
-            className={`flex-1 min-h-0 bg-card border-border font-mono resize-none leading-relaxed prompt-editor-textarea ${isMobile ? 'text-base' : 'text-sm'}`}
+            className={`flex-1 min-h-0 bg-card border-border font-mono resize-none leading-relaxed prompt-editor-textarea transition-smooth focus:ring-2 focus:ring-ring focus:ring-offset-2 ${isMobile ? 'text-base' : 'text-sm'}`}
             maxLength={50000}
+            aria-label={t('common:placeholders.startWriting')}
           />
         </div>
 

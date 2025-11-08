@@ -67,11 +67,11 @@ const Sidebar = ({
   }, [user]);
 
   const sidebarContent = (
-    <div className={`h-full bg-sidebar-background flex flex-col ${
+    <div className={`h-full bg-sidebar-background flex flex-col sidebar-transition ${
       !isMobile && (isFocusMode 
         ? 'w-0 overflow-hidden opacity-0' 
         : isCollapsed ? 'w-16' : 'w-64')
-    } ${!isMobile && 'border-r border-sidebar-border'} transition-all duration-300 ease-in-out relative`}>
+    } ${!isMobile && 'border-r border-sidebar-border'} relative will-change-transform`}>
 
       {/* Bagian Logo */}
       <div className={`border-b border-sidebar-border ${isMobile ? 'p-4' : 'p-6'}`}>
@@ -101,12 +101,13 @@ const Sidebar = ({
                 e.stopPropagation();
                 onNewPrompt();
               }}
-              className={`w-full flex items-center ${isMobile || isCollapsed ? 'justify-center' : 'gap-3'} ${isMobile ? 'px-4 py-3 min-h-[44px]' : 'px-3 py-2'} rounded-lg text-sm transition-all duration-200 font-mono group touch-manipulation ${
+              className={`w-full flex items-center ${isMobile || isCollapsed ? 'justify-center' : 'gap-3'} ${isMobile ? 'px-4 py-3 min-h-[44px]' : 'px-3 py-2'} rounded-lg text-sm transition-smooth font-mono group touch-manipulation scale-on-click ${
                 isPlaygroundActive && !isOnTagPage
                   ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-md font-semibold'
                   : 'text-sidebar-foreground hover:bg-sidebar-accent/20 hover:text-sidebar-accent-foreground hover:shadow-sm'
               }`}
               title={isMobile || isCollapsed ? t('library:playground') : ''}
+              aria-label={t('library:playground')}
             >
               <Play className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${isPlaygroundActive && !isOnTagPage ? 'fill-current' : 'group-hover:scale-110'} transition-transform`} />
               {!isMobile && !isCollapsed && t('library:playground')}
@@ -122,12 +123,13 @@ const Sidebar = ({
                 e.stopPropagation();
                 onViewChange('my-library');
               }}
-              className={`w-full flex items-center ${isMobile || isCollapsed ? 'justify-center' : 'gap-3'} ${isMobile ? 'px-4 py-3 min-h-[44px]' : 'px-3 py-2'} rounded-lg text-sm transition-all duration-200 font-mono group touch-manipulation ${
+              className={`w-full flex items-center ${isMobile || isCollapsed ? 'justify-center' : 'gap-3'} ${isMobile ? 'px-4 py-3 min-h-[44px]' : 'px-3 py-2'} rounded-lg text-sm transition-smooth font-mono group touch-manipulation scale-on-click ${
                 activeView === 'my-library' && !isPlaygroundActive && !isOnTagPage
                   ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-md font-semibold'
                   : 'text-sidebar-foreground hover:bg-sidebar-accent/20 hover:text-sidebar-accent-foreground hover:shadow-sm'
               }`}
               title={isMobile || isCollapsed ? t('library:privateLibrary') : ''}
+              aria-label={t('library:privateLibrary')}
             >
               <Lock className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${activeView === 'my-library' && !isPlaygroundActive && !isOnTagPage ? 'fill-current' : 'group-hover:scale-110'} transition-transform`} />
               {!isMobile && !isCollapsed && t('library:privateLibrary')}
@@ -141,12 +143,13 @@ const Sidebar = ({
               e.stopPropagation();
               onViewChange('public-library');
             }}
-            className={`w-full flex items-center ${isMobile || isCollapsed ? 'justify-center' : 'gap-3'} ${isMobile ? 'px-4 py-3 min-h-[44px]' : 'px-3 py-2'} rounded-lg text-sm transition-all duration-200 font-mono group touch-manipulation ${
+            className={`w-full flex items-center ${isMobile || isCollapsed ? 'justify-center' : 'gap-3'} ${isMobile ? 'px-4 py-3 min-h-[44px]' : 'px-3 py-2'} rounded-lg text-sm transition-smooth font-mono group touch-manipulation scale-on-click ${
               activeView === 'public-library' && !isPlaygroundActive && !isOnTagPage
                 ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-md font-semibold'
                 : 'text-sidebar-foreground hover:bg-sidebar-accent/20 hover:text-sidebar-accent-foreground hover:shadow-sm'
             }`}
             title={isMobile || isCollapsed ? t('library:publicLibrary') : ''}
+            aria-label={t('library:publicLibrary')}
           >
             <Users className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${activeView === 'public-library' && !isPlaygroundActive && !isOnTagPage ? 'fill-current' : 'group-hover:scale-110'} transition-transform`} />
             {!isMobile && !isCollapsed && t('library:publicLibrary')}
@@ -162,12 +165,13 @@ const Sidebar = ({
                 <Link
                   key={tag}
                   to={`/tags/${encodeURIComponent(tag)}`}
-                  className={`w-full flex items-center ${isMobile || isCollapsed ? 'justify-center' : 'gap-3'} ${isMobile ? 'px-4 py-3 min-h-[44px]' : 'px-3 py-2'} rounded-lg text-sm transition-all duration-200 font-mono group touch-manipulation ${
+                  className={`w-full flex items-center ${isMobile || isCollapsed ? 'justify-center' : 'gap-3'} ${isMobile ? 'px-4 py-3 min-h-[44px]' : 'px-3 py-2'} rounded-lg text-sm transition-smooth font-mono group touch-manipulation scale-on-click ${
                     isActiveTag
                       ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-md font-semibold'
                       : 'text-sidebar-foreground hover:bg-sidebar-accent/20 hover:text-sidebar-accent-foreground hover:shadow-sm'
                   }`}
                   title={isMobile || isCollapsed ? tag : ''}
+                  aria-label={tag}
                 >
                   <Hash className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${isActiveTag ? '' : 'group-hover:scale-110'} transition-transform text-prompedia-green-400`} />
                   {!isMobile && !isCollapsed && <span className="truncate">{tag}</span>}
@@ -230,7 +234,8 @@ const Sidebar = ({
               <LanguageSwitcher isCollapsed={false} />
               <button
                 onClick={onLogin}
-                className={`w-full flex items-center justify-center gap-2 ${isMobile ? 'px-4 py-4 min-h-[44px]' : 'px-3 py-3'} rounded-lg text-sm bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-md transition-all duration-200 font-mono group touch-manipulation`}
+                className={`w-full flex items-center justify-center gap-2 ${isMobile ? 'px-4 py-4 min-h-[44px]' : 'px-3 py-3'} rounded-lg text-sm bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-md transition-smooth font-mono group touch-manipulation scale-on-click`}
+                aria-label={t('auth:signIn')}
               >
                 <User className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} group-hover:scale-110 transition-transform`} />
                 {t('auth:signIn')}
@@ -241,8 +246,9 @@ const Sidebar = ({
               <LanguageSwitcher isCollapsed={true} />
               <button
                 onClick={onLogin}
-                className={`${isMobile ? 'w-11 h-11' : 'w-9 h-9'} flex items-center justify-center rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-md transition-all duration-200 group touch-manipulation`}
+                className={`${isMobile ? 'w-11 h-11' : 'w-9 h-9'} flex items-center justify-center rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-md transition-smooth group touch-manipulation scale-on-click`}
                 title={t('auth:signIn')}
+                aria-label={t('auth:signIn')}
               >
                 <User className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} group-hover:scale-110 transition-transform`} />
               </button>
@@ -257,7 +263,10 @@ const Sidebar = ({
   if (isMobile) {
     return (
       <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
-        <SheetContent side="left" className="w-80 p-0 bg-sidebar-background/100 border-sidebar-border backdrop-blur-none">
+        <SheetContent 
+          side="left" 
+          className="w-80 p-0 bg-sidebar-background/100 border-sidebar-border backdrop-blur-none animate-slide-in-left"
+        >
           {sidebarContent}
         </SheetContent>
       </Sheet>

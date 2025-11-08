@@ -266,4 +266,150 @@ All colors MUST be HSL.
       text-size-adjust: 100%;
     }
   }
+
+  /* Custom transition utilities */
+  .transition-smooth {
+    transition-property: all;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 250ms;
+  }
+
+  .transition-fast {
+    transition-duration: 150ms;
+  }
+
+  .transition-normal {
+    transition-duration: 250ms;
+  }
+
+  .transition-slow {
+    transition-duration: 350ms;
+  }
+
+  /* Page transition utilities */
+  .page-enter {
+    animation: fade-in 0.2s ease-out, slide-in-from-right 0.3s ease-out;
+  }
+
+  .page-exit {
+    animation: fade-out 0.2s ease-in, slide-in-from-left 0.3s ease-in;
+  }
+
+  /* Smooth scale transitions */
+  .scale-on-click:active {
+    transform: scale(0.97);
+    transition: transform 0.1s ease-out;
+  }
+
+  .scale-on-hover:hover {
+    transform: scale(1.02);
+    transition: transform 0.2s ease-out;
+  }
+
+  /* Ripple effect utility */
+  .ripple-effect {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .ripple-effect::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+  }
+
+  .ripple-effect:active::after {
+    width: 300px;
+    height: 300px;
+  }
+
+  /* Shimmer effect for skeleton loading */
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--muted)) 0%,
+      hsl(var(--muted) / 0.5) 50%,
+      hsl(var(--muted)) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s linear infinite;
+  }
+
+  /* Smooth sidebar transitions */
+  .sidebar-transition {
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.2s ease-out,
+                transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Card hover enhancements */
+  .card-hover {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3),
+                0 8px 10px -6px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Focus visible enhancements */
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+  }
+
+  /* Smooth modal animations */
+  .modal-enter {
+    animation: scale-in 0.2s ease-out, fade-in 0.2s ease-out;
+  }
+
+  .modal-exit {
+    animation: scale-out 0.2s ease-in, fade-out 0.2s ease-in;
+  }
+
+  /* Toast animations */
+  .toast-enter {
+    animation: slide-in-from-top 0.3s ease-out, fade-in 0.2s ease-out;
+  }
+
+  .toast-exit {
+    animation: slide-in-from-bottom 0.2s ease-in, fade-out 0.2s ease-in;
+  }
+
+  /* Loading spinner enhancements */
+  .spinner-smooth {
+    animation: spin 1s linear infinite;
+  }
+
+  /* Will-change optimizations */
+  .will-change-transform {
+    will-change: transform;
+  }
+
+  .will-change-opacity {
+    will-change: opacity;
+  }
+
+  .will-change-auto {
+    will-change: auto;
+  }
+
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 }
