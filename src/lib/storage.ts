@@ -6,7 +6,7 @@ export interface User {
   email?: string;
   username?: string;
   display_name?: string;
-  role?: 'admin' | 'moderator' | 'user';
+  // role field removed - user_roles table tidak digunakan di aplikasi
 }
 
 export interface Prompt {

@@ -80,11 +80,12 @@ export const registerSchema = z.object({
 });
 
 // Schema user (diperbarui untuk database minimalis)
+// Note: role field removed - user_roles table tidak digunakan di aplikasi
 export const userProfileSchema = z.object({
   id: z.string().uuid(),
   username: z.string().min(1, 'Username wajib diisi').max(50, 'Username terlalu panjang'),
   display_name: z.string().min(1, 'Nama tampilan wajib diisi').max(100, 'Nama terlalu panjang'),
-  role: z.enum(['user', 'admin', 'moderator']).default('user'),
+  // role field removed - tidak ada lagi di database
 });
 
 // Fungsi utilitas validasi

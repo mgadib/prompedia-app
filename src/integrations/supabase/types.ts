@@ -81,7 +81,15 @@ export type Database = {
           usage_date?: string
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "ai_usage_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       guest_sessions: {
         Row: {
@@ -224,13 +232,6 @@ export type Database = {
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "prompts_user_id_fkey1"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users_public"
-            referencedColumns: ["id"]
-          },
         ]
       }
       tags: {
@@ -258,7 +259,15 @@ export type Database = {
           name?: string
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "tags_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       thinking_modes: {
         Row: {
@@ -293,30 +302,6 @@ export type Database = {
         }
         Relationships: []
       }
-      user_roles: {
-        Row: {
-          granted_at: string
-          granted_by: string | null
-          id: string
-          role: Database["public"]["Enums"]["user_role"]
-          user_id: string
-        }
-        Insert: {
-          granted_at?: string
-          granted_by?: string | null
-          id?: string
-          role: Database["public"]["Enums"]["user_role"]
-          user_id: string
-        }
-        Update: {
-          granted_at?: string
-          granted_by?: string | null
-          id?: string
-          role?: Database["public"]["Enums"]["user_role"]
-          user_id?: string
-        }
-        Relationships: []
-      }
       user_sessions: {
         Row: {
           ended_at: string | null
@@ -344,13 +329,6 @@ export type Database = {
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "user_sessions_user_id_fkey1"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users_public"
-            referencedColumns: ["id"]
-          },
         ]
       }
       users: {
@@ -373,42 +351,7 @@ export type Database = {
       }
     }
     Views: {
-      my_roles: {
-        Row: {
-          granted_at: string | null
-          granted_by: string | null
-          role: Database["public"]["Enums"]["user_role"] | null
-        }
-        Insert: {
-          granted_at?: string | null
-          granted_by?: string | null
-          role?: Database["public"]["Enums"]["user_role"] | null
-        }
-        Update: {
-          granted_at?: string | null
-          granted_by?: string | null
-          role?: Database["public"]["Enums"]["user_role"] | null
-        }
-        Relationships: []
-      }
-      users_public: {
-        Row: {
-          display_name: string | null
-          id: string | null
-          username: string | null
-        }
-        Insert: {
-          display_name?: string | null
-          id?: string | null
-          username?: string | null
-        }
-        Update: {
-          display_name?: string | null
-          id?: string | null
-          username?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       get_current_usage: {
@@ -419,24 +362,8 @@ export type Database = {
         }
         Returns: Json
       }
-      get_user_role: {
-        Args: { _user_id: string }
-        Returns: Database["public"]["Enums"]["user_role"]
-      }
-      grant_user_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["user_role"]
-          _target_user_id: string
-        }
-        Returns: boolean
-      }
-      has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["user_role"]
-          _user_id: string
-        }
-        Returns: boolean
-      }
+      get_guest_usage: { Args: { p_session_id: string }; Returns: Json }
+      get_user_usage: { Args: { p_user_id: string }; Returns: Json }
       increment_ai_usage: {
         Args: {
           p_is_guest?: boolean
@@ -445,14 +372,9 @@ export type Database = {
         }
         Returns: Json
       }
+      increment_guest_usage: { Args: { p_session_id: string }; Returns: Json }
+      increment_user_usage: { Args: { p_user_id: string }; Returns: Json }
       reset_daily_usage: { Args: never; Returns: number }
-      revoke_user_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["user_role"]
-          _target_user_id: string
-        }
-        Returns: boolean
-      }
       track_guest_usage: {
         Args: {
           p_ip_address?: string
@@ -463,7 +385,7 @@ export type Database = {
       }
     }
     Enums: {
-      user_role: "user" | "admin" | "moderator"
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
@@ -590,8 +512,6 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {
-      user_role: ["user", "admin", "moderator"],
-    },
+    Enums: {},
   },
 } as const

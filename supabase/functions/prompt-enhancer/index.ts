@@ -447,16 +447,11 @@ FORMAT OUTPUT:
       p_session_id: null
     });
 
-    // Mencatat operasi batch
+    // Mencatat operasi batch (user_sessions hanya punya: id, user_id, started_at, ended_at)
     await supabaseClient.from('user_sessions').insert({
       user_id: user.id,
-      session_data: {
-        operation: 'batch_enhancement',
-        operation_type: operation,
-        prompts_processed: prompts.length,
-        successful_operations: results.filter(r => r.success).length,
-        model_used: model
-      }
+      started_at: new Date().toISOString()
+      // Note: session_data tidak ada di schema, data tracking sudah ada di ai_usage
     })
 
     return new Response(JSON.stringify({
