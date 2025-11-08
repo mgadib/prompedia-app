@@ -95,7 +95,12 @@ const Sidebar = ({
           {/* Tombol Playground */}
           {onNewPrompt && (
             <button
-              onClick={onNewPrompt}
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onNewPrompt();
+              }}
               className={`w-full flex items-center ${isMobile || isCollapsed ? 'justify-center' : 'gap-3'} ${isMobile ? 'px-4 py-3 min-h-[44px]' : 'px-3 py-2'} rounded-lg text-sm transition-all duration-200 font-mono group touch-manipulation ${
                 isPlaygroundActive && !isOnTagPage
                   ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-md font-semibold'
@@ -111,7 +116,12 @@ const Sidebar = ({
           {/* Private Library - Only for authenticated users */}
           {user && (
             <button
-              onClick={() => onViewChange('my-library')}
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onViewChange('my-library');
+              }}
               className={`w-full flex items-center ${isMobile || isCollapsed ? 'justify-center' : 'gap-3'} ${isMobile ? 'px-4 py-3 min-h-[44px]' : 'px-3 py-2'} rounded-lg text-sm transition-all duration-200 font-mono group touch-manipulation ${
                 activeView === 'my-library' && !isPlaygroundActive && !isOnTagPage
                   ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-md font-semibold'
@@ -125,7 +135,12 @@ const Sidebar = ({
           )}
 
           <button
-            onClick={() => onViewChange('public-library')}
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onViewChange('public-library');
+            }}
             className={`w-full flex items-center ${isMobile || isCollapsed ? 'justify-center' : 'gap-3'} ${isMobile ? 'px-4 py-3 min-h-[44px]' : 'px-3 py-2'} rounded-lg text-sm transition-all duration-200 font-mono group touch-manipulation ${
               activeView === 'public-library' && !isPlaygroundActive && !isOnTagPage
                 ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-md font-semibold'

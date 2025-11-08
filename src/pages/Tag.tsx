@@ -1,25 +1,40 @@
-import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useOutletContext } from 'react-router-dom';
 import { Hash, FileText, Globe, Lock, ArrowLeft, Menu, Copy, Download, Link as LinkIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import SEO from '@/components/SEO';
 import { TagService } from '@/lib/tag-service';
 import { Prompt, Tag } from '@/lib/storage';
 import { supabase } from '@/integrations/supabase/client';
 import { ENV } from '@/lib/constants';
-import Sidebar from '@/components/Sidebar';
 import AuthModal from '@/components/AuthModal';
 import { useIsMobile } from '@/hooks/use-mobile';
 import type { User } from '@supabase/supabase-js';
 import PromptDetailModal from '@/components/PromptDetailModal';
 import { toast } from 'sonner';
 import { trackEvent } from '@/lib/analytics';
-import { useLocation } from 'react-router-dom';
 
 interface PromptWithTags extends Prompt {
   tags: Tag[];
+}
+
+// Cache untuk menyimpan data tag berdasarkan tagName dan userId
+interface TagCacheEntry {
+  prompts: PromptWithTags[];
+  timestamp: number;
+  userId: string | null;
+}
+
+const TAG_CACHE = new Map<string, TagCacheEntry>();
+const CACHE_DURATION = 5 * 60 * 1000; // 5 menit
+
+interface OutletContext {
+  user: User | null;
+  mobileSidebarOpen: boolean;
+  setMobileSidebarOpen: (open: boolean) => void;
 }
 
 const TagPage: React.FC = () => {
@@ -28,75 +43,98 @@ const TagPage: React.FC = () => {
   const navigate = useNavigate();
   const tagName = decodeURIComponent(params.name || '').trim();
   const isMobile = useIsMobile();
+  
+  // Get context from Layout
+  const { user, mobileSidebarOpen, setMobileSidebarOpen } = useOutletContext<OutletContext>();
 
   const [prompts, setPrompts] = useState<PromptWithTags[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
-  const [user, setUser] = useState<User | null>(null);
-  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [selectedPrompt, setSelectedPrompt] = useState<PromptWithTags | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const previousTagNameRef = useRef<string>('');
 
   const pageTitle = useMemo(() => {
     return tagName ? `Tag: ${tagName} — ${ENV.SITE_TITLE}` : `Tag — ${ENV.SITE_TITLE}`;
   }, [tagName]);
 
-  const loadData = useCallback(async () => {
-    setIsLoading(true);
+  const loadData = useCallback(async (showCachedFirst = true) => {
+    // User sudah di-handle oleh Layout
+    const currentUserId = user?.id || null;
+    
+    // Cek cache terlebih dahulu untuk UX yang lebih smooth
+    const cacheKey = `${tagName}:${currentUserId || 'guest'}`;
+    const cached = TAG_CACHE.get(cacheKey);
+    const now = Date.now();
+    
+    if (cached && (now - cached.timestamp) < CACHE_DURATION && showCachedFirst) {
+      // Show cached data immediately untuk UX yang lebih smooth
+      setPrompts(cached.prompts);
+      setIsLoading(false);
+      setIsRefreshing(true); // Refresh di background
+    } else {
+      setIsLoading(true);
+    }
+    
     setError(null);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         setUserId(user.id);
-        setUser(user);
       } else {
         setUserId(null);
-        setUser(null);
       }
+      
+      // Validate tagName
+      const tagValidation = tagName ? null : t('errors:tag.notFound');
 
-      if (!tagName) {
-        setError(t('errors:tag.notFound'));
+      if (tagValidation || !tagName) {
+        setError(tagValidation || t('errors:tag.notFound'));
         setPrompts([]);
+        setIsLoading(false);
+        setIsRefreshing(false);
         return;
       }
 
-      const promptList = await TagService.getPromptsByTagName(tagName, user?.id);
+      // Load data baru - sudah di-optimize di TagService
+      const promptList = await TagService.getPromptsByTagName(tagName, currentUserId);
+      
+      // Update cache dengan userId yang benar
+      const updatedCacheKey = `${tagName}:${currentUserId || 'guest'}`;
+      TAG_CACHE.set(updatedCacheKey, {
+        prompts: promptList,
+        timestamp: now,
+        userId: currentUserId
+      });
+      
       setPrompts(promptList);
+      previousTagNameRef.current = tagName;
     } catch (err) {
       const msg = (err as Error)?.message || t('errors:tag.loadFailed');
       setError(msg);
-      setPrompts([]);
+      // Jangan clear prompts jika ada error, keep cached data
+      if (!cached) {
+        setPrompts([]);
+      }
     } finally {
       setIsLoading(false);
+      setIsRefreshing(false);
     }
-  }, [tagName]);
+  }, [tagName, user, t]);
 
   useEffect(() => {
-    loadData();
-  }, [loadData]);
-
-  const handleViewChange = (view: 'my-library' | 'public-library') => {
-    // Mengarahkan ke halaman utama; AppPage akan mengelola tampilan pustaka
-    navigate('/', { replace: false });
-  };
-
-  const handleNewPrompt = () => {
-    // Mengarahkan ke halaman utama untuk playground
-    navigate('/', { replace: false });
-  };
-
-  const handleLogout = async () => {
-    try {
-      await supabase.auth.signOut();
-      setUser(null);
-      setUserId(null);
-    } catch (e) {
-      // Silent; error ditangani di tempat lain
+    // Reset previous tag name jika tag berubah
+    if (tagName !== previousTagNameRef.current) {
+      previousTagNameRef.current = '';
+      // Reset prompts saat tag berubah
+      setPrompts([]);
     }
-  };
+    loadData(true); // Show cached first
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tagName]); // Hanya depend pada tagName
 
   const handleLogin = () => {
     setShowAuthModal(true);
@@ -149,39 +187,7 @@ const TagPage: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen bg-background overflow-hidden">
-      {/* Sidebar Desktop */}
-      {!isMobile && (
-        <Sidebar
-          activeView={user ? 'my-library' : 'public-library'}
-          onViewChange={handleViewChange}
-          onNewPrompt={handleNewPrompt}
-          onLogout={handleLogout}
-          onLogin={handleLogin}
-          user={user}
-          isPlaygroundActive={false}
-          isFocusMode={false}
-        />
-      )}
-
-      {/* Sidebar Mobile */}
-      {isMobile && (
-        <Sidebar
-          activeView={user ? 'my-library' : 'public-library'}
-          onViewChange={(view) => { handleViewChange(view); setMobileSidebarOpen(false); }}
-          onNewPrompt={() => { handleNewPrompt(); setMobileSidebarOpen(false); }}
-          onLogout={handleLogout}
-          onLogin={() => { handleLogin(); setMobileSidebarOpen(false); }}
-          user={user}
-          isPlaygroundActive={false}
-          isFocusMode={false}
-          mobileSidebarOpen={mobileSidebarOpen}
-          setMobileSidebarOpen={setMobileSidebarOpen}
-        />
-      )}
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+    <div className="flex-1 flex flex-col min-w-0 overflow-hidden transition-opacity duration-300 will-change-[opacity]">
         <SEO
           title={pageTitle}
           description={t('library:tagPageDescription', { tag: tagName }) || `Browse prompts tagged with "${tagName}" on Prompedia AI. Discover ${prompts.length} ${prompts.length === 1 ? 'prompt' : 'prompts'} in this collection.`}
@@ -242,10 +248,28 @@ const TagPage: React.FC = () => {
         )}
 
         <div className="flex-1 overflow-y-auto">
-          {isLoading ? (
-            <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-8">
-              <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4" />
-              <p className="text-sm font-mono">{t('common:status.loadingTagPrompts')}</p>
+          {isLoading && prompts.length === 0 ? (
+            // Skeleton loading untuk first load
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 p-3 sm:p-4 md:p-6">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="bg-card border rounded-lg p-4 sm:p-6">
+                  <div className="flex items-start justify-between mb-4">
+                    <Skeleton className="w-3 h-3 rounded-full" />
+                    <Skeleton className="w-16 h-4" />
+                  </div>
+                  <Skeleton className="h-6 w-3/4 mb-2" />
+                  <Skeleton className="h-4 w-full mb-1" />
+                  <Skeleton className="h-4 w-5/6 mb-4" />
+                  <div className="flex gap-1 mb-4">
+                    <Skeleton className="h-5 w-16" />
+                    <Skeleton className="h-5 w-20" />
+                  </div>
+                  <div className="pt-4 border-t border-border/50">
+                    <Skeleton className="h-4 w-24 mb-2" />
+                    <Skeleton className="h-4 w-32" />
+                  </div>
+                </div>
+              ))}
             </div>
           ) : error ? (
             <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-8">
@@ -264,7 +288,14 @@ const TagPage: React.FC = () => {
               <p className="text-sm text-center">{t('library:noPromptsWithTag')}</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 p-3 sm:p-4 md:p-6">
+            <div className="relative">
+              {/* Subtle indicator saat refresh di background */}
+              {isRefreshing && (
+                <div className="absolute top-4 right-4 z-10 bg-background/80 backdrop-blur-sm rounded-full p-2">
+                  <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
+              <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 p-3 sm:p-4 md:p-6 transition-opacity duration-300 ${isRefreshing ? 'opacity-75' : 'opacity-100'}`}>
               {prompts.map((prompt) => (
                 <div
                   key={prompt.id}
@@ -388,6 +419,7 @@ const TagPage: React.FC = () => {
                   </div>
                 </div>
               ))}
+              </div>
             </div>
           )}
         </div>
@@ -407,7 +439,6 @@ const TagPage: React.FC = () => {
           onClose={() => setShowAuthModal(false)}
           onSuccess={() => setShowAuthModal(false)}
         />
-      </div>
     </div>
   );
 };

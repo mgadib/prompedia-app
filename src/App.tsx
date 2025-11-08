@@ -5,10 +5,13 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import Layout from "@/components/Layout";
+// Import TagPage langsung untuk menghindari lazy loading delay saat navigasi
+import TagPage from './pages/Tag';
+
 const AppPage = React.lazy(() => import('./pages/App'));
 const NotFound = React.lazy(() => import('./pages/NotFound'));
 const PublicPromptDetail = React.lazy(() => import('./pages/PublicPromptDetail'));
-const TagPage = React.lazy(() => import('./pages/Tag'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -52,9 +55,14 @@ const App = () => (
             }
           >
             <Routes>
-              <Route path="/" element={<AppPage />} />
+              {/* Shared Layout dengan persistent Sidebar */}
+              <Route element={<Layout />}>
+                <Route path="/" element={<AppPage />} />
+                {/* TagPage tidak menggunakan lazy loading untuk navigasi yang lebih smooth */}
+                <Route path="/tags/:name" element={<TagPage />} />
+              </Route>
+              {/* Routes tanpa layout (untuk halaman detail yang mungkin perlu layout berbeda) */}
               <Route path="/p/:id" element={<PublicPromptDetail />} />
-              <Route path="/tags/:name" element={<TagPage />} />
               {/* TAMBAHKAN SEMUA ROUTE CUSTOM DI ATAS ROUTE CATCH-ALL "*" */}
               <Route path="*" element={<NotFound />} />
             </Routes>

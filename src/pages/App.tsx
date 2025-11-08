@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import Sidebar from '@/components/Sidebar';
 import PromptEditor from '@/components/PromptEditor';
 import MyLibrary from '@/components/MyLibrary';
 import PublicLibrary from '@/components/PublicLibrary';
@@ -10,8 +9,9 @@ import AuthModal from '@/components/AuthModal';
 import SEO from '@/components/SEO';
 import { storage, Prompt, Tag } from '@/lib/storage';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate, useOutletContext } from 'react-router-dom';
 import { ENV } from '@/lib/constants';
+import type { User } from '@supabase/supabase-js';
 
 interface PromptWithTags extends Prompt {
   tags: Tag[];
@@ -28,31 +28,39 @@ import { STORAGE_KEYS } from '@/lib/constants';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 
+interface OutletContext {
+  user: User | null;
+  mobileSidebarOpen: boolean;
+  setMobileSidebarOpen: (open: boolean) => void;
+  setAppActiveView: (view: 'my-library' | 'public-library' | null) => void;
+  setAppIsPlaygroundActive: (active: boolean | null) => void;
+  appActiveView: 'my-library' | 'public-library' | null;
+  appIsPlaygroundActive: boolean | null;
+}
+
 const AppPage = () => {
   const { t } = useTranslation();
-  const [user, setUser] = useState<User | null>(null);
+  // Get context from Layout
+  const { user, mobileSidebarOpen, setMobileSidebarOpen, setAppActiveView, setAppIsPlaygroundActive, appActiveView, appIsPlaygroundActive } = useOutletContext<OutletContext>();
   const [loading, setLoading] = useState(true);
   const [isInitializing, setIsInitializing] = useState(true);
   const [activeView, setActiveView] = useState<'my-library' | 'public-library'>('public-library');
   const [currentPrompt, setCurrentPrompt] = useState<Prompt | null>(null);
-  const [showEditor, setShowEditor] = useState(true); // Default to playground
+  const [showEditor, setShowEditor] = useState(false); // Default to library view
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [allPrompts, setAllPrompts] = useState<Prompt[]>([]);
   const [publicPrompts, setPublicPrompts] = useState<Prompt[]>([]);
+  const [isLoadingPrompts, setIsLoadingPrompts] = useState(false);
   const [isFocusMode, setIsFocusMode] = useState(false);
-  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const prevAppIsPlaygroundActiveRef = useRef<boolean | null>(null);
   const isMobile = useIsMobile();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
 
   const checkAuth = useCallback(async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user ?? null);
-
-      // Jangan otomatis memuat prompt terakhir yang dibuka - tetap playground sebagai default
-      // User bisa memuat prompt secara manual dari library jika diperlukan
-
+      // User sudah di-handle oleh Layout, hanya perlu set loading
       setLoading(false);
       
       // Menambahkan delay kecil untuk memastikan transisi yang mulus
@@ -98,6 +106,8 @@ const AppPage = () => {
           setCurrentPrompt(sanitizedPrompt);
           storage.setCurrentPrompt(sanitizedPrompt.id);
           setShowEditor(true);
+          // Update Layout untuk sync Sidebar state
+          setAppIsPlaygroundActive(true);
         }
       } catch (error) {
         console.error('Failed to load prompt from query:', error);
@@ -115,18 +125,27 @@ const AppPage = () => {
   }, [searchParams]);
 
   // Mengatur listener untuk perubahan state autentikasi
+  // User state di-handle oleh Layout, hanya perlu reload prompts
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        const newUser = session?.user ?? null;
-        setUser(newUser);
-
-        // Memperbarui tampilan default berdasarkan status autentikasi
-        if (newUser) {
-          // User baru login - tetap playground sebagai default, jangan paksa pindah ke library
-          // Hanya pindah jika user secara eksplisit navigasi ke tampilan library
-        } else {
-          // User baru logout - tetap playground sebagai default
+      async (event) => {
+        // Reload prompts ketika auth state berubah (login/logout)
+        // Ini memastikan prompts ter-load segera setelah login tanpa perlu refresh
+        // Skip untuk event INITIAL_SESSION karena sudah di-handle di checkAuth
+        if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
+          try {
+            setIsLoadingPrompts(true);
+            // Reload prompts untuk user baru atau setelah logout
+            const prompts = await storageManager.getPrompts();
+            setAllPrompts(prompts || []);
+            // Public prompts juga perlu di-reload untuk memastikan data terbaru
+            const publicPromptsData = await SupabaseService.getPublicPrompts();
+            setPublicPrompts(publicPromptsData);
+          } catch (error) {
+            console.error('Failed to reload prompts after auth change:', error);
+          } finally {
+            setIsLoadingPrompts(false);
+          }
         }
       }
     );
@@ -136,15 +155,73 @@ const AppPage = () => {
     };
   }, []);
 
+  // Sync dengan appActiveView dari Layout saat tombol di Sidebar diklik
+  useEffect(() => {
+    // Sync appActiveView - selalu update jika appActiveView tidak null
+    // Ini memastikan view selalu sync meskipun sudah sama (untuk force update dari playground)
+    if (appActiveView !== null) {
+      // Skip jika user guest mencoba akses my-library (akan di-handle oleh handleViewChange)
+      if (appActiveView === 'my-library' && !user) {
+        return;
+      }
+      // Update local state jika berbeda, atau jika kita di playground (untuk force switch ke library)
+      if (appActiveView !== activeView || showEditor) {
+        setActiveView(appActiveView);
+        setShowEditor(false);
+        setCurrentPrompt(null);
+        storage.clearCurrentPrompt();
+      }
+    }
+  }, [appActiveView, activeView, user, showEditor]);
+
+  // Sync appIsPlaygroundActive dengan showEditor (terpisah untuk menghindari dependency issues)
+  useEffect(() => {
+    if (appIsPlaygroundActive !== null) {
+      const wasPlaygroundActive = prevAppIsPlaygroundActiveRef.current;
+      const isPlaygroundJustOpened = appIsPlaygroundActive && !wasPlaygroundActive;
+      
+      // Jika playground harus aktif, pastikan showEditor true
+      if (appIsPlaygroundActive) {
+        setShowEditor(true);
+        // Jika playground baru dibuka (dari false/null ke true) dan tidak ada current prompt,
+        // buat prompt baru (untuk handle klik Playground dari sidebar)
+        if (isPlaygroundJustOpened && !currentPrompt) {
+          // Panggil handleNewPrompt untuk membuat prompt baru dengan rate limit check
+          // Note: handleNewPrompt tidak di-dependencies karena akan menyebabkan infinite loop
+          // (handleNewPrompt membuat currentPrompt baru yang trigger useEffect lagi)
+          // Kondisi isPlaygroundJustOpened && !currentPrompt mencegah pemanggilan berulang
+          handleNewPrompt();
+        }
+      } else {
+        // Jika playground harus tidak aktif, pastikan showEditor false
+        setShowEditor(false);
+        // Juga clear current prompt saat switch dari playground ke library
+        setCurrentPrompt((prev) => {
+          if (prev) {
+            storage.clearCurrentPrompt();
+            return null;
+          }
+          return prev;
+        });
+      }
+      
+      // Update ref untuk track perubahan
+      prevAppIsPlaygroundActiveRef.current = appIsPlaygroundActive;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [appIsPlaygroundActive, currentPrompt]);
 
   const loadAllPrompts = useCallback(async () => {
     try {
+      setIsLoadingPrompts(true);
       const prompts = await storageManager.getPrompts();
       setAllPrompts(prompts || []);
     } catch (error) {
       console.error('Failed to load prompts:', error);
       setAllPrompts([]);
       // Jangan tampilkan error toast karena tidak kritis untuk playground
+    } finally {
+      setIsLoadingPrompts(false);
     }
   }, []);
 
@@ -162,10 +239,14 @@ const AppPage = () => {
   }, []);
 
   // Efek gabungan untuk memuat kedua jenis prompt
+  // Juga reload saat user state berubah (login/logout)
   useEffect(() => {
-    loadAllPrompts();
-    loadPublicPrompts();
-  }, [loadAllPrompts, loadPublicPrompts]);
+    if (!loading) {
+      // Hanya load prompts setelah initial auth check selesai
+      loadAllPrompts();
+      loadPublicPrompts();
+    }
+  }, [loadAllPrompts, loadPublicPrompts, user, loading]);
 
   // Efek terpisah untuk refresh berkala hanya untuk prompt public
   useEffect(() => {
@@ -218,6 +299,9 @@ const AppPage = () => {
   };
 
   const handleSelectPrompt = (prompt: PromptWithTags) => {
+    // Tambahkan visual feedback untuk transisi
+    setIsTransitioning(true);
+    
     // Ensure prompt has required fields for new schema
     const sanitizedPrompt: Prompt = {
       id: prompt.id || '',
@@ -238,9 +322,19 @@ const AppPage = () => {
     setCurrentPrompt(sanitizedPrompt);
     storage.setCurrentPrompt(sanitizedPrompt.id);
     setShowEditor(true);
+    // Update Layout untuk sync Sidebar state
+    setAppIsPlaygroundActive(true);
+    
+    // Reset transition state setelah animasi selesai
+    setTimeout(() => {
+      setIsTransitioning(false);
+    }, 300);
   };
 
   const handleEditPrompt = (prompt: PromptWithTags) => {
+    // Tambahkan visual feedback untuk transisi
+    setIsTransitioning(true);
+    
     // Ensure prompt has required fields for new schema
     const sanitizedPrompt: Prompt = {
       id: prompt.id || '',
@@ -261,6 +355,13 @@ const AppPage = () => {
     setCurrentPrompt(sanitizedPrompt);
     storage.setCurrentPrompt(sanitizedPrompt.id);
     setShowEditor(true);
+    // Update Layout untuk sync Sidebar state
+    setAppIsPlaygroundActive(true);
+    
+    // Reset transition state setelah animasi selesai
+    setTimeout(() => {
+      setIsTransitioning(false);
+    }, 300);
   };
 
   const handleDeletePrompt = async (promptId: string) => {
@@ -269,6 +370,8 @@ const AppPage = () => {
       if (currentPrompt?.id === promptId) {
         setCurrentPrompt(null);
         setShowEditor(false);
+        // Update Layout untuk sync Sidebar state
+        setAppIsPlaygroundActive(false);
       }
       // Memuat ulang prompt setelah penghapusan berhasil
       await loadAllPrompts();
@@ -345,6 +448,9 @@ const AppPage = () => {
       toast.warning(t('common:warnings.signInForAI'));
     }
 
+    // Tambahkan visual feedback untuk transisi
+    setIsTransitioning(true);
+
     // Ensure prompt has required fields for new schema
     const sanitizedPrompt: Prompt = {
       id: prompt.id || '',
@@ -363,6 +469,13 @@ const AppPage = () => {
     setCurrentPrompt(sanitizedPrompt);
     storage.setCurrentPrompt(sanitizedPrompt.id);
     setShowEditor(true);
+    // Update Layout untuk sync Sidebar state
+    setAppIsPlaygroundActive(true);
+    
+    // Reset transition state setelah animasi selesai
+    setTimeout(() => {
+      setIsTransitioning(false);
+    }, 300);
   };
 
   const handleViewChange = (view: 'my-library' | 'public-library') => {
@@ -373,14 +486,36 @@ const AppPage = () => {
         return;
       }
 
+      // Skip jika sudah di view yang sama DAN tidak di playground untuk mencegah unnecessary re-renders
+      // Tapi tetap update jika di playground (untuk force close playground)
+      if (activeView === view && !showEditor) {
+        // Pastikan Layout state tetap sync
+        setAppActiveView(view);
+        setAppIsPlaygroundActive(false);
+        return;
+      }
+
+      // Tambahkan visual feedback untuk transisi
+      setIsTransitioning(true);
+      
       // Mereset state playground saat beralih ke tampilan library
+      // Transisi smooth tanpa flash/reload
       setCurrentPrompt(null);
       storage.clearCurrentPrompt();
       setActiveView(view);
       setShowEditor(false);
+      // Update Layout untuk sync Sidebar state - selalu update untuk memastikan sync
+      setAppActiveView(view);
+      setAppIsPlaygroundActive(false);
+      
+      // Reset transition state setelah animasi selesai
+      setTimeout(() => {
+        setIsTransitioning(false);
+      }, 300);
     } catch (error) {
       console.error('Failed to change view:', error);
       toast.error(t('errors:library.switchViewFailed'));
+      setIsTransitioning(false);
     }
   };
 
@@ -417,6 +552,9 @@ const AppPage = () => {
       return;
     }
 
+    // Tambahkan visual feedback untuk transisi
+    setIsTransitioning(true);
+
     const newPrompt: Prompt = {
       id: crypto.randomUUID(),
       user_id: user?.id || 'guest',
@@ -433,31 +571,23 @@ const AppPage = () => {
     setCurrentPrompt(newPrompt);
     storage.setCurrentPrompt(newPrompt.id);
     setShowEditor(true);
+    // Update Layout untuk sync Sidebar state
+    setAppIsPlaygroundActive(true);
     
     // Clear any previous prompt data from storage
     storage.clearCurrentPrompt();
     storage.setCurrentPrompt(newPrompt.id);
-  };
-
-  const handleLogout = async () => {
-    try {
-      await supabase.auth.signOut();
-      setUser(null);
-      toast.success(t('success:auth.logoutSuccess'));
-    } catch (error) {
-      console.error('Logout error:', error);
-      toast.error(t('errors:auth.logoutFailed'));
-    }
+    
+    // Reset transition state setelah animasi selesai
+    setTimeout(() => {
+      setIsTransitioning(false);
+    }, 300);
   };
 
   const handleAuthSuccess = () => {
     // Mereset counter playground setelah login berhasil
     localStorage.removeItem(STORAGE_KEYS.GUEST_USAGE);
     toast.success(t('success:auth.welcomeUnlimited'));
-  };
-
-  const handleLogin = () => {
-    setShowAuthModal(true);
   };
 
   const handleToggleFocus = () => {
@@ -508,7 +638,7 @@ const AppPage = () => {
   const homepageUrl = baseUrl;
 
   return (
-    <div className="flex h-screen bg-background overflow-hidden">
+    <>
       {/* SEO Meta Tags & Structured Data */}
       <SEO
         title={ENV.SITE_TITLE}
@@ -611,42 +741,8 @@ const AppPage = () => {
         ]}
       />
 
-      {/* Desktop Sidebar */}
-      {!isMobile && (
-        <div className={`transition-opacity duration-500 ${isInitializing ? 'opacity-0' : 'opacity-100'} hidden md:block`}>
-          <Sidebar
-            activeView={activeView}
-            onViewChange={handleViewChange}
-            onNewPrompt={handleNewPrompt}
-            onLogout={handleLogout}
-            onLogin={handleLogin}
-            user={user}
-            isPlaygroundActive={showEditor}
-            isFocusMode={isFocusMode}
-            mobileSidebarOpen={undefined}
-            setMobileSidebarOpen={undefined}
-          />
-        </div>
-      )}
-
-      {/* Mobile Sidebar */}
-      {isMobile && (
-        <Sidebar
-          activeView={activeView}
-          onViewChange={handleViewChangeWithMobile}
-          onNewPrompt={handleNewPromptWithMobile}
-          onLogout={handleLogout}
-          onLogin={handleLoginWithMobile}
-          user={user}
-          isPlaygroundActive={showEditor}
-          isFocusMode={isFocusMode}
-          mobileSidebarOpen={mobileSidebarOpen}
-          setMobileSidebarOpen={setMobileSidebarOpen}
-        />
-      )}
-
       {/* Main Content Area */}
-      <div className={`flex-1 flex flex-col transition-opacity duration-500 ${isInitializing ? 'opacity-0' : 'opacity-100'} min-w-0 overflow-hidden ${isMobile ? 'h-screen' : ''}`}>
+      <div className={`flex-1 flex flex-col transition-opacity duration-300 will-change-[opacity] ${isInitializing ? 'opacity-0' : 'opacity-100'} min-w-0 overflow-hidden ${isMobile ? 'h-screen' : ''}`}>
         {/* Mobile Hamburger Menu Button */}
         {isMobile && (
           <div className="md:hidden border-b border-border bg-card flex-shrink-0 px-4 py-3 flex items-center gap-3 z-10">
@@ -667,19 +763,23 @@ const AppPage = () => {
 
         <ErrorBoundary>
           {showEditor ? (
-            <PromptEditor
-              currentPrompt={currentPrompt}
-              onPromptChange={handlePromptChange}
-              onDeletePrompt={handleDeletePrompt}
-              onNewPrompt={handleNewPrompt}
-              isFocusMode={isFocusMode}
-              onToggleFocus={handleToggleFocus}
-              user={user}
-            />
+            <div className={`flex-1 flex flex-col min-w-0 overflow-hidden transition-opacity duration-300 ${isTransitioning ? 'opacity-50' : 'opacity-100'}`}>
+              <PromptEditor
+                key="prompt-editor"
+                currentPrompt={currentPrompt}
+                onPromptChange={handlePromptChange}
+                onDeletePrompt={handleDeletePrompt}
+                onNewPrompt={handleNewPrompt}
+                isFocusMode={isFocusMode}
+                onToggleFocus={handleToggleFocus}
+                user={user}
+              />
+            </div>
           ) : (
-            <>
+            <div className={`flex-1 flex flex-col min-w-0 overflow-hidden transition-all duration-300 ${isTransitioning ? 'opacity-50 scale-[0.98]' : 'opacity-100 scale-100'}`}>
               {activeView === 'my-library' ? (
                 <MyLibrary
+                  key="my-library"
                   prompts={myPromptsWithTags}
                   onSelectPrompt={handleSelectPrompt}
                   onEditPrompt={handleEditPrompt}
@@ -689,13 +789,14 @@ const AppPage = () => {
                 />
               ) : (
                 <PublicLibrary
+                  key="public-library"
                   prompts={publicPromptsWithTags}
                   onSelectPrompt={handleSelectPrompt}
                   onUsePrompt={handleUsePrompt}
                   currentPromptId={currentPrompt?.id}
                 />
               )}
-            </>
+            </div>
           )}
         </ErrorBoundary>
       </div>
@@ -706,7 +807,7 @@ const AppPage = () => {
         onClose={() => setShowAuthModal(false)}
         onSuccess={handleAuthSuccess}
       />
-    </div>
+    </>
   );
 };
 
