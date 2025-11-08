@@ -1,0 +1,45 @@
+{
+  "metaPrompt": {
+    "label": "Meta Prompt",
+    "description": "Menghasilkan prompt baru dari ide mentah pengguna",
+    "purpose": "Divergent thinking - meluaskan kemungkinan",
+    "thinkingPattern": "AI tidak menjawab tugas langsung, tapi menulis prompt untuk menjawab tugas tersebut",
+    "outputStructure": ["Tujuan Prompt", "Instruksi AI", "Format Output"]
+  },
+  "selfRefine": {
+    "label": "Self-Refine",
+    "description": "Memperjelas dan memperbaiki prompt yang sudah ada",
+    "purpose": "Reflective thinking - analisis dan perbaikan",
+    "thinkingPattern": "AI membaca prompt lama dan menulis versi baru yang lebih efektif",
+    "outputStructure": ["Analisis Prompt Lama", "Versi Diperbaiki", "Alasan Perubahan"]
+  },
+  "chainOfThought": {
+    "label": "Chain-of-Thought",
+    "description": "Membedah bagaimana model menalar prompt",
+    "purpose": "Analytical reasoning - langkah demi langkah",
+    "thinkingPattern": "AI menulis langkah berpikir sebelum memberikan hasil akhir",
+    "outputStructure": ["Langkah Berpikir", "Jawaban Akhir"]
+  },
+  "selfConsistency": {
+    "label": "Self-Consistency",
+    "description": "Menguji stabilitas prompt dengan multiple reasoning",
+    "purpose": "Comparative reasoning - pengujian konsistensi",
+    "thinkingPattern": "AI menghasilkan beberapa reasoning path dan memilih yang paling konsisten",
+    "outputStructure": ["Multiple Reasoning Paths", "Analisis Konsistensi", "Versi Terbaik"]
+  },
+  "chainOfPrompt": {
+    "label": "Chain-of-Prompt",
+    "description": "Mengembangkan prompt secara bertahap (v1→v2→v3)",
+    "purpose": "Iterative synthesis - pengembangan bertahap",
+    "thinkingPattern": "Setiap versi adalah peningkatan dari versi sebelumnya",
+    "outputStructure": ["Versi 1", "Versi 2", "Versi 3", "Changelog"]
+  },
+  "rolePrompt": {
+    "label": "Role Prompt",
+    "description": "Berdiskusi atau menilai prompt dengan persona tertentu",
+    "purpose": "Dialogic reasoning - perspektif multi-angle",
+    "thinkingPattern": "AI berbicara sebagai persona: Reviewer, Editor, Developer, atau Researcher",
+    "outputStructure": ["Persona Introduction", "Analysis", "Recommendations"]
+  }
+}
+

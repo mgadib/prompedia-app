@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ChevronLeft, ChevronRight, Play, User, LogOut, Lock, Users, Hash, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import LogoutDialog from './LogoutDialog';
+import LanguageSwitcher from './LanguageSwitcher';
 import { TagService } from '@/lib/tag-service';
 import { supabase } from '@/integrations/supabase/client';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -33,6 +35,7 @@ const Sidebar = ({
   mobileSidebarOpen,
   setMobileSidebarOpen
 }: SidebarProps) => {
+  const { t } = useTranslation();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [allTags, setAllTags] = useState<string[]>([]);
   const isMobile = useIsMobile();
@@ -75,7 +78,7 @@ const Sidebar = ({
         {(!isCollapsed || isMobile) ? (
           <>
             <h1 className="prompedia-logo">Prompedia.app</h1>
-            <p className="text-xs text-muted-foreground mt-1 font-mono">Prompt Engineering Lab</p>
+            <p className="text-xs text-muted-foreground mt-1 font-mono">{t('common:app.tagline')}</p>
           </>
         ) : (
           <div className="flex justify-center">
@@ -98,10 +101,10 @@ const Sidebar = ({
                   ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-md font-semibold'
                   : 'text-sidebar-foreground hover:bg-sidebar-accent/20 hover:text-sidebar-accent-foreground hover:shadow-sm'
               }`}
-              title={isMobile || isCollapsed ? 'Playground' : ''}
+              title={isMobile || isCollapsed ? t('library:playground') : ''}
             >
               <Play className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${isPlaygroundActive && !isOnTagPage ? 'fill-current' : 'group-hover:scale-110'} transition-transform`} />
-              {!isMobile && !isCollapsed && 'Playground'}
+              {!isMobile && !isCollapsed && t('library:playground')}
             </button>
           )}
           
@@ -114,10 +117,10 @@ const Sidebar = ({
                   ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-md font-semibold'
                   : 'text-sidebar-foreground hover:bg-sidebar-accent/20 hover:text-sidebar-accent-foreground hover:shadow-sm'
               }`}
-              title={isMobile || isCollapsed ? 'Private Library' : ''}
+              title={isMobile || isCollapsed ? t('library:privateLibrary') : ''}
             >
               <Lock className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${activeView === 'my-library' && !isPlaygroundActive && !isOnTagPage ? 'fill-current' : 'group-hover:scale-110'} transition-transform`} />
-              {!isMobile && !isCollapsed && 'Private Library'}
+              {!isMobile && !isCollapsed && t('library:privateLibrary')}
             </button>
           )}
 
@@ -128,10 +131,10 @@ const Sidebar = ({
                 ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-md font-semibold'
                 : 'text-sidebar-foreground hover:bg-sidebar-accent/20 hover:text-sidebar-accent-foreground hover:shadow-sm'
             }`}
-            title={isMobile || isCollapsed ? 'Public Library' : ''}
+            title={isMobile || isCollapsed ? t('library:publicLibrary') : ''}
           >
             <Users className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${activeView === 'public-library' && !isPlaygroundActive && !isOnTagPage ? 'fill-current' : 'group-hover:scale-110'} transition-transform`} />
-            {!isMobile && !isCollapsed && 'Public Library'}
+            {!isMobile && !isCollapsed && t('library:publicLibrary')}
           </button>
         </div>
 
@@ -181,6 +184,7 @@ const Sidebar = ({
               </div>
 
 
+              <LanguageSwitcher isCollapsed={false} />
               <LogoutDialog
                 userName={user.user_metadata?.username || user.email?.split('@')[0]}
                 onConfirm={onLogout}
@@ -197,6 +201,7 @@ const Sidebar = ({
               </div>
 
 
+              <LanguageSwitcher isCollapsed={true} />
               <LogoutDialog
                 onConfirm={onLogout}
                 isCollapsed={true}
@@ -207,21 +212,22 @@ const Sidebar = ({
           // Guest user
           !isCollapsed ? (
             <>
-              
+              <LanguageSwitcher isCollapsed={false} />
               <button
                 onClick={onLogin}
                 className={`w-full flex items-center justify-center gap-2 ${isMobile ? 'px-4 py-4 min-h-[44px]' : 'px-3 py-3'} rounded-lg text-sm bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-md transition-all duration-200 font-mono group touch-manipulation`}
               >
                 <User className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} group-hover:scale-110 transition-transform`} />
-                Sign In
+                {t('auth:signIn')}
               </button>
             </>
           ) : (
             <div className="flex flex-col items-center gap-2">
+              <LanguageSwitcher isCollapsed={true} />
               <button
                 onClick={onLogin}
                 className={`${isMobile ? 'w-11 h-11' : 'w-9 h-9'} flex items-center justify-center rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-md transition-all duration-200 group touch-manipulation`}
-                title="Sign In"
+                title={t('auth:signIn')}
               >
                 <User className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} group-hover:scale-110 transition-transform`} />
               </button>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { X, Hash, Plus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -14,6 +15,7 @@ interface TagInputProps {
 }
 
 const TagInput = ({ selectedTagNames, onChange }: TagInputProps) => {
+  const { t } = useTranslation();
   const [input, setInput] = useState('');
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -123,7 +125,7 @@ const TagInput = ({ selectedTagNames, onChange }: TagInputProps) => {
             onKeyDown={handleKeyDown}
             onFocus={() => setShowSuggestions(input.length > 0)}
             onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-            placeholder={selectedTagNames.length >= 3 ? "Max 3 tags" : "Add tags..."}
+            placeholder={selectedTagNames.length >= 3 ? t('common:placeholders.maxTags') : t('common:placeholders.addTags')}
             className={`bg-transparent border-none ${isMobile ? 'text-base' : 'text-sm'} font-mono focus-visible:ring-0 flex-1 ${isMobile ? 'min-w-[120px]' : 'min-w-[150px]'} ${isMobile ? 'min-h-[44px]' : ''} px-2`}
             disabled={selectedTagNames.length >= 3}
           />

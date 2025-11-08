@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,6 +20,7 @@ interface DeletePromptDialogProps {
 }
 
 const DeletePromptDialog = ({ promptTitle, onConfirm, children }: DeletePromptDialogProps) => {
+  const { t } = useTranslation();
   const isMobile = useIsMobile();
   
   return (
@@ -28,18 +30,18 @@ const DeletePromptDialog = ({ promptTitle, onConfirm, children }: DeletePromptDi
       </AlertDialogTrigger>
       <AlertDialogContent className={isMobile ? 'max-w-[calc(100vw-2rem)] mx-4' : ''}>
         <AlertDialogHeader>
-          <AlertDialogTitle className={isMobile ? 'text-lg' : ''}>Delete Prompt</AlertDialogTitle>
+          <AlertDialogTitle className={isMobile ? 'text-lg' : ''}>{t('library:deletePrompt')}</AlertDialogTitle>
           <AlertDialogDescription className={isMobile ? 'text-sm' : ''}>
-            Are you sure you want to delete "{promptTitle}"? This action cannot be undone.
+            {t('library:deleteConfirm', { title: promptTitle })}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className={isMobile ? 'gap-2' : ''}>
-          <AlertDialogCancel className={isMobile ? 'min-h-[44px] touch-manipulation' : ''}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel className={isMobile ? 'min-h-[44px] touch-manipulation' : ''}>{t('common:buttons.cancel')}</AlertDialogCancel>
           <AlertDialogAction 
             onClick={onConfirm} 
             className={`bg-destructive text-destructive-foreground hover:bg-destructive/90 ${isMobile ? 'min-h-[44px] touch-manipulation' : ''}`}
           >
-            Delete
+            {t('common:buttons.delete')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

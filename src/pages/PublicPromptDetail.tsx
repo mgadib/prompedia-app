@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Prompt, Tag } from '@/lib/storage';
 import { SupabaseService } from '@/lib/supabase-service';
@@ -11,6 +12,7 @@ import SEO from '@/components/SEO';
 import { trackEvent } from '@/lib/analytics';
 
 const PublicPromptDetail = () => {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [prompt, setPrompt] = useState<Prompt | null>(null);
@@ -21,7 +23,7 @@ const PublicPromptDetail = () => {
   useEffect(() => {
     const loadPrompt = async () => {
       if (!id) {
-        setError('Invalid prompt ID');
+        setError(t('prompt:invalidId'));
         setLoading(false);
         return;
       }
@@ -34,14 +36,14 @@ const PublicPromptDetail = () => {
         const publicPrompt = await SupabaseService.getPrompt(id);
         
         if (!publicPrompt) {
-          setError('Prompt not found');
+          setError(t('prompt:promptNotFound'));
           setLoading(false);
           return;
         }
 
         // Check if prompt is public
         if (!publicPrompt.is_public) {
-          setError('This prompt is not public');
+          setError(t('prompt:notPublic'));
           setLoading(false);
           return;
         }
@@ -60,7 +62,7 @@ const PublicPromptDetail = () => {
         setLoading(false);
       } catch (err) {
         console.error('Failed to load prompt:', err);
-        setError('Failed to load prompt');
+        setError(t('errors:prompt.loadFailed'));
         setLoading(false);
       }
     };
@@ -77,7 +79,7 @@ const PublicPromptDetail = () => {
   const handleCopyContent = () => {
     if (prompt) {
       navigator.clipboard.writeText(prompt.content);
-      toast.success('Prompt content copied to clipboard');
+      toast.success(t('success:prompt.contentCopied'));
       trackEvent('copy_prompt_content', { prompt_id: id });
     }
   };
@@ -85,7 +87,7 @@ const PublicPromptDetail = () => {
   const handleCopyUrl = () => {
     const url = `https://prompedia.app/p/${id}`;
     navigator.clipboard.writeText(url);
-    toast.success('URL copied to clipboard');
+    toast.success(t('success:prompt.urlCopied'));
     trackEvent('copy_prompt_url', { prompt_id: id });
   };
 
@@ -100,7 +102,7 @@ const PublicPromptDetail = () => {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-sm text-muted-foreground font-mono">Loading prompt...</p>
+          <p className="text-sm text-muted-foreground font-mono">{t('common:status.loadingPrompt')}</p>
         </div>
       </div>
     );
@@ -111,14 +113,14 @@ const PublicPromptDetail = () => {
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="text-center max-w-md">
           <h1 className="text-2xl font-bold text-foreground mb-4 font-mono">
-            {error || 'Prompt not found'}
+            {error || t('prompt:promptNotFound')}
           </h1>
           <p className="text-muted-foreground mb-6 font-mono">
-            The prompt you're looking for doesn't exist or is no longer available.
+            {t('prompt:promptNotFoundDescription')}
           </p>
           <Button onClick={() => navigate('/')} className="font-mono">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Go to Home
+            {t('common:buttons.goToHome')}
           </Button>
         </div>
       </div>
@@ -161,7 +163,7 @@ const PublicPromptDetail = () => {
             className="font-mono"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
+            {t('common:buttons.back')}
           </Button>
           <div className="flex items-center gap-2">
             <Button
@@ -171,7 +173,7 @@ const PublicPromptDetail = () => {
               className="font-mono"
             >
               <Copy className="w-4 h-4 mr-2" />
-              Copy URL
+              {t('library:copyUrl')}
             </Button>
             <Button
               variant="default"
@@ -180,7 +182,7 @@ const PublicPromptDetail = () => {
               className="font-mono"
             >
               <Download className="w-4 h-4 mr-2" />
-              Use Prompt
+              {t('prompt:usePrompt')}
             </Button>
           </div>
         </div>
@@ -192,7 +194,7 @@ const PublicPromptDetail = () => {
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-3">
             <Globe className="w-5 h-5 text-primary" />
-            <span className="text-sm font-semibold text-primary font-mono">Public Prompt</span>
+            <span className="text-sm font-semibold text-primary font-mono">{t('prompt:publicPrompt')}</span>
           </div>
           <h1 className="text-3xl md:text-4xl font-bold text-foreground font-mono mb-4">
             {prompt.title}
@@ -227,17 +229,17 @@ const PublicPromptDetail = () => {
 
         {/* Metadata */}
         <div className="flex flex-wrap gap-4 mb-6 text-sm text-muted-foreground font-mono">
-          {prompt.model_id && <span>Model: {prompt.model_id}</span>}
-          {prompt.mode_id && <span>Mode: {prompt.mode_id}</span>}
+          {prompt.model_id && <span>{t('prompt:model')}: {prompt.model_id}</span>}
+          {prompt.mode_id && <span>{t('prompt:mode')}: {prompt.mode_id}</span>}
           {prompt.is_featured && (
-            <Badge variant="outline" className="font-mono">Featured</Badge>
+            <Badge variant="outline" className="font-mono">{t('common:labels.featured')}</Badge>
           )}
         </div>
 
         {/* Prompt Content */}
         <div className="bg-card border border-border rounded-lg p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-foreground font-mono">Prompt Content</h2>
+            <h2 className="text-lg font-semibold text-foreground font-mono">{t('prompt:promptContent')}</h2>
             <Button
               variant="outline"
               size="sm"
@@ -245,7 +247,7 @@ const PublicPromptDetail = () => {
               className="font-mono"
             >
               <Copy className="w-4 h-4 mr-2" />
-              Copy
+              {t('common:buttons.copy')}
             </Button>
           </div>
           <div className="bg-muted/20 p-4 rounded-lg">
@@ -264,7 +266,7 @@ const PublicPromptDetail = () => {
             className="flex-1 font-mono"
           >
             <Download className="w-5 h-5 mr-2" />
-            Use This Prompt
+            {t('prompt:useThisPrompt')}
           </Button>
           <Button
             variant="outline"
@@ -273,7 +275,7 @@ const PublicPromptDetail = () => {
             className="flex-1 font-mono"
           >
             <Copy className="w-5 h-5 mr-2" />
-            Copy Content
+            {t('prompt:copyContent')}
           </Button>
         </div>
       </main>

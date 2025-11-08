@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Select,
   SelectContent,
@@ -26,6 +27,7 @@ interface DBModel {
 }
 
 const ModelSelector = ({ value, onChange }: ModelSelectorProps) => {
+  const { t } = useTranslation();
   const [models, setModels] = useState<DBModel[]>([]);
   const [loading, setLoading] = useState(true);
   const isMobile = useIsMobile();
@@ -66,8 +68,8 @@ const ModelSelector = ({ value, onChange }: ModelSelectorProps) => {
     return (
       <Select disabled>
         <SelectTrigger className={`${isMobile ? 'w-full h-9 text-xs' : 'w-[180px]'} bg-secondary border-border ${isMobile ? 'text-xs' : 'text-xs'}`}>
-          <SelectValue placeholder="Loading models...">
-            Loading...
+          <SelectValue placeholder={t('common:placeholders.loadingModels')}>
+            {t('common:status.loading')}
           </SelectValue>
         </SelectTrigger>
       </Select>
@@ -77,8 +79,8 @@ const ModelSelector = ({ value, onChange }: ModelSelectorProps) => {
   return (
     <Select value={value} onValueChange={onChange}>
       <SelectTrigger className={`${isMobile ? 'w-full h-9 text-xs' : 'w-[180px]'} bg-secondary border-border text-xs touch-manipulation`}>
-        <SelectValue placeholder="Select model">
-          <span className="truncate">{selectedModel?.name || selectedModel?.id || 'Select model'}</span>
+        <SelectValue placeholder={t('common:placeholders.selectModel')}>
+          <span className="truncate">{selectedModel?.name || selectedModel?.id || t('common:placeholders.selectModel')}</span>
         </SelectValue>
       </SelectTrigger>
       <SelectContent>

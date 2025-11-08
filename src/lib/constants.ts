@@ -32,6 +32,7 @@ export const STORAGE_KEYS = {
   PLAYGROUND_COUNT: 'prompedia_playground_count',
   GUEST_USAGE: 'prompedia_guest_usage',  // Track guest usage locally
   THEME: 'prompedia_theme',
+  LANGUAGE: 'prompedia_language',  // Language preference for i18n
   // Note: PREFERENCES removed - preferences field eliminated from database schema
 } as const;
 
@@ -61,41 +62,47 @@ export const VALIDATION = {
   },
 } as const;
 
-// Error Messages
-export const ERROR_MESSAGES = {
-  NETWORK: 'Koneksi jaringan bermasalah. Silakan coba lagi.',
-  UNAUTHORIZED: 'Anda tidak memiliki akses untuk melakukan tindakan ini.',
-  NOT_FOUND: 'Data yang dicari tidak ditemukan.',
-  VALIDATION: 'Data yang dimasukkan tidak valid.',
-  GENERIC: 'Terjadi kesalahan yang tidak terduga.',
+// Error Message Keys (use with i18n translation)
+// In React components, use: const { t } = useTranslation(); t('errors:network')
+// In non-React contexts, use: getErrorMessage('network') from i18n-helpers
+export const ERROR_MESSAGE_KEYS = {
+  NETWORK: 'errors:network',
+  UNAUTHORIZED: 'errors:unauthorized',
+  NOT_FOUND: 'errors:notFound',
+  VALIDATION: 'errors:validation',
+  GENERIC: 'errors:generic',
   PROMPT: {
-    SAVE_FAILED: 'Gagal menyimpan prompt',
-    DELETE_FAILED: 'Gagal menghapus prompt',
-    LOAD_FAILED: 'Gagal memuat prompt',
-    TITLE_REQUIRED: 'Judul prompt wajib diisi',
-    TITLE_TOO_LONG: `Judul prompt maksimal ${VALIDATION.PROMPT.TITLE_MAX_LENGTH} karakter`,
-    CONTENT_TOO_LONG: `Konten prompt maksimal ${VALIDATION.PROMPT.CONTENT_MAX_LENGTH} karakter`,
+    SAVE_FAILED: 'errors:prompt.saveFailed',
+    DELETE_FAILED: 'errors:prompt.deleteFailed',
+    LOAD_FAILED: 'errors:prompt.loadFailed',
+    TITLE_REQUIRED: 'errors:prompt.titleRequired',
+    TITLE_TOO_LONG: 'errors:prompt.titleTooLong',
+    CONTENT_TOO_LONG: 'errors:prompt.contentTooLong',
   },
   AUTH: {
-    LOGIN_FAILED: 'Gagal masuk. Periksa email dan password Anda.',
-    LOGOUT_FAILED: 'Gagal keluar dari akun.',
-    SESSION_EXPIRED: 'Sesi Anda telah berakhir. Silakan masuk kembali.',
+    LOGIN_FAILED: 'errors:auth.loginFailed',
+    LOGOUT_FAILED: 'errors:auth.logoutFailed',
+    SESSION_EXPIRED: 'errors:auth.sessionExpired',
   },
 } as const;
 
-// Success Messages
-export const SUCCESS_MESSAGES = {
+// Success Message Keys (use with i18n translation)
+export const SUCCESS_MESSAGE_KEYS = {
   PROMPT: {
-    SAVED: 'Prompt berhasil disimpan',
-    DELETED: 'Prompt berhasil dihapus',
-    COPIED: 'Prompt berhasil disalin',
-    CREATED: 'Prompt berhasil dibuat',
+    SAVED: 'success:prompt.saved',
+    DELETED: 'success:prompt.deleted',
+    COPIED: 'success:prompt.copied',
+    CREATED: 'success:prompt.created',
   },
   AUTH: {
-    LOGIN_SUCCESS: 'Berhasil masuk ke akun',
-    LOGOUT_SUCCESS: 'Berhasil keluar dari akun',
+    LOGIN_SUCCESS: 'success:auth.loginSuccess',
+    LOGOUT_SUCCESS: 'success:auth.logoutSuccess',
   },
 } as const;
+
+// Legacy exports for backward compatibility (deprecated - use translation keys instead)
+export const ERROR_MESSAGES = ERROR_MESSAGE_KEYS;
+export const SUCCESS_MESSAGES = SUCCESS_MESSAGE_KEYS;
 
 // Feature Flags
 export const FEATURES = {
@@ -119,5 +126,5 @@ export const ENV = {
 
 // Type exports for better TypeScript support
 export type StorageKey = keyof typeof STORAGE_KEYS;
-export type ErrorMessageKey = keyof typeof ERROR_MESSAGES;
-export type SuccessMessageKey = keyof typeof SUCCESS_MESSAGES;
+export type ErrorMessageKey = keyof typeof ERROR_MESSAGE_KEYS;
+export type SuccessMessageKey = keyof typeof SUCCESS_MESSAGE_KEYS;

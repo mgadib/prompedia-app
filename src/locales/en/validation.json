@@ -1,0 +1,16 @@
+{
+  "prompt": {
+    "titleMinLength": "Title must be at least {{min}} character",
+    "titleMaxLength": "Title must not exceed {{max}} characters",
+    "contentMaxLength": "Content must not exceed {{max}} characters",
+    "tagsMaxCount": "Maximum {{max}} tags allowed",
+    "tagMaxLength": "Tag must not exceed {{max}} characters"
+  },
+  "user": {
+    "emailInvalid": "Invalid email address",
+    "passwordMinLength": "Password must be at least {{min}} characters"
+  },
+  "required": "This field is required",
+  "invalid": "Invalid value"
+}
+

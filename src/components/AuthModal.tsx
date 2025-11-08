@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Sparkles, Loader2 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { getSuccessMessage, getErrorMessage } from '@/lib/i18n-helpers';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -15,6 +17,7 @@ interface AuthModalProps {
 }
 
 const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
+  const { t } = useTranslation();
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
@@ -36,13 +39,13 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
 
         if (error) throw error;
 
-        toast.success('Welcome back!');
+        toast.success(t('auth:welcomeBack'));
         onSuccess();
         onClose();
       } else {
         // Register
         if (!username.trim()) {
-          toast.error('Username is required');
+          toast.error(t('auth:usernameRequired'));
           setLoading(false);
           return;
         }
@@ -61,12 +64,12 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
 
         if (error) throw error;
 
-        toast.success('Account created! Please check your email to verify.');
+        toast.success(t('auth:accountCreated'));
         setIsLogin(true);
       }
     } catch (error: any) {
       console.error('Auth error:', error);
-      toast.error(error.message || 'An error occurred');
+      toast.error(error.message || t('auth:anErrorOccurred'));
     } finally {
       setLoading(false);
     }
@@ -79,13 +82,13 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
           <div className={`flex items-center justify-center gap-2 ${isMobile ? 'mb-3' : 'mb-4'}`}>
             <Sparkles className={`${isMobile ? 'w-5 h-5' : 'w-6 h-6'} text-primary`} />
             <DialogTitle className={`${isMobile ? 'text-xl' : 'text-2xl'} font-mono`}>
-              {isLogin ? 'Sign In' : 'Create Account'}
+              {isLogin ? t('auth:signIn') : t('auth:createAccount')}
             </DialogTitle>
           </div>
           <DialogDescription className={`font-mono text-center ${isMobile ? 'text-sm' : ''}`}>
             {isLogin
-              ? 'Welcome back! Enter your credentials to continue.'
-              : 'Join Prompedia to unlock unlimited prompts.'}
+              ? t('auth:enterCredentials')
+              : t('auth:joinPrompedia')}
           </DialogDescription>
         </DialogHeader>
 
@@ -93,12 +96,12 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
           {!isLogin && (
             <div className="space-y-2">
               <Label htmlFor="username" className="font-mono">
-                Username
+                {t('auth:username')}
               </Label>
               <Input
                 id="username"
                 type="text"
-                placeholder="Enter your username"
+                placeholder={t('common:placeholders.enterUsername')}
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required={!isLogin}
@@ -110,12 +113,12 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
 
           <div className="space-y-2">
             <Label htmlFor="email" className="font-mono">
-              Email
+              {t('auth:email')}
             </Label>
             <Input
               id="email"
               type="email"
-              placeholder="Enter your email"
+              placeholder={t('common:placeholders.enterEmail')}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -126,12 +129,12 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
 
           <div className="space-y-2">
             <Label htmlFor="password" className="font-mono">
-              Password
+              {t('auth:password')}
             </Label>
             <Input
               id="password"
               type="password"
-              placeholder="Enter your password"
+              placeholder={t('common:placeholders.enterPassword')}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -141,7 +144,7 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
             />
             {!isLogin && (
               <p className="text-xs text-muted-foreground font-mono">
-                Minimum 8 characters
+                {t('auth:minimumCharacters')}
               </p>
             )}
           </div>
@@ -154,12 +157,12 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
             {loading ? (
               <>
                 <Loader2 className={`${isMobile ? 'mr-2 h-5 w-5' : 'mr-2 h-4 w-4'} animate-spin`} />
-                Processing...
+                {t('auth:processing')}
               </>
             ) : isLogin ? (
-              'Sign In'
+              t('auth:signIn')
             ) : (
-              'Create Account'
+              t('auth:createAccount')
             )}
           </Button>
         </form>
@@ -171,8 +174,8 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
             disabled={loading}
           >
             {isLogin
-              ? "Don't have an account? Sign up"
-              : 'Already have an account? Sign in'}
+              ? t('auth:dontHaveAccount')
+              : t('auth:alreadyHaveAccount')}
           </button>
         </div>
       </DialogContent>

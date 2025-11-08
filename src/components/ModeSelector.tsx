@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Select,
   SelectContent,
@@ -27,6 +28,7 @@ interface DBMode {
 }
 
 const ModeSelector = ({ value, onChange }: ModeSelectorProps) => {
+  const { t } = useTranslation();
   const [modes, setModes] = useState<DBMode[]>([]);
   const [loading, setLoading] = useState(true);
   const isMobile = useIsMobile();
@@ -60,8 +62,8 @@ const ModeSelector = ({ value, onChange }: ModeSelectorProps) => {
     return (
       <Select disabled>
         <SelectTrigger className={`${isMobile ? 'w-full h-9 text-xs' : 'w-[180px]'} bg-secondary border-border ${isMobile ? 'text-xs' : 'text-xs'}`}>
-          <SelectValue placeholder="Loading modes...">
-            Loading...
+          <SelectValue placeholder={t('common:placeholders.loadingModes')}>
+            {t('common:status.loading')}
           </SelectValue>
         </SelectTrigger>
       </Select>
@@ -71,7 +73,7 @@ const ModeSelector = ({ value, onChange }: ModeSelectorProps) => {
   return (
     <Select value={value} onValueChange={onChange}>
       <SelectTrigger className={`${isMobile ? 'w-full h-9 text-xs' : 'w-[180px]'} bg-secondary border-border text-xs touch-manipulation`}>
-        <SelectValue placeholder="Select mode">
+        <SelectValue placeholder={t('common:placeholders.selectMode')}>
           <span className="truncate">{selectedMode?.name || selectedMode?.id}</span>
         </SelectValue>
       </SelectTrigger>

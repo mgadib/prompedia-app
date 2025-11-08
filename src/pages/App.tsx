@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Sidebar from '@/components/Sidebar';
@@ -26,6 +27,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 
 const AppPage = () => {
+  const { t } = useTranslation();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isInitializing, setIsInitializing] = useState(true);
@@ -75,7 +77,7 @@ const AppPage = () => {
       try {
         const prompt = await SupabaseService.getPrompt(promptId);
         if (!prompt) {
-          toast.error('Prompt tidak ditemukan');
+          toast.error(t('errors:prompt.notFound'));
         } else {
           const sanitizedPrompt: Prompt = {
             id: prompt.id || '',
@@ -97,7 +99,7 @@ const AppPage = () => {
         }
       } catch (error) {
         console.error('Failed to load prompt from query:', error);
-        toast.error('Gagal memuat prompt');
+        toast.error(t('errors:prompt.loadFailed'));
       } finally {
         // Bersihkan query `use` dari URL
         const params = new URLSearchParams(searchParams);
@@ -152,7 +154,7 @@ const AppPage = () => {
       setPublicPrompts(publicPromptsData);
     } catch (error) {
       console.error('Failed to load public prompts:', error);
-      toast.error('Failed to load public library');
+      toast.error(t('errors:library.loadFailed'));
       setPublicPrompts([]);
     }
   }, []);
@@ -270,7 +272,7 @@ const AppPage = () => {
       await loadAllPrompts();
     } catch (error) {
       console.error('Failed to delete prompt:', error);
-      toast.error('Failed to delete prompt');
+      toast.error(t('errors:prompt.deleteFailed'));
       throw error; // Re-throw error so MyLibrary can handle it
     }
   };
@@ -279,7 +281,7 @@ const AppPage = () => {
     const user = await supabase.auth.getUser().then(({ data }) => data.user);
 
     if (!user) {
-      toast.error('Please log in to copy prompts');
+      toast.error(t('errors:actions.signInToCopy'));
       return;
     }
 
@@ -287,15 +289,17 @@ const AppPage = () => {
       // Check if user can make AI calls (copying requires quota)
       const rateLimitCheck = await rateLimitingService.canMakeAICall(user);
       if (!rateLimitCheck.allowed) {
-        toast.error('Please wait before copying. Usage limit reached.');
+        toast.error(t('errors:usage.waitBeforeCopying'));
         return;
       }
 
       // Show warning when approaching limit
       if (rateLimitCheck.usage.remaining <= 3) {
-        toast.warning(
-          `${rateLimitCheck.usage.remaining} AI calls remaining.`
-        );
+        if (user) {
+          toast.warning(t('common:warnings.remainingDailyCalls', { count: rateLimitCheck.usage.remaining }));
+        } else {
+          toast.warning(t('common:warnings.remainingCallsWithSignIn', { count: rateLimitCheck.usage.remaining }));
+        }
       }
 
       // Sanitize prompt to match new schema
@@ -323,20 +327,20 @@ const AppPage = () => {
 
       await storageManager.savePrompt(copiedPrompt);
       handlePromptChange(copiedPrompt);
-      toast.success('Prompt copied successfully');
+      toast.success(t('success:prompt.copiedSuccessfully'));
 
       // Increment usage counter after successful copy
       await rateLimitingService.incrementUsage(user);
     } catch (error) {
       console.error('Failed to copy prompt:', error);
-      toast.error('Failed to copy prompt');
+      toast.error(t('errors:prompt.copyFailed'));
     }
   };
 
   const handleUsePrompt = (prompt: PromptWithTags) => {
     // Guest users can only use prompts for viewing, not for AI processing
     if (!user) {
-      toast.warning('Sign in to use AI features with this prompt');
+      toast.warning(t('common:warnings.signInForAI'));
     }
 
     // Ensure prompt has required fields for new schema
@@ -363,7 +367,7 @@ const AppPage = () => {
     try {
       // Guest users cannot access private library
       if (!user && view === 'my-library') {
-        toast.error('Please sign in to access your private library');
+        toast.error(t('errors:actions.signInToAccessLibrary'));
         return;
       }
 
@@ -374,7 +378,7 @@ const AppPage = () => {
       setShowEditor(false);
     } catch (error) {
       console.error('Failed to change view:', error);
-      toast.error('Failed to switch view');
+      toast.error(t('errors:library.switchViewFailed'));
     }
   };
 
@@ -384,9 +388,12 @@ const AppPage = () => {
       const rateLimitCheck = await rateLimitingService.canMakeAICall(user);
 
       if (!rateLimitCheck.allowed) {
-        const limitType = user ? 'daily' : 'guest';
+        const limitType = user ? t('errors:usage.dailyLimit') : t('errors:usage.guestLimit');
         toast.error(
-          `Usage limit reached! ${limitType === 'daily' ? 'Daily' : 'Guest'} limit reached. ${rateLimitCheck.error || ''}`
+          t('errors:usage.limitReached', { 
+            type: limitType, 
+            error: rateLimitCheck.error || '' 
+          })
         );
         if (!user) {
           setShowAuthModal(true);
@@ -396,14 +403,15 @@ const AppPage = () => {
 
       // Show warning when approaching limit
       if (rateLimitCheck.usage.remaining <= 3) {
-        const limitType = user ? 'daily' : 'guest';
-        toast.warning(
-          `${rateLimitCheck.usage.remaining} ${limitType} AI calls remaining. ${user ? '' : 'Sign in for unlimited access!'}`
-        );
+        if (user) {
+          toast.warning(t('common:warnings.remainingDailyCalls', { count: rateLimitCheck.usage.remaining }));
+        } else {
+          toast.warning(t('common:warnings.remainingCallsWithSignIn', { count: rateLimitCheck.usage.remaining }));
+        }
       }
     } catch (error) {
       console.error('Rate limit check failed:', error);
-      toast.error('Failed to check usage limits');
+      toast.error(t('errors:usage.checkFailed'));
       return;
     }
 
@@ -433,17 +441,17 @@ const AppPage = () => {
     try {
       await supabase.auth.signOut();
       setUser(null);
-      toast.success('Logged out successfully');
+      toast.success(t('success:auth.logoutSuccess'));
     } catch (error) {
       console.error('Logout error:', error);
-      toast.error('Failed to logout');
+      toast.error(t('errors:auth.logoutFailed'));
     }
   };
 
   const handleAuthSuccess = () => {
     // Reset playground count after successful login
     localStorage.removeItem(STORAGE_KEYS.GUEST_USAGE);
-    toast.success('Welcome! You now have unlimited access.');
+    toast.success(t('success:auth.welcomeUnlimited'));
   };
 
   const handleLogin = () => {

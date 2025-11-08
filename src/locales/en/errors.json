@@ -1,0 +1,62 @@
+{
+  "network": "Network connection issue. Please try again.",
+  "unauthorized": "You don't have access to perform this action.",
+  "notFound": "The requested data was not found.",
+  "validation": "The entered data is invalid.",
+  "generic": "An unexpected error occurred.",
+  "prompt": {
+    "saveFailed": "Failed to save prompt",
+    "deleteFailed": "Failed to delete prompt",
+    "loadFailed": "Failed to load prompt",
+    "titleRequired": "Prompt title is required",
+    "titleTooLong": "Prompt title must not exceed {{maxLength}} characters",
+    "contentTooLong": "Prompt content must not exceed {{maxLength}} characters",
+    "updateFailed": "Failed to update prompt",
+    "createFailed": "Failed to create new prompt",
+    "copyFailed": "Failed to copy content",
+    "visibilityUpdateFailed": "Failed to update prompt visibility",
+    "notFound": "Prompt not found"
+  },
+  "auth": {
+    "loginFailed": "Login failed. Please check your email and password.",
+    "logoutFailed": "Failed to log out.",
+    "sessionExpired": "Your session has expired. Please sign in again."
+  },
+  "usage": {
+    "limitReached": "Usage limit reached! {{type}} limit reached. {{error}}",
+    "dailyLimit": "Daily",
+    "guestLimit": "Guest",
+    "waitBeforeSaving": "Please wait before saving. Usage limit reached.",
+    "waitBeforeDeleting": "Please wait before deleting. Usage limit reached.",
+    "waitBeforeChanges": "Please wait before making changes. Usage limit reached.",
+    "waitBeforeCopying": "Please wait before copying. Usage limit reached.",
+    "checkFailed": "Failed to check usage limits"
+  },
+  "actions": {
+    "enterContent": "Please enter prompt content first",
+    "noContent": "No content to copy",
+    "enterTitleAndContent": "Please enter a title and content",
+    "signInToCreate": "Please sign in to create new prompts",
+    "signInToSave": "Please sign in to save prompts permanently",
+    "signInToShare": "Please sign in to save and share prompts",
+    "signInToDelete": "Please sign in to delete prompts",
+    "signInToCopy": "Please log in to copy prompts",
+    "signInToAccessLibrary": "Please sign in to access your private library",
+    "failedToProcess": "Failed to process prompt",
+    "noResponse": "No response from AI service",
+    "noContentResponse": "No response content from AI",
+    "serviceLimitReached": "Service usage limit reached. Please try again in a moment.",
+    "apiAuthFailed": "API authentication failed. Please contact support.",
+    "requestTimeout": "Request timeout. Please try again.",
+    "actionFailed": "Failed to {{action}} content"
+  },
+  "library": {
+    "loadFailed": "Failed to load public library",
+    "switchViewFailed": "Failed to switch view"
+  },
+  "tag": {
+    "loadFailed": "Failed to load tag data",
+    "notFound": "Tag not found"
+  }
+}
+

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Copy, Save, Share2, FileText, Trash2, ArrowLeft, ArrowRight, CheckCircle, Lock, Globe, Leaf, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,6 +33,7 @@ interface PromptEditorProps {
 }
 
 const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewPrompt, isFocusMode = false, onToggleFocus, user }: PromptEditorProps) => {
+  const { t } = useTranslation();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [originalContent, setOriginalContent] = useState('');
@@ -149,15 +151,15 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       try {
         const user = await supabase.auth.getUser().then(({ data }) => data.user);
         
-        if (!user) {
-          toast.error('Please sign in to create new prompts');
-          return;
-        }
+      if (!user) {
+        toast.error(t('errors:actions.signInToCreate'));
+        return;
+      }
 
         const newPrompt: Prompt = {
           id: crypto.randomUUID(),
           user_id: user.id,
-          title: 'Untitled Prompt',
+          title: t('prompt:untitled'),
           content: '',
           model: AVAILABLE_MODELS[1].id,
           mode: THINKING_MODES[5].id as 'meta-prompt' | 'thinking' | 'normal',
@@ -172,19 +174,19 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
           onPromptChange(newPrompt);
         } catch (error) {
           console.error('Failed to update prompt:', error);
-          toast.error('Failed to update prompt');
+          toast.error(t('errors:prompt.updateFailed'));
         }
-        toast.success('New prompt created');
+        toast.success(t('success:prompt.created'));
       } catch (error) {
         console.error('Failed to create new prompt:', error);
-        toast.error('Failed to create new prompt');
+        toast.error(t('errors:prompt.createFailed'));
       }
     }
   };
 
   const handleSave = async () => {
     if (!title || !content) {
-      toast.error('Please enter a title and content');
+      toast.error(t('errors:actions.enterTitleAndContent'));
       return;
     }
 
@@ -210,14 +212,14 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
 
       // Guest users cannot save prompts (only localStorage auto-save for current session)
       if (!user) {
-        toast.error('Please sign in to save prompts permanently');
+        toast.error(t('errors:actions.signInToSave'));
         return;
       }
 
       // Check if user can make AI calls (they need quota for saving)
       const rateLimitCheck = await rateLimitingService.canMakeAICall(user);
       if (!rateLimitCheck.allowed) {
-        toast.error('Please wait before saving. Usage limit reached.');
+        toast.error(t('errors:usage.waitBeforeSaving'));
         return;
       }
 
@@ -256,9 +258,9 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
         onPromptChange(promptToSave);
       } catch (error) {
         console.error('Failed to update prompt:', error);
-        toast.error('Failed to update prompt');
+        toast.error(t('errors:prompt.updateFailed'));
       }
-      toast.success('Prompt saved successfully');
+      toast.success(t('success:prompt.saved'));
 
       // Increment usage counter after successful save
       await rateLimitingService.incrementUsage(user);
@@ -274,28 +276,28 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
         hasUser: !!user,
         storageManagerAuth: storageManager.getAuthDebugInfo()
       });
-      toast.error(error instanceof Error ? error.message : 'Failed to save prompt');
+      toast.error(error instanceof Error ? error.message : t('errors:prompt.saveFailed'));
     }
   };
 
   const handleCopy = async () => {
     if (!content) {
-      toast.error('No content to copy');
+      toast.error(t('errors:actions.noContent'));
       return;
     }
 
     try {
       await navigator.clipboard.writeText(content);
-      toast.success('Content copied to clipboard');
+      toast.success(t('success:prompt.contentCopied'));
     } catch (error) {
       console.error('Failed to copy content:', error);
-      toast.error('Failed to copy content');
+      toast.error(t('errors:prompt.copyFailed'));
     }
   };
 
   const handleShare = async () => {
     if (!title || !content) {
-      toast.error('Please enter a title and content');
+      toast.error(t('errors:actions.enterTitleAndContent'));
       return;
     }
 
@@ -323,14 +325,14 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
 
       // Guest users cannot make prompts public or save prompts
       if (!user) {
-        toast.error('Please sign in to save and share prompts');
+        toast.error(t('errors:actions.signInToShare'));
         return;
       }
 
       // Check if user can make AI calls (they need to be authenticated)
       const rateLimitCheck = await rateLimitingService.canMakeAICall(user);
       if (!rateLimitCheck.allowed) {
-        toast.error('Please wait before making changes. Usage limit reached.');
+        toast.error(t('errors:usage.waitBeforeChanges'));
         return;
       }
 
@@ -361,9 +363,9 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
         onPromptChange(updatedPrompt);
       } catch (error) {
         console.error('Failed to update prompt:', error);
-        toast.error('Failed to update prompt');
+        toast.error(t('errors:prompt.updateFailed'));
       }
-      toast.success(updatedPrompt.is_public ? 'Prompt is now public' : 'Prompt is now private');
+      toast.success(updatedPrompt.is_public ? t('success:prompt.nowPublic') : t('success:prompt.nowPrivate'));
     } catch (error) {
       console.error('Failed to update prompt visibility:', error);
       console.error('Error details:', {
@@ -376,7 +378,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
         hasUser: !!user,
         storageManagerAuth: storageManager.getAuthDebugInfo()
       });
-      toast.error('Failed to update prompt visibility');
+      toast.error(t('errors:prompt.visibilityUpdateFailed'));
     }
   };
 
@@ -386,14 +388,14 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
 
       // Guest users cannot delete prompts
       if (!user) {
-        toast.error('Please sign in to delete prompts');
+        toast.error(t('errors:actions.signInToDelete'));
         return;
       }
 
       // Check if user can make AI calls (deleting requires quota)
       const rateLimitCheck = await rateLimitingService.canMakeAICall(user);
       if (!rateLimitCheck.allowed) {
-        toast.error('Please wait before deleting. Usage limit reached.');
+        toast.error(t('errors:usage.waitBeforeDeleting'));
         return;
       }
 
@@ -405,7 +407,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
           onPromptChange({
             id: crypto.randomUUID(),
             user_id: currentPrompt?.user_id || '',
-            title: 'Untitled Prompt',
+            title: t('prompt:untitled'),
             content: '',
             model: AVAILABLE_MODELS[1].id,
             mode: THINKING_MODES[5].id as 'meta-prompt' | 'thinking' | 'normal',
@@ -415,23 +417,23 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
           });
         } catch (error) {
           console.error('Failed to update prompt:', error);
-          toast.error('Failed to update prompt');
+          toast.error(t('errors:prompt.updateFailed'));
         }
       }
-      toast.success('Prompt deleted successfully');
+      toast.success(t('success:prompt.deleted'));
 
       // Increment usage counter after successful delete
       await rateLimitingService.incrementUsage(user);
     } catch (error) {
       console.error('Failed to delete prompt:', error);
-      toast.error('Failed to delete prompt');
+      toast.error(t('errors:prompt.deleteFailed'));
     }
   };
 
 
   const handleAction = async (actionId: string) => {
     if (!content.trim()) {
-      toast.error('Please enter prompt content first');
+      toast.error(t('errors:actions.enterContent'));
       return;
     }
 
@@ -444,19 +446,23 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       const rateLimitCheck = await rateLimitingService.canMakeAICall(user);
 
       if (!rateLimitCheck.allowed) {
-        const limitType = user ? 'daily' : 'guest';
+        const limitType = user ? t('errors:usage.dailyLimit') : t('errors:usage.guestLimit');
         toast.error(
-          `Usage limit reached! ${limitType === 'daily' ? 'Daily' : 'Guest'} limit reached. ${rateLimitCheck.error || ''}`
+          t('errors:usage.limitReached', { 
+            type: limitType, 
+            error: rateLimitCheck.error || '' 
+          })
         );
         return;
       }
 
       // Show remaining usage warning when approaching limit
       if (rateLimitCheck.usage.remaining <= 3) {
-        const limitType = user ? 'daily' : 'guest';
-        toast.warning(
-          `${rateLimitCheck.usage.remaining} AI calls remaining. ${user ? '' : 'Sign in for unlimited access!'}`
-        );
+        if (user) {
+          toast.warning(t('common:warnings.remainingDailyCalls', { count: rateLimitCheck.usage.remaining }));
+        } else {
+          toast.warning(t('common:warnings.remainingCallsWithSignIn', { count: rateLimitCheck.usage.remaining }));
+        }
       }
 
       // Generate action-specific instructions WITH MODE
@@ -484,7 +490,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
         console.error('Edge function error:', error);
         
         // Try to extract more meaningful error message
-        let errorMessage = 'Failed to process prompt';
+        let errorMessage = t('errors:actions.failedToProcess');
         
         if (error.message) {
           errorMessage = error.message;
@@ -498,7 +504,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       }
       
       if (!data) {
-        throw new Error('No response from AI service');
+        throw new Error(t('errors:actions.noResponse'));
       }
 
       // Check for API error in response
@@ -510,7 +516,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       const processedContent = data?.choices?.[0]?.message?.content || data?.response || '';
       if (!processedContent) {
         console.error('No content in response:', data);
-        throw new Error('No response content from AI');
+        throw new Error(t('errors:actions.noContentResponse'));
       }
       
       // Prefer extracted refined content when available
@@ -529,7 +535,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       setViewState('ai-result');
       
       
-      toast.success(`Content ${actionId}d successfully`);
+      toast.success(t('success:actions.actionSuccess', { action: actionId }));
 
       // Increment usage counter after successful AI response
       await rateLimitingService.incrementUsage(user);
@@ -538,17 +544,17 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       console.error(`Error processing ${actionId}:`, error);
       
       // More detailed error message
-      let errorMsg = `Failed to ${actionId} content`;
+      let errorMsg = t('errors:actions.actionFailed', { action: actionId });
       if (error instanceof Error) {
         errorMsg = error.message;
         
         // Show specific error types
         if (errorMsg.includes('rate limit') || errorMsg.includes('429')) {
-          errorMsg = 'Service usage limit reached. Please try again in a moment.';
+          errorMsg = t('errors:actions.serviceLimitReached');
         } else if (errorMsg.includes('API key') || errorMsg.includes('401')) {
-          errorMsg = 'API authentication failed. Please contact support.';
+          errorMsg = t('errors:actions.apiAuthFailed');
         } else if (errorMsg.includes('timeout')) {
-          errorMsg = 'Request timeout. Please try again.';
+          errorMsg = t('errors:actions.requestTimeout');
         }
       }
       
@@ -575,14 +581,14 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
                     ? 'bg-accent text-accent-foreground hover:bg-accent/90' 
                     : 'hover:bg-accent/20 hover:text-accent'
                 }`}
-                title={isFocusMode ? 'Exit Focus Mode' : 'Focus Mode - Hide Sidebar for Clean Editing'}
+                title={isFocusMode ? t('prompt:exitFocusMode') : t('prompt:focusMode')}
               >
                 {isFocusMode ? (
                   <EyeOff className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${isMobile ? '' : 'mr-2'}`} />
                 ) : (
                   <Leaf className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${isMobile ? '' : 'mr-2'}`} />
                 )}
-                {isMobile ? '' : 'Focus'}
+                {isMobile ? '' : t('common:buttons.focus')}
               </Button>
             )}
             <Button
@@ -590,10 +596,10 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
               variant="ghost"
               size={isMobile ? "icon" : "sm"}
               className={`hover:bg-accent/20 hover:text-accent font-mono touch-manipulation ${isMobile ? 'h-9 w-9' : ''}`}
-              title={isMobile ? 'New' : ''}
+              title={isMobile ? t('common:buttons.new') : ''}
             >
               <FileText className={`${isMobile ? 'w-4 h-4' : 'w-4 h-4'} ${isMobile ? '' : 'mr-2'}`} />
-              {isMobile ? '' : 'New'}
+              {isMobile ? '' : t('common:buttons.new')}
             </Button>
             <Button
               onClick={handleCopy}
@@ -601,10 +607,10 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
               size={isMobile ? "icon" : "sm"}
               className={`hover:bg-accent/20 hover:text-accent font-mono touch-manipulation ${isMobile ? 'h-9 w-9' : ''}`}
               disabled={!content}
-              title={isMobile ? 'Copy' : ''}
+              title={isMobile ? t('common:buttons.copy') : ''}
             >
               <Copy className={`${isMobile ? 'w-4 h-4' : 'w-4 h-4'} ${isMobile ? '' : 'mr-2'}`} />
-              {isMobile ? '' : 'Copy'}
+              {isMobile ? '' : t('common:buttons.copy')}
             </Button>
             <Button
               onClick={handleSave}
@@ -612,10 +618,10 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
               size={isMobile ? "icon" : "sm"}
               className={`hover:bg-accent/20 hover:text-accent font-mono touch-manipulation ${isMobile ? 'h-9 w-9' : ''}`}
               disabled={!title || !content}
-              title={isMobile ? 'Save' : ''}
+              title={isMobile ? t('common:buttons.save') : ''}
             >
               <Save className={`${isMobile ? 'w-4 h-4' : 'w-4 h-4'} ${isMobile ? '' : 'mr-2'}`} />
-              {isMobile ? '' : 'Save'}
+              {isMobile ? '' : t('common:buttons.save')}
             </Button>
             <Button
               onClick={handleShare}
@@ -623,13 +629,13 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
               size={isMobile ? "icon" : "sm"}
               className={`hover:bg-accent/20 hover:text-accent font-mono touch-manipulation ${isMobile ? 'h-9 w-9' : ''}`}
               disabled={!title || !content}
-              title={isMobile ? (currentPrompt?.is_public ? 'Make Private' : 'Share') : ''}
+              title={isMobile ? (currentPrompt?.is_public ? t('common:buttons.makePrivate') : t('common:buttons.share')) : ''}
             >
               <Share2 className={`${isMobile ? 'w-4 h-4' : 'w-4 h-4'} ${isMobile ? '' : 'mr-2'}`} />
-              {isMobile ? '' : (currentPrompt?.is_public ? 'Make Private' : 'Share')}
+              {isMobile ? '' : (currentPrompt?.is_public ? t('common:buttons.makePrivate') : t('common:buttons.share'))}
             </Button>
             <DeletePromptDialog
-              promptTitle={currentPrompt?.title || 'Untitled Prompt'}
+              promptTitle={currentPrompt?.title || t('prompt:untitled')}
               onConfirm={() => handleDelete(currentPrompt?.id || '')}
             />
 
@@ -660,7 +666,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
                   setTitle(newValue);
                 }
               }}
-              placeholder="Enter prompt title..."
+              placeholder={t('common:placeholders.enterTitle')}
               className={`${isMobile ? 'text-base' : 'text-xl'} font-bold bg-transparent border-none ${isMobile ? 'px-2 py-1.5' : 'px-3 py-2'} focus-visible:ring-0 placeholder:text-muted-foreground/50`}
               maxLength={77}
             />
@@ -690,10 +696,10 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
                 variant="outline"
                 size={isMobile ? "default" : "sm"}
                 className={`${isMobile ? 'text-sm min-h-[44px]' : 'text-xs h-8'} px-3 hover:bg-secondary/20 transition-all font-mono touch-manipulation`}
-                title="Back to original prompt"
+                title={t('prompt:backToOriginalTitle')}
               >
                 <ArrowLeft className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${isMobile ? '' : 'mr-1'}`} />
-                {isMobile ? '' : 'Back'}
+                {isMobile ? '' : t('common:buttons.back')}
               </Button>
             )}
 
@@ -703,10 +709,10 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
                 variant="outline"
                 size={isMobile ? "default" : "sm"}
                 className={`${isMobile ? 'text-sm min-h-[44px]' : 'text-xs h-8'} px-3 hover:bg-secondary/20 transition-all font-mono touch-manipulation`}
-                title="Forward to AI result"
+                title={t('prompt:forwardToResultTitle')}
               >
                 <ArrowRight className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${isMobile ? '' : 'mr-1'}`} />
-                {isMobile ? '' : 'Forward'}
+                {isMobile ? '' : t('common:buttons.forward')}
               </Button>
             )}
 
@@ -714,7 +720,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
             {viewState === 'ai-result' && (
               <div className="flex items-center gap-1 text-primary ml-auto">
                 <CheckCircle className="w-4 h-4" />
-                <span className="text-xs font-mono">AI Generated</span>
+                <span className="text-xs font-mono">{t('common:status.aiGenerated')}</span>
               </div>
             )}
 
@@ -722,21 +728,21 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
             {viewState === 'original' && originalContent && (
               <div className="flex items-center gap-1 text-muted-foreground ml-auto">
                 <FileText className="w-4 h-4" />
-                <span className="text-xs font-mono">Original</span>
+                <span className="text-xs font-mono">{t('common:status.original')}</span>
               </div>
             )}
 
             {/* Character limit warning */}
             {content.length > 45000 && (
               <div className="flex items-center gap-1 text-red-400 ml-auto">
-                <span className="text-xs font-mono">⚠️ Character Limit Near</span>
+                <span className="text-xs font-mono">⚠️ {t('common:status.characterLimitNear')}</span>
               </div>
             )}
 
             {/* Rate limit warning */}
             {!userCanUseAI && (
               <div className="flex items-center gap-1 text-red-400 ml-auto">
-                <span className="text-xs font-mono">⚠️ Usage Limit</span>
+                <span className="text-xs font-mono">⚠️ {t('common:status.usageLimit')}</span>
               </div>
             )}
           </div>
@@ -754,7 +760,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
                 setAiResultContent(newContent);
               }
             }}
-            placeholder="Start writing..."
+            placeholder={t('common:placeholders.startWriting')}
             className={`flex-1 min-h-0 bg-card border-border font-mono resize-none leading-relaxed prompt-editor-textarea ${isMobile ? 'text-base' : 'text-sm'}`}
             maxLength={50000}
           />
@@ -769,7 +775,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
             {/* Word count */}
             <div className="flex items-center gap-1 text-xs text-muted-foreground font-mono">
               <FileText className="w-3 h-3" />
-              <span>{content.split(/\s+/).filter(word => word.length > 0).length} words</span>
+              <span>{content.split(/\s+/).filter(word => word.length > 0).length} {t('common:status.words')}</span>
             </div>
 
             {/* Character count with limit indicator */}
@@ -792,7 +798,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
             {viewState === 'ai-result' && (
               <div className="flex items-center gap-1 text-primary font-mono">
                 <CheckCircle className="w-3 h-3" />
-                <span className="text-xs">AI Generated</span>
+                <span className="text-xs">{t('common:status.aiGenerated')}</span>
               </div>
             )}
           </div>
@@ -806,7 +812,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
                   ) : (
                     <Lock className="w-3 h-3 text-muted-foreground" />
                   )}
-                  <span>{currentPrompt.is_public ? 'Public' : 'Private'}</span>
+                  <span>{currentPrompt.is_public ? t('common:labels.public') : t('common:labels.private')}</span>
                 </div>
                 {selectedTags.length > 0 && (
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">

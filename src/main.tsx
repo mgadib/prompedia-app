@@ -3,6 +3,7 @@ import { StrictMode } from "react";
 import { validateEnv } from "@/lib/env-validation";
 import App from "./App.tsx";
 import "./index.css";
+import "@/lib/i18n"; // Initialize i18n
 
 // Validate environment variables at startup
 try {

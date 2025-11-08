@@ -1,0 +1,29 @@
+{
+  "prompt": {
+    "saved": "Prompt saved successfully",
+    "deleted": "Prompt deleted successfully",
+    "copied": "Prompt content copied to clipboard",
+    "created": "New prompt created",
+    "loaded": "Prompt loaded in editor",
+    "loadedForEditing": "Prompt loaded for editing",
+    "urlCopied": "URL copied to clipboard",
+    "contentCopied": "Prompt content copied to clipboard",
+    "nowPublic": "Prompt is now public",
+    "nowPrivate": "Prompt is now private",
+    "copiedSuccessfully": "Prompt copied successfully"
+  },
+  "auth": {
+    "loginSuccess": "Successfully signed in",
+    "logoutSuccess": "Successfully signed out",
+    "welcomeUnlimited": "Welcome! You now have unlimited access."
+  },
+  "actions": {
+    "refined": "Content refined successfully",
+    "expanded": "Content expanded successfully",
+    "reimagined": "Content reimagined successfully",
+    "reformatted": "Content reformatted successfully",
+    "selfReviewed": "Content self-reviewed successfully",
+    "actionSuccess": "Content {{action}}d successfully"
+  }
+}
+

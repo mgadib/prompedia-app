@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Hash, FileText, Globe, Lock, ArrowLeft, Menu, Copy, Download, Link as LinkIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -21,6 +22,7 @@ interface PromptWithTags extends Prompt {
 }
 
 const TagPage: React.FC = () => {
+  const { t } = useTranslation();
   const params = useParams<{ name: string }>();
   const navigate = useNavigate();
   const tagName = decodeURIComponent(params.name || '').trim();
@@ -55,7 +57,7 @@ const TagPage: React.FC = () => {
       }
 
       if (!tagName) {
-        setError('Tag tidak ditemukan.');
+        setError(t('errors:tag.notFound'));
         setPrompts([]);
         return;
       }
@@ -63,7 +65,7 @@ const TagPage: React.FC = () => {
       const promptList = await TagService.getPromptsByTagName(tagName, user?.id);
       setPrompts(promptList);
     } catch (err) {
-      const msg = (err as Error)?.message || 'Terjadi kesalahan saat memuat data tag.';
+      const msg = (err as Error)?.message || t('errors:tag.loadFailed');
       setError(msg);
       setPrompts([]);
     } finally {
@@ -113,7 +115,7 @@ const TagPage: React.FC = () => {
   const handleCopy = (e: React.MouseEvent, prompt: PromptWithTags) => {
     e.stopPropagation();
     navigator.clipboard.writeText(prompt.content);
-    toast.success('Konten prompt disalin ke clipboard');
+    toast.success(t('success:prompt.contentCopied'));
     trackEvent('copy_prompt_content', { prompt_id: prompt.id }, userId);
   };
 
@@ -122,26 +124,26 @@ const TagPage: React.FC = () => {
     const base = ENV.SITE_URL || window.location.origin;
     const url = `${base}/p/${promptId}`;
     navigator.clipboard.writeText(url);
-    toast.success('URL prompt disalin ke clipboard');
+    toast.success(t('success:prompt.urlCopied'));
     trackEvent('copy_prompt_url', { prompt_id: promptId }, userId);
   };
 
   const handleUse = (e: React.MouseEvent, prompt: PromptWithTags) => {
     e.stopPropagation();
     navigate(`/?use=${encodeURIComponent(prompt.id)}`);
-    toast.success('Prompt dimuat untuk diedit');
+    toast.success(t('success:prompt.loadedForEditing'));
     trackEvent('use_prompt', { prompt_id: prompt.id }, userId);
   };
 
   const handleUsePromptFromModal = (prompt: Prompt) => {
     navigate(`/?use=${encodeURIComponent(prompt.id)}`);
-    toast.success('Prompt dimuat untuk diedit');
+    toast.success(t('success:prompt.loadedForEditing'));
     trackEvent('use_prompt', { prompt_id: prompt.id }, userId);
   };
 
   const handleCopyPromptFromModal = (prompt: Prompt) => {
     navigator.clipboard.writeText(prompt.content);
-    toast.success('Konten prompt disalin ke clipboard');
+    toast.success(t('success:prompt.contentCopied'));
     trackEvent('copy_prompt_content', { prompt_id: prompt.id }, userId);
   };
 
@@ -189,13 +191,13 @@ const TagPage: React.FC = () => {
               size="icon"
               onClick={() => setMobileSidebarOpen(true)}
               className="h-9 w-9 touch-manipulation"
-              aria-label="Buka menu"
+              aria-label={t('common:labels.openMenu')}
             >
               <Menu className="h-5 w-5" />
             </Button>
             <div className="flex items-center gap-2">
               <Hash className="w-5 h-5 text-prompedia-green-400" />
-              <h1 className="text-sm font-semibold font-mono truncate">{tagName || 'Tag'}</h1>
+              <h1 className="text-sm font-semibold font-mono truncate">{tagName || t('common:labels.tag')}</h1>
             </div>
           </div>
         )}
@@ -208,13 +210,13 @@ const TagPage: React.FC = () => {
               size="icon"
               onClick={() => navigate(-1)}
               className="h-9 w-9 touch-manipulation"
-              aria-label="Kembali"
+              aria-label={t('common:labels.back')}
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div className="flex items-center gap-2">
               <Hash className="w-5 h-5 text-prompedia-green-400" />
-              <h1 className="text-sm sm:text-base font-semibold font-mono truncate">{tagName || 'Tag'}</h1>
+              <h1 className="text-sm sm:text-base font-semibold font-mono truncate">{tagName || t('common:labels.tag')}</h1>
             </div>
           </div>
         )}
@@ -223,23 +225,23 @@ const TagPage: React.FC = () => {
           {isLoading ? (
             <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-8">
               <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4" />
-              <p className="text-sm font-mono">Memuat prompt untuk tag...</p>
+              <p className="text-sm font-mono">{t('common:status.loadingTagPrompts')}</p>
             </div>
           ) : error ? (
             <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-8">
               <Hash className="w-12 h-12 mb-4 opacity-50" />
-              <h3 className="text-lg font-semibold mb-2 font-mono">Terjadi masalah</h3>
+              <h3 className="text-lg font-semibold mb-2 font-mono">{t('library:problemOccurred')}</h3>
               <p className="text-sm text-center mb-4">{error}</p>
               <div className="flex items-center gap-2">
-                <Button variant="default" onClick={loadData} className="touch-manipulation">Coba lagi</Button>
-                <Link to="/" className="text-sm underline">Kembali ke beranda</Link>
+                <Button variant="default" onClick={loadData} className="touch-manipulation">{t('common:buttons.tryAgain')}</Button>
+                <Link to="/" className="text-sm underline">{t('library:backToHome')}</Link>
               </div>
             </div>
           ) : prompts.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-8">
               <Hash className="w-16 h-16 mb-4 opacity-50" />
-              <h3 className="text-lg font-semibold mb-2 font-mono">Belum ada prompt</h3>
-              <p className="text-sm text-center">Tidak ada prompt dengan tag ini.</p>
+              <h3 className="text-lg font-semibold mb-2 font-mono">{t('library:noPrompts')}</h3>
+              <p className="text-sm text-center">{t('library:noPromptsWithTag')}</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 p-3 sm:p-4 md:p-6">
@@ -255,7 +257,7 @@ const TagPage: React.FC = () => {
                   }}
                   role="button"
                   tabIndex={0}
-                  aria-label={`Buka detail untuk ${prompt.title || 'Untitled Prompt'}`}
+                  aria-label={t('library:openDetails', { title: prompt.title || t('prompt:untitled') })}
                   className={`group relative bg-card border rounded-lg p-4 sm:p-6 transition-all duration-200 hover:shadow-lg hover:border-primary/50 touch-manipulation hover:bg-accent/10 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background`}
                 >
                   <div className="flex items-start justify-between mb-4">
@@ -270,19 +272,19 @@ const TagPage: React.FC = () => {
                       {prompt.is_public ? (
                         <div className="flex items-center gap-1 text-primary">
                           <Globe className="w-4 h-4" />
-                          <span className="text-xs font-mono">Public</span>
+                          <span className="text-xs font-mono">{t('common:labels.public')}</span>
                         </div>
                       ) : (
                         <div className="flex items-center gap-1 text-muted-foreground">
                           <Lock className="w-4 h-4" />
-                          <span className="text-xs font-mono">Private</span>
+                          <span className="text-xs font-mono">{t('common:labels.private')}</span>
                         </div>
                       )}
                     </div>
                   </div>
 
                   <h3 className="font-bold text-lg mb-2 line-clamp-2 font-mono group-hover:text-primary transition-colors">
-                    {prompt.title || 'Untitled Prompt'}
+                    {prompt.title || t('prompt:untitled')}
                   </h3>
 
                   {prompt.description && (
@@ -318,8 +320,8 @@ const TagPage: React.FC = () => {
 
                   <div className="flex items-center justify-between pt-4 border-t border-border/50">
                     <div className="text-xs text-muted-foreground font-mono">
-                      <div>Model: {prompt.model || 'Llama 4 Maverick'}</div>
-                      <div>{prompt.is_featured ? 'Featured' : 'Standard'}</div>
+                      <div>{t('prompt:model')}: {prompt.model || t('library:unknownModel')}</div>
+                      <div>{prompt.is_featured ? t('common:labels.featured') : t('common:labels.standard')}</div>
                     </div>
 
                     {/* Tombol aksi seperti di PublicLibrary */}
@@ -329,8 +331,8 @@ const TagPage: React.FC = () => {
                         variant="ghost"
                         onClick={(e) => handleCopyUrl(e, prompt.id)}
                         className="h-8 w-8 p-0 hover:bg-primary/20"
-                        title="Salin URL"
-                        aria-label="Salin URL"
+                        title={t('library:copyUrl')}
+                        aria-label={t('library:copyUrl')}
                       >
                         <LinkIcon className="w-3 h-3" />
                       </Button>
@@ -339,8 +341,8 @@ const TagPage: React.FC = () => {
                         variant="ghost"
                         onClick={(e) => handleCopy(e, prompt)}
                         className="h-8 w-8 p-0 hover:bg-primary/20"
-                        title="Salin konten"
-                        aria-label="Salin konten"
+                        title={t('library:copyContentToClipboard')}
+                        aria-label={t('library:copyContentToClipboard')}
                       >
                         <Copy className="w-3 h-3" />
                       </Button>
@@ -349,18 +351,18 @@ const TagPage: React.FC = () => {
                         variant="ghost"
                         onClick={(e) => handleUse(e, prompt)}
                         className="h-8 w-8 p-0 hover:bg-primary/20"
-                        title="Gunakan prompt ini"
-                        aria-label="Gunakan prompt ini"
+                        title={t('library:useThisPrompt')}
+                        aria-label={t('library:useThisPrompt')}
                       >
                         <Download className="w-3 h-3" />
                       </Button>
                       <Link
                         to={`/p/${prompt.id}`}
                         onClick={(e) => e.stopPropagation()}
-                        aria-label={`Buka detail untuk ${prompt.title || 'Untitled Prompt'}`}
+                        aria-label={t('library:viewDetails', { title: prompt.title || t('prompt:untitled') })}
                         className="text-xs font-mono px-2 py-1 rounded hover:bg-primary/20"
                       >
-                        Lihat
+                        {t('common:buttons.view')}
                       </Link>
                     </div>
                   </div>

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Prompt, Tag } from '@/lib/storage';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -40,6 +41,7 @@ const PublicLibrary = ({
   onUsePrompt, 
   currentPromptId 
 }: PublicLibraryProps) => {
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTag, setSelectedTag] = useState<string>('');
   const [selectedPrompt, setSelectedPrompt] = useState<PromptWithTags | null>(null);
@@ -108,7 +110,7 @@ const PublicLibrary = ({
   const handleCopy = (e: React.MouseEvent, prompt: PromptWithTags) => {
     e.stopPropagation();
     navigator.clipboard.writeText(prompt.content);
-    toast.success('Prompt content copied to clipboard');
+    toast.success(t('success:prompt.contentCopied'));
     trackEvent('copy_prompt_content', { prompt_id: prompt.id });
   };
 
@@ -117,14 +119,14 @@ const PublicLibrary = ({
     const base = ENV.SITE_URL || window.location.origin;
     const url = `${base}/p/${promptId}`;
     navigator.clipboard.writeText(url);
-    toast.success('URL copied to clipboard');
+    toast.success(t('success:prompt.urlCopied'));
     trackEvent('copy_prompt_url', { prompt_id: promptId });
   };
 
   const handleUse = (e: React.MouseEvent, prompt: PromptWithTags) => {
     e.stopPropagation();
     onUsePrompt(prompt);
-    toast.success('Prompt loaded for editing');
+    toast.success(t('success:prompt.loadedForEditing'));
     trackEvent('use_prompt', { prompt_id: prompt.id });
   };
 
@@ -141,13 +143,13 @@ const PublicLibrary = ({
 
   const handleUsePromptFromModal = (prompt: Prompt) => {
     onUsePrompt({ ...prompt, tags: selectedPrompt?.tags || [] });
-    toast.success('Prompt loaded for editing');
+    toast.success(t('success:prompt.loadedForEditing'));
     trackEvent('use_prompt', { prompt_id: prompt.id });
   };
 
   const handleCopyPromptFromModal = (prompt: Prompt) => {
     navigator.clipboard.writeText(prompt.content);
-    toast.success('Prompt content copied to clipboard');
+    toast.success(t('success:prompt.contentCopied'));
     trackEvent('copy_prompt_content', { prompt_id: prompt.id });
   };
 
@@ -156,7 +158,7 @@ const PublicLibrary = ({
     return (
       <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-8">
         <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4" />
-        <p className="text-sm font-mono">Loading prompts...</p>
+        <p className="text-sm font-mono">{t('library:loadingPrompts')}</p>
       </div>
     );
   }
@@ -165,8 +167,8 @@ const PublicLibrary = ({
     return (
       <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-8">
         <Globe className="w-16 h-16 mb-4 opacity-50" />
-        <h3 className="text-lg font-semibold mb-2 font-mono">No public prompts yet</h3>
-        <p className="text-sm text-center">Be the first to share a prompt with the community!</p>
+        <h3 className="text-lg font-semibold mb-2 font-mono">{t('library:noPublicPrompts')}</h3>
+        <p className="text-sm text-center">{t('library:beFirstToShare')}</p>
       </div>
     );
   }
@@ -179,11 +181,11 @@ const PublicLibrary = ({
           {/* Search Input */}
           <div className="relative flex-1 w-full">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <label htmlFor="public-search" className="sr-only">Search public prompts</label>
+            <label htmlFor="public-search" className="sr-only">{t('common:labels.search')}</label>
             <Input
               id="public-search"
-              aria-label="Search public prompts"
-              placeholder="Search public prompts..."
+              aria-label={t('common:labels.search')}
+              placeholder={t('library:searchPublicPrompts')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 font-mono min-h-[44px] text-base sm:text-sm"
@@ -193,15 +195,15 @@ const PublicLibrary = ({
           {/* Tag Filter */}
           <div className="relative w-full sm:w-auto sm:min-w-[200px]">
             <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <label htmlFor="public-tag-filter" className="sr-only">Filter by tag</label>
+            <label htmlFor="public-tag-filter" className="sr-only">{t('library:filterByTag')}</label>
             <select
               id="public-tag-filter"
-              aria-label="Filter by tag"
+              aria-label={t('library:filterByTag')}
               value={selectedTag}
               onChange={(e) => setSelectedTag(e.target.value)}
               className="w-full pl-10 pr-4 min-h-[44px] text-base sm:text-sm bg-background border border-input rounded-md font-mono focus:outline-none focus:ring-2 focus:ring-ring touch-manipulation"
             >
-              <option value="">All tags</option>
+              <option value="">{t('common:labels.allTags')}</option>
               {allTags.map(tag => (
                 <option key={tag} value={tag}>{tag}</option>
               ))}
@@ -249,7 +251,7 @@ const PublicLibrary = ({
                 }}
                 className="text-xs sm:text-xs min-h-[44px] sm:h-7 px-3 sm:px-2 hover:bg-secondary/50 touch-manipulation"
               >
-                Clear
+                {t('common:buttons.clear')}
               </Button>
             )}
           </div>
@@ -260,7 +262,7 @@ const PublicLibrary = ({
       <div className="flex-1 overflow-y-auto">
         {filteredPrompts.length === 0 ? (
           <div className="flex items-center justify-center h-full text-muted-foreground">
-            <p className="text-sm font-mono">No prompts match your search criteria</p>
+            <p className="text-sm font-mono">{t('library:noMatches')}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 p-3 sm:p-4 md:p-6">
@@ -279,7 +281,7 @@ const PublicLibrary = ({
                   }}
                   role="button"
                   tabIndex={0}
-                  aria-label={`Open details for ${prompt.title || 'Untitled Prompt'}`}
+                  aria-label={t('library:openDetails', { title: prompt.title || t('prompt:untitled') })}
                   className={`group relative bg-card border rounded-lg p-4 sm:p-6 cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-primary/50 active:scale-[0.98] touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                     currentPromptId === prompt.id
                       ? 'border-primary bg-accent/20 shadow-md'
@@ -295,7 +297,7 @@ const PublicLibrary = ({
                       </span>
                       <div className="flex items-center gap-1 text-xs text-primary">
                         <Globe className="w-3 h-3" />
-                        <span className="font-mono">Public</span>
+                        <span className="font-mono">{t('common:labels.public')}</span>
                       </div>
                     </div>
                   </div>
@@ -305,10 +307,10 @@ const PublicLibrary = ({
                     <Link
                       to={`/p/${prompt.id}`}
                       onClick={(e) => e.stopPropagation()}
-                      aria-label={`View details for ${prompt.title || 'Untitled Prompt'}`}
+                      aria-label={t('library:viewDetails', { title: prompt.title || t('prompt:untitled') })}
                       className="hover:underline focus:underline underline-offset-4"
                     >
-                      {prompt.title || 'Untitled Prompt'}
+                      {prompt.title || t('prompt:untitled')}
                     </Link>
                   </h3>
 
@@ -347,8 +349,8 @@ const PublicLibrary = ({
                   {/* Footer with actions */}
                   <div className="flex items-center justify-between pt-4 border-t border-border/50">
                     <div className="text-xs text-muted-foreground font-mono">
-                      <div>Model: {prompt.model || 'Llama 4 Maverick'}</div>
-                      <div>{prompt.is_featured ? 'Featured' : 'Standard'}</div>
+                      <div>{t('prompt:model')}: {prompt.model || t('library:unknownModel')}</div>
+                      <div>{prompt.is_featured ? t('common:labels.featured') : t('common:labels.standard')}</div>
                     </div>
                     
                     {/* Action buttons */}
@@ -358,8 +360,8 @@ const PublicLibrary = ({
                         variant="ghost"
                         onClick={(e) => handleCopyUrl(e, prompt.id)}
                         className="h-8 w-8 p-0 hover:bg-primary/20"
-                        title="Copy URL"
-                        aria-label="Copy URL"
+                        title={t('library:copyUrl')}
+                        aria-label={t('library:copyUrl')}
                       >
                         <LinkIcon className="w-3 h-3" />
                       </Button>
@@ -368,8 +370,8 @@ const PublicLibrary = ({
                         variant="ghost"
                         onClick={(e) => handleCopy(e, prompt)}
                         className="h-8 w-8 p-0 hover:bg-primary/20"
-                        title="Copy content to clipboard"
-                        aria-label="Copy content to clipboard"
+                        title={t('library:copyContentToClipboard')}
+                        aria-label={t('library:copyContentToClipboard')}
                       >
                         <Copy className="w-3 h-3" />
                       </Button>
@@ -378,8 +380,8 @@ const PublicLibrary = ({
                         variant="ghost"
                         onClick={(e) => handleUse(e, prompt)}
                         className="h-8 w-8 p-0 hover:bg-primary/20"
-                        title="Use this prompt"
-                        aria-label="Use this prompt"
+                        title={t('library:useThisPrompt')}
+                        aria-label={t('library:useThisPrompt')}
                       >
                         <Download className="w-3 h-3" />
                       </Button>
@@ -387,10 +389,10 @@ const PublicLibrary = ({
                       <Link
                         to={`/p/${prompt.id}`}
                         onClick={(e) => e.stopPropagation()}
-                        aria-label={`Open detail for ${prompt.title || 'Untitled Prompt'}`}
+                        aria-label={t('library:viewDetails', { title: prompt.title || t('prompt:untitled') })}
                         className="text-xs font-mono px-2 py-1 rounded hover:bg-primary/20"
                       >
-                        View
+                        {t('common:buttons.view')}
                       </Link>
                     </div>
                   </div>

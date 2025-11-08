@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Copy, X, Lock, Globe, Link as LinkIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useTranslation } from 'react-i18next';
 
 interface PromptDetailModalProps {
   prompt: Prompt | null;
@@ -20,6 +21,7 @@ const PromptDetailModal = ({
   onCopy, 
   onUse
 }: PromptDetailModalProps) => {
+  const { t } = useTranslation();
   const isMobile = useIsMobile();
   
   if (!prompt) return null;
@@ -30,14 +32,14 @@ const PromptDetailModal = ({
     } else {
       // Default copy behavior - copy prompt content to clipboard
       navigator.clipboard.writeText(prompt.content);
-      toast.success('Prompt content copied to clipboard');
+      toast.success(t('success:prompt.contentCopied'));
     }
   };
 
   const handleCopyUrl = () => {
     const url = `https://prompedia.app/p/${prompt.id}`;
     navigator.clipboard.writeText(url);
-    toast.success('URL copied to clipboard');
+    toast.success(t('success:prompt.urlCopied'));
   };
 
   const handleUse = () => {
@@ -54,7 +56,7 @@ const PromptDetailModal = ({
         <div className={`flex ${isMobile ? 'flex-col' : 'items-start justify-between'} ${isMobile ? 'gap-3' : ''} ${isMobile ? 'p-4' : 'p-6'} border-b border-border/50 flex-shrink-0`}>
           <div className={`flex-1 ${isMobile ? '' : 'pr-4'}`}>
             <h2 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-foreground font-mono ${isMobile ? 'mb-2' : 'mb-3'}`}>
-              {prompt.title || 'Untitled Prompt'}
+              {prompt.title || t('prompt:untitled')}
             </h2>
           </div>
 
@@ -66,10 +68,10 @@ const PromptDetailModal = ({
                 variant="outline"
                 onClick={handleCopyUrl}
                 className={`font-mono touch-manipulation ${isMobile ? 'flex-1 min-h-[44px]' : ''}`}
-                title="Copy URL"
+                title={t('library:copyUrl')}
               >
                 <LinkIcon className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${isMobile ? '' : 'mr-2'}`} />
-                {isMobile ? '' : 'URL'}
+                {isMobile ? '' : t('common:buttons.url')}
               </Button>
             )}
             
@@ -80,7 +82,7 @@ const PromptDetailModal = ({
               className={`font-mono touch-manipulation ${isMobile ? 'flex-1 min-h-[44px]' : ''}`}
             >
               <Copy className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${isMobile ? '' : 'mr-2'}`} />
-              {isMobile ? '' : 'Copy'}
+              {isMobile ? '' : t('common:buttons.copy')}
             </Button>
             
             {onUse && (
@@ -89,7 +91,7 @@ const PromptDetailModal = ({
                 onClick={handleUse}
                 className={`font-mono bg-primary hover:bg-primary/90 touch-manipulation ${isMobile ? 'flex-1 min-h-[44px]' : ''}`}
               >
-                {isMobile ? 'Use' : 'Use Prompt'}
+                {isMobile ? t('common:buttons.use') : t('prompt:usePrompt')}
               </Button>
             )}
             
@@ -111,7 +113,7 @@ const PromptDetailModal = ({
             <div>
               <div className="bg-muted/20 p-4 rounded-lg">
                 <pre className="text-sm font-mono whitespace-pre-wrap text-foreground leading-relaxed">
-                  {prompt.content || 'No content available'}
+                  {prompt.content || t('common:status.noContentAvailable')}
                 </pre>
               </div>
             </div>
@@ -120,20 +122,20 @@ const PromptDetailModal = ({
             <div className="pt-3 border-t border-border/50">
               <div className={`flex ${isMobile ? 'flex-col gap-2' : 'items-center justify-between'} text-xs text-muted-foreground font-mono`}>
                 <div className={`flex ${isMobile ? 'flex-wrap gap-2' : 'items-center gap-4'}`}>
-                  <span>STATUS: {prompt.is_featured ? 'Featured' : 'Standard'}</span>
-                  {prompt.mode && <span>MODE: {prompt.mode}</span>}
-                  {prompt.model && <span>MODEL: {prompt.model}</span>}
+                  <span>{t('common:status.status')}: {prompt.is_featured ? t('common:labels.featured') : t('common:labels.standard')}</span>
+                  {prompt.mode && <span>{t('common:status.mode')}: {prompt.mode}</span>}
+                  {prompt.model && <span>{t('common:status.model')}: {prompt.model}</span>}
                 </div>
                 <div className="flex items-center gap-2">
                   {prompt.is_public ? (
                     <div className="flex items-center gap-1 text-primary">
                       <Globe className="w-3 h-3" />
-                      <span className="font-semibold">Public</span>
+                      <span className="font-semibold">{t('common:labels.public')}</span>
                     </div>
                   ) : (
                     <div className="flex items-center gap-1 text-muted-foreground">
                       <Lock className="w-3 h-3" />
-                      <span className="font-semibold">Private</span>
+                      <span className="font-semibold">{t('common:labels.private')}</span>
                     </div>
                   )}
                 </div>

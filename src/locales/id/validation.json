@@ -1,0 +1,16 @@
+{
+  "prompt": {
+    "titleMinLength": "Judul minimal {{min}} karakter",
+    "titleMaxLength": "Judul maksimal {{max}} karakter",
+    "contentMaxLength": "Konten maksimal {{max}} karakter",
+    "tagsMaxCount": "Maksimal {{max}} tag",
+    "tagMaxLength": "Tag maksimal {{max}} karakter"
+  },
+  "user": {
+    "emailInvalid": "Alamat email tidak valid",
+    "passwordMinLength": "Kata sandi minimal {{min}} karakter"
+  },
+  "required": "Field ini wajib diisi",
+  "invalid": "Nilai tidak valid"
+}
+

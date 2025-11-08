@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Prompt, Tag } from '@/lib/storage';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -40,6 +41,7 @@ const MyLibrary = ({
   onCopyPrompt,
   currentPromptId
 }: MyLibraryProps) => {
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTag, setSelectedTag] = useState<string>('');
   const [selectedPrompt, setSelectedPrompt] = useState<PromptWithTags | null>(null);
@@ -113,10 +115,10 @@ const MyLibrary = ({
     
     try {
       await onDeletePrompt(promptToDelete.id);
-      toast.success('Prompt deleted successfully');
+      toast.success(t('success:prompt.deleted'));
     } catch (error) {
       console.error('Failed to delete prompt:', error);
-      toast.error('Failed to delete prompt');
+      toast.error(t('errors:prompt.deleteFailed'));
     } finally {
       setIsDeleteDialogOpen(false);
       setPromptToDelete(null);
@@ -152,7 +154,7 @@ const MyLibrary = ({
 
   const handleUsePrompt = (prompt: PromptWithTags) => {
     onSelectPrompt(prompt);
-    toast.success('Prompt loaded in editor');
+    toast.success(t('success:prompt.loaded'));
   };
 
   // Show loading state while tags are being loaded
@@ -160,7 +162,7 @@ const MyLibrary = ({
     return (
       <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-8">
         <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4" />
-        <p className="text-sm font-mono">Loading your library...</p>
+        <p className="text-sm font-mono">{t('common:status.loadingYourLibrary')}</p>
       </div>
     );
   }
@@ -169,8 +171,8 @@ const MyLibrary = ({
     return (
       <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-8">
         <FileText className="w-16 h-16 mb-4 opacity-50" />
-        <h3 className="text-lg font-semibold mb-2 font-mono">No prompts yet</h3>
-        <p className="text-sm text-center">Create your first prompt to get started with your personal library!</p>
+        <h3 className="text-lg font-semibold mb-2 font-mono">{t('library:noPrompts')}</h3>
+        <p className="text-sm text-center">{t('library:createFirstPrompt')}</p>
       </div>
     );
   }
@@ -183,11 +185,11 @@ const MyLibrary = ({
           {/* Search Input */}
           <div className="relative flex-1 w-full">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <label htmlFor="my-search" className="sr-only">Search prompts</label>
+            <label htmlFor="my-search" className="sr-only">{t('common:labels.search')}</label>
             <Input
               id="my-search"
-              aria-label="Search prompts"
-              placeholder="Search prompts..."
+              aria-label={t('common:labels.search')}
+              placeholder={t('library:searchPrompts')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 font-mono min-h-[44px] text-base sm:text-sm"
@@ -197,15 +199,15 @@ const MyLibrary = ({
           {/* Tag Filter */}
           <div className="relative w-full sm:w-auto sm:min-w-[200px]">
             <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <label htmlFor="my-tag-filter" className="sr-only">Filter by tag</label>
+            <label htmlFor="my-tag-filter" className="sr-only">{t('library:filterByTag')}</label>
             <select
               id="my-tag-filter"
-              aria-label="Filter by tag"
+              aria-label={t('library:filterByTag')}
               value={selectedTag}
               onChange={(e) => setSelectedTag(e.target.value)}
               className="w-full pl-10 pr-4 min-h-[44px] text-base sm:text-sm bg-background border border-input rounded-md font-mono focus:outline-none focus:ring-2 focus:ring-ring touch-manipulation"
             >
-              <option value="">All tags</option>
+              <option value="">{t('common:labels.allTags')}</option>
               {allTags.map(tag => (
                 <option key={tag} value={tag}>{tag}</option>
               ))}
@@ -253,7 +255,7 @@ const MyLibrary = ({
                 }}
                 className="text-xs sm:text-xs min-h-[44px] sm:h-7 px-3 sm:px-2 hover:bg-secondary/50 touch-manipulation"
               >
-                Clear
+                {t('common:buttons.clear')}
               </Button>
             )}
           </div>
@@ -264,7 +266,7 @@ const MyLibrary = ({
       <div className="flex-1 overflow-y-auto">
         {filteredPrompts.length === 0 ? (
           <div className="flex items-center justify-center h-full text-muted-foreground">
-            <p className="text-sm font-mono">No prompts match your search criteria</p>
+            <p className="text-sm font-mono">{t('library:noMatches')}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 p-3 sm:p-4 md:p-6">
@@ -280,7 +282,7 @@ const MyLibrary = ({
                 }}
                 role="button"
                 tabIndex={0}
-                aria-label={`Open details for ${prompt.title || 'Untitled Prompt'}`}
+                aria-label={t('library:openDetails', { title: prompt.title || t('prompt:untitled') })}
                 className={`group relative bg-card border rounded-lg p-4 sm:p-6 cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-primary/50 active:scale-[0.98] touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                   currentPromptId === prompt.id
                     ? 'border-primary bg-accent/20 shadow-md'
@@ -300,12 +302,12 @@ const MyLibrary = ({
                     {prompt.is_public ? (
                       <div className="flex items-center gap-1 text-primary">
                         <Globe className="w-4 h-4" />
-                        <span className="text-xs font-mono">Public</span>
+                        <span className="text-xs font-mono">{t('common:labels.public')}</span>
                       </div>
                     ) : (
                       <div className="flex items-center gap-1 text-muted-foreground">
                         <Lock className="w-4 h-4" />
-                        <span className="text-xs font-mono">Private</span>
+                        <span className="text-xs font-mono">{t('common:labels.private')}</span>
                       </div>
                     )}
                   </div>
@@ -313,7 +315,7 @@ const MyLibrary = ({
 
                 {/* Title */}
                 <h3 className="font-bold text-lg mb-2 line-clamp-2 font-mono group-hover:text-primary transition-colors">
-                  {prompt.title || 'Untitled Prompt'}
+                  {prompt.title || t('prompt:untitled')}
                 </h3>
 
                 {/* Description */}
@@ -351,8 +353,8 @@ const MyLibrary = ({
                 {/* Footer with metadata */}
                 <div className="flex items-center justify-between pt-4 border-t border-border/50">
                   <div className="text-xs text-muted-foreground font-mono">
-                    <div>{prompt.model || 'Unknown model'}</div>
-                    <div>{prompt.is_featured ? 'Featured' : 'Standard'}</div>
+                    <div>{prompt.model || t('library:unknownModel')}</div>
+                    <div>{prompt.is_featured ? t('common:labels.featured') : t('common:labels.standard')}</div>
                   </div>
                   
                   {/* Action buttons */}
@@ -363,8 +365,8 @@ const MyLibrary = ({
                         variant="ghost"
                         onClick={(e) => handleCopy(e, prompt)}
                         className="h-8 w-8 p-0 hover:bg-blue-500/20 hover:text-blue-500"
-                        title="Copy prompt"
-                        aria-label="Copy prompt"
+                        title={t('library:copyPrompt')}
+                        aria-label={t('library:copyPrompt')}
                       >
                         <Copy className="w-3 h-3" />
                       </Button>
@@ -374,8 +376,8 @@ const MyLibrary = ({
                       variant="ghost"
                       onClick={(e) => handleEdit(e, prompt)}
                       className="h-8 w-8 p-0 hover:bg-primary/20"
-                      title="Edit prompt"
-                      aria-label="Edit prompt"
+                        title={t('library:editPrompt')}
+                        aria-label={t('library:editPrompt')}
                     >
                       <Edit className="w-3 h-3" />
                     </Button>
@@ -387,8 +389,8 @@ const MyLibrary = ({
                         handleDeleteClick(prompt);
                       }}
                       className="h-8 w-8 p-0 hover:bg-destructive/20 hover:text-destructive"
-                      title="Delete prompt"
-                      aria-label="Delete prompt"
+                        title={t('library:deletePrompt')}
+                        aria-label={t('library:deletePrompt')}
                     >
                       <Trash2 className="w-3 h-3" />
                     </Button>
@@ -412,20 +414,20 @@ const MyLibrary = ({
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Prompt</AlertDialogTitle>
+            <AlertDialogTitle>{t('library:deletePrompt')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{promptToDelete?.title || 'Untitled Prompt'}"? This action cannot be undone.
+              {t('library:deleteConfirm', { title: promptToDelete?.title || t('prompt:untitled') })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={handleDeleteCancel}>
-              Cancel
+              {t('common:buttons.cancel')}
             </AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleDeleteConfirm}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Delete
+              {t('common:buttons.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

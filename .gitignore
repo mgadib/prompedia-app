@@ -79,6 +79,8 @@ bun.lockb
 # Vite
 .vite/
 vite.config.*.timestamp-*
+vite.config.timestamp-*
+*.vite-*
 
 # TypeScript
 *.tsbuildinfo
@@ -137,12 +139,23 @@ tramp
 
 # VS Code - Cursor
 .cursor/
+.cursorrules
 
 # Fleet
 .fleet/
 
 # Nova
 .nova/
+
+# Cursor AI (additional patterns)
+.cursor-tutor/
+.cursor-history/
+
+# Zed Editor
+.zed/
+
+# Helix Editor
+.helix/
 
 # ============================================
 # OS Generated Files
@@ -184,6 +197,14 @@ $RECYCLE.BIN/
 .directory
 .Trash-*
 .nfs*
+
+# ============================================
+# Node Version Managers
+# ============================================
+.nvmrc
+.node-version
+.npmrc.local
+.npmrc.*.local
 
 # ============================================
 # Package Manager Lock Files
@@ -283,8 +304,14 @@ storybook-static/
 # ============================================
 *.cpuprofile
 *.heapprofile
+*.heapsnapshot
 .flamegraph.html
 .clinic/
+.perf/
+*.perf
+*.0x/
+*.trace
+*.trace.json
 
 # ============================================
 # AI/ML Models (if applicable)
@@ -315,3 +342,44 @@ datasets/
 
 # Package manager caches
 .pnpm-store/
+.npm/
+.yarn/
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+
+# ============================================
+# Additional Vite Patterns
+# ============================================
+# Vite HMR cache
+.vite-ssr-cache/
+vite.config.*.tsbuildinfo
+
+# ============================================
+# Additional Editor & Tooling
+# ============================================
+# Local History (VS Code extension)
+.history/
+
+# Debugger files
+.vscode-test/
+*.code-workspace.local
+
+# JetBrains additional
+.idea_modules/
+*.iml
+*.iws
+*.ipr
+
+# ============================================
+# Security & Compliance
+# ============================================
+# Security scan results
+security-report.json
+dependency-check-report.json
+*.security-audit.json
+
+# Compliance reports
+compliance-report/
+*.audit.json
