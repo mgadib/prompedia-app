@@ -420,10 +420,17 @@ export class RateLimitingService {
   /**
    * Reset penggunaan (untuk keperluan testing)
    * @param user - User yang terautentikasi atau null untuk guest
+   * 
+   * Note: Direct access to ai_usage table is safe here because:
+   * - RLS policy "Authenticated users can manage own usage" only allows
+   *   authenticated users to access their own records (auth.uid() = user_id)
+   * - This operation only affects the authenticated user's own records
+   * - Guest users use localStorage fallback, not direct table access
    */
   public async resetUsage(user: User | null): Promise<void> {
     if (user) {
       // Untuk user terautentikasi: hapus record penggunaan hari ini
+      // Safe: RLS policy ensures only own records can be deleted
       const today = new Date().toISOString().split('T')[0];
       await (supabase as any)
         .from('ai_usage')
@@ -432,6 +439,7 @@ export class RateLimitingService {
         .eq('usage_date', today);
     } else {
       // Untuk guest user: reset localStorage
+      // Guest usage is tracked via SECURITY DEFINER functions, not direct table access
       this.resetGuestUsage();
     }
   }
