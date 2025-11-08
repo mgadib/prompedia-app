@@ -2,10 +2,11 @@ import { useState, useEffect } from 'react';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { clearUser } from '@/lib/storage';
+import { authManager } from '@/lib/auth-manager';
 
 /**
  * Custom hook untuk mengelola state dan operasi autentikasi
- * Mengikuti Single Responsibility Principle dengan mengisolasi logika auth
+ * OPTIMIZED: Menggunakan shared AuthManager untuk mengurangi duplicate getSession() calls
  */
 export const useAuth = () => {
   const [user, setUserState] = useState<SupabaseUser | null>(null);
@@ -13,15 +14,21 @@ export const useAuth = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Mendapatkan session awal
+    // OPTIMIZED: Use cached user immediately for faster initial render
+    const cachedUser = authManager.getCachedUser();
+    if (cachedUser) {
+      setUserState(cachedUser);
+      setLoading(false);
+    }
+
+    // Get initial session dengan caching
     const getInitialSession = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) {
-          console.error('Error getting session:', error);
-          setError(error.message);
+        const session = await authManager.getSession();
+        if (session?.user) {
+          setUserState(session.user);
         } else {
-          setUserState(session?.user ?? null);
+          setUserState(null);
         }
       } catch (err) {
         console.error('Unexpected error:', err);
@@ -33,23 +40,21 @@ export const useAuth = () => {
 
     getInitialSession();
 
-    // Mendengarkan perubahan auth state
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        try {
-          setUserState(session?.user ?? null);
-          if (!session?.user) {
-            clearUser();
-          }
-          setError(null);
-        } catch (err) {
-          console.error('Auth state change error:', err);
-          setError('Authentication error occurred');
+    // OPTIMIZED: Use shared auth state change listener
+    const unsubscribe = authManager.onAuthStateChange((newUser) => {
+      try {
+        setUserState(newUser);
+        if (!newUser) {
+          clearUser();
         }
+        setError(null);
+      } catch (err) {
+        console.error('Auth state change error:', err);
+        setError('Authentication error occurred');
       }
-    );
+    });
 
-    return () => subscription.unsubscribe();
+    return unsubscribe;
   }, []);
 
   const logout = async () => {

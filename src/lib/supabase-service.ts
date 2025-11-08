@@ -114,17 +114,45 @@ export class SupabaseService {
   // PROMPTS
   // ========================================
 
-  static async getPrompts(userId?: string): Promise<Prompt[]> {
+  static async getPrompts(
+    userId?: string,
+    options?: { limit?: number; offset?: number; fields?: string[] }
+  ): Promise<Prompt[]> {
+    // OPTIMIZED: Selective field loading - only load needed fields
+    const defaultFields = options?.fields || [
+      'id',
+      'title',
+      'content',
+      'description',
+      'model_id',
+      'mode_id',
+      'is_public',
+      'user_id',
+      'color',
+      'is_featured',
+      'original_prompt_id'
+    ];
+    
+    const selectFields = defaultFields.join(', ');
+    
     let query = supabase
       .from('prompts')
       .select(`
-        *,
+        ${selectFields},
         users!prompts_user_id_fkey1(username, display_name)
       `)
-      // Catatan: field updated_at dihapus dalam schema minimalis
+      .order('id', { ascending: false })
 
     if (userId) {
       query = query.eq('user_id', userId)
+    }
+
+    // OPTIMIZED: Add pagination and limit
+    const limit = options?.limit || 100; // Default limit to prevent huge queries
+    query = query.limit(limit);
+    
+    if (options?.offset) {
+      query = query.range(options.offset, options.offset + limit - 1);
     }
 
     const { data, error } = await query
@@ -132,13 +160,44 @@ export class SupabaseService {
     return data || []
   }
 
-  static async getPublicPrompts(): Promise<Prompt[]> {
-    const { data, error } = await supabase
+  static async getPublicPrompts(
+    options?: { limit?: number; offset?: number; fields?: string[] }
+  ): Promise<Prompt[]> {
+    // OPTIMIZED: Selective field loading
+    const defaultFields = options?.fields || [
+      'id',
+      'title',
+      'content',
+      'description',
+      'model_id',
+      'mode_id',
+      'is_public',
+      'user_id',
+      'color',
+      'is_featured',
+      'original_prompt_id'
+    ];
+    
+    const selectFields = defaultFields.join(', ');
+    
+    let query = supabase
       .from('prompts')
-      .select('*')
+      .select(`
+        ${selectFields},
+        users!prompts_user_id_fkey1(username, display_name)
+      `)
       .eq('is_public', true)
       .order('id', { ascending: false })
 
+    // OPTIMIZED: Add pagination and limit
+    const limit = options?.limit || 50; // Smaller default for public prompts
+    query = query.limit(limit);
+    
+    if (options?.offset) {
+      query = query.range(options.offset, options.offset + limit - 1);
+    }
+
+    const { data, error } = await query
     if (error) throw error
     return data || []
   }

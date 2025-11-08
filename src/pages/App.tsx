@@ -258,14 +258,8 @@ const AppPage = () => {
     }
   }, [loadAllPrompts, loadPublicPrompts, user, loading]);
 
-  // Efek terpisah untuk refresh berkala hanya untuk prompt public
-  useEffect(() => {
-    const interval = setInterval(() => {
-      loadPublicPrompts();
-    }, 30000);
-
-    return () => clearInterval(interval);
-  }, [loadPublicPrompts]);
+  // OPTIMIZED: Removed auto-refresh interval - React Query handles stale-while-revalidate
+  // Public prompts will be refetched when needed (window focus, reconnect, etc.)
 
   const myPrompts = useMemo(() =>
     user ? allPrompts.filter(p => p.user_id === user.id) : [],

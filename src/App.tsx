@@ -27,11 +27,16 @@ const queryClient = new QueryClient({
         return failureCount < 3;
       },
       retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
-      staleTime: 5 * 60 * 1000, // 5 menit
-      refetchOnWindowFocus: false,
-      refetchOnMount: true,
-      refetchOnReconnect: true,
+      // OPTIMIZED: Increased staleTime for better caching
+      staleTime: 10 * 60 * 1000, // 10 menit - data dianggap fresh lebih lama
+      // OPTIMIZED: Garbage collection time - keep unused data in cache
+      gcTime: 30 * 60 * 1000, // 30 menit (previously cacheTime)
+      refetchOnWindowFocus: false, // Tidak refetch saat window focus untuk mengurangi requests
+      refetchOnMount: false, // Gunakan cache jika data masih fresh
+      refetchOnReconnect: true, // Refetch saat reconnect untuk sync data
       networkMode: 'online',
+      // OPTIMIZED: Enable request deduplication
+      structuralSharing: true,
     },
     mutations: {
       retry: false,

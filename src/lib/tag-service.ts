@@ -305,16 +305,47 @@ export class TagService {
 
       if (promptsError) throw promptsError;
 
-      const result: (Prompt & { tags: Tag[] })[] = [];
-      for (const p of (prompts || [])) {
-        try {
-          const tags = await this.getPromptTags(p.id);
-          result.push({ ...(p as Prompt), tags });
-        } catch (tErr) {
-          console.warn('Failed to load tags for prompt', p.id, tErr);
-          result.push({ ...(p as Prompt), tags: [] });
+      // OPTIMIZED: Load all tags in batch instead of N+1 queries
+      // Get all prompt IDs first
+      const allPromptIds = (prompts || []).map(p => p.id).filter(Boolean);
+      
+      if (allPromptIds.length === 0) {
+        return [];
+      }
+
+      // Batch load all tags for all prompts in one query
+      const { data: allTagLinks, error: batchTagsError } = await supabase
+        .from('prompt_tags')
+        .select(`
+          prompt_id,
+          tags!prompt_tags_tag_id_fkey(*)
+        `)
+        .in('prompt_id', allPromptIds);
+
+      if (batchTagsError) {
+        console.warn('Failed to load tags in batch:', batchTagsError);
+      }
+
+      // Group tags by prompt_id
+      const tagsByPromptId = new Map<string, Tag[]>();
+      if (allTagLinks) {
+        for (const link of allTagLinks) {
+          const promptId = (link as any).prompt_id;
+          const tag = (link as any).tags;
+          if (!promptId || !tag) continue;
+
+          if (!tagsByPromptId.has(promptId)) {
+            tagsByPromptId.set(promptId, []);
+          }
+          tagsByPromptId.get(promptId)!.push(tag as Tag);
         }
       }
+
+      // Build result with tags
+      const result: (Prompt & { tags: Tag[] })[] = (prompts || []).map(p => ({
+        ...(p as Prompt),
+        tags: tagsByPromptId.get(p.id) || []
+      }));
 
       return result;
     } catch (error) {
@@ -383,16 +414,47 @@ export class TagService {
       const { data: prompts, error: promptsError } = await query;
       if (promptsError) throw promptsError;
 
-      const result: (Prompt & { tags: Tag[] })[] = [];
-      for (const p of (prompts || [])) {
-        try {
-          const tags = await this.getPromptTags(p.id);
-          result.push({ ...(p as Prompt), tags });
-        } catch (tErr) {
-          console.warn('Failed to load tags for prompt', p.id, tErr);
-          result.push({ ...(p as Prompt), tags: [] });
+      // OPTIMIZED: Load all tags in batch instead of N+1 queries
+      // Get all prompt IDs first
+      const allPromptIds = (prompts || []).map(p => p.id).filter(Boolean);
+      
+      if (allPromptIds.length === 0) {
+        return [];
+      }
+
+      // Batch load all tags for all prompts in one query
+      const { data: allTagLinks, error: batchTagsError } = await supabase
+        .from('prompt_tags')
+        .select(`
+          prompt_id,
+          tags!prompt_tags_tag_id_fkey(*)
+        `)
+        .in('prompt_id', allPromptIds);
+
+      if (batchTagsError) {
+        console.warn('Failed to load tags in batch:', batchTagsError);
+      }
+
+      // Group tags by prompt_id
+      const tagsByPromptId = new Map<string, Tag[]>();
+      if (allTagLinks) {
+        for (const link of allTagLinks) {
+          const promptId = (link as any).prompt_id;
+          const tag = (link as any).tags;
+          if (!promptId || !tag) continue;
+
+          if (!tagsByPromptId.has(promptId)) {
+            tagsByPromptId.set(promptId, []);
+          }
+          tagsByPromptId.get(promptId)!.push(tag as Tag);
         }
       }
+
+      // Build result with tags
+      const result: (Prompt & { tags: Tag[] })[] = (prompts || []).map(p => ({
+        ...(p as Prompt),
+        tags: tagsByPromptId.get(p.id) || []
+      }));
 
       return result;
     } catch (error) {

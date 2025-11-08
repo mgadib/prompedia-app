@@ -35,26 +35,24 @@ class StorageManager {
 
   /**
    * Inisialisasi monitoring state autentikasi
-   * Mendengarkan perubahan auth state dan memperbarui user yang terautentikasi
+   * OPTIMIZED: Menggunakan shared AuthManager untuk mengurangi duplicate getSession() calls
    */
   private async initializeAuth(): Promise<void> {
     try {
-      // Mendapatkan session awal
-      const { data: { session }, error } = await supabase.auth.getSession();
-      if (error) {
-        supabaseLogger.error('Failed to get initial session', error);
-      } else {
-        this.authUser = session?.user ?? null;
-        supabaseLogger.info('Initial auth state', { userId: this.authUser?.id });
-      }
+      // OPTIMIZED: Use shared auth manager instead of direct getSession()
+      const { authManager } = await import('@/lib/auth-manager');
+      
+      // Get initial user dengan caching
+      const user = await authManager.getUser();
+      this.authUser = user;
+      supabaseLogger.info('Initial auth state', { userId: this.authUser?.id });
 
-      // Mendengarkan perubahan auth state
-      supabase.auth.onAuthStateChange((event, session) => {
+      // OPTIMIZED: Use shared auth state change listener
+      authManager.onAuthStateChange((user) => {
         const previousUserId = this.authUser?.id;
-        this.authUser = session?.user ?? null;
+        this.authUser = user;
         
         supabaseLogger.info('Auth state changed', {
-          event,
           previousUserId,
           currentUserId: this.authUser?.id
         });
@@ -111,21 +109,19 @@ class StorageManager {
 
   /**
    * Memperbarui state autentikasi
-   * Berguna ketika perlu memastikan state auth terbaru
+   * OPTIMIZED: Menggunakan shared AuthManager dengan caching
    */
   public async refreshAuthState(): Promise<void> {
     try {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      if (error) {
-        supabaseLogger.error('Failed to refresh auth state', error);
-      } else {
-        const previousUserId = this.authUser?.id;
-        this.authUser = session?.user ?? null;
-        supabaseLogger.info('Auth state refreshed', { 
-          previousUserId,
-          currentUserId: this.authUser?.id 
-        });
-      }
+      const { authManager } = await import('@/lib/auth-manager');
+      const previousUserId = this.authUser?.id;
+      const user = await authManager.getUser();
+      this.authUser = user;
+      
+      supabaseLogger.info('Auth state refreshed', { 
+        previousUserId,
+        currentUserId: this.authUser?.id 
+      });
     } catch (error) {
       supabaseLogger.error('Failed to refresh auth state', error as Error);
     }
@@ -375,20 +371,43 @@ class StorageManager {
 
   /**
    * Get prompts from Supabase
+   * OPTIMIZED: Selective field loading and pagination support
    */
-  private async getPromptsFromSupabase(): Promise<Prompt[]> {
+  private async getPromptsFromSupabase(options?: { limit?: number; offset?: number }): Promise<Prompt[]> {
     if (!this.authUser) {
       throw new StorageError('User not authenticated for Supabase storage');
     }
 
     try {
-      const { data, error } = await supabase
+      // OPTIMIZED: Selective field loading - only load needed fields
+      let query = supabase
         .from('prompts')
         .select(`
-          *,
+          id,
+          title,
+          content,
+          description,
+          model_id,
+          mode_id,
+          is_public,
+          user_id,
+          color,
+          is_featured,
+          original_prompt_id,
           users!prompts_user_id_fkey1(username, display_name)
         `)
-        .eq('user_id', this.authUser.id);
+        .eq('user_id', this.authUser.id)
+        .order('id', { ascending: false });
+
+      // OPTIMIZED: Add pagination and limit
+      const limit = options?.limit || 100; // Default limit to prevent huge queries
+      query = query.limit(limit);
+      
+      if (options?.offset) {
+        query = query.range(options.offset, options.offset + limit - 1);
+      }
+
+      const { data, error } = await query;
 
       if (error) {
         supabaseLogger.error('Failed to fetch prompts from Supabase', error);
