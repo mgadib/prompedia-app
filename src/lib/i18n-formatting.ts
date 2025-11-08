@@ -1,5 +1,5 @@
 import i18n from './i18n';
-import { format, formatDistanceToNow } from 'date-fns';
+import { format, formatDistanceToNow, type Locale } from 'date-fns';
 import { enUS, id } from 'date-fns/locale';
 
 const localeMap: Record<string, Locale> = {

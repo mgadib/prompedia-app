@@ -517,7 +517,7 @@ const AppPage = () => {
         canonical={homepageUrl}
         type="website"
         tags={['prompt engineering', 'AI prompt builder', 'prompt optimizer', 'ChatGPT prompts', 'AI prompt library', 'prompt engineering tools', 'free prompt builder', 'AI prompts', 'meta prompt', 'chain of thought']}
-        schemaType="WebPage"
+        schemaType="FAQPage"
         alternateLanguages={[
           { lang: 'en', url: homepageUrl },
           { lang: 'id', url: homepageUrl },
@@ -587,7 +587,6 @@ const AppPage = () => {
             },
           },
         ]}
-        schemaType="FAQPage"
         faqItems={[
           {
             question: 'What is Prompedia AI?',

@@ -7,7 +7,6 @@ import { z } from 'zod';
 const EnvSchema = z.object({
   VITE_SUPABASE_URL: z.string().url('Invalid Supabase URL'),
   VITE_SUPABASE_ANON_KEY: z.string().min(1, 'Supabase anon key is required'),
-  VITE_OPENROUTER_API_KEY: z.string().min(1, 'OpenRouter API key is required').optional(),
   MODE: z.enum(['development', 'production', 'test']),
   DEV: z.boolean(),
   PROD: z.boolean()
@@ -31,7 +30,6 @@ export function validateEnv(): Env {
     validatedEnv = EnvSchema.parse({
       VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
       VITE_SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY,
-      VITE_OPENROUTER_API_KEY: import.meta.env.VITE_OPENROUTER_API_KEY,
       MODE: import.meta.env.MODE,
       DEV: import.meta.env.DEV,
       PROD: import.meta.env.PROD

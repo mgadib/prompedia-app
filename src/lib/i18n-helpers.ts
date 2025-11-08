@@ -5,7 +5,7 @@ import i18n from './i18n';
  * Use this in non-React contexts (utilities, services, etc.)
  */
 export const getErrorMessage = (key: string, options?: any): string => {
-  return i18n.t(`errors:${key}`, options);
+  return i18n.t(`errors:${key}`, options) as string;
 };
 
 /**
@@ -13,7 +13,7 @@ export const getErrorMessage = (key: string, options?: any): string => {
  * Use this in non-React contexts
  */
 export const getSuccessMessage = (key: string, options?: any): string => {
-  return i18n.t(`success:${key}`, options);
+  return i18n.t(`success:${key}`, options) as string;
 };
 
 /**
@@ -21,6 +21,6 @@ export const getSuccessMessage = (key: string, options?: any): string => {
  * Use this in non-React contexts
  */
 export const getCommonMessage = (key: string, options?: any): string => {
-  return i18n.t(`common:${key}`, options);
+  return i18n.t(`common:${key}`, options) as string;
 };
 
