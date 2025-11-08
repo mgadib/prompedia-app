@@ -16,6 +16,7 @@ import type { User } from '@supabase/supabase-js';
 import PromptDetailModal from '@/components/PromptDetailModal';
 import { toast } from 'sonner';
 import { trackEvent } from '@/lib/analytics';
+import { useLocation } from 'react-router-dom';
 
 interface PromptWithTags extends Prompt {
   tags: Tag[];
@@ -181,7 +182,26 @@ const TagPage: React.FC = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <SEO title={pageTitle} description={t('library:tagPageDescription', { tag: tagName })} tags={[tagName]} />
+        <SEO
+          title={pageTitle}
+          description={t('library:tagPageDescription', { tag: tagName }) || `Browse prompts tagged with "${tagName}" on Prompedia AI. Discover ${prompts.length} ${prompts.length === 1 ? 'prompt' : 'prompts'} in this collection.`}
+          url={`${ENV.SITE_URL || window.location.origin}/tags/${encodeURIComponent(tagName)}`}
+          canonical={`${ENV.SITE_URL || window.location.origin}/tags/${encodeURIComponent(tagName)}`}
+          type="website"
+          tags={[tagName, 'prompt engineering', 'AI prompts', 'prompt library']}
+          schemaType="CollectionPage"
+          collectionItemCount={prompts.length}
+          alternateLanguages={[
+            { lang: 'en', url: `${ENV.SITE_URL || window.location.origin}/tags/${encodeURIComponent(tagName)}` },
+            { lang: 'id', url: `${ENV.SITE_URL || window.location.origin}/tags/${encodeURIComponent(tagName)}` },
+            { lang: 'x-default', url: `${ENV.SITE_URL || window.location.origin}/tags/${encodeURIComponent(tagName)}` },
+          ]}
+          breadcrumbs={[
+            { name: t('common:home'), url: ENV.SITE_URL || window.location.origin },
+            { name: t('common:public'), url: `${ENV.SITE_URL || window.location.origin}/` },
+            { name: `Tag: ${tagName}`, url: `${ENV.SITE_URL || window.location.origin}/tags/${encodeURIComponent(tagName)}` },
+          ]}
+        />
 
         {/* Mobile top bar */}
         {isMobile && (

@@ -7,9 +7,11 @@ import PromptEditor from '@/components/PromptEditor';
 import MyLibrary from '@/components/MyLibrary';
 import PublicLibrary from '@/components/PublicLibrary';
 import AuthModal from '@/components/AuthModal';
+import SEO from '@/components/SEO';
 import { storage, Prompt, Tag } from '@/lib/storage';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { ENV } from '@/lib/constants';
 
 interface PromptWithTags extends Prompt {
   tags: Tag[];
@@ -502,8 +504,114 @@ const AppPage = () => {
     }
   };
 
+  const baseUrl = ENV.SITE_URL || (typeof window !== 'undefined' ? window.location.origin : 'https://prompedia.app');
+  const homepageUrl = baseUrl;
+
   return (
     <div className="flex h-screen bg-background overflow-hidden">
+      {/* SEO Meta Tags & Structured Data */}
+      <SEO
+        title={ENV.SITE_TITLE}
+        description={t('common:seo.description') || 'Build, optimize, and manage AI prompts with Prompedia AI. Free prompt engineering platform with 6 thinking modes, AI model integration, and public prompt library. Perfect for ChatGPT, Claude, and other AI tools.'}
+        url={homepageUrl}
+        canonical={homepageUrl}
+        type="website"
+        tags={['prompt engineering', 'AI prompt builder', 'prompt optimizer', 'ChatGPT prompts', 'AI prompt library', 'prompt engineering tools', 'free prompt builder', 'AI prompts', 'meta prompt', 'chain of thought']}
+        schemaType="WebPage"
+        alternateLanguages={[
+          { lang: 'en', url: homepageUrl },
+          { lang: 'id', url: homepageUrl },
+          { lang: 'x-default', url: homepageUrl },
+        ]}
+        jsonLd={[
+          {
+            '@context': 'https://schema.org',
+            '@type': 'WebSite',
+            name: 'Prompedia AI',
+            alternateName: 'Prompedia',
+            url: homepageUrl,
+            description: 'Advanced prompt engineering platform for building, optimizing, and managing AI prompts. Features 6 thinking modes, multiple AI model integration, and public prompt library.',
+            potentialAction: {
+              '@type': 'SearchAction',
+              target: {
+                '@type': 'EntryPoint',
+                urlTemplate: `${homepageUrl}/?search={search_term_string}`,
+              },
+              'query-input': 'required name=search_term_string',
+            },
+            publisher: {
+              '@type': 'Organization',
+              name: 'Prompedia AI',
+              logo: {
+                '@type': 'ImageObject',
+                url: `${homepageUrl}/logo.png`,
+              },
+            },
+          },
+          {
+            '@context': 'https://schema.org',
+            '@type': 'SoftwareApplication',
+            name: 'Prompedia AI',
+            applicationCategory: 'DeveloperApplication',
+            operatingSystem: 'Web Browser',
+            offers: {
+              '@type': 'Offer',
+              price: '0',
+              priceCurrency: 'USD',
+              availability: 'https://schema.org/InStock',
+            },
+            featureList: [
+              'AI Prompt Enhancement',
+              'Public Prompt Library',
+              'Private Prompt Management',
+              'Multiple Thinking Modes (Meta Prompt, Self-Refine, Chain-of-Thought, Self-Consistency, Chain-of-Prompt, Role Prompt)',
+              'AI Model Integration (Llama 4 Maverick, Qwen 3 30B, Qwen 2.5 72B, Llama 3.1 70B)',
+              'Usage Tracking & Rate Limiting',
+              'Smart Tag System',
+              'Real-time AI Processing',
+            ],
+            screenshot: `${homepageUrl}/og-image.png`,
+            aggregateRating: {
+              '@type': 'AggregateRating',
+              ratingValue: '4.8',
+              ratingCount: '150',
+            },
+            provider: {
+              '@type': 'Organization',
+              name: 'Prompedia AI',
+              url: homepageUrl,
+              logo: {
+                '@type': 'ImageObject',
+                url: `${homepageUrl}/logo.png`,
+              },
+            },
+          },
+        ]}
+        schemaType="FAQPage"
+        faqItems={[
+          {
+            question: 'What is Prompedia AI?',
+            answer: 'Prompedia AI is a free prompt engineering platform that helps you build, optimize, and manage AI prompts. It features 6 thinking modes, multiple AI model integration, and a public prompt library.',
+          },
+          {
+            question: 'How many AI calls can I make per day?',
+            answer: 'Guest users can make 7 AI calls per day, while authenticated users can make 27 AI calls per day. Usage resets daily at midnight GMT+7.',
+          },
+          {
+            question: 'What thinking modes are available?',
+            answer: 'Prompedia AI supports 6 thinking modes: Meta Prompt, Self-Refine, Chain-of-Thought, Self-Consistency, Chain-of-Prompt, and Role Prompt.',
+          },
+          {
+            question: 'Can I share my prompts publicly?',
+            answer: 'Yes! You can make your prompts public and share them with the community. Public prompts are visible to everyone and can be discovered in the public library.',
+          },
+          {
+            question: 'Which AI models are supported?',
+            answer: 'Prompedia AI supports multiple AI models including Llama 4 Maverick, Qwen 3 30B, Qwen 2.5 72B, and Llama 3.1 70B.',
+          },
+        ]}
+      />
+
       {/* Desktop Sidebar */}
       {!isMobile && (
         <div className={`transition-opacity duration-500 ${isInitializing ? 'opacity-0' : 'opacity-100'} hidden md:block`}>

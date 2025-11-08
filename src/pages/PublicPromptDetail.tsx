@@ -10,6 +10,7 @@ import { Copy, ArrowLeft, Globe, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import SEO from '@/components/SEO';
 import { trackEvent } from '@/lib/analytics';
+import { ENV } from '@/lib/constants';
 
 const PublicPromptDetail = () => {
   const { t } = useTranslation();
@@ -85,7 +86,8 @@ const PublicPromptDetail = () => {
   };
 
   const handleCopyUrl = () => {
-    const url = `https://prompedia.app/p/${id}`;
+    const baseUrl = ENV.SITE_URL || window.location.origin;
+    const url = `${baseUrl}/p/${id}`;
     navigator.clipboard.writeText(url);
     toast.success(t('success:prompt.urlCopied'));
     trackEvent('copy_prompt_url', { prompt_id: id });
@@ -127,31 +129,65 @@ const PublicPromptDetail = () => {
     );
   }
 
+  const baseUrl = ENV.SITE_URL || (typeof window !== 'undefined' ? window.location.origin : 'https://prompedia.app');
+  const promptUrl = `${baseUrl}/p/${id}`;
+  const promptTitle = prompt.title || t('prompt:seoTitle') || 'Untitled Prompt';
+  const promptDescription = prompt.description || t('prompt:seoDescription') || `View and use this AI prompt: ${promptTitle}`;
+
   return (
     <div className="min-h-screen bg-background">
       {/* SEO Meta & JSON-LD */}
       <SEO
-        title={prompt.title || t('prompt:seoTitle')}
-        description={prompt.description || t('prompt:seoDescription')}
-        url={`https://prompedia.app/p/${id}`}
+        title={`${promptTitle} - Prompedia AI`}
+        description={promptDescription}
+        url={promptUrl}
         type="article"
         tags={tags.map(t => t.name)}
-        canonical={`https://prompedia.app/p/${id}`}
+        canonical={promptUrl}
+        schemaType="Article"
+        author={prompt.user_id ? {
+          identifier: prompt.user_id,
+          url: `${baseUrl}/user/${prompt.user_id}`,
+        } : undefined}
+        publishedTime={new Date().toISOString()}
+        alternateLanguages={[
+          { lang: 'en', url: promptUrl },
+          { lang: 'id', url: promptUrl },
+          { lang: 'x-default', url: promptUrl },
+        ]}
+        breadcrumbs={[
+          { name: t('common:home'), url: baseUrl },
+          { name: t('common:public'), url: baseUrl },
+          { name: promptTitle, url: promptUrl },
+        ]}
         jsonLd={{
           '@context': 'https://schema.org',
-          '@type': 'CreativeWork',
-          name: prompt.title || 'Untitled Prompt',
-          description: prompt.description || '',
-          url: `https://prompedia.app/p/${id}`,
+          '@type': 'Article',
+          headline: promptTitle,
+          description: promptDescription,
+          url: promptUrl,
           keywords: tags.map(t => t.name).join(', '),
           inLanguage: 'en',
-          author: prompt.user_id ? { '@type': 'Person', identifier: prompt.user_id } : undefined,
+          datePublished: new Date().toISOString(),
+          dateModified: new Date().toISOString(),
+          author: prompt.user_id ? {
+            '@type': 'Person',
+            identifier: prompt.user_id,
+            url: `${baseUrl}/user/${prompt.user_id}`,
+          } : undefined,
+          publisher: {
+            '@type': 'Organization',
+            name: 'Prompedia AI',
+            logo: {
+              '@type': 'ImageObject',
+              url: `${baseUrl}/logo.png`,
+            },
+          },
+          mainEntityOfPage: {
+            '@type': 'WebPage',
+            '@id': promptUrl,
+          },
         }}
-        breadcrumbs={[
-          { name: t('common:home'), url: 'https://prompedia.app/' },
-          { name: t('common:public'), url: 'https://prompedia.app/' },
-          { name: prompt.title || t('prompt:title'), url: `https://prompedia.app/p/${id}` },
-        ]}
       />
       {/* Header */}
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">

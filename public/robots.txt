@@ -10,32 +10,84 @@ Crawl-delay: 1
 # Allow all major search engine bots
 User-agent: Googlebot
 Allow: /
+Allow: /p/
+Allow: /tags/
 
 User-agent: Bingbot
 Allow: /
+Allow: /p/
+Allow: /tags/
 
 User-agent: Slurp
 Allow: /
+Allow: /p/
+Allow: /tags/
 
 User-agent: DuckDuckBot
 Allow: /
+Allow: /p/
+Allow: /tags/
 
 User-agent: Baiduspider
 Allow: /
+Allow: /p/
+Allow: /tags/
 
 User-agent: YandexBot
 Allow: /
+Allow: /p/
+Allow: /tags/
+
+# AI crawlers for Generative Engine Optimization (GEO)
+User-agent: GPTBot
+Allow: /
+Allow: /p/
+Allow: /tags/
+
+User-agent: ChatGPT-User
+Allow: /
+Allow: /p/
+Allow: /tags/
+
+User-agent: CCBot
+Allow: /
+Allow: /p/
+Allow: /tags/
+
+User-agent: anthropic-ai
+Allow: /
+Allow: /p/
+Allow: /tags/
+
+User-agent: Claude-Web
+Allow: /
+Allow: /p/
+Allow: /tags/
 
 # Social media bots
 User-agent: Twitterbot
 Allow: /
+Allow: /p/
+Allow: /tags/
 
 User-agent: facebookexternalhit
 Allow: /
+Allow: /p/
+Allow: /tags/
 
 User-agent: LinkedInBot
 Allow: /
+Allow: /p/
+Allow: /tags/
 
 # Allow all other bots
 User-agent: *
 Allow: /
+Allow: /p/
+Allow: /tags/
+
+# Disallow private/admin routes (if any)
+Disallow: /api/
+Disallow: /admin/
+Disallow: /_next/
+Disallow: /private/
