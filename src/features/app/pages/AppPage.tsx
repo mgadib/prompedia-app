@@ -62,7 +62,7 @@ const AppPage = () => {
   });
   const { handlePromptChange, handleSelectPrompt, handleEditPrompt, handleDeletePrompt, handleCopyPrompt, handleUsePrompt, handleNewPrompt } = promptActions;
 
-  const viewNavigation = useViewNavigation({
+  useViewNavigation({
     activeView,
     setActiveView,
     showEditor,
@@ -73,7 +73,6 @@ const AppPage = () => {
     setIsTransitioning,
     user,
   });
-  const { handleViewChange } = viewNavigation;
 
   const checkAuth = useCallback(async () => {
     try {

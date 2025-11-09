@@ -5,7 +5,6 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { storage } from '@/lib/storage';
 import { TagService } from '@/features/tags/services/tag-service';
 import { supabase } from '@/integrations/supabase/client';
 import { useIsMobile } from '@/shared/hooks/use-mobile';
@@ -64,7 +63,7 @@ const TagInput = ({ selectedTagNames, onChange }: TagInputProps) => {
     // Mengecek apakah koma diketik
     if (value.includes(',')) {
       const parts = value.split(',');
-      const newTag = parts[0].trim();
+      const newTag = parts[0]?.trim() || '';
 
       if (newTag && !selectedTagNames.includes(newTag) && selectedTagNames.length < 3) {
         onChange([...selectedTagNames, newTag]);

@@ -62,7 +62,7 @@ export class PromptService {
     if (error) throw error;
     
     return (data || [])
-      .filter((p): p is SupabasePrompt => isPrompt(p))
+      .filter((p): p is SupabasePrompt => p !== null && typeof p === 'object' && 'id' in p)
       .map(p => convertSupabasePromptToPrompt(p));
   }
 
@@ -105,7 +105,7 @@ export class PromptService {
     if (error) throw error;
     
     return (data || [])
-      .filter((p): p is SupabasePrompt => isPrompt(p))
+      .filter((p): p is SupabasePrompt => p !== null && typeof p === 'object' && 'id' in p)
       .map(p => convertSupabasePromptToPrompt(p));
   }
 
@@ -199,7 +199,7 @@ export class PromptService {
     if (error) throw error;
     
     return (data || [])
-      .filter((p): p is SupabasePrompt => isPrompt(p))
+      .filter((p): p is SupabasePrompt => p !== null && typeof p === 'object' && 'id' in p)
       .map(p => convertSupabasePromptToPrompt(p));
   }
 }

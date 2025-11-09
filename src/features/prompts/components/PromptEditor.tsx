@@ -268,8 +268,8 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
         user_id: user.id,
         title: title || '',
         content: content || '',
-        model: model || AVAILABLE_MODELS[1].id,
-        mode: (mode || THINKING_MODES[5].id) as 'meta-prompt' | 'thinking' | 'normal',
+        model: model || (AVAILABLE_MODELS[1]?.id ?? AVAILABLE_MODELS[0]?.id ?? ''),
+        mode: (mode || THINKING_MODES[5]?.id || THINKING_MODES[0]?.id || 'normal') as 'meta-prompt' | 'thinking' | 'normal',
         color: currentPrompt?.color || '#3b82f6',
         is_public: !currentPrompt?.is_public, // Toggle public status
         is_featured: currentPrompt?.is_featured || false,
@@ -309,7 +309,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
     }
   };
 
-  const handleDelete = async (promptId: string) => {
+  const __handleDelete = async (promptId: string) => {
     try {
       const user = await supabase.auth.getUser().then(({ data }) => data.user);
 

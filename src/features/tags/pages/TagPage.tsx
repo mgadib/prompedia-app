@@ -52,7 +52,7 @@ const TagPage: React.FC = () => {
   const isMobile = useIsMobile();
   
   // Get context from Layout
-  const { user, mobileSidebarOpen, setMobileSidebarOpen } = useOutletContext<OutletContext>();
+  const { user, setMobileSidebarOpen } = useOutletContext<OutletContext>();
 
   const [prompts, setPrompts] = useState<PromptWithTags[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -109,7 +109,7 @@ const TagPage: React.FC = () => {
       }
 
       // Load data baru - sudah di-optimize di TagService
-      const promptList = await TagService.getPromptsByTagName(tagName, currentUserId);
+      const promptList = await TagService.getPromptsByTagName(tagName, currentUserId ?? undefined);
       
       // Update cache dengan userId yang benar
       const updatedCacheKey = `${tagName}:${currentUserId || 'guest'}`;
@@ -145,9 +145,6 @@ const TagPage: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tagName]); // Hanya depend pada tagName
 
-  const handleLogin = () => {
-    setShowAuthModal(true);
-  };
 
   const handleCardClick = (prompt: PromptWithTags) => {
     setSelectedPrompt(prompt);

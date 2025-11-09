@@ -77,7 +77,7 @@ const PublicPromptDetail = () => {
     }
   }, [loading, prompt, id]);
 
-  const handleCopyContent = () => {
+  const _handleCopyContent = () => {
     if (prompt) {
       navigator.clipboard.writeText(prompt.content);
       toast.success('prompt.contentCopied');

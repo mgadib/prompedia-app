@@ -2,7 +2,6 @@ import { Prompt } from '@/lib/storage';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { X, Lock, Globe } from 'lucide-react';
-import { toast } from '@/shared/utils/toast';
 import { useIsMobile } from '@/shared/hooks/use-mobile';
 import { useTranslation } from 'react-i18next';
 import type { PromptWithTags } from '@/shared/types/prompts';

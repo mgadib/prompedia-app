@@ -59,11 +59,11 @@ export function sanitizePrompt(
 
   // Validate using Zod schema
   try {
-    return validateData(promptSchema, sanitized);
+    return validateData(promptSchema, sanitized) as Prompt;
   } catch (error) {
     // If validation fails, return sanitized version anyway (graceful degradation)
     console.warn('Prompt validation failed, using sanitized version:', error);
-    return sanitized;
+    return sanitized as Prompt;
   }
 }
 

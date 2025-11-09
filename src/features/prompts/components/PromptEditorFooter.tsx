@@ -13,7 +13,7 @@ export const PromptEditorFooter = React.memo(({
   content,
   currentPrompt,
 }: PromptEditorFooterProps) => {
-  const { t } = useTranslation();
+  useTranslation();
   const isMobile = useIsMobile();
 
   return (

@@ -1,8 +1,8 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Tag, Prompt } from '@/lib/storage';
 import { Database } from '@/integrations/supabase/types';
-import { isTag, isPrompt, convertSupabaseTagToTag, convertSupabasePromptToPrompt, type PromptTagJoinResponse } from '@/lib/types/supabase-responses';
-import { getErrorMessage, getServiceErrorMessage } from '@/lib/i18n-helpers';
+import { isTag, convertSupabaseTagToTag, convertSupabasePromptToPrompt, type PromptTagJoinResponse } from '@/lib/types/supabase-responses';
+import { getErrorMessage } from '@/lib/i18n-helpers';
 
 type SupabaseTag = Database['public']['Tables']['tags']['Row'];
 type SupabasePrompt = Database['public']['Tables']['prompts']['Row'];
@@ -93,7 +93,7 @@ export class TagService {
         .order('name', { ascending: true });
 
       if (error) throw error;
-      return data || [];
+      return (data || []).map(convertSupabaseTagToTag);
     } catch (error) {
       console.error('Failed to get all tags:', error);
       return [];
@@ -118,7 +118,7 @@ export class TagService {
       .single();
 
     if (error) throw error;
-    return data;
+    return convertSupabaseTagToTag(data);
   }
 
   /**
@@ -197,7 +197,7 @@ export class TagService {
 
       if (error) throw error;
       return (data || [])
-        .map((item: PromptTagJoinResponse) => item.tags)
+        .map(item => item.tags)
         .filter((tag): tag is SupabaseTag => tag !== null && isTag(tag))
         .map(convertSupabaseTagToTag);
     } catch (error) {
@@ -425,7 +425,7 @@ export class TagService {
 
       // Build result with tags
       const result: (Prompt & { tags: Tag[] })[] = (prompts || [])
-        .filter((p): p is SupabasePrompt => isPrompt(p))
+        .filter((p): p is SupabasePrompt => p !== null && typeof p === 'object' && 'id' in p)
         .map(p => ({
           ...convertSupabasePromptToPrompt(p),
           tags: tagsByPromptId.get(p.id) || []
@@ -537,7 +537,7 @@ export class TagService {
 
       // Build result with tags
       const result: (Prompt & { tags: Tag[] })[] = (prompts || [])
-        .filter((p): p is SupabasePrompt => isPrompt(p))
+        .filter((p): p is SupabasePrompt => p !== null && typeof p === 'object' && 'id' in p)
         .map(p => ({
           ...convertSupabasePromptToPrompt(p),
           tags: tagsByPromptId.get(p.id) || []
