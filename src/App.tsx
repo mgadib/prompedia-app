@@ -4,14 +4,14 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { ErrorBoundary } from "@/components/ErrorBoundary";
-import Layout from "@/components/Layout";
-// Import TagPage langsung untuk menghindari lazy loading delay saat navigasi
-import TagPage from './pages/Tag';
+import { ErrorBoundary } from "@/shared/components/ErrorBoundary";
+import Layout from "@/shared/components/Layout";
 
+// Lazy load all route components for better code splitting
 const AppPage = React.lazy(() => import('./pages/App'));
 const NotFound = React.lazy(() => import('./pages/NotFound'));
 const PublicPromptDetail = React.lazy(() => import('./pages/PublicPromptDetail'));
+const TagPage = React.lazy(() => import('./pages/Tag'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -19,8 +19,10 @@ const queryClient = new QueryClient({
       retry: (failureCount, error) => {
         // Jangan retry pada error 4xx
         if (error && typeof error === 'object' && 'status' in error) {
-          const status = (error as any).status;
-          if (status >= 400 && status < 500) {
+          const status = typeof (error as { status?: unknown }).status === 'number' 
+            ? (error as { status: number }).status 
+            : null;
+          if (status !== null && status >= 400 && status < 500) {
             return false;
           }
         }
@@ -63,7 +65,6 @@ const App = () => (
               {/* Shared Layout dengan persistent Sidebar */}
               <Route element={<Layout />}>
                 <Route path="/" element={<AppPage />} />
-                {/* TagPage tidak menggunakan lazy loading untuk navigasi yang lebih smooth */}
                 <Route path="/tags/:name" element={<TagPage />} />
               </Route>
               {/* Routes tanpa layout (untuk halaman detail yang mungkin perlu layout berbeda) */}

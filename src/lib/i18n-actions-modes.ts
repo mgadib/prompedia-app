@@ -1,6 +1,6 @@
 import i18n from './i18n';
-import { PROMPT_ACTIONS, PromptAction } from './actions';
-import { THINKING_MODES, ThinkingMode } from './modes';
+import { PROMPT_ACTIONS, PromptAction } from '@/features/prompts/utils/actions';
+import { THINKING_MODES, ThinkingMode } from '@/features/prompts/utils/modes';
 
 /**
  * Mendapatkan deskripsi action yang diterjemahkan untuk tampilan UI

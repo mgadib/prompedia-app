@@ -2,13 +2,14 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Prompt, Tag } from '@/lib/storage';
-import { SupabaseService } from '@/lib/supabase-service';
-import { TagService } from '@/lib/tag-service';
+import { SupabaseService } from '@/lib/supabase-service'; // @deprecated
+import { promptService } from '@/features/prompts/services/prompt-service';
+import { TagService } from '@/features/tags/services/tag-service';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Copy, ArrowLeft, Globe, Download } from 'lucide-react';
 import { toast } from 'sonner';
-import SEO from '@/components/SEO';
+import SEO from '@/shared/components/SEO';
 import { trackEvent } from '@/lib/analytics';
 import { ENV } from '@/lib/constants';
 
@@ -34,7 +35,7 @@ const PublicPromptDetail = () => {
         setError(null);
 
         // Memuat prompt dari Supabase
-        const publicPrompt = await SupabaseService.getPrompt(id);
+        const publicPrompt = await promptService.getPrompt(id);
         
         if (!publicPrompt) {
           setError(t('prompt:promptNotFound'));

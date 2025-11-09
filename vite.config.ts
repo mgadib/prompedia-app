@@ -65,12 +65,22 @@ export default defineConfig(({ mode }) => ({
           if (id.includes('node_modules/@tanstack')) {
             return 'query-vendor';
           }
-          // Lucide icons (can be large)
+          // Lucide icons (can be large) - split by usage
           if (id.includes('node_modules/lucide-react')) {
             return 'icons-vendor';
           }
+          // React Error Boundary
+          if (id.includes('node_modules/react-error-boundary')) {
+            return 'error-boundary';
+          }
+          // Zod for validation
+          if (id.includes('node_modules/zod')) {
+            return 'validation';
+          }
         }
       }
-    }
+    },
+    // Enable minification (esbuild is faster and already included)
+    minify: 'esbuild',
   }
 }));

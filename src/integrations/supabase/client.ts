@@ -159,8 +159,10 @@ export async function withRetry<T>(
       
       // Don't retry on 4xx errors (client errors)
       if (error && typeof error === 'object' && 'status' in error) {
-        const status = (error as any).status;
-        if (status >= 400 && status < 500) {
+        const status = typeof (error as { status?: unknown }).status === 'number' 
+          ? (error as { status: number }).status 
+          : null;
+        if (status !== null && status >= 400 && status < 500) {
           throw error;
         }
       }

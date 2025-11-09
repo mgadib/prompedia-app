@@ -31,9 +31,15 @@
     "goToHome": "Kembali ke Beranda",
     "returnToHome": "Kembali ke Beranda",
     "tryAgain": "Coba lagi",
-    "backToHome": "Kembali ke Beranda"
+    "backToHome": "Kembali ke Beranda",
+    "moreActions": "Lainnya",
+    "aiActions": "Aksi AI",
+    "undo": "Batal"
   },
   "labels": {
+    "improve": "Perbaiki",
+    "transform": "Ubah",
+    "analyze": "Analisis",
     "email": "Email",
     "password": "Kata Sandi",
     "username": "Nama Pengguna",
@@ -93,7 +99,8 @@
     "dontHaveAccount": "Belum punya akun? Daftar",
     "alreadyHaveAccount": "Sudah punya akun? Masuk",
     "joinPrompedia": "Bergabung dengan Prompedia untuk membuka akses tak terbatas.",
-    "enterCredentials": "Selamat datang kembali! Masukkan kredensial Anda untuk melanjutkan."
+    "enterCredentials": "Selamat datang kembali! Masukkan kredensial Anda untuk melanjutkan.",
+    "undoNotAvailable": "Undo tidak tersedia. Silakan pulihkan secara manual jika diperlukan."
   },
   "notFound": {
     "title": "404",

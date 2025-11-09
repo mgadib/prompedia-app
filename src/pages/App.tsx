@@ -2,13 +2,14 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next';
 import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import PromptEditor from '@/components/PromptEditor';
-import MyLibrary from '@/components/MyLibrary';
-import PublicLibrary from '@/components/PublicLibrary';
-import AuthModal from '@/components/AuthModal';
-import SEO from '@/components/SEO';
+// Lazy load heavy components for better code splitting
+const PromptEditor = React.lazy(() => import('@/features/prompts/components/PromptEditor'));
+const MyLibrary = React.lazy(() => import('@/features/library/components/MyLibrary'));
+const PublicLibrary = React.lazy(() => import('@/features/library/components/PublicLibrary'));
+const AuthModal = React.lazy(() => import('@/features/auth/components/AuthModal'));
+const SEO = React.lazy(() => import('@/shared/components/SEO'));
 import { storage, Prompt, Tag } from '@/lib/storage';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/shared/hooks/use-mobile';
 import { useSearchParams, useNavigate, useOutletContext } from 'react-router-dom';
 import { ENV } from '@/lib/constants';
 import type { User } from '@supabase/supabase-js';
@@ -17,14 +18,16 @@ interface PromptWithTags extends Prompt {
   tags: Tag[];
 }
 import { storageManager } from '@/lib/storage-manager';
-import { AVAILABLE_MODELS } from '@/lib/models';
-import { THINKING_MODES } from '@/lib/modes';
+import { AVAILABLE_MODELS } from '@/features/prompts/utils/models';
+import { THINKING_MODES } from '@/features/prompts/utils/modes';
 import { SupabaseService } from '@/lib/supabase-service';
+import { sanitizePrompt, copyPrompt, createNewPrompt } from '@/features/prompts/utils/prompt-utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { rateLimitingService } from '@/lib/rate-limiting';
+import { rateLimitingService } from '@/shared/utils/rate-limiting';
 import { STORAGE_KEYS } from '@/lib/constants';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { ErrorBoundary } from '@/shared/components/ErrorBoundary';
+import { promptService } from '@/features/prompts/services/prompt-service';
 
 
 interface OutletContext {
@@ -85,23 +88,11 @@ const AppPage = () => {
 
     const loadPromptById = async () => {
       try {
-        const prompt = await SupabaseService.getPrompt(promptId);
+        const prompt = await promptService.getPrompt(promptId);
         if (!prompt) {
           toast.error(t('errors:prompt.notFound'));
         } else {
-          const sanitizedPrompt: Prompt = {
-            id: prompt.id || '',
-            user_id: prompt.user_id || '',
-            title: prompt.title || '',
-            content: prompt.content || '',
-            model_id: prompt.model_id || AVAILABLE_MODELS[1].id,
-            mode_id: prompt.mode_id || THINKING_MODES[5].id,
-            color: prompt.color || '#3b82f6',
-            is_public: prompt.is_public || false,
-            is_featured: prompt.is_featured || false,
-            description: prompt.description || null,
-            original_prompt_id: prompt.original_prompt_id || null,
-          };
+          const sanitizedPrompt = sanitizePrompt(prompt);
 
           setCurrentPrompt(sanitizedPrompt);
           storage.setCurrentPrompt(sanitizedPrompt.id);
@@ -139,7 +130,7 @@ const AppPage = () => {
             const prompts = await storageManager.getPrompts();
             setAllPrompts(prompts || []);
             // Public prompts juga perlu di-reload untuk memastikan data terbaru
-            const publicPromptsData = await SupabaseService.getPublicPrompts();
+            const publicPromptsData = await promptService.getPublicPrompts();
             setPublicPrompts(publicPromptsData);
           } catch (error) {
             console.error('Failed to reload prompts after auth change:', error);
@@ -306,21 +297,7 @@ const AppPage = () => {
     setIsTransitioning(true);
     
     // Ensure prompt has required fields for new schema
-    const sanitizedPrompt: Prompt = {
-      id: prompt.id || '',
-      user_id: prompt.user_id || '',
-      title: prompt.title || '',
-      content: prompt.content || '',
-      
-      model_id: prompt.model_id || AVAILABLE_MODELS[1].id,
-      mode_id: prompt.mode_id || THINKING_MODES[5].id,
-      
-      color: prompt.color || '#3b82f6',
-      is_public: prompt.is_public || false,
-      is_featured: prompt.is_featured || false,
-      description: prompt.description || null,
-      original_prompt_id: prompt.original_prompt_id || null,
-    };
+    const sanitizedPrompt = sanitizePrompt(prompt);
 
     setCurrentPrompt(sanitizedPrompt);
     storage.setCurrentPrompt(sanitizedPrompt.id);
@@ -339,21 +316,7 @@ const AppPage = () => {
     setIsTransitioning(true);
     
     // Ensure prompt has required fields for new schema
-    const sanitizedPrompt: Prompt = {
-      id: prompt.id || '',
-      user_id: prompt.user_id || user?.id || '',
-      title: prompt.title || '',
-      content: prompt.content || '',
-      
-      model_id: prompt.model_id || AVAILABLE_MODELS[1].id,
-      mode_id: prompt.mode_id || THINKING_MODES[5].id,
-      
-      color: prompt.color || '#3b82f6',
-      is_public: prompt.is_public || false,
-      is_featured: prompt.is_featured || false,
-      description: prompt.description || null,
-      original_prompt_id: prompt.original_prompt_id || null,
-    };
+    const sanitizedPrompt = sanitizePrompt(prompt, undefined, undefined);
 
     setCurrentPrompt(sanitizedPrompt);
     storage.setCurrentPrompt(sanitizedPrompt.id);
@@ -411,27 +374,8 @@ const AppPage = () => {
       }
 
       // Menyucikan prompt agar sesuai dengan schema baru
-      const sanitizedPrompt: Prompt = {
-        id: prompt.id || '',
-        user_id: prompt.user_id || '',
-        title: prompt.title || '',
-        content: prompt.content || '',
-        model: prompt.model || AVAILABLE_MODELS[1].id,
-        mode: (prompt.mode || THINKING_MODES[5].id) as 'meta-prompt' | 'thinking' | 'normal',
-        color: prompt.color || '#3b82f6',
-        is_public: prompt.is_public || false,
-        is_featured: prompt.is_featured || false,
-        description: prompt.description,
-        original_prompt_id: prompt.original_prompt_id,
-      };
-
-      const copiedPrompt: Prompt = {
-        ...sanitizedPrompt,
-        id: crypto.randomUUID(),
-        user_id: user.id,
-        title: `Copy of ${sanitizedPrompt.title}`,
-        is_public: false,
-      };
+      const sanitizedPrompt = sanitizePrompt(prompt);
+      const copiedPrompt = copyPrompt(sanitizedPrompt, user.id);
 
       await storageManager.savePrompt(copiedPrompt);
       handlePromptChange(copiedPrompt);
@@ -455,19 +399,7 @@ const AppPage = () => {
     setIsTransitioning(true);
 
     // Ensure prompt has required fields for new schema
-    const sanitizedPrompt: Prompt = {
-      id: prompt.id || '',
-      user_id: prompt.user_id || '',
-      title: prompt.title || '',
-      content: prompt.content || '',
-      model: prompt.model || AVAILABLE_MODELS[1].id,
-      mode: (prompt.mode || THINKING_MODES[5].id) as 'meta-prompt' | 'thinking' | 'normal',
-      color: prompt.color || '#3b82f6',
-      is_public: prompt.is_public || false,
-      is_featured: prompt.is_featured || false,
-      description: prompt.description || null,
-      original_prompt_id: prompt.original_prompt_id || null,
-    };
+    const sanitizedPrompt = sanitizePrompt(prompt);
 
     setCurrentPrompt(sanitizedPrompt);
     storage.setCurrentPrompt(sanitizedPrompt.id);
@@ -558,17 +490,7 @@ const AppPage = () => {
     // Tambahkan visual feedback untuk transisi
     setIsTransitioning(true);
 
-    const newPrompt: Prompt = {
-      id: crypto.randomUUID(),
-      user_id: user?.id || 'guest',
-      title: 'Untitled Prompt',
-      content: '',
-      model: AVAILABLE_MODELS[1].id,
-      color: '#3b82f6',
-      mode: THINKING_MODES[5].id as 'meta-prompt' | 'thinking' | 'normal',
-      is_public: false,
-      is_featured: false,
-    };
+    const newPrompt = createNewPrompt(user?.id);
 
     // Mereset semua state playground secara atomik
     setCurrentPrompt(newPrompt);
@@ -647,7 +569,8 @@ const AppPage = () => {
   return (
     <>
       {/* SEO Meta Tags & Structured Data */}
-      <SEO
+      <React.Suspense fallback={null}>
+        <SEO
         title={ENV.SITE_TITLE}
         description={t('common:seo.description') || 'Build, optimize, and manage AI prompts with Prompedia AI. Free prompt engineering platform with 6 thinking modes, AI model integration, and public prompt library. Perfect for ChatGPT, Claude, and other AI tools.'}
         url={homepageUrl}
@@ -746,7 +669,8 @@ const AppPage = () => {
             answer: 'Prompedia AI supports multiple AI models including Llama 4 Maverick, Qwen 3 30B, Qwen 2.5 72B, and Llama 3.1 70B.',
           },
         ]}
-      />
+        />
+      </React.Suspense>
 
       {/* Main Content Area */}
       <div className={`flex-1 flex flex-col ${isInitializing ? 'opacity-0' : 'opacity-100'} min-w-0 overflow-hidden ${isMobile ? 'h-screen' : ''}`}>
@@ -769,51 +693,59 @@ const AppPage = () => {
         )}
 
         <ErrorBoundary>
-          {showEditor ? (
-            <div className={`flex-1 flex flex-col min-w-0 overflow-hidden ${isTransitioning ? 'opacity-50' : 'opacity-100'}`}>
-              <PromptEditor
-                key="prompt-editor"
-                currentPrompt={currentPrompt}
-                onPromptChange={handlePromptChange}
-                onDeletePrompt={handleDeletePrompt}
-                onNewPrompt={handleNewPrompt}
-                isFocusMode={isFocusMode}
-                onToggleFocus={handleToggleFocus}
-                user={user}
-              />
+          <React.Suspense fallback={
+            <div className="flex-1 flex items-center justify-center">
+              <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
             </div>
-          ) : (
-            <div className={`flex-1 flex flex-col min-w-0 overflow-hidden ${isTransitioning ? 'opacity-50' : 'opacity-100'}`}>
-              {activeView === 'my-library' ? (
-                <MyLibrary
-                  key="my-library"
-                  prompts={myPromptsWithTags}
-                  onSelectPrompt={handleSelectPrompt}
-                  onEditPrompt={handleEditPrompt}
+          }>
+            {showEditor ? (
+              <div className={`flex-1 flex flex-col min-w-0 overflow-hidden ${isTransitioning ? 'opacity-50' : 'opacity-100'}`}>
+                <PromptEditor
+                  key="prompt-editor"
+                  currentPrompt={currentPrompt}
+                  onPromptChange={handlePromptChange}
                   onDeletePrompt={handleDeletePrompt}
-                  onCopyPrompt={handleCopyPrompt}
-                  currentPromptId={currentPrompt?.id}
+                  onNewPrompt={handleNewPrompt}
+                  isFocusMode={isFocusMode}
+                  onToggleFocus={handleToggleFocus}
+                  user={user}
                 />
-              ) : (
-                <PublicLibrary
-                  key="public-library"
-                  prompts={publicPromptsWithTags}
-                  onSelectPrompt={handleSelectPrompt}
-                  onUsePrompt={handleUsePrompt}
-                  currentPromptId={currentPrompt?.id}
-                />
-              )}
-            </div>
-          )}
+              </div>
+            ) : (
+              <div className={`flex-1 flex flex-col min-w-0 overflow-hidden ${isTransitioning ? 'opacity-50' : 'opacity-100'}`}>
+                {activeView === 'my-library' ? (
+                  <MyLibrary
+                    key="my-library"
+                    prompts={myPromptsWithTags}
+                    onSelectPrompt={handleSelectPrompt}
+                    onEditPrompt={handleEditPrompt}
+                    onDeletePrompt={handleDeletePrompt}
+                    onCopyPrompt={handleCopyPrompt}
+                    currentPromptId={currentPrompt?.id}
+                  />
+                ) : (
+                  <PublicLibrary
+                    key="public-library"
+                    prompts={publicPromptsWithTags}
+                    onSelectPrompt={handleSelectPrompt}
+                    onUsePrompt={handleUsePrompt}
+                    currentPromptId={currentPrompt?.id}
+                  />
+                )}
+              </div>
+            )}
+          </React.Suspense>
         </ErrorBoundary>
       </div>
 
       {/* Auth Modal */}
-      <AuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        onSuccess={handleAuthSuccess}
-      />
+      <React.Suspense fallback={null}>
+        <AuthModal
+          isOpen={showAuthModal}
+          onClose={() => setShowAuthModal(false)}
+          onSuccess={handleAuthSuccess}
+        />
+      </React.Suspense>
     </>
   );
 };

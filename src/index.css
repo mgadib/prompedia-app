@@ -227,6 +227,23 @@ All colors MUST be HSL.
     transition-duration: 350ms;
   }
 
+  /* Improved spacing utilities for better visual hierarchy */
+  .spacing-tight {
+    gap: 0.5rem;
+  }
+
+  .spacing-normal {
+    gap: 1rem;
+  }
+
+  .spacing-relaxed {
+    gap: 1.5rem;
+  }
+
+  .spacing-loose {
+    gap: 2rem;
+  }
+
   /* Focus visible enhancements */
   .focus-ring {
     @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background;

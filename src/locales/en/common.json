@@ -31,9 +31,15 @@
     "goToHome": "Go to Home",
     "returnToHome": "Return to Home",
     "tryAgain": "Try again",
-    "backToHome": "Back to Home"
+    "backToHome": "Back to Home",
+    "moreActions": "More Actions",
+    "aiActions": "AI Actions",
+    "undo": "Undo"
   },
   "labels": {
+    "improve": "Improve",
+    "transform": "Transform",
+    "analyze": "Analyze",
     "email": "Email",
     "password": "Password",
     "username": "Username",
@@ -93,7 +99,8 @@
     "dontHaveAccount": "Don't have an account? Sign up",
     "alreadyHaveAccount": "Already have an account? Sign in",
     "joinPrompedia": "Join Prompedia to unlock unlimited prompts.",
-    "enterCredentials": "Welcome back! Enter your credentials to continue."
+    "enterCredentials": "Welcome back! Enter your credentials to continue.",
+    "undoNotAvailable": "Undo not available. Please restore manually if needed."
   },
   "notFound": {
     "title": "404",

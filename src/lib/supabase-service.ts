@@ -18,6 +18,16 @@ type TagInsert = Database['public']['Tables']['tags']['Insert']
 type UserSessionInsert = Database['public']['Tables']['user_sessions']['Insert']
 type PromptTagInsert = Database['public']['Tables']['prompt_tags']['Insert']
 
+/**
+ * SupabaseService - Static service class for backward compatibility
+ * 
+ * @deprecated For new code, use instance-based services:
+ * - AuthService for authentication
+ * - PromptService for prompt operations
+ * - TagServiceInstance for tag operations
+ * 
+ * This class is kept for backward compatibility but will be phased out.
+ */
 export class SupabaseService {
   // ========================================
   // AUTENTIKASI
@@ -154,7 +164,7 @@ export class SupabaseService {
 
     const { data, error } = await query
     if (error) throw error
-    return (data || []) as unknown as Prompt[]
+    return (data || []) as Prompt[]
   }
 
   static async getPublicPrompts(
@@ -193,7 +203,7 @@ export class SupabaseService {
 
     const { data, error } = await query
     if (error) throw error
-    return (data || []) as unknown as Prompt[]
+    return (data || []) as Prompt[]
   }
 
   static async getFeaturedPrompts(): Promise<Prompt[]> {

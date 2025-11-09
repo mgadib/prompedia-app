@@ -1,19 +1,18 @@
 import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useParams, Link, useNavigate, useOutletContext } from 'react-router-dom';
-import { Hash, FileText, Globe, Lock, ArrowLeft, Menu, Copy, Download, Link as LinkIcon } from 'lucide-react';
+import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
+import { Hash, ArrowLeft, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import SEO from '@/components/SEO';
-import { TagService } from '@/lib/tag-service';
+import SEO from '@/shared/components/SEO';
+import { TagService } from '@/features/tags/services/tag-service';
 import { Prompt, Tag } from '@/lib/storage';
-import { supabase } from '@/integrations/supabase/client';
 import { ENV } from '@/lib/constants';
-import AuthModal from '@/components/AuthModal';
-import { useIsMobile } from '@/hooks/use-mobile';
+import AuthModal from '@/features/auth/components/AuthModal';
+import { useIsMobile } from '@/shared/hooks/use-mobile';
 import type { User } from '@supabase/supabase-js';
-import PromptDetailModal from '@/components/PromptDetailModal';
+import PromptDetailModal from '@/features/library/components/PromptDetailModal';
+import PromptCard from '@/features/library/components/PromptCard';
 import { toast } from 'sonner';
 import { trackEvent } from '@/lib/analytics';
 
@@ -151,15 +150,13 @@ const TagPage: React.FC = () => {
     setSelectedPrompt(null);
   };
 
-  const handleCopy = (e: React.MouseEvent, prompt: PromptWithTags) => {
-    e.stopPropagation();
+  const handleCopy = (prompt: PromptWithTags) => {
     navigator.clipboard.writeText(prompt.content);
     toast.success(t('success:prompt.contentCopied'));
     trackEvent('copy_prompt_content', { prompt_id: prompt.id }, userId);
   };
 
-  const handleCopyUrl = (e: React.MouseEvent, promptId: string) => {
-    e.stopPropagation();
+  const handleCopyUrl = (promptId: string) => {
     const base = ENV.SITE_URL || window.location.origin;
     const url = `${base}/p/${promptId}`;
     navigator.clipboard.writeText(url);
@@ -167,8 +164,7 @@ const TagPage: React.FC = () => {
     trackEvent('copy_prompt_url', { prompt_id: promptId }, userId);
   };
 
-  const handleUse = (e: React.MouseEvent, prompt: PromptWithTags) => {
-    e.stopPropagation();
+  const handleUse = (prompt: PromptWithTags) => {
     navigate(`/?use=${encodeURIComponent(prompt.id)}`);
     toast.success(t('success:prompt.loadedForEditing'));
     trackEvent('use_prompt', { prompt_id: prompt.id }, userId);
@@ -297,127 +293,15 @@ const TagPage: React.FC = () => {
               )}
               <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 p-3 sm:p-4 md:p-6 transition-opacity duration-300 ${isRefreshing ? 'opacity-75' : 'opacity-100'}`}>
               {prompts.map((prompt) => (
-                <div
+                <PromptCard
                   key={prompt.id}
-                  onClick={() => handleCardClick(prompt)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      handleCardClick(prompt);
-                    }
-                  }}
-                  role="button"
-                  tabIndex={0}
-                  aria-label={t('library:openDetails', { title: prompt.title || t('prompt:untitled') })}
-                  className={`group relative bg-card border rounded-lg p-4 sm:p-6 transition-all duration-200 hover:shadow-lg hover:border-primary/50 touch-manipulation hover:bg-accent/10 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background`}
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center gap-2">
-                      <div
-                        className="w-3 h-3 rounded-full"
-                        style={{ backgroundColor: prompt.color || '#10b981' }}
-                      />
-                      <FileText className="w-4 h-4 text-muted-foreground" />
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {prompt.is_public ? (
-                        <div className="flex items-center gap-1 text-primary">
-                          <Globe className="w-4 h-4" />
-                          <span className="text-xs font-mono">{t('common:labels.public')}</span>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-1 text-muted-foreground">
-                          <Lock className="w-4 h-4" />
-                          <span className="text-xs font-mono">{t('common:labels.private')}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <h3 className="font-bold text-lg mb-2 line-clamp-2 font-mono group-hover:text-primary transition-colors">
-                    {prompt.title || t('prompt:untitled')}
-                  </h3>
-
-                  {prompt.description && (
-                    <p className="text-sm text-muted-foreground mb-4 line-clamp-3 font-mono leading-relaxed">
-                      {prompt.description}
-                    </p>
-                  )}
-
-                  {prompt.tags && prompt.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mb-4">
-                      {prompt.tags.slice(0, 3).map(tag => (
-                        <Link key={tag.id} to={`/tags/${encodeURIComponent(tag.name)}`}>
-                          <Badge
-                            variant="secondary"
-                            className="text-xs bg-prompedia-green-500/20 text-prompedia-green-400 border border-prompedia-green-500/30 font-mono"
-                            style={{
-                              backgroundColor: `${tag.color}20`,
-                              color: tag.color,
-                              borderColor: `${tag.color}30`
-                            }}
-                          >
-                            {tag.name}
-                          </Badge>
-                        </Link>
-                      ))}
-                      {prompt.tags.length > 3 && (
-                        <Badge variant="secondary" className="text-xs font-mono">
-                          +{prompt.tags.length - 3}
-                        </Badge>
-                      )}
-                    </div>
-                  )}
-
-                  <div className="flex items-center justify-between pt-4 border-t border-border/50">
-                    <div className="text-xs text-muted-foreground font-mono">
-                      <div>{t('prompt:model')}: {prompt.model || t('library:unknownModel')}</div>
-                      <div>{prompt.is_featured ? t('common:labels.featured') : t('common:labels.standard')}</div>
-                    </div>
-
-                    {/* Tombol aksi seperti di PublicLibrary */}
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={(e) => handleCopyUrl(e, prompt.id)}
-                        className="h-8 w-8 p-0 hover:bg-primary/20"
-                        title={t('library:copyUrl')}
-                        aria-label={t('library:copyUrl')}
-                      >
-                        <LinkIcon className="w-3 h-3" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={(e) => handleCopy(e, prompt)}
-                        className="h-8 w-8 p-0 hover:bg-primary/20"
-                        title={t('library:copyContentToClipboard')}
-                        aria-label={t('library:copyContentToClipboard')}
-                      >
-                        <Copy className="w-3 h-3" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={(e) => handleUse(e, prompt)}
-                        className="h-8 w-8 p-0 hover:bg-primary/20"
-                        title={t('library:useThisPrompt')}
-                        aria-label={t('library:useThisPrompt')}
-                      >
-                        <Download className="w-3 h-3" />
-                      </Button>
-                      <Link
-                        to={`/p/${prompt.id}`}
-                        onClick={(e) => e.stopPropagation()}
-                        aria-label={t('library:viewDetails', { title: prompt.title || t('prompt:untitled') })}
-                        className="text-xs font-mono px-2 py-1 rounded hover:bg-primary/20"
-                      >
-                        {t('common:buttons.view')}
-                      </Link>
-                    </div>
-                  </div>
-                </div>
+                  prompt={prompt}
+                  variant="tag"
+                  onClick={handleCardClick}
+                  onUse={handleUse}
+                  onCopy={handleCopy}
+                  onCopyUrl={handleCopyUrl}
+                />
               ))}
               </div>
             </div>
