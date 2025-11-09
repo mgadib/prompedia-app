@@ -12,9 +12,9 @@ export function useLibraryView(user: User | null) {
   const [publicPrompts, setPublicPrompts] = useState<Prompt[]>([]);
   const [isLoadingPrompts, setIsLoadingPrompts] = useState(false);
 
-  const myPrompts = useMemo(() => {
+  const myPrompts: Prompt[] = useMemo<Prompt[]>(() => {
     // This will be set by parent component via allPrompts
-    return [];
+    return [] as Prompt[];
   }, []);
 
   const myPromptsWithTags: PromptWithTags[] = useMemo(() =>

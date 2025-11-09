@@ -36,7 +36,7 @@ interface OutletContext {
 
 const AppPage = () => {
   const { t } = useTranslation();
-  const { user, mobileSidebarOpen, setMobileSidebarOpen, setAppActiveView, setAppIsPlaygroundActive, appActiveView, appIsPlaygroundActive, showAuthModal, setShowAuthModal } = useOutletContext<OutletContext>();
+  const { user, setMobileSidebarOpen, setAppActiveView, setAppIsPlaygroundActive, appActiveView, appIsPlaygroundActive, showAuthModal, setShowAuthModal } = useOutletContext<OutletContext>();
   const [loading, setLoading] = useState(true);
   const [isInitializing, setIsInitializing] = useState(true);
   const isMobile = useIsMobile();
@@ -207,32 +207,6 @@ const AppPage = () => {
 
   const handleToggleFocus = () => {
     setIsFocusMode(!isFocusMode);
-  };
-
-  // Mobile-specific handlers
-  const handleViewChangeWithMobile = (view: 'my-library' | 'public-library') => {
-    handleViewChange(view);
-    if (isMobile) {
-      setMobileSidebarOpen(false);
-    }
-  };
-
-  const handleNewPromptWithMobile = async () => {
-    await handleNewPrompt();
-    if (isMobile) {
-      setMobileSidebarOpen(false);
-    }
-  };
-
-  const handleLogin = () => {
-    setShowAuthModal(true);
-  };
-
-  const handleLoginWithMobile = () => {
-    handleLogin();
-    if (isMobile) {
-      setMobileSidebarOpen(false);
-    }
   };
 
   const baseUrl = ENV.SITE_URL || (typeof window !== 'undefined' ? window.location.origin : 'https://prompedia.app');

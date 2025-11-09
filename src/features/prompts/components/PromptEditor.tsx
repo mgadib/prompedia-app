@@ -27,7 +27,7 @@ interface PromptEditorProps {
   user?: User | null;
 }
 
-const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewPrompt, isFocusMode = false, onToggleFocus, user }: PromptEditorProps) => {
+const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewPrompt, isFocusMode: _isFocusMode = false, onToggleFocus: _onToggleFocus, user }: PromptEditorProps) => {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
 
@@ -88,8 +88,8 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
           user_id: user.id,
           title: t('prompt:untitled'),
           content: '',
-          model: AVAILABLE_MODELS[1].id,
-          mode: THINKING_MODES[5].id as 'meta-prompt' | 'thinking' | 'normal',
+          model: AVAILABLE_MODELS[1]?.id ?? AVAILABLE_MODELS[0]?.id ?? '',
+          mode: (THINKING_MODES[5]?.id ?? THINKING_MODES[0]?.id ?? 'normal') as 'meta-prompt' | 'thinking' | 'normal',
           color: '#3b82f6',
           is_public: false,
           is_featured: false,
@@ -158,12 +158,12 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
         content: content || '',
         
         // Menggunakan kolom FK baru
-        model_id: model || AVAILABLE_MODELS[1].id,
-        mode_id: mode || THINKING_MODES[5].id,
+        model_id: model || (AVAILABLE_MODELS[1]?.id ?? AVAILABLE_MODELS[0]?.id ?? ''),
+        mode_id: mode || (THINKING_MODES[5]?.id ?? THINKING_MODES[0]?.id ?? 'normal'),
         
         // Menjaga field lama untuk backward compat (dual-write)
-        model: model || AVAILABLE_MODELS[1].id,
-        mode: (mode || THINKING_MODES[5].id) as 'meta-prompt' | 'thinking' | 'normal',
+        model: model || (AVAILABLE_MODELS[1]?.id ?? AVAILABLE_MODELS[0]?.id ?? ''),
+        mode: (mode || THINKING_MODES[5]?.id || THINKING_MODES[0]?.id || 'normal') as 'meta-prompt' | 'thinking' | 'normal',
         
         color: currentPrompt?.color || '#3b82f6',
         is_public: currentPrompt?.is_public || false,
@@ -336,8 +336,8 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
             user_id: currentPrompt?.user_id || '',
             title: t('prompt:untitled'),
             content: '',
-            model: AVAILABLE_MODELS[1].id,
-            mode: THINKING_MODES[5].id as 'meta-prompt' | 'thinking' | 'normal',
+            model: AVAILABLE_MODELS[1]?.id ?? AVAILABLE_MODELS[0]?.id ?? '',
+            mode: (THINKING_MODES[5]?.id ?? THINKING_MODES[0]?.id ?? 'normal') as 'meta-prompt' | 'thinking' | 'normal',
             color: '#3b82f6',
             is_public: false,
             is_featured: false,

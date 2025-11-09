@@ -43,9 +43,9 @@ export const PromptEditorFooter = React.memo(({
         {currentPrompt && (
           <div className="flex items-center gap-1">
             {currentPrompt.is_public ? (
-              <Globe className="w-4 h-4 text-primary" title={t('common:labels.public')} />
+              <Globe className="w-4 h-4 text-primary" />
             ) : (
-              <Lock className="w-4 h-4 text-muted-foreground" title={t('common:labels.private')} />
+              <Lock className="w-4 h-4 text-muted-foreground" />
             )}
           </div>
         )}

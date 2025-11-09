@@ -21,7 +21,7 @@ interface DeletePromptDialogProps {
   isCollapsed?: boolean;
 }
 
-const DeletePromptDialog = ({ promptTitle, onConfirm, children, trigger, isCollapsed }: DeletePromptDialogProps) => {
+const DeletePromptDialog = ({ promptTitle, onConfirm, children, trigger }: DeletePromptDialogProps) => {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
   

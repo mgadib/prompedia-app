@@ -32,8 +32,8 @@ export function usePromptEditor(currentPrompt: Prompt | null): UsePromptEditorRe
   const [originalContent, setOriginalContent] = useState('');
   const [aiResultContent, setAiResultContent] = useState('');
   const [viewState, setViewState] = useState<ViewState>('original');
-  const [model, setModel] = useState(AVAILABLE_MODELS[1].id);
-  const [mode, setMode] = useState(THINKING_MODES[5].id);
+  const [model, setModel] = useState(AVAILABLE_MODELS[1]?.id ?? AVAILABLE_MODELS[0]?.id ?? '');
+  const [mode, setMode] = useState(THINKING_MODES[5]?.id ?? THINKING_MODES[0]?.id ?? 'normal');
 
   useEffect(() => {
     if (currentPrompt) {
@@ -41,8 +41,8 @@ export function usePromptEditor(currentPrompt: Prompt | null): UsePromptEditorRe
       const sanitizedPrompt = sanitizePrompt(currentPrompt);
       
       // Handle both old and new schema formats
-      const modelValue = sanitizedPrompt.model_id || sanitizedPrompt.model || AVAILABLE_MODELS[1].id;
-      const modeValue = sanitizedPrompt.mode_id || sanitizedPrompt.mode || mode || 'normal';
+      const modelValue = sanitizedPrompt.model_id || sanitizedPrompt.model || AVAILABLE_MODELS[1]?.id || AVAILABLE_MODELS[0]?.id || '';
+      const modeValue = sanitizedPrompt.mode_id || sanitizedPrompt.mode || mode || THINKING_MODES[0]?.id || 'normal';
 
       setTitle(sanitizedPrompt.title);
       setContent(sanitizedPrompt.content);
@@ -57,8 +57,8 @@ export function usePromptEditor(currentPrompt: Prompt | null): UsePromptEditorRe
       // Reset form ketika tidak ada prompt yang dipilih
       setTitle('');
       setContent('');
-      setModel(AVAILABLE_MODELS[1].id);
-      setMode(THINKING_MODES[5].id);
+      setModel(AVAILABLE_MODELS[1]?.id ?? AVAILABLE_MODELS[0]?.id ?? '');
+      setMode(THINKING_MODES[5]?.id ?? THINKING_MODES[0]?.id ?? 'normal');
 
       // Reset state hasil AI
       setOriginalContent('');

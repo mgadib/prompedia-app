@@ -19,12 +19,12 @@ interface ModeSelectorProps {
 interface DBMode {
   id: string;
   name: string;
-  icon?: string;
-  description?: string;
-  instructions?: string;
-  purpose?: string;
-  thinking_pattern?: string;
-  output_structure?: string[];
+  icon?: string | null;
+  description?: string | null;
+  instructions?: string | null;
+  purpose?: string | null;
+  thinking_pattern?: string | null;
+  output_structure?: string[] | null;
 }
 
 const ModeSelector = ({ value, onChange }: ModeSelectorProps) => {

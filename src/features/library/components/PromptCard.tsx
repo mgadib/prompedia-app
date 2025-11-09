@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { Copy, Trash2, Download, Link as LinkIcon, Lock, Globe, Edit } from 'lucide-react';
+import { Copy, Trash2, Lock, Globe, Edit } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -11,7 +11,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { toast } from '@/shared/utils/toast';
-import { useIsMobile } from '@/shared/hooks/use-mobile';
+
 import type { PromptWithTags } from '@/shared/types/prompts';
 
 interface PromptCardProps {

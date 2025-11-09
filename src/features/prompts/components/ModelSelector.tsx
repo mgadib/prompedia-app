@@ -21,9 +21,10 @@ interface DBModel {
   name: string;
   provider: string;
   type: string;
-  icon?: string;
-  description?: string;
-  free?: boolean;
+  icon?: string | null;
+  description?: string | null;
+  free?: boolean | null;
+  is_active?: boolean | null;
 }
 
 const ModelSelector = ({ value, onChange }: ModelSelectorProps) => {
@@ -41,7 +42,20 @@ const ModelSelector = ({ value, onChange }: ModelSelectorProps) => {
           // Filter untuk hanya mengizinkan 2 model yang ditentukan
           const allowedModelIds = ['meta-llama/llama-4-maverick:free', 'qwen/qwen3-30b-a3b:free'];
           const filteredModels = dbModels.filter(model => allowedModelIds.includes(model.id));
-          setModels(filteredModels.length > 0 ? filteredModels : AVAILABLE_MODELS);
+          setModels(
+            filteredModels.length > 0
+              ? (filteredModels as unknown as DBModel[])
+              : AVAILABLE_MODELS.map(m => ({
+                  id: m.id,
+                  name: m.name,
+                  provider: m.provider,
+                  type: m.type,
+                  icon: null,
+                  description: null,
+                  free: m.free ?? null,
+                  is_active: null,
+                }))
+          );
         } else {
           // Fallback ke data hardcoded (hanya 2 model)
           setModels(AVAILABLE_MODELS);
@@ -58,7 +72,7 @@ const ModelSelector = ({ value, onChange }: ModelSelectorProps) => {
     loadModels();
   }, []);
 
-  const selectedModel = models.find(model => model.id === value);
+  
 
   // Hanya menampilkan 2 model yang diizinkan: Llama 4 Maverick dan Qwen 3 30B
   const allowedModelIds = ['meta-llama/llama-4-maverick:free', 'qwen/qwen3-30b-a3b:free'];

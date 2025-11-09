@@ -36,7 +36,7 @@ const getMockUserData = (userId: string) => {
 
 const PublicLibrary = ({ 
   prompts, 
-  onSelectPrompt, 
+  onSelectPrompt: _onSelectPrompt, 
   onUsePrompt, 
   currentPromptId 
 }: PublicLibraryProps) => {

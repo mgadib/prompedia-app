@@ -1,7 +1,7 @@
 import { Prompt } from '@/lib/storage';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Copy, X, Lock, Globe, Link as LinkIcon } from 'lucide-react';
+import { X, Lock, Globe } from 'lucide-react';
 import { toast } from '@/shared/utils/toast';
 import { useIsMobile } from '@/shared/hooks/use-mobile';
 import { useTranslation } from 'react-i18next';
@@ -19,30 +19,13 @@ const PromptDetailModal = ({
   prompt, 
   isOpen, 
   onClose, 
-  onCopy, 
+  onCopy: _onCopy, 
   onUse
 }: PromptDetailModalProps) => {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
   
   if (!prompt) return null;
-
-  const handleCopy = () => {
-    if (onCopy) {
-      onCopy(prompt);
-    } else {
-      // Perilaku copy default - menyalin konten prompt ke clipboard
-      const promptContent = 'content' in prompt ? prompt.content : '';
-      navigator.clipboard.writeText(promptContent);
-      toast.success('prompt.contentCopied');
-    }
-  };
-
-  const handleCopyUrl = () => {
-    const url = `https://prompedia.app/p/${prompt.id}`;
-    navigator.clipboard.writeText(url);
-    toast.success('prompt.urlCopied');
-  };
 
   const handleUse = () => {
     if (onUse) {
@@ -101,9 +84,9 @@ const PromptDetailModal = ({
             <div className="pt-3 border-t border-border/30">
               <div className="flex items-center justify-end">
                 {prompt.is_public ? (
-                  <Globe className="w-4 h-4 text-primary" title={t('common:labels.public')} />
+                  <Globe className="w-4 h-4 text-primary" />
                 ) : (
-                  <Lock className="w-4 h-4 text-muted-foreground" title={t('common:labels.private')} />
+                  <Lock className="w-4 h-4 text-muted-foreground" />
                 )}
               </div>
             </div>
