@@ -462,7 +462,7 @@ export class RateLimitingService {
     if (user) {
       // Untuk user terautentikasi: hapus record penggunaan hari ini
       // Safe: RLS policy ensures only own records can be deleted
-      const today: string = new Date().toISOString().split('T')[0] || '';
+      const today = new Date().toISOString().split('T')[0]!;
       await supabase
         .from('ai_usage')
         .delete()

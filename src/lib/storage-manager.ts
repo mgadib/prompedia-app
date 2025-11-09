@@ -303,7 +303,7 @@ class StorageManager {
 
       const { error } = await supabase
         .from('prompts')
-        .upsert([promptData], { onConflict: 'id' });
+        .upsert(promptData, { onConflict: 'id' });
 
       if (error) {
         supabaseLogger.error('Supabase upsert failed', error, { 
@@ -429,7 +429,7 @@ class StorageManager {
         
         is_public: item.is_public,
         user_id: item.user_id,
-        color: item.color || '#3b82f6',
+        color: item.color ?? '#3b82f6',
         is_featured: item.is_featured,
         original_prompt_id: item.original_prompt_id
         // Note: tags are now loaded separately via junction table

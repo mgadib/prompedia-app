@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Play, User, Hash, Lock, Users } from 'lucide-react';
+import { Play, User, Hash, Lock as LockIcon, Users as UsersIcon } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import LogoutDialog from '@/features/auth/components/LogoutDialog';
@@ -134,7 +134,7 @@ const Sidebar = ({
               title={isMobile || isCollapsed ? t('library:privateLibrary') : ''}
               aria-label={t('library:privateLibrary')}
             >
-              <Lock className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${activeView === 'my-library' && !isPlaygroundActive && !isOnTagPage ? 'fill-current' : ''}`} />
+              <LockIcon className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${activeView === 'my-library' && !isPlaygroundActive && !isOnTagPage ? 'fill-current' : ''}`} />
               {!isMobile && !isCollapsed && t('library:privateLibrary')}
             </button>
           )}
@@ -154,7 +154,7 @@ const Sidebar = ({
             title={isMobile || isCollapsed ? t('library:publicLibrary') : ''}
             aria-label={t('library:publicLibrary')}
           >
-            <Users className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${activeView === 'public-library' && !isPlaygroundActive && !isOnTagPage ? 'fill-current' : ''}`} />
+            <UsersIcon className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${activeView === 'public-library' && !isPlaygroundActive && !isOnTagPage ? 'fill-current' : ''}`} />
             {!isMobile && !isCollapsed && t('library:publicLibrary')}
           </button>
         </div>
