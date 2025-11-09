@@ -5,7 +5,6 @@ import { isTag, convertSupabaseTagToTag, convertSupabasePromptToPrompt, type Pro
 import { getErrorMessage } from '@/lib/i18n-helpers';
 
 type SupabaseTag = Database['public']['Tables']['tags']['Row'];
-type SupabasePrompt = Database['public']['Tables']['prompts']['Row'];
 
 export interface TagInsert {
   name: string;

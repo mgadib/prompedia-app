@@ -42,7 +42,7 @@ vi.mock('./logger', () => ({
   },
 }));
 
-import { storageManager, StorageError } from './storage-manager';
+import { storageManager } from './storage-manager';
 import { Prompt } from './storage';
 
 // Mock localStorage

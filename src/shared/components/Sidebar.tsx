@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Play, User, Hash } from 'lucide-react';
+import { Play, User, Hash, Lock, Users } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import LogoutDialog from '@/features/auth/components/LogoutDialog';

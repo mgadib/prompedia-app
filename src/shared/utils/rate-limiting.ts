@@ -1,7 +1,6 @@
 import { APP_CONFIG, STORAGE_KEYS } from '@/lib/constants';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
-import { Database } from '@/integrations/supabase/types';
 import { isUsageResponse, type UsageResponse, type IncrementUsageResponse } from '@/lib/types/supabase-responses';
 
 /**
@@ -139,7 +138,7 @@ export class RateLimitingService {
     const { data, error } = await supabase.rpc('get_current_usage', {
       p_user_id: userId,
       p_is_guest: false,
-      p_session_id: null
+      p_session_id: undefined
     });
 
     if (error) throw error;
@@ -181,7 +180,7 @@ export class RateLimitingService {
     const { data, error } = await supabase.rpc('increment_ai_usage', {
       p_user_id: userId,
       p_is_guest: false,
-      p_session_id: null
+      p_session_id: undefined
     });
 
     if (error) throw error;
@@ -189,7 +188,7 @@ export class RateLimitingService {
       throw new Error('No data returned from increment_ai_usage');
     }
 
-    const response = data as IncrementUsageResponse | { success: boolean; usage?: UsageResponse; error?: string };
+    const response = data as unknown as IncrementUsageResponse | { success: boolean; usage?: UsageResponse; error?: string };
     
     if (!response.success) {
       const usageData = response.usage || {
@@ -248,23 +247,24 @@ export class RateLimitingService {
       // Validasi di server-side untuk mencegah manipulasi
       const { data, error } = await supabase.rpc('track_guest_usage', {
         p_session_id: this.guestSessionId || crypto.randomUUID(),
-        p_ip_address: ipAddress,
+        p_ip_address: ipAddress ?? undefined,
         p_user_agent: userAgent
       });
 
       if (error) throw error;
       if (!data) throw new Error('No data returned from track_guest_usage');
 
+      const guestData = data as any;
       return {
-        allowed: Boolean(data.success),
+        allowed: Boolean(guestData.success),
         usage: {
-          usage_count: Number(data.usage_count) || 0,
-          daily_limit: Number(data.daily_limit) || APP_CONFIG.RATE_LIMITS.GUEST_DAILY_LIMIT,
-          remaining: Number(data.remaining) || 0,
+          usage_count: Number(guestData.usage_count) || 0,
+          daily_limit: Number(guestData.daily_limit) || APP_CONFIG.RATE_LIMITS.GUEST_DAILY_LIMIT,
+          remaining: Number(guestData.remaining) || 0,
           last_used_at: null,
           session_id: this.guestSessionId
         },
-        error: data.success ? undefined : 'Daily usage limit reached'
+        error: guestData.success ? undefined : 'Daily usage limit reached'
       };
     } catch (error) {
       console.error('Error checking guest usage:', error);
@@ -329,23 +329,24 @@ export class RateLimitingService {
       // Validasi dan increment di server-side untuk keamanan
       const { data, error } = await supabase.rpc('track_guest_usage', {
         p_session_id: this.guestSessionId || crypto.randomUUID(),
-        p_ip_address: ipAddress,
+        p_ip_address: ipAddress ?? undefined,
         p_user_agent: userAgent
       });
 
       if (error) throw error;
       if (!data) throw new Error('No data returned from track_guest_usage');
 
+      const guestData = data as any;
       return {
-        success: Boolean(data.success),
+        success: Boolean(guestData.success),
         usage: {
-          usage_count: Number(data.usage_count) || 0,
-          daily_limit: Number(data.daily_limit) || APP_CONFIG.RATE_LIMITS.GUEST_DAILY_LIMIT,
-          remaining: Number(data.remaining) || 0,
+          usage_count: Number(guestData.usage_count) || 0,
+          daily_limit: Number(guestData.daily_limit) || APP_CONFIG.RATE_LIMITS.GUEST_DAILY_LIMIT,
+          remaining: Number(guestData.remaining) || 0,
           last_used_at: null,
           session_id: this.guestSessionId
         },
-        error: data.success ? undefined : 'Daily usage limit reached'
+        error: guestData.success ? undefined : 'Daily usage limit reached'
       };
     } catch (error) {
       console.error('Error incrementing guest usage:', error);
@@ -461,7 +462,7 @@ export class RateLimitingService {
     if (user) {
       // Untuk user terautentikasi: hapus record penggunaan hari ini
       // Safe: RLS policy ensures only own records can be deleted
-      const today = new Date().toISOString().split('T')[0];
+      const today: string = new Date().toISOString().split('T')[0] || '';
       await supabase
         .from('ai_usage')
         .delete()

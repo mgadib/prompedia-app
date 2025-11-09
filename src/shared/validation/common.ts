@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { VALIDATION, ERROR_MESSAGES } from '@/lib/constants';
+import { VALIDATION } from '@/lib/constants';
 import { getValidationMessage, getErrorMessage } from '@/lib/i18n-helpers';
 
 /**
@@ -32,11 +32,13 @@ export function validateData<T>(schema: z.ZodSchema<T>, data: unknown): T {
   } catch (error) {
     if (error instanceof z.ZodError) {
       const firstError = error.errors[0];
-      throw new ValidationError(
-        firstError.message,
-        firstError.path.join('.'),
-        firstError.code
-      );
+      if (firstError) {
+        throw new ValidationError(
+          firstError.message,
+          firstError.path.join('.'),
+          firstError.code
+        );
+      }
     }
     throw error;
   }

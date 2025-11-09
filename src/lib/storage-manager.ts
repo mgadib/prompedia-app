@@ -285,8 +285,8 @@ class StorageManager {
         description: prompt.description || '',
         
         // FK only approach (model and mode TEXT columns have been dropped)
-        model_id: prompt.model_id || prompt.model,  // Keep fallback to old field for migration
-        mode_id: prompt.mode_id || prompt.mode,      // Keep fallback to old field for migration
+        model_id: prompt.model_id || prompt.model || 'gpt-4o',  // Keep fallback to old field for migration
+        mode_id: prompt.mode_id || prompt.mode || 'normal',      // Keep fallback to old field for migration
         
         is_public: prompt.is_public || false,
         user_id: prompt.user_id || this.authUser.id,
@@ -303,7 +303,7 @@ class StorageManager {
 
       const { error } = await supabase
         .from('prompts')
-        .upsert(promptData, { onConflict: 'id' });
+        .upsert([promptData], { onConflict: 'id' });
 
       if (error) {
         supabaseLogger.error('Supabase upsert failed', error, { 
@@ -429,7 +429,7 @@ class StorageManager {
         
         is_public: item.is_public,
         user_id: item.user_id,
-        color: item.color,
+        color: item.color || '#3b82f6',
         is_featured: item.is_featured,
         original_prompt_id: item.original_prompt_id
         // Note: tags are now loaded separately via junction table

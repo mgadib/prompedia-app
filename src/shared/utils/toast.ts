@@ -1,7 +1,6 @@
 import { toast as sonnerToast } from 'sonner';
 import { getErrorMessage, getSuccessMessage, getCommonMessage } from '@/lib/i18n-helpers';
 import type { I18nOptions } from '@/shared/types/api';
-import i18n from '@/lib/i18n';
 
 /**
  * Sonner toast options (excluding message)
@@ -87,7 +86,7 @@ function looksLikeTranslationKey(str: string): boolean {
  * @param namespace - The default namespace to use if not specified in the string
  * @returns The translation key without namespace prefix
  */
-function getTranslationKey(str: string, namespace: 'errors' | 'success' | 'common'): string {
+function getTranslationKey(str: string, _namespace: 'errors' | 'success' | 'common'): string {
   // If it contains namespace separator, extract key after namespace
   if (str.includes(':')) {
     const parts = str.split(':');
@@ -196,7 +195,7 @@ export const toast = {
       ? message
       : getErrorMessage(getTranslationKey(message, 'errors'), i18nOpts);
     
-    return sonnerToast.error(translatedMessage, sonnerOpts);
+    return sonnerToast.error(translatedMessage, sonnerOpts as any);
   },
 
   /**
@@ -212,7 +211,7 @@ export const toast = {
       ? message
       : getSuccessMessage(getTranslationKey(message, 'success'), i18nOpts);
     
-    return sonnerToast.success(translatedMessage, sonnerOpts);
+    return sonnerToast.success(translatedMessage, sonnerOpts as any);
   },
 
   /**
@@ -228,7 +227,7 @@ export const toast = {
       ? message
       : getCommonMessage(getTranslationKey(message, 'common'), i18nOpts);
     
-    return sonnerToast.info(translatedMessage, sonnerOpts);
+    return sonnerToast.info(translatedMessage, sonnerOpts as any);
   },
 
   /**
@@ -244,7 +243,7 @@ export const toast = {
       ? message
       : getCommonMessage(getTranslationKey(message, 'common'), i18nOpts);
     
-    return sonnerToast.warning(translatedMessage, sonnerOpts);
+    return sonnerToast.warning(translatedMessage, sonnerOpts as any);
   },
 
   /**
@@ -260,7 +259,7 @@ export const toast = {
       ? message
       : getCommonMessage(getTranslationKey(message, 'common'), i18nOpts);
     
-    return sonnerToast.loading(translatedMessage, sonnerOpts);
+    return sonnerToast.loading(translatedMessage, sonnerOpts as any);
   },
 
   /**
@@ -282,31 +281,35 @@ export const toast = {
     const i18nOpts = extractI18nOptions(options);
     const sonnerOpts = extractSonnerOptions(options);
     
-    return sonnerToast.promise(promise, {
-      loading: isAlreadyTranslated(loading)
-        ? loading
-        : getCommonMessage(getTranslationKey(loading, 'common'), i18nOpts),
-      success: typeof success === 'function' 
-        ? (data: T) => {
-            const msg = success(data);
-            return isAlreadyTranslated(msg) 
-              ? msg 
-              : getCommonMessage(getTranslationKey(msg, 'common'), i18nOpts);
-          }
-        : (isAlreadyTranslated(success) 
-            ? success 
-            : getCommonMessage(getTranslationKey(success, 'common'), i18nOpts)),
-      error: typeof error === 'function'
-        ? (err: unknown) => {
-            const msg = error(err);
-            return isAlreadyTranslated(msg)
-              ? msg
-              : getErrorMessage(getTranslationKey(msg, 'errors'), i18nOpts);
-          }
-        : (isAlreadyTranslated(error)
-            ? error
-            : getErrorMessage(getTranslationKey(error, 'errors'), i18nOpts)),
-    }, sonnerOpts);
+    return sonnerToast.promise(
+      promise, 
+      {
+        loading: isAlreadyTranslated(loading)
+          ? loading
+          : getCommonMessage(getTranslationKey(loading, 'common'), i18nOpts),
+        success: typeof success === 'function' 
+          ? (data: T) => {
+              const msg = success(data);
+              return isAlreadyTranslated(msg) 
+                ? msg 
+                : getCommonMessage(getTranslationKey(msg, 'common'), i18nOpts);
+            }
+          : (isAlreadyTranslated(success) 
+              ? success 
+              : getCommonMessage(getTranslationKey(success, 'common'), i18nOpts)),
+        error: typeof error === 'function'
+          ? (err: unknown) => {
+              const msg = error(err);
+              return isAlreadyTranslated(msg)
+                ? msg
+                : getErrorMessage(getTranslationKey(msg, 'errors'), i18nOpts);
+            }
+          : (isAlreadyTranslated(error)
+              ? error
+              : getErrorMessage(getTranslationKey(error, 'errors'), i18nOpts)),
+        ...(sonnerOpts || {})
+      } as any
+    );
   },
 };
 
