@@ -137,52 +137,8 @@ All colors MUST be HSL.
   }
 
   /* Responsive Design Enhancements */
-  @media (max-width: 768px) {
-    /* Mobile-first responsive adjustments */
-    .sidebar-mobile {
-      position: fixed;
-      left: -100%;
-      top: 0;
-      height: 100vh;
-      z-index: 50;
-    }
-    
-    .sidebar-mobile.open {
-      left: 0;
-    }
-    
-    .main-content-mobile {
-      width: 100%;
-      margin-left: 0;
-    }
-    
-    /* Adjust editor layout for mobile */
-    .editor-header-mobile {
-      flex-direction: column;
-      gap: 0.5rem;
-      padding: 1rem;
-    }
-    
-    .editor-buttons-mobile {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 0.5rem;
-      width: 100%;
-    }
-    
-    .editor-controls-mobile {
-      flex-direction: column;
-      gap: 0.5rem;
-      width: 100%;
-    }
-  }
-
   @media (max-width: 640px) {
     /* Extra small screens */
-    .editor-buttons-mobile {
-      grid-template-columns: 1fr;
-    }
-    
     .prompt-library-grid {
       grid-template-columns: 1fr !important;
     }
@@ -190,10 +146,6 @@ All colors MUST be HSL.
 
   @media (min-width: 769px) and (max-width: 1024px) {
     /* Tablet adjustments */
-    .sidebar-tablet {
-      width: 200px;
-    }
-    
     .prompt-library-grid {
       grid-template-columns: repeat(2, 1fr) !important;
     }
@@ -202,14 +154,6 @@ All colors MUST be HSL.
   /* Utility classes for responsive design */
   .responsive-text {
     font-size: clamp(0.875rem, 2vw, 1rem);
-  }
-
-  .responsive-padding {
-    padding: clamp(1rem, 3vw, 1.5rem);
-  }
-
-  .responsive-gap {
-    gap: clamp(0.5rem, 2vw, 1rem);
   }
 
   /* Touch manipulation for better mobile performance */

@@ -174,18 +174,6 @@ export const getActionById = (id: string): PromptAction | undefined => {
   return PROMPT_ACTIONS.find(action => action.id === id);
 };
 
-export const generateActionInstructions = (actionId: string, content: string): string => {
-  const action = getActionById(actionId);
-  if (!action) return content;
-
-  return `${action.instructions}
-
-KONTEN YANG AKAN DIPROSES:
-"${content}"
-
-Silakan proses konten di atas sesuai dengan aturan ${action.label} yang telah ditentukan.`;
-};
-
 export const generateModeAwareActionInstructions = (
   actionId: string,
   modeId: string,
