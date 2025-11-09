@@ -15,7 +15,7 @@ export interface LogEntry {
   level: LogLevel;
   category: string;
   message: string;
-  data?: any;
+  data?: Record<string, unknown>;
   error?: Error;
 }
 
@@ -31,7 +31,7 @@ class Logger {
     }
   }
 
-  private createLogEntry(level: LogLevel, category: string, message: string, data?: any, error?: Error): LogEntry {
+  private createLogEntry(level: LogLevel, category: string, message: string, data?: Record<string, unknown>, error?: Error): LogEntry {
     return {
       timestamp: new Date().toISOString(),
       level,
@@ -71,7 +71,7 @@ class Logger {
     }
   }
 
-  private getConsoleMethod(level: LogLevel): (...args: any[]) => void {
+  private getConsoleMethod(level: LogLevel): (...args: unknown[]) => void {
     switch (level) {
       case LogLevel.DEBUG:
         return console.debug;
@@ -86,25 +86,25 @@ class Logger {
     }
   }
 
-  debug(category: string, message: string, data?: any): void {
+  debug(category: string, message: string, data?: Record<string, unknown>): void {
     if (this.shouldLog(LogLevel.DEBUG)) {
       this.addLog(this.createLogEntry(LogLevel.DEBUG, category, message, data));
     }
   }
 
-  info(category: string, message: string, data?: any): void {
+  info(category: string, message: string, data?: Record<string, unknown>): void {
     if (this.shouldLog(LogLevel.INFO)) {
       this.addLog(this.createLogEntry(LogLevel.INFO, category, message, data));
     }
   }
 
-  warn(category: string, message: string, data?: any): void {
+  warn(category: string, message: string, data?: Record<string, unknown>): void {
     if (this.shouldLog(LogLevel.WARN)) {
       this.addLog(this.createLogEntry(LogLevel.WARN, category, message, data));
     }
   }
 
-  error(category: string, message: string, error?: Error, data?: any): void {
+  error(category: string, message: string, error?: Error, data?: Record<string, unknown>): void {
     if (this.shouldLog(LogLevel.ERROR)) {
       this.addLog(this.createLogEntry(LogLevel.ERROR, category, message, data, error));
     }
@@ -150,22 +150,22 @@ export const logger = new Logger();
 
 // Fungsi convenience untuk kategori umum yang sering digunakan
 export const storageLogger = {
-  debug: (message: string, data?: any) => logger.debug('STORAGE', message, data),
-  info: (message: string, data?: any) => logger.info('STORAGE', message, data),
-  warn: (message: string, data?: any) => logger.warn('STORAGE', message, data),
-  error: (message: string, error?: Error, data?: any) => logger.error('STORAGE', message, error, data)
+  debug: (message: string, data?: Record<string, unknown>) => logger.debug('STORAGE', message, data),
+  info: (message: string, data?: Record<string, unknown>) => logger.info('STORAGE', message, data),
+  warn: (message: string, data?: Record<string, unknown>) => logger.warn('STORAGE', message, data),
+  error: (message: string, error?: Error, data?: Record<string, unknown>) => logger.error('STORAGE', message, error, data)
 };
 
 export const authLogger = {
-  debug: (message: string, data?: any) => logger.debug('AUTH', message, data),
-  info: (message: string, data?: any) => logger.info('AUTH', message, data),
-  warn: (message: string, data?: any) => logger.warn('AUTH', message, data),
-  error: (message: string, error?: Error, data?: any) => logger.error('AUTH', message, error, data)
+  debug: (message: string, data?: Record<string, unknown>) => logger.debug('AUTH', message, data),
+  info: (message: string, data?: Record<string, unknown>) => logger.info('AUTH', message, data),
+  warn: (message: string, data?: Record<string, unknown>) => logger.warn('AUTH', message, data),
+  error: (message: string, error?: Error, data?: Record<string, unknown>) => logger.error('AUTH', message, error, data)
 };
 
 export const supabaseLogger = {
-  debug: (message: string, data?: any) => logger.debug('SUPABASE', message, data),
-  info: (message: string, data?: any) => logger.info('SUPABASE', message, data),
-  warn: (message: string, data?: any) => logger.warn('SUPABASE', message, data),
-  error: (message: string, error?: Error, data?: any) => logger.error('SUPABASE', message, error, data)
+  debug: (message: string, data?: Record<string, unknown>) => logger.debug('SUPABASE', message, data),
+  info: (message: string, data?: Record<string, unknown>) => logger.info('SUPABASE', message, data),
+  warn: (message: string, data?: Record<string, unknown>) => logger.warn('SUPABASE', message, data),
+  error: (message: string, error?: Error, data?: Record<string, unknown>) => logger.error('SUPABASE', message, error, data)
 };

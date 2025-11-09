@@ -170,16 +170,16 @@ function loadTranslationFile(filePath: string): Record<string, any> {
 /**
  * Extract all keys from a nested object
  */
-function extractKeys(obj: Record<string, any>, prefix: string[] = []): Set<string> {
+function extractKeys(obj: Record<string, unknown>, prefix: string[] = []): Set<string> {
   const keys = new Set<string>();
   
-  function traverse(current: any, path: string[]): void {
+  function traverse(current: unknown, path: string[]): void {
     if (typeof current === 'object' && current !== null && !Array.isArray(current)) {
       Object.keys(current).forEach(key => {
         const newPath = [...path, key];
         const fullKey = newPath.join('.');
         keys.add(fullKey);
-        traverse(current[key], newPath);
+        traverse((current as Record<string, unknown>)[key], newPath);
       });
     }
   }

@@ -1,3 +1,4 @@
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from 'react-i18next';
 import { getTranslatedActions } from '@/lib/i18n-actions-modes';
@@ -54,4 +55,4 @@ const ActionButtons = ({ onAction, disabled = false, isLoading = false, loadingA
   );
 };
 
-export default ActionButtons;
+export default React.memo(ActionButtons);

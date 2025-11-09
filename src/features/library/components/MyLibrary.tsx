@@ -9,6 +9,8 @@ import PromptDetailModal from './PromptDetailModal';
 import PromptCard from './PromptCard';
 import { SkeletonCard } from '@/components/ui/skeleton';
 import { usePromptTags } from '@/features/library/hooks/usePromptTags';
+import { usePromptFilter } from '@/features/prompts/hooks/usePromptFilter';
+import { useDebounce } from '@/shared/hooks/useDebounce';
 import type { PromptWithTags } from '@/shared/types/prompts';
 import type { Prompt } from '@/lib/storage';
 
@@ -35,6 +37,9 @@ const MyLibrary = ({
   const [selectedPrompt, setSelectedPrompt] = useState<PromptWithTags | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Debounce search term to reduce filtering computations
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
+
   // Extract base Prompt objects (prompts come with empty tags from parent)
   const basePrompts: Prompt[] = useMemo(
     () => prompts.map(({ tags, ...prompt }) => prompt),
@@ -51,16 +56,12 @@ const MyLibrary = ({
     enableFallback: true
   });
 
-  // Memfilter prompt berdasarkan pencarian dan tag
-  // Memoized untuk prevent unnecessary re-computations
-  const filteredPrompts = useMemo(() => {
-    return promptsWithTags.filter(prompt => {
-      const matchesSearch = prompt.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           (prompt.description?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
-      const matchesTag = !selectedTag || prompt.tags.some(tag => tag.name === selectedTag);
-      return matchesSearch && matchesTag;
-    });
-  }, [promptsWithTags, searchTerm, selectedTag]);
+  // Use shared filtering hook with debounced search term
+  const { filteredPrompts } = usePromptFilter({
+    prompts: promptsWithTags,
+    searchTerm: debouncedSearchTerm,
+    selectedTag,
+  });
 
   // Delete with undo toast
   const handleDeleteClick = useCallback(async (e: React.MouseEvent, prompt: PromptWithTags) => {

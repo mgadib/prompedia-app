@@ -1,3 +1,4 @@
+import React from 'react';
 import { Languages } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -59,5 +60,5 @@ const LanguageSwitcher = ({ isCollapsed = false }: { isCollapsed?: boolean }) =>
   );
 };
 
-export default LanguageSwitcher;
+export default React.memo(LanguageSwitcher);
 

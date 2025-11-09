@@ -3,11 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 // Lazy load heavy components for better code splitting
-const PromptEditor = React.lazy(() => import('@/features/prompts/components/PromptEditor'));
-const MyLibrary = React.lazy(() => import('@/features/library/components/MyLibrary'));
-const PublicLibrary = React.lazy(() => import('@/features/library/components/PublicLibrary'));
 const AuthModal = React.lazy(() => import('@/features/auth/components/AuthModal'));
 const SEO = React.lazy(() => import('@/shared/components/SEO'));
+import AppViewSwitcher from '../components/AppViewSwitcher';
 import { storage, Prompt } from '@/lib/storage';
 import { useIsMobile } from '@/shared/hooks/use-mobile';
 import { useSearchParams, useOutletContext } from 'react-router-dom';
@@ -384,48 +382,25 @@ const AppPage = () => {
         )}
 
         <ErrorBoundary>
-          <React.Suspense fallback={
-            <div className="flex-1 flex items-center justify-center">
-              <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-            </div>
-          }>
-            {showEditor ? (
-              <div className={`flex-1 flex flex-col min-w-0 overflow-hidden ${isTransitioning ? 'opacity-50' : 'opacity-100'}`}>
-                <PromptEditor
-                  key="prompt-editor"
-                  currentPrompt={currentPrompt}
-                  onPromptChange={handlePromptChange}
-                  onDeletePrompt={handleDeletePrompt}
-                  onNewPrompt={handleNewPrompt}
-                  isFocusMode={isFocusMode}
-                  onToggleFocus={handleToggleFocus}
-                  user={user}
-                />
-              </div>
-            ) : (
-              <div className={`flex-1 flex flex-col min-w-0 overflow-hidden ${isTransitioning ? 'opacity-50' : 'opacity-100'}`}>
-                {activeView === 'my-library' ? (
-                  <MyLibrary
-                    key="my-library"
-                    prompts={myPromptsWithTags}
-                    onSelectPrompt={handleSelectPrompt}
-                    onEditPrompt={handleEditPrompt}
-                    onDeletePrompt={handleDeletePrompt}
-                    onCopyPrompt={handleCopyPrompt}
-                    currentPromptId={currentPrompt?.id}
-                  />
-                ) : (
-                  <PublicLibrary
-                    key="public-library"
-                    prompts={publicPromptsWithTags}
-                    onSelectPrompt={handleSelectPrompt}
-                    onUsePrompt={handleUsePrompt}
-                    currentPromptId={currentPrompt?.id}
-                  />
-                )}
-              </div>
-            )}
-          </React.Suspense>
+          <AppViewSwitcher
+            showEditor={showEditor}
+            activeView={activeView}
+            currentPrompt={currentPrompt}
+            myPromptsWithTags={myPromptsWithTags}
+            publicPromptsWithTags={publicPromptsWithTags}
+            isTransitioning={isTransitioning}
+            user={user}
+            onSelectPrompt={handleSelectPrompt}
+            onEditPrompt={handleEditPrompt}
+            onDeletePrompt={handleDeletePrompt}
+            onCopyPrompt={handleCopyPrompt}
+            onUsePrompt={handleUsePrompt}
+            onPromptChange={handlePromptChange}
+            onDeletePromptFromEditor={handleDeletePrompt}
+            onNewPrompt={handleNewPrompt}
+            isFocusMode={isFocusMode}
+            onToggleFocus={handleToggleFocus}
+          />
         </ErrorBoundary>
       </div>
 

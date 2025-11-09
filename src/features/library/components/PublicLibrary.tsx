@@ -11,6 +11,8 @@ import { SkeletonCard } from '@/components/ui/skeleton';
 import { trackEvent } from '@/lib/analytics';
 import { ENV } from '@/lib/constants';
 import { usePromptTags } from '@/features/library/hooks/usePromptTags';
+import { usePromptFilter } from '@/features/prompts/hooks/usePromptFilter';
+import { useDebounce } from '@/shared/hooks/useDebounce';
 import type { PromptWithTags } from '@/shared/types/prompts';
 import type { Prompt } from '@/lib/storage';
 
@@ -44,6 +46,9 @@ const PublicLibrary = ({
   const [selectedPrompt, setSelectedPrompt] = useState<PromptWithTags | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Debounce search term to reduce filtering computations
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
+
   // Extract base Prompt objects (prompts come with empty tags from parent)
   const basePrompts: Prompt[] = useMemo(
     () => prompts.map(({ tags, ...prompt }) => prompt),
@@ -65,16 +70,12 @@ const PublicLibrary = ({
     trackEvent('view_public_library');
   }, []);
 
-  // Memfilter prompt berdasarkan pencarian dan tag
-  // Memoized untuk prevent unnecessary re-computations
-  const filteredPrompts = useMemo(() => {
-    return promptsWithTags.filter(prompt => {
-      const matchesSearch = prompt.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           (prompt.description?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
-      const matchesTag = !selectedTag || prompt.tags.some(tag => tag.name === selectedTag);
-      return matchesSearch && matchesTag;
-    });
-  }, [promptsWithTags, searchTerm, selectedTag]);
+  // Use shared filtering hook with debounced search term
+  const { filteredPrompts } = usePromptFilter({
+    prompts: promptsWithTags,
+    searchTerm: debouncedSearchTerm,
+    selectedTag,
+  });
 
   const handleCopy = useCallback((prompt: PromptWithTags) => {
     navigator.clipboard.writeText(prompt.content);

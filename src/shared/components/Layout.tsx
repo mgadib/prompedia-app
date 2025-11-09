@@ -2,12 +2,12 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { User as SupabaseUser } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
 import { clearUser, clearCurrentPrompt } from '@/lib/storage';
 import { toast } from 'sonner';
 import { getSuccessMessage, getErrorMessage } from '@/lib/i18n-helpers';
 import Sidebar from './Sidebar';
 import { useIsMobile } from '@/shared/hooks/use-mobile';
+import { useAuthState } from '@/shared/hooks/useAuthState';
 
 const Layout: React.FC = () => {
   const { t } = useTranslation();
@@ -15,39 +15,12 @@ const Layout: React.FC = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   
-  const [user, setUser] = useState<SupabaseUser | null>(null);
+  // Use extracted auth hook
+  const { user, isInitializing } = useAuthState();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const [isInitializing, setIsInitializing] = useState(true);
   const [appActiveView, setAppActiveView] = useState<'my-library' | 'public-library' | null>(null);
   const [appIsPlaygroundActive, setAppIsPlaygroundActive] = useState<boolean | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
-
-  // Check auth on mount
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        setUser(session?.user ?? null);
-      } catch (error) {
-        console.error('Auth check error:', error);
-      } finally {
-        setIsInitializing(false);
-      }
-    };
-
-    checkAuth();
-
-    // Listen to auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setUser(session?.user ?? null);
-      }
-    );
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
 
   // Reset app state saat route berubah dari home ke tag page atau sebaliknya
   useEffect(() => {

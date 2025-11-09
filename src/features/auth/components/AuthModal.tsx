@@ -67,9 +67,10 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
         toast.success(t('auth:accountCreated'));
         setIsLogin(true);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Auth error:', error);
-      toast.error(error.message || t('auth:anErrorOccurred'));
+      const errorMessage = error instanceof Error ? error.message : t('auth:anErrorOccurred');
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

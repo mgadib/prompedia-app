@@ -90,6 +90,19 @@ export default defineConfig(({ mode }) => ({
           // Feature-based code splitting
           // Prompts feature
           if (id.includes('/features/prompts/')) {
+            // Split PromptEditor sub-components for better code splitting
+            if (id.includes('/components/PromptEditorHeader')) {
+              return 'prompts-editor-header';
+            }
+            if (id.includes('/components/PromptEditorContent')) {
+              return 'prompts-editor-content';
+            }
+            if (id.includes('/components/PromptEditorFooter')) {
+              return 'prompts-editor-footer';
+            }
+            if (id.includes('/components/PromptEditorToolbar')) {
+              return 'prompts-editor-toolbar';
+            }
             if (id.includes('/components/PromptEditor')) {
               return 'prompts-editor';
             }
@@ -157,20 +170,38 @@ export default defineConfig(({ mode }) => ({
             return 'shared';
           }
           
-          // Lib utilities
+          // Lib utilities - split heavy modules
           if (id.includes('/lib/')) {
             if (id.includes('/lib/i18n')) {
               return 'i18n-config';
+            }
+            if (id.includes('/lib/i18n-helpers')) {
+              return 'i18n-helpers';
+            }
+            if (id.includes('/lib/supabase-service')) {
+              return 'supabase-service';
             }
             if (id.includes('/lib/validation')) {
               // Legacy validation - will be removed
               return 'validation-legacy';
             }
+            if (id.includes('/lib/logger')) {
+              return 'logger';
+            }
             return 'lib-utils';
+          }
+          
+          // Shared validation - can be lazy loaded
+          if (id.includes('/shared/validation/')) {
+            return 'validation-shared';
           }
         },
         // Optimize chunk size limits
-        chunkSizeWarningLimit: 1000, // 1MB warning threshold
+        chunkSizeWarningLimit: 500, // 500KB warning threshold for better optimization
+        // Tree-shaking optimization
+        treeshake: {
+          moduleSideEffects: false,
+        },
       }
     },
     // Enable minification (esbuild is faster and already included)
@@ -178,6 +209,10 @@ export default defineConfig(({ mode }) => ({
     // Target modern browsers for smaller bundle
     target: 'esnext',
     // Optimize chunk loading
-    chunkSizeWarningLimit: 1000,
+    chunkSizeWarningLimit: 500,
+    // Enable source maps only in development
+    sourcemap: mode === 'development',
+    // CSS code splitting
+    cssCodeSplit: true,
   }
 }));

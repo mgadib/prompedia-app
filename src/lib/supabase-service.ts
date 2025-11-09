@@ -494,7 +494,12 @@ export class SupabaseService {
   // AI PROCESSING
   // ========================================
 
-  static async processWithAI(model: string, prompt: string, mode?: string, options?: any) {
+  static async processWithAI(
+    model: string, 
+    prompt: string, 
+    mode?: string, 
+    options?: Record<string, unknown>
+  ): Promise<unknown> {
     const { data, error } = await supabase.functions.invoke('ai-processor', {
       body: {
         model,
@@ -508,7 +513,11 @@ export class SupabaseService {
     return data
   }
 
-  static async enhancePrompts(prompts: Array<{id: string, content: string, currentMode?: string}>, operation: string, options?: any) {
+  static async enhancePrompts(
+    prompts: Array<{id: string, content: string, currentMode?: string}>, 
+    operation: string, 
+    options?: Record<string, unknown>
+  ): Promise<unknown> {
     const { data, error } = await supabase.functions.invoke('prompt-enhancer', {
       body: {
         prompts,

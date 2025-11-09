@@ -195,7 +195,7 @@ export const getModeById = (id: string): ThinkingMode | undefined => {
   return THINKING_MODES.find(mode => mode.id === id);
 };
 
-export const formatModeOutput = (mode: ThinkingMode, input: string, context?: any): string => {
+export const formatModeOutput = (mode: ThinkingMode, input: string, context?: Record<string, unknown>): string => {
   const basePrompt = `${mode.instructions}
 
 KONTEKS:
