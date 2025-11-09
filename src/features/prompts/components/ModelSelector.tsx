@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Select,
@@ -7,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { SupabaseService } from '@/lib/supabase-service';
+import { modelService } from '@/features/prompts/services/model-service';
 import { AVAILABLE_MODELS } from '@/features/prompts/utils/models';
 import { useIsMobile } from '@/shared/hooks/use-mobile';
 
@@ -36,7 +36,7 @@ const ModelSelector = ({ value, onChange }: ModelSelectorProps) => {
     const loadModels = async () => {
       try {
         // Mencoba mengambil dari database terlebih dahulu
-        const dbModels = await SupabaseService.getAIModels();
+        const dbModels = await modelService.getAIModels();
         if (dbModels && dbModels.length > 0) {
           // Filter untuk hanya mengizinkan 2 model yang ditentukan
           const allowedModelIds = ['meta-llama/llama-4-maverick:free', 'qwen/qwen3-30b-a3b:free'];
@@ -94,4 +94,4 @@ const ModelSelector = ({ value, onChange }: ModelSelectorProps) => {
   );
 };
 
-export default ModelSelector;
+export default React.memo(ModelSelector);

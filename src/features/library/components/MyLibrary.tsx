@@ -1,19 +1,16 @@
-import { useState, useEffect, useCallback, memo } from 'react';
+import { useState, useCallback, useMemo, memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Prompt, Tag } from '@/lib/storage';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { FileText, Search, Filter } from 'lucide-react';
 import { toast } from 'sonner';
-import { TagService } from '@/features/tags/services/tag-service';
 import PromptDetailModal from './PromptDetailModal';
 import PromptCard from './PromptCard';
 import { SkeletonCard } from '@/components/ui/skeleton';
-
-interface PromptWithTags extends Prompt {
-  tags: Tag[];
-}
+import { usePromptTags } from '@/features/library/hooks/usePromptTags';
+import type { PromptWithTags } from '@/shared/types/prompts';
+import type { Prompt } from '@/lib/storage';
 
 interface MyLibraryProps {
   prompts: PromptWithTags[];
@@ -37,64 +34,36 @@ const MyLibrary = ({
   const [selectedTag, setSelectedTag] = useState<string>('');
   const [selectedPrompt, setSelectedPrompt] = useState<PromptWithTags | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [allTags, setAllTags] = useState<string[]>([]);
-  const [promptsWithTags, setPromptsWithTags] = useState<PromptWithTags[]>([]);
-  const [isLoadingTags, setIsLoadingTags] = useState(false);
 
-  const loadTagsForPrompts = useCallback(async () => {
-    if (prompts.length === 0) {
-      setPromptsWithTags([]);
-      setAllTags([]);
-      setIsLoadingTags(false);
-      return;
-    }
+  // Extract base Prompt objects (prompts come with empty tags from parent)
+  const basePrompts: Prompt[] = useMemo(
+    () => prompts.map(({ tags, ...prompt }) => prompt),
+    [prompts]
+  );
 
-    setIsLoadingTags(true);
-    try {
-      const promptsWithTagsData: PromptWithTags[] = [];
-      const tagSet = new Set<string>();
-
-      for (const prompt of prompts) {
-        try {
-          const tags = await TagService.getPromptTags(prompt.id);
-          promptsWithTagsData.push({ ...prompt, tags });
-
-          // Mengumpulkan semua nama tag yang unik
-          tags.forEach(tag => tagSet.add(tag.name));
-        } catch (tagError) {
-          console.warn(`Failed to load tags for prompt ${prompt.id}:`, tagError);
-          // Lanjutkan dengan tag kosong untuk prompt ini
-          promptsWithTagsData.push({ ...prompt, tags: [] });
-        }
-      }
-
-      setPromptsWithTags(promptsWithTagsData);
-      setAllTags(Array.from(tagSet));
-    } catch (error) {
-      console.error('Failed to load tags:', error);
-      // Fallback: gunakan prompt tanpa tag
-      setPromptsWithTags(prompts.map(p => ({ ...p, tags: [] })));
-      setAllTags([]);
-    } finally {
-      setIsLoadingTags(false);
-    }
-  }, [prompts]);
-
-  // Memuat tag dari database untuk semua prompt
-  useEffect(() => {
-    loadTagsForPrompts();
-  }, [loadTagsForPrompts]);
-
-  // Memfilter prompt berdasarkan pencarian dan tag
-  const filteredPrompts = promptsWithTags.filter(prompt => {
-    const matchesSearch = prompt.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (prompt.description?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
-    const matchesTag = !selectedTag || prompt.tags.some(tag => tag.name === selectedTag);
-    return matchesSearch && matchesTag;
+  // Use custom hook for efficient batch tag loading with optimistic rendering
+  const {
+    promptsWithTags,
+    allTags,
+    isLoading: isLoadingTags
+  } = usePromptTags(basePrompts, {
+    optimistic: true,
+    enableFallback: true
   });
 
+  // Memfilter prompt berdasarkan pencarian dan tag
+  // Memoized untuk prevent unnecessary re-computations
+  const filteredPrompts = useMemo(() => {
+    return promptsWithTags.filter(prompt => {
+      const matchesSearch = prompt.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           (prompt.description?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
+      const matchesTag = !selectedTag || prompt.tags.some(tag => tag.name === selectedTag);
+      return matchesSearch && matchesTag;
+    });
+  }, [promptsWithTags, searchTerm, selectedTag]);
+
   // Delete with undo toast
-  const handleDeleteClick = async (e: React.MouseEvent, prompt: PromptWithTags) => {
+  const handleDeleteClick = useCallback(async (e: React.MouseEvent, prompt: PromptWithTags) => {
     e.stopPropagation();
     try {
       await onDeletePrompt(prompt.id);
@@ -115,36 +84,40 @@ const MyLibrary = ({
       console.error('Failed to delete prompt:', error);
       toast.error(t('errors:prompt.deleteFailed'));
     }
-  };
+  }, [t, onDeletePrompt]);
 
-  const handleEdit = (prompt: PromptWithTags) => {
+  const handleEdit = useCallback((prompt: PromptWithTags) => {
     onEditPrompt(prompt);
-  };
+  }, [onEditPrompt]);
 
-  const handleCopy = (prompt: PromptWithTags) => {
+  const handleCopy = useCallback((prompt: PromptWithTags) => {
     if (onCopyPrompt) {
       onCopyPrompt(prompt);
     }
-  };
+  }, [onCopyPrompt]);
 
-  const handleDelete = (prompt: PromptWithTags) => {
-    handleDeleteClick(prompt);
-  };
+  const handleDelete = useCallback((prompt: PromptWithTags) => {
+    // Create a synthetic event for handleDeleteClick
+    const syntheticEvent = {
+      stopPropagation: () => {}
+    } as React.MouseEvent;
+    handleDeleteClick(syntheticEvent, prompt);
+  }, [handleDeleteClick]);
 
-  const handleCardClick = (prompt: PromptWithTags) => {
+  const handleCardClick = useCallback((prompt: PromptWithTags) => {
     // Direct edit instead of opening modal
     onEditPrompt(prompt);
-  };
+  }, [onEditPrompt]);
 
-  const handleCloseModal = () => {
+  const handleCloseModal = useCallback(() => {
     setIsModalOpen(false);
     setSelectedPrompt(null);
-  };
+  }, []);
 
-  const handleUsePrompt = (prompt: PromptWithTags) => {
+  const handleUsePrompt = useCallback((prompt: PromptWithTags) => {
     onSelectPrompt(prompt);
     toast.success(t('success:prompt.loaded'));
-  };
+  }, [onSelectPrompt, t]);
 
   // Menampilkan skeleton loading sementara tag sedang dimuat
   if (isLoadingTags) {

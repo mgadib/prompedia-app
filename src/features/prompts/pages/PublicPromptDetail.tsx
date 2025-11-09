@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Prompt, Tag } from '@/lib/storage';
-import { SupabaseService } from '@/lib/supabase-service'; // @deprecated
 import { promptService } from '@/features/prompts/services/prompt-service';
 import { TagService } from '@/features/tags/services/tag-service';
 import { Button } from '@/components/ui/button';
@@ -70,7 +69,7 @@ const PublicPromptDetail = () => {
     };
 
     loadPrompt();
-  }, [id]);
+  }, [id, t]);
 
   useEffect(() => {
     if (!loading && prompt) {
@@ -277,3 +276,4 @@ const PublicPromptDetail = () => {
 };
 
 export default PublicPromptDetail;
+

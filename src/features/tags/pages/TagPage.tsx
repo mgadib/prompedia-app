@@ -1,12 +1,11 @@
 import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
+import { useParams, useNavigate, useOutletContext, Link } from 'react-router-dom';
 import { Hash, ArrowLeft, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import SEO from '@/shared/components/SEO';
 import { TagService } from '@/features/tags/services/tag-service';
-import { Prompt, Tag } from '@/lib/storage';
 import { ENV } from '@/lib/constants';
 import AuthModal from '@/features/auth/components/AuthModal';
 import { useIsMobile } from '@/shared/hooks/use-mobile';
@@ -15,10 +14,8 @@ import PromptDetailModal from '@/features/library/components/PromptDetailModal';
 import PromptCard from '@/features/library/components/PromptCard';
 import { toast } from 'sonner';
 import { trackEvent } from '@/lib/analytics';
-
-interface PromptWithTags extends Prompt {
-  tags: Tag[];
-}
+import type { PromptWithTags } from '@/shared/types/prompts';
+import { Prompt } from '@/lib/storage';
 
 // Cache untuk menyimpan data tag berdasarkan tagName dan userId
 interface TagCacheEntry {
@@ -292,17 +289,17 @@ const TagPage: React.FC = () => {
                 </div>
               )}
               <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 p-3 sm:p-4 md:p-6 transition-opacity duration-300 ${isRefreshing ? 'opacity-75' : 'opacity-100'}`}>
-              {prompts.map((prompt) => (
-                <PromptCard
-                  key={prompt.id}
-                  prompt={prompt}
-                  variant="tag"
-                  onClick={handleCardClick}
-                  onUse={handleUse}
-                  onCopy={handleCopy}
-                  onCopyUrl={handleCopyUrl}
-                />
-              ))}
+                {prompts.map((prompt) => (
+                  <PromptCard
+                    key={prompt.id}
+                    prompt={prompt}
+                    variant="tag"
+                    onClick={handleCardClick}
+                    onUse={handleUse}
+                    onCopy={handleCopy}
+                    onCopyUrl={handleCopyUrl}
+                  />
+                ))}
               </div>
             </div>
           )}
@@ -328,3 +325,4 @@ const TagPage: React.FC = () => {
 };
 
 export default TagPage;
+

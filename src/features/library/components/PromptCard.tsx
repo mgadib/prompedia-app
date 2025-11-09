@@ -1,3 +1,4 @@
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Lock, Globe, MoreVertical, Copy, Trash2, Download, Link as LinkIcon } from 'lucide-react';
@@ -16,12 +17,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { Prompt, Tag } from '@/lib/storage';
 import { useIsMobile } from '@/shared/hooks/use-mobile';
-
-interface PromptWithTags extends Prompt {
-  tags: Tag[];
-}
+import type { PromptWithTags } from '@/shared/types/prompts';
 
 interface PromptCardProps {
   prompt: PromptWithTags;
@@ -299,5 +296,5 @@ const PromptCard = ({
   );
 };
 
-export default PromptCard;
+export default React.memo(PromptCard);
 

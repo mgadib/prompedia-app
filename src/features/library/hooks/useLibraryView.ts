@@ -1,10 +1,7 @@
 import { useState, useCallback, useMemo } from 'react';
-import { Prompt, Tag } from '@/lib/storage';
+import { Prompt } from '@/lib/storage';
 import type { User } from '@supabase/supabase-js';
-
-interface PromptWithTags extends Prompt {
-  tags: Tag[];
-}
+import type { PromptWithTags } from '@/shared/types/prompts';
 
 /**
  * Custom hook for managing library view state

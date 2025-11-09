@@ -1,21 +1,18 @@
-import { useState, useEffect, useCallback, memo } from 'react';
+import { useState, useEffect, useCallback, useMemo, memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Prompt, Tag } from '@/lib/storage';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Globe, Search, Filter } from 'lucide-react';
 import { toast } from 'sonner';
-import { TagService } from '@/features/tags/services/tag-service';
 import PromptDetailModal from './PromptDetailModal';
 import PromptCard from './PromptCard';
 import { SkeletonCard } from '@/components/ui/skeleton';
 import { trackEvent } from '@/lib/analytics';
 import { ENV } from '@/lib/constants';
-
-interface PromptWithTags extends Prompt {
-  tags: Tag[];
-}
+import { usePromptTags } from '@/features/library/hooks/usePromptTags';
+import type { PromptWithTags } from '@/shared/types/prompts';
+import type { Prompt } from '@/lib/storage';
 
 interface PublicLibraryProps {
   prompts: PromptWithTags[];
@@ -45,110 +42,82 @@ const PublicLibrary = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTag, setSelectedTag] = useState<string>('');
   const [selectedPrompt, setSelectedPrompt] = useState<PromptWithTags | null>(null);
-  const [allTags, setAllTags] = useState<string[]>([]);
-  const [promptsWithTags, setPromptsWithTags] = useState<PromptWithTags[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isLoadingTags, setIsLoadingTags] = useState(false);
 
-  // Prompt public sudah difilter di App.tsx dan diteruskan sebagai props
+  // Extract base Prompt objects (prompts come with empty tags from parent)
+  const basePrompts: Prompt[] = useMemo(
+    () => prompts.map(({ tags, ...prompt }) => prompt),
+    [prompts]
+  );
 
-  const loadPublicPromptsWithTags = useCallback(async () => {
-    if (prompts.length === 0) {
-      setPromptsWithTags([]);
-      setAllTags([]);
-      setIsLoadingTags(false);
-      return;
-    }
-
-    setIsLoadingTags(true);
-    try {
-      const promptsWithTagsData: PromptWithTags[] = [];
-      const tagSet = new Set<string>();
-
-      for (const prompt of prompts) {
-        try {
-          const tags = await TagService.getPromptTags(prompt.id);
-          promptsWithTagsData.push({ ...prompt, tags });
-
-          // Mengumpulkan semua nama tag yang unik
-          tags.forEach(tag => tagSet.add(tag.name));
-        } catch (tagError) {
-          console.warn(`Failed to load tags for prompt ${prompt.id}:`, tagError);
-          // Lanjutkan dengan tag kosong untuk prompt ini
-          promptsWithTagsData.push({ ...prompt, tags: [] });
-        }
-      }
-
-      setPromptsWithTags(promptsWithTagsData);
-      setAllTags(Array.from(tagSet));
-    } catch (error) {
-      console.error('Failed to load tags for public prompts:', error);
-      // Fallback: gunakan prompt tanpa tag
-      setPromptsWithTags(prompts.map(p => ({ ...p, tags: [] })));
-      setAllTags([]);
-    } finally {
-      setIsLoadingTags(false);
-    }
-  }, [prompts]);
-
-  // Memuat tag untuk prompt public
-  useEffect(() => {
-    loadPublicPromptsWithTags();
-    trackEvent('view_public_library');
-  }, [loadPublicPromptsWithTags]);
-
-  // allTags sudah dimuat di state melalui useEffect
-
-  // Memfilter prompt berdasarkan pencarian dan tag
-  const filteredPrompts = promptsWithTags.filter(prompt => {
-    const matchesSearch = prompt.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (prompt.description?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
-    const matchesTag = !selectedTag || prompt.tags.some(tag => tag.name === selectedTag);
-    return matchesSearch && matchesTag;
+  // Use custom hook for efficient batch tag loading with optimistic rendering
+  const {
+    promptsWithTags,
+    allTags,
+    isLoading: isLoadingTags
+  } = usePromptTags(basePrompts, {
+    optimistic: true,
+    enableFallback: true
   });
 
-  const handleCopy = (prompt: PromptWithTags) => {
+  // Track library view on mount
+  useEffect(() => {
+    trackEvent('view_public_library');
+  }, []);
+
+  // Memfilter prompt berdasarkan pencarian dan tag
+  // Memoized untuk prevent unnecessary re-computations
+  const filteredPrompts = useMemo(() => {
+    return promptsWithTags.filter(prompt => {
+      const matchesSearch = prompt.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           (prompt.description?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
+      const matchesTag = !selectedTag || prompt.tags.some(tag => tag.name === selectedTag);
+      return matchesSearch && matchesTag;
+    });
+  }, [promptsWithTags, searchTerm, selectedTag]);
+
+  const handleCopy = useCallback((prompt: PromptWithTags) => {
     navigator.clipboard.writeText(prompt.content);
     toast.success(t('success:prompt.contentCopied'));
     trackEvent('copy_prompt_content', { prompt_id: prompt.id });
-  };
+  }, [t]);
 
-  const handleCopyUrl = (promptId: string) => {
+  const handleCopyUrl = useCallback((promptId: string) => {
     const base = ENV.SITE_URL || window.location.origin;
     const url = `${base}/p/${promptId}`;
     navigator.clipboard.writeText(url);
     toast.success(t('success:prompt.urlCopied'));
     trackEvent('copy_prompt_url', { prompt_id: promptId });
-  };
+  }, [t]);
 
-  const handleUse = (prompt: PromptWithTags) => {
+  const handleUse = useCallback((prompt: PromptWithTags) => {
     onUsePrompt(prompt);
     toast.success(t('success:prompt.loadedForEditing'));
     trackEvent('use_prompt', { prompt_id: prompt.id });
-  };
+  }, [onUsePrompt, t]);
 
-  const handleCardClick = (prompt: PromptWithTags) => {
+  const handleCardClick = useCallback((prompt: PromptWithTags) => {
     setSelectedPrompt(prompt);
     setIsModalOpen(true);
     trackEvent('open_prompt_modal', { prompt_id: prompt.id });
-  };
+  }, []);
 
-  const handleCloseModal = () => {
+  const handleCloseModal = useCallback(() => {
     setIsModalOpen(false);
     setSelectedPrompt(null);
-  };
+  }, []);
 
-  const handleUsePromptFromModal = (prompt: Prompt) => {
+  const handleUsePromptFromModal = useCallback((prompt: Prompt) => {
     onUsePrompt({ ...prompt, tags: selectedPrompt?.tags || [] });
     toast.success(t('success:prompt.loadedForEditing'));
     trackEvent('use_prompt', { prompt_id: prompt.id });
-  };
+  }, [onUsePrompt, selectedPrompt, t]);
 
-  const handleCopyPromptFromModal = (prompt: Prompt) => {
+  const handleCopyPromptFromModal = useCallback((prompt: Prompt) => {
     navigator.clipboard.writeText(prompt.content);
     toast.success(t('success:prompt.contentCopied'));
     trackEvent('copy_prompt_content', { prompt_id: prompt.id });
-  };
+  }, [t]);
 
   // Menampilkan skeleton loading sementara tag sedang dimuat
   if (isLoadingTags) {

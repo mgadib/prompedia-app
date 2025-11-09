@@ -1,5 +1,6 @@
 import { STORAGE_KEYS, ERROR_MESSAGES } from './constants';
-import { validateData, promptSchema, userProfileSchema } from './validation';
+import { validateData, userProfileSchema } from '@/shared/validation/common';
+import { promptSchema } from '@/features/prompts/validation/prompt-schemas';
 
 export interface User {
   id: string;

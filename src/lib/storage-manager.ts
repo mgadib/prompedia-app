@@ -2,7 +2,7 @@ import { User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { Prompt, User as LocalUser } from './storage';
 import { storageLogger, supabaseLogger } from './logger';
-import { promptSchema } from './validation';
+import { promptSchema } from '@/features/prompts/validation/prompt-schemas';
 import { z } from 'zod';
 
 /**

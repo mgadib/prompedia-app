@@ -1,7 +1,8 @@
 import { Prompt } from '@/lib/storage';
 import { AVAILABLE_MODELS } from './models';
 import { THINKING_MODES } from './modes';
-import { validateData, promptSchema } from '@/lib/validation';
+import { validateData } from '@/shared/validation/common';
+import { promptSchema } from '@/features/prompts/validation/prompt-schemas';
 
 /**
  * Utility functions for prompt manipulation

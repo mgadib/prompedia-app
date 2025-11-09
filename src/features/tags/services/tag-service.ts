@@ -206,6 +206,77 @@ export class TagService {
   }
 
   /**
+   * Get tags for multiple prompts in a single batch query
+   * Optimizes N+1 query problem by loading all tags in one database call
+   * 
+   * @param promptIds - Array of prompt IDs to fetch tags for
+   * @returns Map with promptId as key and array of Tags as value for O(1) lookup
+   * @example
+   * const tagsMap = await TagService.getPromptsTagsBatch(['id1', 'id2', 'id3']);
+   * const tagsForId1 = tagsMap.get('id1') || [];
+   */
+  static async getPromptsTagsBatch(promptIds: string[]): Promise<Map<string, Tag[]>> {
+    const tagsMap = new Map<string, Tag[]>();
+
+    // Handle edge cases
+    if (!promptIds || promptIds.length === 0) {
+      return tagsMap;
+    }
+
+    // Filter out invalid IDs
+    const validPromptIds = promptIds.filter(id => id && typeof id === 'string');
+    if (validPromptIds.length === 0) {
+      return tagsMap;
+    }
+
+    try {
+      // Batch load all tags for all prompts in one query
+      const { data: allTagLinks, error: batchTagsError } = await supabase
+        .from('prompt_tags')
+        .select(`
+          prompt_id,
+          tags!prompt_tags_tag_id_fkey(*)
+        `)
+        .in('prompt_id', validPromptIds);
+
+      if (batchTagsError) {
+        console.error('Failed to load tags in batch:', batchTagsError);
+        // Return empty map for all prompts on error (graceful degradation)
+        validPromptIds.forEach(id => tagsMap.set(id, []));
+        return tagsMap;
+      }
+
+      // Initialize map with empty arrays for all prompts (ensures all prompts have entry)
+      validPromptIds.forEach(id => tagsMap.set(id, []));
+
+      // Group tags by prompt_id
+      if (allTagLinks) {
+        for (const link of allTagLinks) {
+          const linkData = link as PromptTagJoinResponse;
+          const promptId = linkData.prompt_id;
+          const tag = linkData.tags;
+
+          // Validate data
+          if (!promptId || !tag || !isTag(tag)) {
+            continue;
+          }
+
+          // Get or create array for this prompt
+          const existingTags = tagsMap.get(promptId) || [];
+          tagsMap.set(promptId, [...existingTags, convertSupabaseTagToTag(tag)]);
+        }
+      }
+
+      return tagsMap;
+    } catch (error) {
+      console.error('Unexpected error in getPromptsTagsBatch:', error);
+      // Graceful degradation: return empty tags for all prompts
+      validPromptIds.forEach(id => tagsMap.set(id, []));
+      return tagsMap;
+    }
+  }
+
+  /**
    * Add a tag to a prompt
    */
   static async addPromptTag(promptId: string, tagId: string): Promise<void> {

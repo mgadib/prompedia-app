@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Select,
@@ -7,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { SupabaseService } from '@/lib/supabase-service';
+import { modeService } from '@/features/prompts/services/mode-service';
 import { THINKING_MODES } from '@/features/prompts/utils/modes';
 import { useIsMobile } from '@/shared/hooks/use-mobile';
 
@@ -37,7 +37,7 @@ const ModeSelector = ({ value, onChange }: ModeSelectorProps) => {
     const loadModes = async () => {
       try {
         // Mencoba mengambil dari database terlebih dahulu
-        const dbModes = await SupabaseService.getThinkingModes();
+        const dbModes = await modeService.getThinkingModes();
         if (dbModes && dbModes.length > 0) {
           setModes(dbModes);
         } else {
@@ -88,4 +88,4 @@ const ModeSelector = ({ value, onChange }: ModeSelectorProps) => {
   );
 };
 
-export default ModeSelector;
+export default React.memo(ModeSelector);

@@ -8,10 +8,10 @@ import { ErrorBoundary } from "@/shared/components/ErrorBoundary";
 import Layout from "@/shared/components/Layout";
 
 // Lazy load all route components for better code splitting
-const AppPage = React.lazy(() => import('./pages/App'));
-const NotFound = React.lazy(() => import('./pages/NotFound'));
-const PublicPromptDetail = React.lazy(() => import('./pages/PublicPromptDetail'));
-const TagPage = React.lazy(() => import('./pages/Tag'));
+const AppPage = React.lazy(() => import('./features/app/pages/AppPage'));
+const NotFound = React.lazy(() => import('./shared/pages/NotFound'));
+const PublicPromptDetail = React.lazy(() => import('./features/prompts/pages/PublicPromptDetail'));
+const TagPage = React.lazy(() => import('./features/tags/pages/TagPage'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
