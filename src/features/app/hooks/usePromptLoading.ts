@@ -3,7 +3,7 @@ import { Prompt } from '@/lib/storage';
 import { storageManager } from '@/lib/storage-manager';
 import { promptService } from '@/features/prompts/services/prompt-service';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { toast } from '@/shared/utils/toast';
 import { useTranslation } from 'react-i18next';
 
 interface UsePromptLoadingReturn {
@@ -43,7 +43,7 @@ export function usePromptLoading(user: { id: string } | null | undefined): UsePr
       setPublicPrompts(publicPromptsData);
     } catch (error) {
       console.error('Failed to load public prompts:', error);
-      toast.error(t('errors:library.loadFailed'));
+      toast.error('library.loadFailed');
       setPublicPrompts([]);
     }
   }, [t]);

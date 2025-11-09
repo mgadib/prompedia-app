@@ -3,6 +3,7 @@ import { AVAILABLE_MODELS } from './models';
 import { THINKING_MODES } from './modes';
 import { validateData } from '@/shared/validation/common';
 import { promptSchema } from '@/features/prompts/validation/prompt-schemas';
+import i18n from '@/lib/i18n';
 
 /**
  * Utility functions for prompt manipulation
@@ -80,7 +81,7 @@ export function createNewPrompt(
   const basePrompt: Prompt = {
     id: crypto.randomUUID(),
     user_id: userId || 'guest',
-    title: 'Untitled Prompt',
+    title: i18n.t('prompt:untitled'),
     content: '',
     model_id: AVAILABLE_MODELS[1]?.id || '',
     mode_id: THINKING_MODES[5]?.id || '',
@@ -97,19 +98,21 @@ export function createNewPrompt(
  * 
  * @param prompt - Prompt to copy
  * @param userId - New user ID (optional, defaults to original)
- * @param titlePrefix - Prefix for the copied prompt title (default: "Copy of ")
+ * @param titlePrefix - Prefix for the copied prompt title (optional, defaults to translated "Copy of ")
  * @returns New prompt object with copied data
  */
 export function copyPrompt(
   prompt: Prompt,
   userId?: string,
-  titlePrefix: string = 'Copy of '
+  titlePrefix?: string
 ): Prompt {
+  // Use translated prefix if not provided
+  const prefix = titlePrefix || i18n.t('prompt:copyPrefix');
   return sanitizePrompt({
     ...prompt,
     id: crypto.randomUUID(),
     user_id: userId || prompt.user_id,
-    title: `${titlePrefix}${prompt.title}`,
+    title: `${prefix}${prompt.title}`,
     is_public: false, // Copies are always private
   });
 }

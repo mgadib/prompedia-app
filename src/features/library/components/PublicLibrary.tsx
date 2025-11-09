@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Globe, Search, Filter } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/shared/utils/toast';
 import PromptDetailModal from './PromptDetailModal';
 import PromptCard from './PromptCard';
 import { SkeletonCard } from '@/components/ui/skeleton';
@@ -79,23 +79,23 @@ const PublicLibrary = ({
 
   const handleCopy = useCallback((prompt: PromptWithTags) => {
     navigator.clipboard.writeText(prompt.content);
-    toast.success(t('success:prompt.contentCopied'));
+    toast.success('prompt.contentCopied');
     trackEvent('copy_prompt_content', { prompt_id: prompt.id });
-  }, [t]);
+  }, []);
 
   const handleCopyUrl = useCallback((promptId: string) => {
     const base = ENV.SITE_URL || window.location.origin;
     const url = `${base}/p/${promptId}`;
     navigator.clipboard.writeText(url);
-    toast.success(t('success:prompt.urlCopied'));
+    toast.success('prompt.urlCopied');
     trackEvent('copy_prompt_url', { prompt_id: promptId });
-  }, [t]);
+  }, []);
 
   const handleUse = useCallback((prompt: PromptWithTags) => {
     onUsePrompt(prompt);
-    toast.success(t('success:prompt.loadedForEditing'));
+    toast.success('prompt.loadedForEditing');
     trackEvent('use_prompt', { prompt_id: prompt.id });
-  }, [onUsePrompt, t]);
+  }, [onUsePrompt]);
 
   const handleCardClick = useCallback((prompt: PromptWithTags) => {
     setSelectedPrompt(prompt);
@@ -111,16 +111,16 @@ const PublicLibrary = ({
   const handleUsePromptFromModal = useCallback((prompt: Prompt | PromptWithTags) => {
     const promptWithTags = 'tags' in prompt ? prompt : { ...prompt, tags: selectedPrompt?.tags || [] };
     onUsePrompt(promptWithTags);
-    toast.success(t('success:prompt.loadedForEditing'));
+    toast.success('prompt.loadedForEditing');
     trackEvent('use_prompt', { prompt_id: prompt.id });
-  }, [onUsePrompt, selectedPrompt, t]);
+  }, [onUsePrompt, selectedPrompt]);
 
   const handleCopyPromptFromModal = useCallback((prompt: Prompt | PromptWithTags) => {
     const promptContent = 'content' in prompt ? prompt.content : '';
     navigator.clipboard.writeText(promptContent);
-    toast.success(t('success:prompt.contentCopied'));
+    toast.success('prompt.contentCopied');
     trackEvent('copy_prompt_content', { prompt_id: prompt.id });
-  }, [t]);
+  }, []);
 
   // Menampilkan skeleton loading sementara tag sedang dimuat
   if (isLoadingTags) {

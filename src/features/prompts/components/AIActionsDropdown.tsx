@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { getTranslatedActions } from '@/lib/i18n-actions-modes';
 import { useIsMobile } from '@/shared/hooks/use-mobile';
+import { useTranslationReady } from '@/shared/hooks/useTranslationReady';
 
 interface AIActionsDropdownProps {
   onAction: (actionId: string) => void;
@@ -22,7 +23,8 @@ interface AIActionsDropdownProps {
 const AIActionsDropdown = ({ onAction, disabled = false, isLoading = false, loadingAction }: AIActionsDropdownProps) => {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
-  const translatedActions = getTranslatedActions();
+  const { isReady } = useTranslationReady({ namespaces: ['actions'] });
+  const translatedActions = isReady ? getTranslatedActions() : [];
   
   // Group actions
   const improveActions = translatedActions.filter(a => a.id === 'refine' || a.id === 'expand');
@@ -76,7 +78,7 @@ const AIActionsDropdown = ({ onAction, disabled = false, isLoading = false, load
                   className="cursor-pointer"
                 >
                   <span className={`mr-2 ${isMobile ? 'text-base' : ''}`}>{action.icon}</span>
-                  <span>{t(`actions:${key}.label`, { defaultValue: action.label })}</span>
+                  <span>{t(`actions:${key}.label`)}</span>
                   {isActionLoading && (
                     <Loader2 className="ml-auto h-4 w-4 animate-spin" />
                   )}
@@ -104,7 +106,7 @@ const AIActionsDropdown = ({ onAction, disabled = false, isLoading = false, load
                   className="cursor-pointer"
                 >
                   <span className={`mr-2 ${isMobile ? 'text-base' : ''}`}>{action.icon}</span>
-                  <span>{t(`actions:${key}.label`, { defaultValue: action.label })}</span>
+                  <span>{t(`actions:${key}.label`)}</span>
                   {isActionLoading && (
                     <Loader2 className="ml-auto h-4 w-4 animate-spin" />
                   )}
@@ -132,7 +134,7 @@ const AIActionsDropdown = ({ onAction, disabled = false, isLoading = false, load
                   className="cursor-pointer"
                 >
                   <span className={`mr-2 ${isMobile ? 'text-base' : ''}`}>{action.icon}</span>
-                  <span>{t(`actions:${key}.label`, { defaultValue: action.label })}</span>
+                  <span>{t(`actions:${key}.label`)}</span>
                   {isActionLoading && (
                     <Loader2 className="ml-auto h-4 w-4 animate-spin" />
                   )}

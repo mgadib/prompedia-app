@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { useTranslation } from 'react-i18next';
 import { getTranslatedActions } from '@/lib/i18n-actions-modes';
 import { useIsMobile } from '@/shared/hooks/use-mobile';
+import { useTranslationReady } from '@/shared/hooks/useTranslationReady';
 import { Loader2 } from 'lucide-react';
 
 interface ActionButtonsProps {
@@ -15,7 +16,8 @@ interface ActionButtonsProps {
 const ActionButtons = ({ onAction, disabled = false, isLoading = false, loadingAction }: ActionButtonsProps) => {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
-  const translatedActions = getTranslatedActions();
+  const { isReady } = useTranslationReady({ namespaces: ['actions'] });
+  const translatedActions = isReady ? getTranslatedActions() : [];
   
   return (
     <div className={`flex items-center ${isMobile ? 'gap-2' : 'gap-2'} flex-wrap`}>
@@ -29,24 +31,24 @@ const ActionButtons = ({ onAction, disabled = false, isLoading = false, loadingA
             onClick={() => onAction(action.id)}
             variant="outline"
             size={isMobile ? "default" : "sm"}
-            className={`${isMobile ? 'text-sm min-h-[44px] px-4' : 'text-xs h-8 px-3'} hover:bg-primary/5 hover:border-primary/20 touch-manipulation font-mono relative overflow-hidden ${
+            className={`${isMobile ? 'text-sm min-h-[44px] px-4' : 'text-xs h-8 px-4'} hover:bg-primary/5 hover:border-primary/20 touch-manipulation font-mono relative overflow-hidden ${
               isCurrentlyLoading ? 'opacity-75 cursor-wait' : ''
             }`}
             disabled={disabled || isLoading}
-            title={t(`actions:${actionKey}.description`, { defaultValue: action.description })}
-            aria-label={t(`actions:${actionKey}.label`, { defaultValue: action.label })}
+            title={t(`actions:${actionKey}.description`)}
+            aria-label={t(`actions:${actionKey}.label`)}
             aria-busy={isCurrentlyLoading}
           >
             {isCurrentlyLoading ? (
               <>
-                <Loader2 className={`${isMobile ? 'mr-2 h-5 w-5' : 'mr-1.5 h-4 w-4'}`} />
+                <Loader2 className={`${isMobile ? 'mr-2 h-5 w-5' : 'mr-2 h-4 w-4'}`} />
                 <span className="sr-only">{t('common:status.processing')}</span>
               </>
             ) : (
-              <span className={isMobile ? 'mr-2 text-base' : 'mr-1.5'}>{action.icon}</span>
+              <span className={isMobile ? 'mr-2 text-base' : 'mr-2'}>{action.icon}</span>
             )}
             <span className={isCurrentlyLoading ? 'opacity-0 absolute' : ''}>
-              {t(`actions:${actionKey}.label`, { defaultValue: action.label })}
+              {t(`actions:${actionKey}.label`)}
             </span>
           </Button>
         );

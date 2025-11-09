@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { Prompt } from '@/lib/storage';
 import { storageManager } from '@/lib/storage-manager';
 import { sanitizePrompt, createNewPrompt } from '@/features/prompts/utils/prompt-utils';
-import { toast } from 'sonner';
+import { toast } from '@/shared/utils/toast';
 import { useTranslation } from 'react-i18next';
 
 /**
@@ -56,7 +56,7 @@ export function usePromptManagement() {
       await loadAllPrompts();
     } catch (error) {
       console.error('Failed to delete prompt:', error);
-      toast.error(t('errors:prompt.deleteFailed'));
+      toast.error('prompt.deleteFailed');
       throw error;
     }
   }, [currentPrompt?.id, loadAllPrompts, t]);

@@ -8,6 +8,7 @@ import LanguageSwitcher from './LanguageSwitcher';
 import { TagService } from '@/features/tags/services/tag-service';
 import { supabase } from '@/integrations/supabase/client';
 import { useIsMobile } from '@/shared/hooks/use-mobile';
+import { useTranslationReady } from '@/shared/hooks/useTranslationReady';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 
 interface SidebarProps {
@@ -36,27 +37,12 @@ const Sidebar = ({
   setMobileSidebarOpen
 }: SidebarProps) => {
   // Preload required namespaces: library, auth, and common
-  const { t, i18n } = useTranslation(['library', 'auth', 'common']);
+  const { t } = useTranslation(['library', 'auth', 'common']);
+  const { isReady } = useTranslationReady({ namespaces: ['library', 'auth'], showLoading: false });
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [allTags, setAllTags] = useState<string[]>([]);
   const isMobile = useIsMobile();
   const location = useLocation();
-  
-  // Ensure namespaces are loaded and reload when language changes
-  useEffect(() => {
-    const loadNamespaces = async () => {
-      const currentLang = i18n.language || 'en';
-      const namespaces = ['library', 'auth'];
-      
-      for (const ns of namespaces) {
-        if (!i18n.hasResourceBundle(currentLang, ns)) {
-          await i18n.loadNamespaces(ns);
-        }
-      }
-    };
-    
-    loadNamespaces();
-  }, [i18n, i18n.language]); // Add i18n.language to dependency to trigger reload on language change
   
   // Mengecek apakah kita berada di halaman tag
   const isOnTagPage = location.pathname.startsWith('/tags/');

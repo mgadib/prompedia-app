@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { toast } from 'sonner';
+import { toast } from '@/shared/utils/toast';
 import { Prompt } from '@/lib/storage';
 import { storageManager } from '@/lib/storage-manager';
 import { AVAILABLE_MODELS } from '@/features/prompts/utils/models';
@@ -79,7 +79,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
         const user = await supabase.auth.getUser().then(({ data }) => data.user);
         
       if (!user) {
-        toast.error(t('errors:actions.signInToCreate'));
+        toast.error('actions.signInToCreate');
         return;
       }
 
@@ -101,19 +101,19 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
           onPromptChange(newPrompt);
         } catch (error) {
           console.error('Failed to update prompt:', error);
-          toast.error(t('errors:prompt.updateFailed'));
+          toast.error('prompt.updateFailed');
         }
-        toast.success(t('success:prompt.created'));
+        toast.success('prompt.created');
       } catch (error) {
         console.error('Failed to create new prompt:', error);
-        toast.error(t('errors:prompt.createFailed'));
+        toast.error('prompt.createFailed');
       }
     }
   };
 
   const handleSave = async () => {
     if (!title || !content) {
-      toast.error(t('errors:actions.enterTitleAndContent'));
+      toast.error('actions.enterTitleAndContent');
       return;
     }
 
@@ -139,14 +139,14 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
 
       // User guest tidak bisa menyimpan prompt (hanya localStorage auto-save untuk session saat ini)
       if (!user) {
-        toast.error(t('errors:actions.signInToSave'));
+        toast.error('actions.signInToSave');
         return;
       }
 
       // Mengecek apakah user bisa melakukan panggilan AI (mereka perlu quota untuk menyimpan)
       const rateLimitCheck = await rateLimitingService.canMakeAICall(user);
       if (!rateLimitCheck.allowed) {
-        toast.error(t('errors:usage.waitBeforeSaving'));
+        toast.error('usage.waitBeforeSaving');
         return;
       }
 
@@ -185,9 +185,9 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
         onPromptChange(promptToSave);
       } catch (error) {
         console.error('Failed to update prompt:', error);
-        toast.error(t('errors:prompt.updateFailed'));
+        toast.error('prompt.updateFailed');
       }
-      toast.success(t('success:prompt.saved'));
+      toast.success('prompt.saved');
 
       // Menambah counter penggunaan setelah save berhasil
       await rateLimitingService.incrementUsage(user);
@@ -203,28 +203,28 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
         hasUser: !!user,
         storageManagerAuth: storageManager.getAuthDebugInfo()
       });
-      toast.error(error instanceof Error ? error.message : t('errors:prompt.saveFailed'));
+      toast.error(error instanceof Error ? error.message : 'prompt.saveFailed');
     }
   };
 
   const handleCopy = async () => {
     if (!content) {
-      toast.error(t('errors:actions.noContent'));
+      toast.error('actions.noContent');
       return;
     }
 
     try {
       await navigator.clipboard.writeText(content);
-      toast.success(t('success:prompt.contentCopied'));
+      toast.success('prompt.contentCopied');
     } catch (error) {
       console.error('Failed to copy content:', error);
-      toast.error(t('errors:prompt.copyFailed'));
+      toast.error('prompt.copyFailed');
     }
   };
 
   const handleShare = async () => {
     if (!title || !content) {
-      toast.error(t('errors:actions.enterTitleAndContent'));
+      toast.error('actions.enterTitleAndContent');
       return;
     }
 
@@ -252,14 +252,14 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
 
       // User guest tidak bisa membuat prompt public atau menyimpan prompt
       if (!user) {
-        toast.error(t('errors:actions.signInToShare'));
+        toast.error('actions.signInToShare');
         return;
       }
 
       // Mengecek apakah user bisa melakukan panggilan AI (mereka perlu terautentikasi)
       const rateLimitCheck = await rateLimitingService.canMakeAICall(user);
       if (!rateLimitCheck.allowed) {
-        toast.error(t('errors:usage.waitBeforeChanges'));
+        toast.error('usage.waitBeforeChanges');
         return;
       }
 
@@ -290,9 +290,9 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
         onPromptChange(updatedPrompt);
       } catch (error) {
         console.error('Failed to update prompt:', error);
-        toast.error(t('errors:prompt.updateFailed'));
+        toast.error('prompt.updateFailed');
       }
-      toast.success(updatedPrompt.is_public ? t('success:prompt.nowPublic') : t('success:prompt.nowPrivate'));
+      toast.success(updatedPrompt.is_public ? 'prompt.nowPublic' : 'prompt.nowPrivate');
     } catch (error) {
       console.error('Failed to update prompt visibility:', error);
       console.error('Error details:', {
@@ -305,7 +305,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
         hasUser: !!user,
         storageManagerAuth: storageManager.getAuthDebugInfo()
       });
-      toast.error(t('errors:prompt.visibilityUpdateFailed'));
+      toast.error('prompt.visibilityUpdateFailed');
     }
   };
 
@@ -315,14 +315,14 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
 
       // User guest tidak bisa menghapus prompt
       if (!user) {
-        toast.error(t('errors:actions.signInToDelete'));
+        toast.error('actions.signInToDelete');
         return;
       }
 
       // Mengecek apakah user bisa melakukan panggilan AI (menghapus memerlukan quota)
       const rateLimitCheck = await rateLimitingService.canMakeAICall(user);
       if (!rateLimitCheck.allowed) {
-        toast.error(t('errors:usage.waitBeforeDeleting'));
+        toast.error('usage.waitBeforeDeleting');
         return;
       }
 
@@ -344,16 +344,16 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
           });
         } catch (error) {
           console.error('Failed to update prompt:', error);
-          toast.error(t('errors:prompt.updateFailed'));
+          toast.error('prompt.updateFailed');
         }
       }
-      toast.success(t('success:prompt.deleted'));
+      toast.success('prompt.deleted');
 
       // Menambah counter penggunaan setelah delete berhasil
       await rateLimitingService.incrementUsage(user);
     } catch (error) {
       console.error('Failed to delete prompt:', error);
-      toast.error(t('errors:prompt.deleteFailed'));
+      toast.error('prompt.deleteFailed');
     }
   };
 
@@ -363,17 +363,13 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       <PromptEditorHeader
         title={title}
         content={content}
+        user={user || null}
         model={model}
         mode={mode}
-        currentPromptId={currentPrompt?.id}
-        isFocusMode={isFocusMode}
-        user={user || null}
         onSave={handleSave}
         onNew={handleNew}
         onCopy={handleCopy}
         onShare={handleShare}
-        onDelete={() => handleDelete(currentPrompt?.id || '')}
-        onToggleFocus={onToggleFocus || (() => {})}
         onModelChange={setModel}
         onModeChange={setMode}
       />

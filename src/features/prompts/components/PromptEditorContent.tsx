@@ -47,7 +47,7 @@ export const PromptEditorContent = React.memo(({
   const isMobile = useIsMobile();
 
   return (
-    <div className={`flex-1 flex flex-col overflow-hidden min-h-0 ${isMobile ? 'p-2 space-y-2' : 'p-4 space-y-4'}`}>
+    <div className={`flex-1 flex flex-col overflow-hidden min-h-0 relative ${isMobile ? 'p-2 space-y-2' : 'p-4 space-y-4'}`}>
       {/* Title and Tags Section */}
       <div className={`flex flex-shrink-0 ${isMobile ? 'flex-col gap-2' : 'items-center gap-8'}`}>
         {/* Title Section */}

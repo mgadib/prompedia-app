@@ -4,7 +4,7 @@ import { storage } from '@/lib/storage';
 import { storageManager } from '@/lib/storage-manager';
 import { sanitizePrompt, copyPrompt, createNewPrompt } from '@/features/prompts/utils/prompt-utils';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { toast } from '@/shared/utils/toast';
 import { useTranslation } from 'react-i18next';
 import { rateLimitingService } from '@/shared/utils/rate-limiting';
 import type { User } from '@supabase/supabase-js';
@@ -96,7 +96,7 @@ export function usePromptActions({
       await loadAllPrompts();
     } catch (error) {
       console.error('Failed to delete prompt:', error);
-      toast.error(t('errors:prompt.deleteFailed'));
+      toast.error('prompt.deleteFailed');
       throw error;
     }
   }, [currentPrompt, setCurrentPrompt, setShowEditor, setAppIsPlaygroundActive, loadAllPrompts, t]);
@@ -105,22 +105,22 @@ export function usePromptActions({
     const currentUser = await supabase.auth.getUser().then(({ data }) => data.user);
 
     if (!currentUser) {
-      toast.error(t('errors:actions.signInToCopy'));
+      toast.error('actions.signInToCopy');
       return;
     }
 
     try {
       const rateLimitCheck = await rateLimitingService.canMakeAICall(currentUser);
       if (!rateLimitCheck.allowed) {
-        toast.error(t('errors:usage.waitBeforeCopying'));
+        toast.error('usage.waitBeforeCopying');
         return;
       }
 
       if (rateLimitCheck.usage.remaining <= 3) {
         if (currentUser) {
-          toast.warning(t('common:warnings.remainingDailyCalls', { count: rateLimitCheck.usage.remaining }));
+          toast.warning('warnings.remainingDailyCalls', { count: rateLimitCheck.usage.remaining });
         } else {
-          toast.warning(t('common:warnings.remainingCallsWithSignIn', { count: rateLimitCheck.usage.remaining }));
+          toast.warning('warnings.remainingCallsWithSignIn', { count: rateLimitCheck.usage.remaining });
         }
       }
 
@@ -129,18 +129,18 @@ export function usePromptActions({
 
       await storageManager.savePrompt(copiedPrompt);
       handlePromptChange(copiedPrompt);
-      toast.success(t('success:prompt.copiedSuccessfully'));
+      toast.success('prompt.copiedSuccessfully');
 
       await rateLimitingService.incrementUsage(currentUser);
     } catch (error) {
       console.error('Failed to copy prompt:', error);
-      toast.error(t('errors:prompt.copyFailed'));
+      toast.error('prompt.copyFailed');
     }
   }, [handlePromptChange, t]);
 
   const handleUsePrompt = useCallback((prompt: PromptWithTags) => {
     if (!user) {
-      toast.warning(t('common:warnings.signInForAI'));
+      toast.warning('warnings.signInForAI');
     }
 
     setIsTransitioning(true);
@@ -160,12 +160,10 @@ export function usePromptActions({
 
       if (!rateLimitCheck.allowed) {
         const limitType = user ? t('errors:usage.dailyLimit') : t('errors:usage.guestLimit');
-        toast.error(
-          t('errors:usage.limitReached', { 
-            type: limitType, 
-            error: rateLimitCheck.error || '' 
-          })
-        );
+        toast.error('usage.limitReached', { 
+          type: limitType, 
+          error: rateLimitCheck.error || '' 
+        });
         if (!user) {
           setShowAuthModal(true);
         }
@@ -174,14 +172,14 @@ export function usePromptActions({
 
       if (rateLimitCheck.usage.remaining <= 3) {
         if (user) {
-          toast.warning(t('common:warnings.remainingDailyCalls', { count: rateLimitCheck.usage.remaining }));
+          toast.warning('warnings.remainingDailyCalls', { count: rateLimitCheck.usage.remaining });
         } else {
-          toast.warning(t('common:warnings.remainingCallsWithSignIn', { count: rateLimitCheck.usage.remaining }));
+          toast.warning('warnings.remainingCallsWithSignIn', { count: rateLimitCheck.usage.remaining });
         }
       }
     } catch (error) {
       console.error('Rate limit check failed:', error);
-      toast.error(t('errors:usage.checkFailed'));
+      toast.error('usage.checkFailed');
       return;
     }
 

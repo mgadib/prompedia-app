@@ -14,7 +14,7 @@ import type { User } from '@supabase/supabase-js';
 import { ErrorBoundary } from '@/shared/components/ErrorBoundary';
 import { promptService } from '@/features/prompts/services/prompt-service';
 import { sanitizePrompt } from '@/features/prompts/utils/prompt-utils';
-import { toast } from 'sonner';
+import { toast } from '@/shared/utils/toast';
 import { STORAGE_KEYS } from '@/lib/constants';
 import { useAppState } from '@/features/app/hooks/useAppState';
 import { usePromptLoading } from '@/features/app/hooks/usePromptLoading';
@@ -101,7 +101,7 @@ const AppPage = () => {
       try {
         const prompt = await promptService.getPrompt(promptId);
         if (!prompt) {
-          toast.error(t('errors:prompt.notFound'));
+          toast.error('prompt.notFound');
         } else {
           const sanitizedPrompt = sanitizePrompt(prompt);
           setCurrentPrompt(sanitizedPrompt);
@@ -111,7 +111,7 @@ const AppPage = () => {
         }
       } catch (error) {
         console.error('Failed to load prompt from query:', error);
-        toast.error(t('errors:prompt.loadFailed'));
+        toast.error('prompt.loadFailed');
       } finally {
         const params = new URLSearchParams(searchParams);
         params.delete('use');
@@ -205,7 +205,7 @@ const AppPage = () => {
 
   const handleAuthSuccess = () => {
     localStorage.removeItem(STORAGE_KEYS.GUEST_USAGE);
-    toast.success(t('success:auth.welcomeUnlimited'));
+    toast.success('auth.welcomeUnlimited');
   };
 
   const handleToggleFocus = () => {
@@ -312,14 +312,14 @@ const AppPage = () => {
                 availability: 'https://schema.org/InStock',
               },
               featureList: [
-                'AI Prompt Enhancement',
-                'Public Prompt Library',
-                'Private Prompt Management',
-                'Multiple Thinking Modes (Meta Prompt, Self-Refine, Chain-of-Thought, Self-Consistency, Chain-of-Prompt, Role Prompt)',
-                'AI Model Integration (Llama 4 Maverick, Qwen 3 30B, Qwen 2.5 72B, Llama 3.1 70B)',
-                'Usage Tracking & Rate Limiting',
-                'Smart Tag System',
-                'Real-time AI Processing',
+                t('common:seo.features.aiEnhancement'),
+                t('common:seo.features.publicLibrary'),
+                t('common:seo.features.privateManagement'),
+                t('common:seo.features.thinkingModes'),
+                t('common:seo.features.modelIntegration'),
+                t('common:seo.features.usageTracking'),
+                t('common:seo.features.tagSystem'),
+                t('common:seo.features.realTimeProcessing'),
               ],
               screenshot: `${homepageUrl}/og-image.png`,
               aggregateRating: {

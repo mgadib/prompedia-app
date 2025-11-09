@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, ArrowRight, CheckCircle, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import AIActionsDropdown from './AIActionsDropdown';
+import ActionButtons from './ActionButtons';
 import { useIsMobile } from '@/shared/hooks/use-mobile';
 
 type ViewState = 'original' | 'ai-result';
@@ -37,7 +37,7 @@ export const PromptEditorToolbar = React.memo(({
 
   return (
     <div className={`flex items-center ${isMobile ? 'flex-wrap' : ''} gap-2`}>
-      <AIActionsDropdown
+      <ActionButtons
         onAction={onAction}
         disabled={!content.trim() || viewState === 'ai-result' || !userCanUseAI}
         isLoading={isActionLoading}
@@ -50,10 +50,10 @@ export const PromptEditorToolbar = React.memo(({
           onClick={onBack}
           variant="outline"
           size={isMobile ? "default" : "sm"}
-          className={`${isMobile ? 'text-sm min-h-[44px]' : 'text-xs h-8'} px-3 hover:bg-secondary/20 transition-all font-mono touch-manipulation`}
+          className={`${isMobile ? 'text-sm min-h-[44px] px-4' : 'text-xs h-8 px-4'} hover:bg-secondary/20 transition-all font-mono touch-manipulation`}
           title={t('prompt:backToOriginalTitle')}
         >
-          <ArrowLeft className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${isMobile ? '' : 'mr-1'}`} />
+          <ArrowLeft className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${isMobile ? 'mr-2' : 'mr-2'}`} />
           {isMobile ? '' : t('common:buttons.back')}
         </Button>
       )}
@@ -63,10 +63,10 @@ export const PromptEditorToolbar = React.memo(({
           onClick={onForward}
           variant="outline"
           size={isMobile ? "default" : "sm"}
-          className={`${isMobile ? 'text-sm min-h-[44px]' : 'text-xs h-8'} px-3 hover:bg-secondary/20 transition-all font-mono touch-manipulation`}
+          className={`${isMobile ? 'text-sm min-h-[44px] px-4' : 'text-xs h-8 px-4'} hover:bg-secondary/20 transition-all font-mono touch-manipulation`}
           title={t('prompt:forwardToResultTitle')}
         >
-          <ArrowRight className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${isMobile ? '' : 'mr-1'}`} />
+          <ArrowRight className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${isMobile ? 'mr-2' : 'mr-2'}`} />
           {isMobile ? '' : t('common:buttons.forward')}
         </Button>
       )}

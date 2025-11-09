@@ -34,6 +34,8 @@
   "backToHome": "Back to home",
   "tagPageDescription": "List of prompts with tag \"{{tag}}\"",
   "tagBreadcrumb": "Tag: {{tag}}",
+  "tagPageTitle": "Tag: {{tag}} — {{site}}",
+  "tagPageTitleDefault": "Tag — {{site}}",
   "shortcuts": {
     "myLibrary": {
       "name": "My Library",

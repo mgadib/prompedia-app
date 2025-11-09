@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { toast } from '@/shared/utils/toast';
 import { Sparkles, Loader2 } from 'lucide-react';
 import { useIsMobile } from '@/shared/hooks/use-mobile';
 import { getSuccessMessage, getErrorMessage } from '@/lib/i18n-helpers';
@@ -39,13 +39,13 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
 
         if (error) throw error;
 
-        toast.success(t('auth:welcomeBack'));
+        toast.success('auth.welcomeBack');
         onSuccess();
         onClose();
       } else {
         // Registrasi user baru
         if (!username.trim()) {
-          toast.error(t('auth:usernameRequired'));
+          toast.error('auth.usernameRequired');
           setLoading(false);
           return;
         }
@@ -64,7 +64,7 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
 
         if (error) throw error;
 
-        toast.success(t('auth:accountCreated'));
+        toast.success('auth.accountCreated');
         setIsLogin(true);
       }
     } catch (error: unknown) {

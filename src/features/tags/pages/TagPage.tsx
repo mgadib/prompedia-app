@@ -12,7 +12,7 @@ import { useIsMobile } from '@/shared/hooks/use-mobile';
 import type { User } from '@supabase/supabase-js';
 import PromptDetailModal from '@/features/library/components/PromptDetailModal';
 import PromptCard from '@/features/library/components/PromptCard';
-import { toast } from 'sonner';
+import { toast } from '@/shared/utils/toast';
 import { trackEvent } from '@/lib/analytics';
 import type { PromptWithTags } from '@/shared/types/prompts';
 import { Prompt } from '@/lib/storage';
@@ -65,8 +65,10 @@ const TagPage: React.FC = () => {
   const previousTagNameRef = useRef<string>('');
 
   const pageTitle = useMemo(() => {
-    return tagName ? `Tag: ${tagName} — ${ENV.SITE_TITLE}` : `Tag — ${ENV.SITE_TITLE}`;
-  }, [tagName]);
+    return tagName 
+      ? t('library:tagPageTitle', { tag: tagName, site: ENV.SITE_TITLE })
+      : t('library:tagPageTitleDefault', { site: ENV.SITE_TITLE });
+  }, [tagName, t]);
 
   const loadData = useCallback(async (showCachedFirst = true) => {
     // User sudah di-handle oleh Layout
@@ -160,7 +162,7 @@ const TagPage: React.FC = () => {
 
   const handleCopy = (prompt: PromptWithTags) => {
     navigator.clipboard.writeText(prompt.content);
-    toast.success(t('success:prompt.contentCopied'));
+    toast.success('prompt.contentCopied');
     trackEvent('copy_prompt_content', { prompt_id: prompt.id }, userId);
   };
 
@@ -168,26 +170,26 @@ const TagPage: React.FC = () => {
     const base = ENV.SITE_URL || window.location.origin;
     const url = `${base}/p/${promptId}`;
     navigator.clipboard.writeText(url);
-    toast.success(t('success:prompt.urlCopied'));
+    toast.success('prompt.urlCopied');
     trackEvent('copy_prompt_url', { prompt_id: promptId }, userId);
   };
 
   const handleUse = (prompt: PromptWithTags) => {
     navigate(`/?use=${encodeURIComponent(prompt.id)}`);
-    toast.success(t('success:prompt.loadedForEditing'));
+    toast.success('prompt.loadedForEditing');
     trackEvent('use_prompt', { prompt_id: prompt.id }, userId);
   };
 
   const handleUsePromptFromModal = (prompt: Prompt | PromptWithTags) => {
     navigate(`/?use=${encodeURIComponent(prompt.id)}`);
-    toast.success(t('success:prompt.loadedForEditing'));
+    toast.success('prompt.loadedForEditing');
     trackEvent('use_prompt', { prompt_id: prompt.id }, userId);
   };
 
   const handleCopyPromptFromModal = (prompt: Prompt | PromptWithTags) => {
     const promptContent = 'content' in prompt ? prompt.content : '';
     navigator.clipboard.writeText(promptContent);
-    toast.success(t('success:prompt.contentCopied'));
+    toast.success('prompt.contentCopied');
     trackEvent('copy_prompt_content', { prompt_id: prompt.id }, userId);
   };
 

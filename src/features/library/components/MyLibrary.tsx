@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { FileText, Search, Filter } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/shared/utils/toast';
 import PromptDetailModal from './PromptDetailModal';
 import PromptCard from './PromptCard';
 import { SkeletonCard } from '@/components/ui/skeleton';
@@ -78,20 +78,20 @@ const MyLibrary = ({
       await onDeletePrompt(prompt.id);
       
       // Show toast with undo action
-      toast.success(t('success:prompt.deleted'), {
+      toast.success('prompt.deleted', {
         action: {
           label: t('common:buttons.undo'),
           onClick: async () => {
             // Note: This would require a restore function in storageManager
             // For now, we'll just show a message
-            toast.info(t('common:messages.undoNotAvailable'));
+            toast.info('messages.undoNotAvailable');
           },
         },
         duration: 5000,
       });
     } catch (error) {
       console.error('Failed to delete prompt:', error);
-      toast.error(t('errors:prompt.deleteFailed'));
+      toast.error('prompt.deleteFailed');
     }
   }, [t, onDeletePrompt]);
 
@@ -126,14 +126,14 @@ const MyLibrary = ({
 
   const handleUsePrompt = useCallback((prompt: PromptWithTags) => {
     onSelectPrompt(prompt);
-    toast.success(t('success:prompt.loaded'));
-  }, [onSelectPrompt, t]);
+    toast.success('prompt.loaded');
+  }, [onSelectPrompt]);
 
   const handleCopyPromptFromModal = useCallback((prompt: Prompt | PromptWithTags) => {
     const promptContent = 'content' in prompt ? prompt.content : '';
     navigator.clipboard.writeText(promptContent);
-    toast.success(t('success:prompt.contentCopied'));
-  }, [t]);
+    toast.success('prompt.contentCopied');
+  }, []);
 
   // Menampilkan skeleton loading sementara tag sedang dimuat
   if (isLoadingTags) {

@@ -3,8 +3,9 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { clearUser, clearCurrentPrompt } from '@/lib/storage';
-import { toast } from 'sonner';
+import { toast } from '@/shared/utils/toast';
 import { getSuccessMessage, getErrorMessage } from '@/lib/i18n-helpers';
+import { supabase } from '@/integrations/supabase/client';
 import Sidebar from './Sidebar';
 import { useIsMobile } from '@/shared/hooks/use-mobile';
 import { useAuthState } from '@/shared/hooks/useAuthState';
@@ -96,9 +97,6 @@ const Layout: React.FC = () => {
       // Clear current prompt from storage
       clearCurrentPrompt();
       
-      // Reset user state
-      setUser(null);
-      
       // Reset app state
       setAppActiveView(null);
       setAppIsPlaygroundActive(null);
@@ -139,7 +137,7 @@ const Layout: React.FC = () => {
             <div className="absolute top-0 left-0 w-12 h-12 border-4 border-primary border-t-transparent rounded-full" />
           </div>
           <div className="text-center">
-            <p className="text-sm text-muted-foreground font-mono">Loading Prompedia...</p>
+            <p className="text-sm text-muted-foreground font-mono">{t('common:loadingPrompedia')}</p>
           </div>
         </div>
       </div>

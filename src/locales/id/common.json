@@ -149,7 +149,17 @@
   "initializingWorkspace": "Menginisialisasi workspace Anda",
   "loadingPrompedia": "Memuat Prompedia...",
   "seo": {
-    "description": "Bangun, optimalkan, dan kelola AI prompt dengan Prompedia AI. Platform prompt engineering gratis dengan 6 thinking mode, integrasi model AI, dan perpustakaan prompt publik. Sempurna untuk ChatGPT, Claude, dan tools AI lainnya."
+    "description": "Bangun, optimalkan, dan kelola AI prompt dengan Prompedia AI. Platform prompt engineering gratis dengan 6 thinking mode, integrasi model AI, dan perpustakaan prompt publik. Sempurna untuk ChatGPT, Claude, dan tools AI lainnya.",
+    "features": {
+      "aiEnhancement": "Peningkatan Prompt AI",
+      "publicLibrary": "Perpustakaan Prompt Publik",
+      "privateManagement": "Manajemen Prompt Pribadi",
+      "thinkingModes": "Multiple Thinking Mode (Meta Prompt, Self-Refine, Chain-of-Thought, Self-Consistency, Chain-of-Prompt, Role Prompt)",
+      "modelIntegration": "Integrasi Model AI (Llama 4 Maverick, Qwen 3 30B, Qwen 2.5 72B, Llama 3.1 70B)",
+      "usageTracking": "Pelacakan Penggunaan & Pembatasan Rate",
+      "tagSystem": "Sistem Tag Cerdas",
+      "realTimeProcessing": "Pemrosesan AI Real-time"
+    }
   }
 }
 

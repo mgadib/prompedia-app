@@ -28,6 +28,9 @@
   "forwardToResultTitle": "Forward to AI result",
   "seoTitle": "Prompt Detail",
   "seoDescription": "Explore this public prompt on Prompedia.",
+  "defaultDescription": "View and use this AI prompt: {{title}}",
+  "forkTitle": "Fork of {{title}}",
+  "copyPrefix": "Copy of ",
   "shortcuts": {
     "newPrompt": {
       "name": "New Prompt",

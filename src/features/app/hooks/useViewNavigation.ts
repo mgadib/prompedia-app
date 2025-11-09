@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { Prompt } from '@/lib/storage';
 import { storage } from '@/lib/storage';
-import { toast } from 'sonner';
+import { toast } from '@/shared/utils/toast';
 import { useTranslation } from 'react-i18next';
 import type { User } from '@supabase/supabase-js';
 
@@ -37,7 +37,7 @@ export function useViewNavigation({
   const handleViewChange = useCallback((view: 'my-library' | 'public-library') => {
     try {
       if (!user && view === 'my-library') {
-        toast.error(t('errors:actions.signInToAccessLibrary'));
+        toast.error('actions.signInToAccessLibrary');
         return;
       }
 
@@ -60,7 +60,7 @@ export function useViewNavigation({
       }, 300);
     } catch (error) {
       console.error('Failed to change view:', error);
-      toast.error(t('errors:library.switchViewFailed'));
+      toast.error('library.switchViewFailed');
       setIsTransitioning(false);
     }
   }, [activeView, showEditor, user, setActiveView, setShowEditor, setCurrentPrompt, setAppActiveView, setAppIsPlaygroundActive, setIsTransitioning, t]);

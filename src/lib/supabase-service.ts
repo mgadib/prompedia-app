@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client'
 import { Database } from '@/integrations/supabase/types'
 import { storage } from './storage'
+import i18n from './i18n'
 
 // Type aliases untuk readability yang lebih baik (diperbarui untuk schema minimalis)
 type User = Database['public']['Tables']['users']['Row']
@@ -282,7 +283,7 @@ export class SupabaseService {
     // Membuat prompt fork (disederhanakan - tanpa computed fields)
     const forkedPrompt: PromptInsert = {
       user_id: (await this.getCurrentUser())?.id || '',
-      title: newTitle || `Fork of ${originalPrompt.title}`,
+      title: newTitle || i18n.t('prompt:forkTitle', { title: originalPrompt.title }),
       content: originalPrompt.content,
       description: originalPrompt.description,
       model_id: originalPrompt.model_id,

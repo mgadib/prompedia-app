@@ -2,7 +2,7 @@ import { Prompt } from '@/lib/storage';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Copy, X, Lock, Globe, Link as LinkIcon } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/shared/utils/toast';
 import { useIsMobile } from '@/shared/hooks/use-mobile';
 import { useTranslation } from 'react-i18next';
 import type { PromptWithTags } from '@/shared/types/prompts';
@@ -34,14 +34,14 @@ const PromptDetailModal = ({
       // Perilaku copy default - menyalin konten prompt ke clipboard
       const promptContent = 'content' in prompt ? prompt.content : '';
       navigator.clipboard.writeText(promptContent);
-      toast.success(t('success:prompt.contentCopied'));
+      toast.success('prompt.contentCopied');
     }
   };
 
   const handleCopyUrl = () => {
     const url = `https://prompedia.app/p/${prompt.id}`;
     navigator.clipboard.writeText(url);
-    toast.success(t('success:prompt.urlCopied'));
+    toast.success('prompt.urlCopied');
   };
 
   const handleUse = () => {

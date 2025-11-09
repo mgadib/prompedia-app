@@ -7,7 +7,7 @@ import { TagService } from '@/features/tags/services/tag-service';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Copy, ArrowLeft, Globe, Download } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/shared/utils/toast';
 import SEO from '@/shared/components/SEO';
 import { trackEvent } from '@/lib/analytics';
 import { ENV } from '@/lib/constants';
@@ -80,7 +80,7 @@ const PublicPromptDetail = () => {
   const handleCopyContent = () => {
     if (prompt) {
       navigator.clipboard.writeText(prompt.content);
-      toast.success(t('success:prompt.contentCopied'));
+      toast.success('prompt.contentCopied');
       trackEvent('copy_prompt_content', { prompt_id: id });
     }
   };
@@ -89,7 +89,7 @@ const PublicPromptDetail = () => {
     const baseUrl = ENV.SITE_URL || window.location.origin;
     const url = `${baseUrl}/p/${id}`;
     navigator.clipboard.writeText(url);
-    toast.success(t('success:prompt.urlCopied'));
+    toast.success('prompt.urlCopied');
     trackEvent('copy_prompt_url', { prompt_id: id });
   };
 
@@ -131,8 +131,8 @@ const PublicPromptDetail = () => {
 
   const baseUrl = ENV.SITE_URL || (typeof window !== 'undefined' ? window.location.origin : 'https://prompedia.app');
   const promptUrl = `${baseUrl}/p/${id}`;
-  const promptTitle = prompt.title || t('prompt:seoTitle') || 'Untitled Prompt';
-  const promptDescription = prompt.description || t('prompt:seoDescription') || `View and use this AI prompt: ${promptTitle}`;
+  const promptTitle = prompt.title || t('prompt:untitled');
+  const promptDescription = prompt.description || t('prompt:seoDescription') || t('prompt:defaultDescription', { title: promptTitle });
 
   return (
     <div className="min-h-screen bg-background">

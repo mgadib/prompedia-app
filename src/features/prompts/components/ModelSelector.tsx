@@ -79,9 +79,7 @@ const ModelSelector = ({ value, onChange }: ModelSelectorProps) => {
   return (
     <Select value={value} onValueChange={onChange}>
       <SelectTrigger className={`${isMobile ? 'w-full h-9 text-xs' : 'w-[180px]'} bg-secondary border-border text-xs touch-manipulation`}>
-        <SelectValue placeholder={t('common:placeholders.selectModel')}>
-          <span className="truncate">{selectedModel?.name || selectedModel?.id || t('common:placeholders.selectModel')}</span>
-        </SelectValue>
+        <SelectValue placeholder={t('common:placeholders.selectModel')} />
       </SelectTrigger>
       <SelectContent>
         {mainModels.map((model) => (

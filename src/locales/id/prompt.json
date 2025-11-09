@@ -28,6 +28,9 @@
   "forwardToResultTitle": "Maju ke hasil AI",
   "seoTitle": "Detail Prompt",
   "seoDescription": "Jelajahi prompt publik ini di Prompedia.",
+  "defaultDescription": "Lihat dan gunakan AI prompt ini: {{title}}",
+  "forkTitle": "Fork dari {{title}}",
+  "copyPrefix": "Salinan ",
   "shortcuts": {
     "newPrompt": {
       "name": "Prompt Baru",

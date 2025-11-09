@@ -10,7 +10,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { toast } from 'sonner';
+import { toast } from '@/shared/utils/toast';
 import { useIsMobile } from '@/shared/hooks/use-mobile';
 import type { PromptWithTags } from '@/shared/types/prompts';
 
@@ -58,7 +58,7 @@ const PromptCard = ({
     } else {
       // Default copy behavior
       navigator.clipboard.writeText(prompt.content);
-      toast.success(t('success:prompt.contentCopied'));
+      toast.success('prompt.contentCopied');
     }
   };
 

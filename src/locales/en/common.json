@@ -149,7 +149,17 @@
   "initializingWorkspace": "Initializing your workspace",
   "loadingPrompedia": "Loading Prompedia...",
   "seo": {
-    "description": "Build, optimize, and manage AI prompts with Prompedia AI. Free prompt engineering platform with 6 thinking modes, AI model integration, and public prompt library. Perfect for ChatGPT, Claude, and other AI tools."
+    "description": "Build, optimize, and manage AI prompts with Prompedia AI. Free prompt engineering platform with 6 thinking modes, AI model integration, and public prompt library. Perfect for ChatGPT, Claude, and other AI tools.",
+    "features": {
+      "aiEnhancement": "AI Prompt Enhancement",
+      "publicLibrary": "Public Prompt Library",
+      "privateManagement": "Private Prompt Management",
+      "thinkingModes": "Multiple Thinking Modes (Meta Prompt, Self-Refine, Chain-of-Thought, Self-Consistency, Chain-of-Prompt, Role Prompt)",
+      "modelIntegration": "AI Model Integration (Llama 4 Maverick, Qwen 3 30B, Qwen 2.5 72B, Llama 3.1 70B)",
+      "usageTracking": "Usage Tracking & Rate Limiting",
+      "tagSystem": "Smart Tag System",
+      "realTimeProcessing": "Real-time AI Processing"
+    }
   }
 }
 

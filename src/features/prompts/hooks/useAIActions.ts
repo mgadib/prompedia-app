@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { toast } from 'sonner';
+import { toast } from '@/shared/utils/toast';
 import { generateModeAwareActionInstructions } from '@/features/prompts/utils/actions';
 import { supabase } from '@/integrations/supabase/client';
 import { rateLimitingService } from '@/shared/utils/rate-limiting';
@@ -63,7 +63,7 @@ export function useAIActions({
 
   const handleAction = async (actionId: string) => {
     if (!content.trim()) {
-      toast.error(t('errors:actions.enterContent'));
+      toast.error('actions.enterContent');
       return;
     }
 
@@ -77,21 +77,19 @@ export function useAIActions({
 
       if (!rateLimitCheck.allowed) {
         const limitType = user ? t('errors:usage.dailyLimit') : t('errors:usage.guestLimit');
-        toast.error(
-          t('errors:usage.limitReached', { 
-            type: limitType, 
-            error: rateLimitCheck.error || '' 
-          })
-        );
+        toast.error('usage.limitReached', { 
+          type: limitType, 
+          error: rateLimitCheck.error || '' 
+        });
         return;
       }
 
       // Menampilkan peringatan penggunaan tersisa ketika mendekati batas
       if (rateLimitCheck.usage.remaining <= 3) {
         if (user) {
-          toast.warning(t('common:warnings.remainingDailyCalls', { count: rateLimitCheck.usage.remaining }));
+          toast.warning('warnings.remainingDailyCalls', { count: rateLimitCheck.usage.remaining });
         } else {
-          toast.warning(t('common:warnings.remainingCallsWithSignIn', { count: rateLimitCheck.usage.remaining }));
+          toast.warning('warnings.remainingCallsWithSignIn', { count: rateLimitCheck.usage.remaining });
         }
       }
 
@@ -164,7 +162,7 @@ export function useAIActions({
       setContent(nextContent);
       setViewState('ai-result');
       
-      toast.success(t('success:actions.actionSuccess', { action: actionId }));
+      toast.success('actions.actionSuccess', { action: actionId });
 
       // Menambah counter penggunaan setelah response AI berhasil
       await rateLimitingService.incrementUsage(user);
