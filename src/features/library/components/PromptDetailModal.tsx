@@ -5,13 +5,14 @@ import { Copy, X, Lock, Globe, Link as LinkIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { useIsMobile } from '@/shared/hooks/use-mobile';
 import { useTranslation } from 'react-i18next';
+import type { PromptWithTags } from '@/shared/types/prompts';
 
 interface PromptDetailModalProps {
-  prompt: Prompt | null;
+  prompt: Prompt | PromptWithTags | null;
   isOpen: boolean;
   onClose: () => void;
-  onCopy?: (prompt: Prompt) => void;
-  onUse?: (prompt: Prompt) => void;
+  onCopy?: (prompt: Prompt | PromptWithTags) => void;
+  onUse?: (prompt: Prompt | PromptWithTags) => void;
 }
 
 const PromptDetailModal = ({ 
@@ -31,7 +32,8 @@ const PromptDetailModal = ({
       onCopy(prompt);
     } else {
       // Perilaku copy default - menyalin konten prompt ke clipboard
-      navigator.clipboard.writeText(prompt.content);
+      const promptContent = 'content' in prompt ? prompt.content : '';
+      navigator.clipboard.writeText(promptContent);
       toast.success(t('success:prompt.contentCopied'));
     }
   };

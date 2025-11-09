@@ -14,6 +14,14 @@ import { useDebounce } from '@/shared/hooks/useDebounce';
 import type { PromptWithTags } from '@/shared/types/prompts';
 import type { Prompt } from '@/lib/storage';
 
+// Helper to get creator data for my-library prompts
+const getCreatorData = (userId?: string) => {
+  if (!userId) return null;
+  // For my-library, all prompts belong to the current user
+  // Using a simple default since we don't have user profile data here
+  return { username: 'you', avatar: '👤' };
+};
+
 interface MyLibraryProps {
   prompts: PromptWithTags[];
   onSelectPrompt: (prompt: PromptWithTags) => void;
@@ -106,9 +114,10 @@ const MyLibrary = ({
   }, [handleDeleteClick]);
 
   const handleCardClick = useCallback((prompt: PromptWithTags) => {
-    // Direct edit instead of opening modal
-    onEditPrompt(prompt);
-  }, [onEditPrompt]);
+    // Open modal when card is clicked
+    setSelectedPrompt(prompt);
+    setIsModalOpen(true);
+  }, []);
 
   const handleCloseModal = useCallback(() => {
     setIsModalOpen(false);
@@ -119,6 +128,12 @@ const MyLibrary = ({
     onSelectPrompt(prompt);
     toast.success(t('success:prompt.loaded'));
   }, [onSelectPrompt, t]);
+
+  const handleCopyPromptFromModal = useCallback((prompt: Prompt | PromptWithTags) => {
+    const promptContent = 'content' in prompt ? prompt.content : '';
+    navigator.clipboard.writeText(promptContent);
+    toast.success(t('success:prompt.contentCopied'));
+  }, [t]);
 
   // Menampilkan skeleton loading sementara tag sedang dimuat
   if (isLoadingTags) {
@@ -261,18 +276,23 @@ const MyLibrary = ({
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 p-3 sm:p-4 md:p-6">
-            {filteredPrompts.map((prompt) => (
-              <PromptCard
-                key={prompt.id}
-                prompt={prompt}
-                variant="my-library"
-                currentPromptId={currentPromptId}
-                onClick={handleCardClick}
-                onEdit={handleEdit}
-                onCopy={onCopyPrompt ? handleCopy : undefined}
-                onDelete={handleDelete}
-              />
-            ))}
+            {filteredPrompts.map((prompt) => {
+              const creatorData = getCreatorData(prompt.user_id);
+              return (
+                <PromptCard
+                  key={prompt.id}
+                  prompt={prompt}
+                  variant="my-library"
+                  currentPromptId={currentPromptId}
+                  onClick={handleCardClick}
+                  onEdit={handleEdit}
+                  onCopy={onCopyPrompt ? handleCopy : undefined}
+                  onDelete={handleDelete}
+                  showCreator={!!creatorData}
+                  creatorData={creatorData || undefined}
+                />
+              );
+            })}
           </div>
         )}
       </div>
@@ -283,6 +303,7 @@ const MyLibrary = ({
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         onUse={handleUsePrompt}
+        onCopy={handleCopyPromptFromModal}
       />
 
     </div>

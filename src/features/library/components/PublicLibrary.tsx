@@ -108,14 +108,16 @@ const PublicLibrary = ({
     setSelectedPrompt(null);
   }, []);
 
-  const handleUsePromptFromModal = useCallback((prompt: Prompt) => {
-    onUsePrompt({ ...prompt, tags: selectedPrompt?.tags || [] });
+  const handleUsePromptFromModal = useCallback((prompt: Prompt | PromptWithTags) => {
+    const promptWithTags = 'tags' in prompt ? prompt : { ...prompt, tags: selectedPrompt?.tags || [] };
+    onUsePrompt(promptWithTags);
     toast.success(t('success:prompt.loadedForEditing'));
     trackEvent('use_prompt', { prompt_id: prompt.id });
   }, [onUsePrompt, selectedPrompt, t]);
 
-  const handleCopyPromptFromModal = useCallback((prompt: Prompt) => {
-    navigator.clipboard.writeText(prompt.content);
+  const handleCopyPromptFromModal = useCallback((prompt: Prompt | PromptWithTags) => {
+    const promptContent = 'content' in prompt ? prompt.content : '';
+    navigator.clipboard.writeText(promptContent);
     toast.success(t('success:prompt.contentCopied'));
     trackEvent('copy_prompt_content', { prompt_id: prompt.id });
   }, [t]);

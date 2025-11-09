@@ -17,6 +17,17 @@ import { trackEvent } from '@/lib/analytics';
 import type { PromptWithTags } from '@/shared/types/prompts';
 import { Prompt } from '@/lib/storage';
 
+// Helper to get creator data for tag page prompts
+const getMockUserData = (userId: string) => {
+  const users = {
+    'user1': { username: 'alex_dev', avatar: '👨‍💻' },
+    'user2': { username: 'sarah_writer', avatar: '✍️' },
+    'user3': { username: 'mike_designer', avatar: '🎨' },
+    'user4': { username: 'emma_analyst', avatar: '📊' },
+  };
+  return users[userId as keyof typeof users] || { username: 'anonymous', avatar: '👤' };
+};
+
 // Cache untuk menyimpan data tag berdasarkan tagName dan userId
 interface TagCacheEntry {
   prompts: PromptWithTags[];
@@ -167,14 +178,15 @@ const TagPage: React.FC = () => {
     trackEvent('use_prompt', { prompt_id: prompt.id }, userId);
   };
 
-  const handleUsePromptFromModal = (prompt: Prompt) => {
+  const handleUsePromptFromModal = (prompt: Prompt | PromptWithTags) => {
     navigate(`/?use=${encodeURIComponent(prompt.id)}`);
     toast.success(t('success:prompt.loadedForEditing'));
     trackEvent('use_prompt', { prompt_id: prompt.id }, userId);
   };
 
-  const handleCopyPromptFromModal = (prompt: Prompt) => {
-    navigator.clipboard.writeText(prompt.content);
+  const handleCopyPromptFromModal = (prompt: Prompt | PromptWithTags) => {
+    const promptContent = 'content' in prompt ? prompt.content : '';
+    navigator.clipboard.writeText(promptContent);
     toast.success(t('success:prompt.contentCopied'));
     trackEvent('copy_prompt_content', { prompt_id: prompt.id }, userId);
   };
@@ -289,17 +301,22 @@ const TagPage: React.FC = () => {
                 </div>
               )}
               <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 p-3 sm:p-4 md:p-6 transition-opacity duration-300 ${isRefreshing ? 'opacity-75' : 'opacity-100'}`}>
-                {prompts.map((prompt) => (
-                  <PromptCard
-                    key={prompt.id}
-                    prompt={prompt}
-                    variant="tag"
-                    onClick={handleCardClick}
-                    onUse={handleUse}
-                    onCopy={handleCopy}
-                    onCopyUrl={handleCopyUrl}
-                  />
-                ))}
+                {prompts.map((prompt) => {
+                  const userData = prompt.user_id ? getMockUserData(prompt.user_id) : null;
+                  return (
+                    <PromptCard
+                      key={prompt.id}
+                      prompt={prompt}
+                      variant="tag"
+                      onClick={handleCardClick}
+                      onUse={handleUse}
+                      onCopy={handleCopy}
+                      onCopyUrl={handleCopyUrl}
+                      showCreator={!!userData}
+                      creatorData={userData || undefined}
+                    />
+                  );
+                })}
               </div>
             </div>
           )}
