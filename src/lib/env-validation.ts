@@ -23,9 +23,60 @@ const FALLBACK_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3M
 let validatedEnv: Env | null = null;
 
 /**
+ * Check if we're in a build environment (Node.js, not browser)
+ */
+function isBuildEnvironment(): boolean {
+  return typeof window === 'undefined' && typeof process !== 'undefined';
+}
+
+/**
+ * Safely access import.meta.env with fallback for build environments
+ */
+function safeGetEnvVar(key: string): string | undefined {
+  try {
+    if (typeof import.meta !== 'undefined' && import.meta.env) {
+      return import.meta.env[key];
+    }
+  } catch {
+    // Ignore errors when import.meta is not available (build time)
+  }
+  return undefined;
+}
+
+/**
+ * Get build mode safely
+ */
+function safeGetMode(): 'development' | 'production' | 'test' {
+  try {
+    const mode = safeGetEnvVar('MODE');
+    if (mode === 'development' || mode === 'production' || mode === 'test') {
+      return mode;
+    }
+  } catch {
+    // Fallback
+  }
+  // Default to development for build safety
+  return 'development';
+}
+
+/**
+ * Get boolean env var safely
+ */
+function safeGetBoolean(key: string, defaultValue: boolean): boolean {
+  try {
+    const value = safeGetEnvVar(key);
+    if (value === undefined) return defaultValue;
+    return value === 'true' || value === '1';
+  } catch {
+    return defaultValue;
+  }
+}
+
+/**
  * Validates environment variables at startup
- * Uses graceful fallback for development/preview environments
+ * Uses graceful fallback for development/preview/build environments
  * In production (Lovable), env vars should be set via dashboard
+ * Build-safe: never throws, always returns valid config
  * @returns Validated environment configuration
  */
 export function validateEnv(): Env {
@@ -33,59 +84,81 @@ export function validateEnv(): Env {
     return validatedEnv;
   }
 
-  // Check if import.meta.env is available (browser/runtime context)
-  const hasImportMetaEnv = typeof import.meta !== 'undefined' && import.meta.env;
-  const envUrl = hasImportMetaEnv ? import.meta.env.VITE_SUPABASE_URL : undefined;
-  const envKey = hasImportMetaEnv ? import.meta.env.VITE_SUPABASE_ANON_KEY : undefined;
+  const isBuild = isBuildEnvironment();
+  
+  // Safely access environment variables
+  const envUrl = safeGetEnvVar('VITE_SUPABASE_URL');
+  const envKey = safeGetEnvVar('VITE_SUPABASE_ANON_KEY');
 
-  // Gunakan env vars jika ada, fallback ke hardcoded untuk development
+  // Gunakan env vars jika ada, fallback ke hardcoded untuk development/build
   const supabaseUrl = envUrl || FALLBACK_SUPABASE_URL;
   const supabaseKey = envKey || FALLBACK_SUPABASE_ANON_KEY;
 
-  // Log warning jika menggunakan fallback (untuk development/preview)
+  // Log warning jika menggunakan fallback (untuk development/preview/build)
   if (!envUrl || !envKey) {
-    console.warn('⚠️ Environment variables not set. Using fallback values for development.');
-    console.warn('💡 For production, set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in Lovable dashboard.');
+    if (!isBuild) {
+      // Only log warnings in runtime, not during build
+      console.warn('⚠️ Environment variables not set. Using fallback values for development.');
+      console.warn('💡 For production, set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in Lovable dashboard.');
+    }
   }
 
   try {
-      const hasImportMetaEnv = typeof import.meta !== 'undefined' && import.meta.env;
-      validatedEnv = EnvSchema.parse({
-        VITE_SUPABASE_URL: supabaseUrl,
-        VITE_SUPABASE_ANON_KEY: supabaseKey,
-        MODE: (hasImportMetaEnv ? import.meta.env.MODE : 'development') || 'development',
-        DEV: hasImportMetaEnv ? (import.meta.env.DEV ?? true) : true,
-        PROD: hasImportMetaEnv ? (import.meta.env.PROD ?? false) : false
-      });
+    const mode = safeGetMode();
+    const dev = safeGetBoolean('DEV', mode === 'development');
+    const prod = safeGetBoolean('PROD', mode === 'production');
+    
+    validatedEnv = EnvSchema.parse({
+      VITE_SUPABASE_URL: supabaseUrl,
+      VITE_SUPABASE_ANON_KEY: supabaseKey,
+      MODE: mode,
+      DEV: dev,
+      PROD: prod
+    });
 
-    if (envUrl && envKey) {
+    if (!isBuild && envUrl && envKey) {
       console.log('✅ Environment validation passed');
-    } else {
+    } else if (!isBuild) {
       console.log('✅ Environment validation passed (using fallback values)');
     }
     
     return validatedEnv;
   } catch (error) {
     if (error instanceof z.ZodError) {
-      console.error('❌ Environment validation failed:');
-      error.errors.forEach(err => {
-        console.error(`  - ${err.path.join('.')}: ${err.message}`);
-      });
-      console.error('\n💡 Please set environment variables in Lovable dashboard:');
-      console.error('   - VITE_SUPABASE_URL');
-      console.error('   - VITE_SUPABASE_ANON_KEY');
-      console.error('   See .env.example for reference.\n');
+      if (!isBuild) {
+        // Only log errors in runtime, not during build
+        console.error('❌ Environment validation failed:');
+        error.errors.forEach(err => {
+          console.error(`  - ${err.path.join('.')}: ${err.message}`);
+        });
+        console.error('\n💡 Please set environment variables in Lovable dashboard:');
+        console.error('   - VITE_SUPABASE_URL');
+        console.error('   - VITE_SUPABASE_ANON_KEY');
+        console.error('   See .env.example for reference.\n');
+      }
       
-      // Return dengan fallback values untuk mencegah crash
-      const hasImportMetaEnv = typeof import.meta !== 'undefined' && import.meta.env;
+      // Always return dengan fallback values untuk mencegah crash (build-safe)
+      const mode = safeGetMode();
       validatedEnv = {
         VITE_SUPABASE_URL: FALLBACK_SUPABASE_URL,
         VITE_SUPABASE_ANON_KEY: FALLBACK_SUPABASE_ANON_KEY,
-        MODE: (hasImportMetaEnv ? (import.meta.env.MODE || 'development') : 'development') as 'development' | 'production' | 'test',
-        DEV: hasImportMetaEnv ? (import.meta.env.DEV ?? true) : true,
-        PROD: hasImportMetaEnv ? (import.meta.env.PROD ?? false) : false
+        MODE: mode,
+        DEV: mode === 'development',
+        PROD: mode === 'production'
       };
       
+      return validatedEnv;
+    }
+    // For non-Zod errors, still return fallback to prevent build failure
+    if (isBuild) {
+      const mode = safeGetMode();
+      validatedEnv = {
+        VITE_SUPABASE_URL: FALLBACK_SUPABASE_URL,
+        VITE_SUPABASE_ANON_KEY: FALLBACK_SUPABASE_ANON_KEY,
+        MODE: mode,
+        DEV: mode === 'development',
+        PROD: mode === 'production'
+      };
       return validatedEnv;
     }
     throw error;

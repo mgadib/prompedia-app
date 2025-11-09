@@ -209,7 +209,35 @@ export function clearQueryCache(): void {
   queryCache.clear();
 }
 
-// Export lazy-initialized client
-// Import supabase client seperti ini:
-// import { supabase } from "@/integrations/supabase/client";
-export const supabase = getSupabaseClient();
+/**
+ * Lazy-initialized Supabase client getter
+ * Prevents initialization during module load (important for build time)
+ * Import supabase client seperti ini:
+ * import { supabase } from "@/integrations/supabase/client";
+ */
+let _supabaseInstance: SupabaseClient<Database> | null = null;
+
+export function getSupabase(): SupabaseClient<Database> {
+  if (!_supabaseInstance) {
+    _supabaseInstance = getSupabaseClient();
+  }
+  return _supabaseInstance;
+}
+
+// Export as getter property for backward compatibility
+// This ensures lazy initialization - client is only created when accessed
+export const supabase = new Proxy({} as SupabaseClient<Database>, {
+  get(_target, prop) {
+    const client = getSupabase();
+    const value = (client as Record<string, unknown>)[prop as string];
+    if (typeof value === 'function') {
+      return value.bind(client);
+    }
+    return value;
+  },
+  set(_target, prop, value) {
+    const client = getSupabase();
+    (client as Record<string, unknown>)[prop as string] = value;
+    return true;
+  },
+});
