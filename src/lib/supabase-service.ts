@@ -1,7 +1,6 @@
 import { supabase } from '@/integrations/supabase/client'
 import { Database } from '@/integrations/supabase/types'
 import { storage } from './storage'
-import i18n from './i18n'
 
 // Type aliases untuk readability yang lebih baik (diperbarui untuk schema minimalis)
 type User = Database['public']['Tables']['users']['Row']
@@ -10,6 +9,7 @@ type Tag = Database['public']['Tables']['tags']['Row']
 type AIModel = Database['public']['Tables']['ai_models']['Row']
 type ThinkingMode = Database['public']['Tables']['thinking_modes']['Row']
 type UserSession = Database['public']['Tables']['user_sessions']['Row']
+type PromptTag = Database['public']['Tables']['prompt_tags']['Row']
 
 // Type untuk operasi insert
 type UserInsert = Database['public']['Tables']['users']['Insert']
@@ -18,16 +18,6 @@ type TagInsert = Database['public']['Tables']['tags']['Insert']
 type UserSessionInsert = Database['public']['Tables']['user_sessions']['Insert']
 type PromptTagInsert = Database['public']['Tables']['prompt_tags']['Insert']
 
-/**
- * SupabaseService - Static service class for backward compatibility
- * 
- * @deprecated For new code, use instance-based services:
- * - AuthService for authentication
- * - PromptService for prompt operations
- * - TagServiceInstance for tag operations
- * 
- * This class is kept for backward compatibility but will be phased out.
- */
 export class SupabaseService {
   // ========================================
   // AUTENTIKASI
@@ -124,86 +114,33 @@ export class SupabaseService {
   // PROMPTS
   // ========================================
 
-  static async getPrompts(
-    userId?: string,
-    options?: { limit?: number; offset?: number; fields?: string[] }
-  ): Promise<Prompt[]> {
-    // OPTIMIZED: Selective field loading - only load needed fields
-    const defaultFields = options?.fields || [
-      'id',
-      'title',
-      'content',
-      'description',
-      'model_id',
-      'mode_id',
-      'is_public',
-      'user_id',
-      'color',
-      'is_featured',
-      'original_prompt_id'
-    ];
-    
-    const selectFields = defaultFields.join(', ');
-    
+  static async getPrompts(userId?: string): Promise<Prompt[]> {
     let query = supabase
       .from('prompts')
-      .select(selectFields)
-      .order('id', { ascending: false })
+      .select(`
+        *,
+        users!prompts_user_id_fkey1(username, display_name)
+      `)
+      // Catatan: field updated_at dihapus dalam schema minimalis
 
     if (userId) {
       query = query.eq('user_id', userId)
     }
 
-    // OPTIMIZED: Add pagination and limit
-    const limit = options?.limit || 100; // Default limit to prevent huge queries
-    query = query.limit(limit);
-    
-    if (options?.offset) {
-      query = query.range(options.offset, options.offset + limit - 1);
-    }
-
     const { data, error } = await query
     if (error) throw error
-    return ((data || []).filter(p => p !== null)) as unknown as Prompt[]
+    return data || []
   }
 
-  static async getPublicPrompts(
-    options?: { limit?: number; offset?: number; fields?: string[] }
-  ): Promise<Prompt[]> {
-    // OPTIMIZED: Selective field loading
-    const defaultFields = options?.fields || [
-      'id',
-      'title',
-      'content',
-      'description',
-      'model_id',
-      'mode_id',
-      'is_public',
-      'user_id',
-      'color',
-      'is_featured',
-      'original_prompt_id'
-    ];
-    
-    const selectFields = defaultFields.join(', ');
-    
-    let query = supabase
+  static async getPublicPrompts(): Promise<Prompt[]> {
+    const { data, error } = await supabase
       .from('prompts')
-      .select(selectFields)
+      .select('*')
       .eq('is_public', true)
       .order('id', { ascending: false })
 
-    // OPTIMIZED: Add pagination and limit
-    const limit = options?.limit || 50; // Smaller default for public prompts
-    query = query.limit(limit);
-    
-    if (options?.offset) {
-      query = query.range(options.offset, options.offset + limit - 1);
-    }
-
-    const { data, error } = await query
     if (error) throw error
-    return ((data || []).filter(p => p !== null)) as unknown as Prompt[]
+    return data || []
   }
 
   static async getFeaturedPrompts(): Promise<Prompt[]> {
@@ -282,7 +219,7 @@ export class SupabaseService {
     // Membuat prompt fork (disederhanakan - tanpa computed fields)
     const forkedPrompt: PromptInsert = {
       user_id: (await this.getCurrentUser())?.id || '',
-      title: newTitle || i18n.t('prompt:forkTitle', { title: originalPrompt.title }),
+      title: newTitle || `Fork of ${originalPrompt.title}`,
       content: originalPrompt.content,
       description: originalPrompt.description,
       model_id: originalPrompt.model_id,
@@ -494,12 +431,7 @@ export class SupabaseService {
   // AI PROCESSING
   // ========================================
 
-  static async processWithAI(
-    model: string, 
-    prompt: string, 
-    mode?: string, 
-    options?: Record<string, unknown>
-  ): Promise<unknown> {
+  static async processWithAI(model: string, prompt: string, mode?: string, options?: any) {
     const { data, error } = await supabase.functions.invoke('ai-processor', {
       body: {
         model,
@@ -513,11 +445,7 @@ export class SupabaseService {
     return data
   }
 
-  static async enhancePrompts(
-    prompts: Array<{id: string, content: string, currentMode?: string}>, 
-    operation: string, 
-    options?: Record<string, unknown>
-  ): Promise<unknown> {
+  static async enhancePrompts(prompts: Array<{id: string, content: string, currentMode?: string}>, operation: string, options?: any) {
     const { data, error } = await supabase.functions.invoke('prompt-enhancer', {
       body: {
         prompts,
@@ -538,7 +466,7 @@ export class SupabaseService {
     const fileExt = file.name.split('.').pop()
     const fileName = `${userId}-${Date.now()}.${fileExt}`
 
-    const { error } = await supabase.storage
+    const { data, error } = await supabase.storage
       .from('avatars')
       .upload(fileName, file)
 
@@ -556,7 +484,7 @@ export class SupabaseService {
     const fileExt = file.name.split('.').pop()
     const fileName = `${userId}-${Date.now()}.${fileExt}`
 
-    const { error } = await supabase.storage
+    const { data, error } = await supabase.storage
       .from('prompt-assets')
       .upload(fileName, file)
 
@@ -597,14 +525,14 @@ export class SupabaseService {
     // Sinkronisasi prompt lokal ke Supabase
     for (const localPrompt of userLocalPrompts) {
       try {
-        await this.createPrompt({
+        const newPrompt = await this.createPrompt({
           user_id: user.id,
           title: localPrompt.title,
           content: localPrompt.content,
-          description: localPrompt.description || null,
-          model_id: localPrompt.model_id || '',
-          mode_id: localPrompt.mode_id || '',
-          color: localPrompt.color || '#3b82f6',
+          description: localPrompt.description,
+          model_id: localPrompt.model_id,
+          mode_id: localPrompt.mode_id,
+          color: localPrompt.color,
           is_public: localPrompt.is_public
         })
 

@@ -3,28 +3,13 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
         http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+  
+  <!-- Homepage - Main Entry Point -->
   <url>
     <loc>https://prompedia.app/</loc>
-    <lastmod>2025-11-09</lastmod>
+    <lastmod>2025-11-01</lastmod>
     <changefreq>daily</changefreq>
-    <priority>1</priority>
+    <priority>1.0</priority>
   </url>
-  <url>
-    <loc>https://prompedia.app/p/f153a922-2ca6-4506-aae6-dcf9ea89336d</loc>
-    <lastmod>2025-11-06</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://prompedia.app/p/de81a83e-9aab-43ed-b5cb-29b81090c309</loc>
-    <lastmod>2025-11-06</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://prompedia.app/p/11499c66-96f7-4a4c-a9b8-2a87bf7c3d62</loc>
-    <lastmod>2025-11-06</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
+
 </urlset>

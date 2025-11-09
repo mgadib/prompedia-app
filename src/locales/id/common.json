@@ -31,15 +31,9 @@
     "goToHome": "Kembali ke Beranda",
     "returnToHome": "Kembali ke Beranda",
     "tryAgain": "Coba lagi",
-    "backToHome": "Kembali ke Beranda",
-    "moreActions": "Lainnya",
-    "aiActions": "Aksi AI",
-    "undo": "Batal"
+    "backToHome": "Kembali ke Beranda"
   },
   "labels": {
-    "improve": "Perbaiki",
-    "transform": "Ubah",
-    "analyze": "Analisis",
     "email": "Email",
     "password": "Kata Sandi",
     "username": "Nama Pengguna",
@@ -90,8 +84,7 @@
     "usageLimit": "Batas Penggunaan",
     "status": "STATUS",
     "mode": "MODE",
-    "model": "MODEL",
-    "processing": "Memproses..."
+    "model": "MODEL"
   },
   "messages": {
     "welcomeBack": "Selamat datang kembali!",
@@ -100,8 +93,7 @@
     "dontHaveAccount": "Belum punya akun? Daftar",
     "alreadyHaveAccount": "Sudah punya akun? Masuk",
     "joinPrompedia": "Bergabung dengan Prompedia untuk membuka akses tak terbatas.",
-    "enterCredentials": "Selamat datang kembali! Masukkan kredensial Anda untuk melanjutkan.",
-    "undoNotAvailable": "Undo tidak tersedia. Silakan pulihkan secara manual jika diperlukan."
+    "enterCredentials": "Selamat datang kembali! Masukkan kredensial Anda untuk melanjutkan."
   },
   "notFound": {
     "title": "404",
@@ -118,48 +110,6 @@
   "changeLanguage": "Ubah Bahasa",
   "user": "Pengguna",
   "home": "Beranda",
-  "public": "Publik",
-  "ui": {
-    "toggleSidebar": "Buka/Tutup Sidebar",
-    "pagination": "Navigasi Halaman",
-    "goToPreviousPage": "Ke halaman sebelumnya",
-    "goToNextPage": "Ke halaman berikutnya",
-    "previous": "Sebelumnya",
-    "next": "Selanjutnya",
-    "morePages": "Halaman lainnya",
-    "breadcrumb": "Breadcrumb",
-    "more": "Lainnya",
-    "previousSlide": "Slide sebelumnya",
-    "nextSlide": "Slide berikutnya"
-  },
-  "languages": {
-    "en": "English",
-    "id": "Bahasa Indonesia"
-  },
-  "error": {
-    "occurred": "Terjadi Kesalahan",
-    "description": "Aplikasi mengalami kesalahan yang tidak terduga. Silakan muat ulang halaman.",
-    "tryAgain": "Coba Lagi",
-    "tryAgainAria": "Coba lagi untuk memulihkan dari kesalahan",
-    "reloadPage": "Muat Ulang Halaman",
-    "reloadPageAria": "Muat ulang halaman",
-    "errorDetails": "Detail Kesalahan (Development)"
-  },
-  "fallbackToIndividual": "Kembali ke pemuatan tag individual",
-  "initializingWorkspace": "Menginisialisasi workspace Anda",
-  "loadingPrompedia": "Memuat Prompedia...",
-  "seo": {
-    "description": "Bangun, optimalkan, dan kelola AI prompt dengan Prompedia AI. Platform prompt engineering gratis dengan 6 thinking mode, integrasi model AI, dan perpustakaan prompt publik. Sempurna untuk ChatGPT, Claude, dan tools AI lainnya.",
-    "features": {
-      "aiEnhancement": "Peningkatan Prompt AI",
-      "publicLibrary": "Perpustakaan Prompt Publik",
-      "privateManagement": "Manajemen Prompt Pribadi",
-      "thinkingModes": "Multiple Thinking Mode (Meta Prompt, Self-Refine, Chain-of-Thought, Self-Consistency, Chain-of-Prompt, Role Prompt)",
-      "modelIntegration": "Integrasi Model AI (Llama 4 Maverick, Qwen 3 30B, Qwen 2.5 72B, Llama 3.1 70B)",
-      "usageTracking": "Pelacakan Penggunaan & Pembatasan Rate",
-      "tagSystem": "Sistem Tag Cerdas",
-      "realTimeProcessing": "Pemrosesan AI Real-time"
-    }
-  }
+  "public": "Publik"
 }
 

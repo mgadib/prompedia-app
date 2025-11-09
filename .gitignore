@@ -14,9 +14,6 @@ build/
 out/
 *.local
 
-# Auto-generated files
-public/sitemap.xml
-
 # ============================================
 # Environment Variables & Secrets
 # ============================================

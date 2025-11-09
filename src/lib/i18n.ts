@@ -7,182 +7,53 @@ import { STORAGE_KEYS } from './constants';
 const NAMESPACES = ['common', 'errors', 'success', 'auth', 'prompt', 'library', 'modes', 'actions', 'validation'] as const;
 const LANGUAGES = ['en', 'id'] as const;
 
-// Critical namespace yang harus di-load eagerly (digunakan di semua halaman)
-const CRITICAL_NAMESPACES = ['common', 'errors'] as const;
-
-// Lazy load translation modules (non-eager untuk on-demand loading)
-const lazyTranslationModules = import.meta.glob<{ default: Record<string, unknown> }>('@/locales/**/*.json', {
-  eager: false,
-  import: 'default',
-});
-
-// Eager load critical namespaces only
-const criticalTranslationModules = import.meta.glob<{ default: Record<string, unknown> }>('@/locales/**/{common,errors}.json', {
+/**
+ * Load semua translation files menggunakan import.meta.glob
+ * Ini menghindari masalah build dengan static import JSON
+ * Menggunakan eager: true untuk load semua files sekaligus (normal untuk i18n)
+ */
+const translationModules = import.meta.glob<{ default: Record<string, unknown> }>('@/locales/**/*.json', {
   eager: true,
   import: 'default',
 });
 
-// Cache untuk track failed namespaces (untuk mencegah infinite retry loop)
-const failedNamespaces = new Set<string>();
-// Track logged errors untuk mencegah spam di console
-const loggedErrors = new Set<string>();
-
 /**
- * Get cache key untuk failed namespace
+ * Load translation file untuk bahasa dan namespace tertentu
  */
-function getFailedNamespaceKey(language: string, namespace: string): string {
-  return `${language}:${namespace}`;
-}
-
-/**
- * Load translation file untuk bahasa dan namespace tertentu (lazy)
- * Improved path matching and error handling dengan failed namespace cache
- */
-async function loadTranslation(language: string, namespace: string, retries = 3): Promise<Record<string, unknown>> {
-  const failedKey = getFailedNamespaceKey(language, namespace);
-  
-  // Check cache: jika namespace sudah diketahui gagal, return empty object
-  if (failedNamespaces.has(failedKey)) {
-    return {};
-  }
-  for (let attempt = 1; attempt <= retries; attempt++) {
-    try {
-      // Normalize path patterns - try multiple matching strategies
-      const possiblePaths = [
-        `/${language}/${namespace}.json`,
-        `/locales/${language}/${namespace}.json`,
-        `locales/${language}/${namespace}.json`,
-        `${language}/${namespace}.json`,
-      ];
-      
-      // Find module that matches any of the possible paths
-      const modulePath = Object.keys(lazyTranslationModules).find((path) => {
-        // Normalize path separators
-        const normalizedPath = path.replace(/\\/g, '/');
-        return possiblePaths.some(pattern => 
-          normalizedPath.endsWith(pattern) || 
-          normalizedPath.includes(pattern)
-        );
-      });
-      
-      if (!modulePath) {
-        if (attempt === retries) {
-          // Mark as failed dan log error hanya sekali
-          failedNamespaces.add(failedKey);
-          if (!loggedErrors.has(failedKey)) {
-            loggedErrors.add(failedKey);
-            console.error(`[i18n] Translation module not found after ${retries} attempts: ${language}/${namespace}`);
-            console.error(`[i18n] Available paths:`, Object.keys(lazyTranslationModules).slice(0, 5));
-          }
-          // Return empty object instead of throwing untuk prevent infinite loop
-          return {};
-        }
-        // Retry with slight delay
-        await new Promise(resolve => setTimeout(resolve, 50 * attempt));
-        continue;
-      }
-      
-      // Load module dynamically
-      const moduleLoader = lazyTranslationModules[modulePath];
-      if (!moduleLoader) {
-        if (attempt === retries) {
-          // Mark as failed dan log error hanya sekali
-          failedNamespaces.add(failedKey);
-          if (!loggedErrors.has(failedKey)) {
-            loggedErrors.add(failedKey);
-            console.error(`[i18n] Translation loader not found: ${language}/${namespace} at path: ${modulePath}`);
-          }
-          // Return empty object instead of throwing untuk prevent infinite loop
-          return {};
-        }
-        await new Promise(resolve => setTimeout(resolve, 50 * attempt));
-        continue;
-      }
-      
-      const module = await moduleLoader();
-      const translation = (module as Record<string, unknown>) || {};
-      
-      // Validate that we got actual translation data
-      if (Object.keys(translation).length === 0) {
-        console.warn(`[i18n] Empty translation loaded for ${language}/${namespace}`);
-      }
-      
-      return translation;
-    } catch (error) {
-      if (attempt === retries) {
-        // Mark as failed dan log error hanya sekali
-        failedNamespaces.add(failedKey);
-        if (!loggedErrors.has(failedKey)) {
-          loggedErrors.add(failedKey);
-          console.error(`[i18n] Error loading translation ${language}/${namespace} after ${retries} attempts:`, error);
-        }
-        // Return empty object instead of throwing untuk prevent infinite loop
-        return {};
-      }
-      // Retry with exponential backoff
-      await new Promise(resolve => setTimeout(resolve, 100 * attempt));
-    }
-  }
-  
-  // Should never reach here, but TypeScript needs it
-  return {};
-}
-
-/**
- * Load critical translation file (already loaded eagerly)
- * Improved path matching and error handling
- */
-function loadCriticalTranslation(language: string, namespace: string): Record<string, unknown> {
+function loadTranslation(language: string, namespace: string): Record<string, unknown> {
   try {
-    // Normalize path patterns - try multiple matching strategies
-    const possiblePaths = [
-      `/${language}/${namespace}.json`,
-      `/locales/${language}/${namespace}.json`,
-      `locales/${language}/${namespace}.json`,
-      `${language}/${namespace}.json`,
-    ];
-    
-    // Find module that matches any of the possible paths
-    const moduleEntry = Object.entries(criticalTranslationModules).find(([path]) => {
-      // Normalize path separators
-      const normalizedPath = path.replace(/\\/g, '/');
-      return possiblePaths.some(pattern => 
-        normalizedPath.endsWith(pattern) || 
-        normalizedPath.includes(pattern)
-      );
-    });
+    // Cari module yang cocok dengan path
+    // import.meta.glob akan menghasilkan path seperti '@/locales/en/common.json'
+    const moduleEntry = Object.entries(translationModules).find(([path]) => 
+      path.endsWith(`/${language}/${namespace}.json`) || path.includes(`/locales/${language}/${namespace}.json`)
+    );
     
     if (!moduleEntry) {
-      console.error(`[i18n] Critical translation module not found: ${language}/${namespace}`);
-      console.error(`[i18n] Available critical paths:`, Object.keys(criticalTranslationModules).slice(0, 5));
-      // Return empty object but log error for debugging
+      console.warn(`Translation module not found: ${language}/${namespace}`);
       return {};
     }
     
     const module = moduleEntry[1];
-    const translation = (module as Record<string, unknown>) || {};
     
-    // Validate that we got actual translation data
-    if (Object.keys(translation).length === 0) {
-      console.warn(`[i18n] Empty critical translation loaded for ${language}/${namespace}`);
-    }
-    
-    return translation;
+    // Module sudah loaded (eager), langsung return
+    // Dengan import: 'default', module langsung berisi default export (object JSON)
+    return (module as Record<string, unknown>) || {};
   } catch (error) {
-    console.error(`[i18n] Error loading critical translation ${language}/${namespace}:`, error);
+    console.error(`Error loading translation ${language}/${namespace}:`, error);
+    // Return empty object sebagai fallback
     return {};
   }
 }
 
 /**
- * Load critical translation files untuk bahasa tertentu (eager)
+ * Load semua translation files untuk bahasa tertentu
  */
-function loadCriticalLanguageResources(language: string): Record<string, Record<string, unknown>> {
+function loadLanguageResources(language: string): Record<string, Record<string, unknown>> {
   const resources: Record<string, Record<string, unknown>> = {};
   
-  // Load hanya critical namespaces untuk bahasa ini
-  CRITICAL_NAMESPACES.forEach((namespace) => {
-    const translation = loadCriticalTranslation(language, namespace);
+  // Load semua namespaces untuk bahasa ini
+  NAMESPACES.forEach((namespace) => {
+    const translation = loadTranslation(language, namespace);
     resources[namespace] = translation;
   });
   
@@ -190,16 +61,14 @@ function loadCriticalLanguageResources(language: string): Record<string, Record<
 }
 
 /**
- * Initialize i18n dengan lazy loading
- * Critical namespaces (common, errors) loaded eagerly
- * Other namespaces loaded on-demand
+ * Initialize i18n dengan dynamic loading
  */
 function initializeI18n(): void {
-  // Load hanya critical resources untuk semua bahasa (eager)
+  // Load resources untuk semua bahasa
   const resources: Record<string, Record<string, Record<string, unknown>>> = {};
   
   LANGUAGES.forEach((language) => {
-    resources[language] = loadCriticalLanguageResources(language);
+    resources[language] = loadLanguageResources(language);
   });
 
   // Configure number formatting
@@ -230,90 +99,14 @@ function initializeI18n(): void {
       },
       react: {
         useSuspense: false, // Disable suspense for better error handling
-        bindI18n: 'languageChanged loaded', // Bind to languageChanged and loaded events for reactivity
-        bindI18nStore: 'added removed', // Bind to store events for reactivity
       },
     });
 
-  // Track loaded namespaces across all languages
-  const loadedNamespaces = new Set<string>();
-
-  // Preload namespaces when they're first requested
-  const originalLoadNamespaces = i18n.loadNamespaces.bind(i18n);
-  i18n.loadNamespaces = async (namespaces: string | string[]) => {
-    const nsArray = typeof namespaces === 'string' ? [namespaces] : namespaces;
-    const language = i18n.language || 'en';
-    
-    // Load each namespace if not already loaded
-    for (const namespace of nsArray) {
-      if (!CRITICAL_NAMESPACES.includes(namespace as typeof CRITICAL_NAMESPACES[number])) {
-        if (!i18n.hasResourceBundle(language, namespace)) {
-          const translation = await loadTranslation(language, namespace);
-          
-          // Only add if we got actual translation data
-          if (Object.keys(translation).length > 0) {
-            i18n.addResourceBundle(language, namespace, translation, true, true);
-            loadedNamespaces.add(namespace);
-            // Remove from failed cache if successfully loaded
-            failedNamespaces.delete(getFailedNamespaceKey(language, namespace));
-          } else {
-            // Check if it's a known failed namespace
-            const failedKey = getFailedNamespaceKey(language, namespace);
-            if (!failedNamespaces.has(failedKey)) {
-              // Only warn if it's not a known failure (to prevent spam)
-              console.warn(`[i18n] Skipping empty translation for ${language}/${namespace}`);
-            }
-          }
-        } else {
-          // Already loaded, just track it
-          loadedNamespaces.add(namespace);
-        }
-      } else {
-        // Track critical namespaces too
-        loadedNamespaces.add(namespace);
-      }
-    }
-    
-    // Call original to maintain i18next's internal state
-    return originalLoadNamespaces(namespaces);
-  };
-
   // Update HTML lang attribute when language changes
-  i18n.on('languageChanged', async (lng) => {
+  i18n.on('languageChanged', (lng) => {
     if (typeof document !== 'undefined') {
       document.documentElement.lang = lng;
       localStorage.setItem(STORAGE_KEYS.LANGUAGE, lng);
-      
-      // Reload all previously loaded namespaces for the new language
-      for (const namespace of loadedNamespaces) {
-        if (!i18n.hasResourceBundle(lng, namespace)) {
-          try {
-            if (CRITICAL_NAMESPACES.includes(namespace as typeof CRITICAL_NAMESPACES[number])) {
-              // Load critical namespace
-              const translation = loadCriticalTranslation(lng, namespace);
-              if (Object.keys(translation).length > 0) {
-                i18n.addResourceBundle(lng, namespace, translation, true, true);
-              }
-            } else {
-              // Load lazy namespace
-              const translation = await loadTranslation(lng, namespace);
-              if (Object.keys(translation).length > 0) {
-                i18n.addResourceBundle(lng, namespace, translation, true, true);
-                // Remove from failed cache if successfully loaded
-                failedNamespaces.delete(getFailedNamespaceKey(lng, namespace));
-              }
-            }
-          } catch (error) {
-            // This should not happen anymore since loadTranslation returns empty object instead of throwing
-            // But keep for safety
-            const failedKey = getFailedNamespaceKey(lng, namespace);
-            if (!loggedErrors.has(failedKey)) {
-              loggedErrors.add(failedKey);
-              console.error(`[i18n] Failed to reload namespace ${namespace} for language ${lng}:`, error);
-            }
-          }
-        }
-      }
     }
   });
 

@@ -1,8 +1,9 @@
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { Prompt } from './storage';
+import { Prompt, User as LocalUser } from './storage';
 import { storageLogger, supabaseLogger } from './logger';
-import { getErrorMessage, getStorageErrorMessage } from './i18n-helpers';
+import { promptSchema } from './validation';
+import { z } from 'zod';
 
 /**
  * Storage manager terpadu yang menangani Supabase dan localStorage
@@ -34,24 +35,26 @@ class StorageManager {
 
   /**
    * Inisialisasi monitoring state autentikasi
-   * OPTIMIZED: Menggunakan shared AuthManager untuk mengurangi duplicate getSession() calls
+   * Mendengarkan perubahan auth state dan memperbarui user yang terautentikasi
    */
   private async initializeAuth(): Promise<void> {
     try {
-      // OPTIMIZED: Use shared auth manager instead of direct getSession()
-      const { authManager } = await import('@/lib/auth-manager');
-      
-      // Get initial user dengan caching
-      const user = await authManager.getUser();
-      this.authUser = user;
-      supabaseLogger.info('Initial auth state', { userId: this.authUser?.id });
+      // Mendapatkan session awal
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error) {
+        supabaseLogger.error('Failed to get initial session', error);
+      } else {
+        this.authUser = session?.user ?? null;
+        supabaseLogger.info('Initial auth state', { userId: this.authUser?.id });
+      }
 
-      // OPTIMIZED: Use shared auth state change listener
-      authManager.onAuthStateChange((user) => {
+      // Mendengarkan perubahan auth state
+      supabase.auth.onAuthStateChange((event, session) => {
         const previousUserId = this.authUser?.id;
-        this.authUser = user;
+        this.authUser = session?.user ?? null;
         
         supabaseLogger.info('Auth state changed', {
+          event,
           previousUserId,
           currentUserId: this.authUser?.id
         });
@@ -108,19 +111,21 @@ class StorageManager {
 
   /**
    * Memperbarui state autentikasi
-   * OPTIMIZED: Menggunakan shared AuthManager dengan caching
+   * Berguna ketika perlu memastikan state auth terbaru
    */
   public async refreshAuthState(): Promise<void> {
     try {
-      const { authManager } = await import('@/lib/auth-manager');
-      const previousUserId = this.authUser?.id;
-      const user = await authManager.getUser();
-      this.authUser = user;
-      
-      supabaseLogger.info('Auth state refreshed', { 
-        previousUserId,
-        currentUserId: this.authUser?.id 
-      });
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error) {
+        supabaseLogger.error('Failed to refresh auth state', error);
+      } else {
+        const previousUserId = this.authUser?.id;
+        this.authUser = session?.user ?? null;
+        supabaseLogger.info('Auth state refreshed', { 
+          previousUserId,
+          currentUserId: this.authUser?.id 
+        });
+      }
     } catch (error) {
       supabaseLogger.error('Failed to refresh auth state', error as Error);
     }
@@ -248,7 +253,7 @@ class StorageManager {
         
         // Validate prompt data - ensure required fields are present
         if (!prompt.id || !prompt.title || !prompt.content || !prompt.model) {
-          throw new StorageError(getErrorMessage('prompt.missingFields'));
+          throw new StorageError('Missing required prompt fields');
         }
         
         if (this.isAuthenticated()) {
@@ -263,7 +268,7 @@ class StorageManager {
         });
       } catch (error) {
         storageLogger.error('Failed to save prompt', error as Error, { promptId: prompt.id });
-        throw new StorageError(getErrorMessage('prompt.saveFailed'), error as Error);
+        throw new StorageError('Gagal menyimpan prompt', error as Error);
       }
     });
   }
@@ -273,7 +278,7 @@ class StorageManager {
    */
   private async savePromptToSupabase(prompt: Prompt): Promise<void> {
     if (!this.authUser) {
-      throw new StorageError(getStorageErrorMessage('notAuthenticated'));
+      throw new StorageError('User not authenticated for Supabase storage');
     }
 
     try {
@@ -285,8 +290,8 @@ class StorageManager {
         description: prompt.description || '',
         
         // FK only approach (model and mode TEXT columns have been dropped)
-        model_id: prompt.model_id || prompt.model || 'gpt-4o',  // Keep fallback to old field for migration
-        mode_id: prompt.mode_id || prompt.mode || 'normal',      // Keep fallback to old field for migration
+        model_id: prompt.model_id || prompt.model,  // Keep fallback to old field for migration
+        mode_id: prompt.mode_id || prompt.mode,      // Keep fallback to old field for migration
         
         is_public: prompt.is_public || false,
         user_id: prompt.user_id || this.authUser.id,
@@ -303,7 +308,7 @@ class StorageManager {
 
       const { error } = await supabase
         .from('prompts')
-        .upsert([promptData], { onConflict: 'id' });
+        .upsert(promptData, { onConflict: 'id' });
 
       if (error) {
         supabaseLogger.error('Supabase upsert failed', error, { 
@@ -364,49 +369,26 @@ class StorageManager {
         return this.getPromptsFromLocalStorage();
       }
       
-      throw new StorageError(getErrorMessage('prompt.loadFailed'), error as Error);
+      throw new StorageError('Failed to retrieve prompts', error as Error);
     }
   }
 
   /**
    * Get prompts from Supabase
-   * OPTIMIZED: Selective field loading and pagination support
    */
-  private async getPromptsFromSupabase(options?: { limit?: number; offset?: number }): Promise<Prompt[]> {
+  private async getPromptsFromSupabase(): Promise<Prompt[]> {
     if (!this.authUser) {
       throw new StorageError('User not authenticated for Supabase storage');
     }
 
     try {
-      // OPTIMIZED: Selective field loading - only load needed fields
-      let query = supabase
+      const { data, error } = await supabase
         .from('prompts')
         .select(`
-          id,
-          title,
-          content,
-          description,
-          model_id,
-          mode_id,
-          is_public,
-          user_id,
-          color,
-          is_featured,
-          original_prompt_id,
+          *,
           users!prompts_user_id_fkey1(username, display_name)
         `)
-        .eq('user_id', this.authUser.id)
-        .order('id', { ascending: false });
-
-      // OPTIMIZED: Add pagination and limit
-      const limit = options?.limit || 100; // Default limit to prevent huge queries
-      query = query.limit(limit);
-      
-      if (options?.offset) {
-        query = query.range(options.offset, options.offset + limit - 1);
-      }
-
-      const { data, error } = await query;
+        .eq('user_id', this.authUser.id);
 
       if (error) {
         supabaseLogger.error('Failed to fetch prompts from Supabase', error);
@@ -429,7 +411,7 @@ class StorageManager {
         
         is_public: item.is_public,
         user_id: item.user_id,
-        color: item.color ?? '#3b82f6',
+        color: item.color,
         is_featured: item.is_featured,
         original_prompt_id: item.original_prompt_id
         // Note: tags are now loaded separately via junction table

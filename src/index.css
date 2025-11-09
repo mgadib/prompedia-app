@@ -64,6 +64,8 @@ All colors MUST be HSL.
     font-size: 16px;
     /* Improve touch scrolling on iOS */
     -webkit-overflow-scrolling: touch;
+    /* Smooth scrolling */
+    scroll-behavior: smooth;
   }
 
   body {
@@ -137,8 +139,53 @@ All colors MUST be HSL.
   }
 
   /* Responsive Design Enhancements */
+  @media (max-width: 768px) {
+    /* Mobile-first responsive adjustments */
+    .sidebar-mobile {
+      position: fixed;
+      left: -100%;
+      top: 0;
+      height: 100vh;
+      z-index: 50;
+      transition: left 0.3s ease-in-out;
+    }
+    
+    .sidebar-mobile.open {
+      left: 0;
+    }
+    
+    .main-content-mobile {
+      width: 100%;
+      margin-left: 0;
+    }
+    
+    /* Adjust editor layout for mobile */
+    .editor-header-mobile {
+      flex-direction: column;
+      gap: 0.5rem;
+      padding: 1rem;
+    }
+    
+    .editor-buttons-mobile {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.5rem;
+      width: 100%;
+    }
+    
+    .editor-controls-mobile {
+      flex-direction: column;
+      gap: 0.5rem;
+      width: 100%;
+    }
+  }
+
   @media (max-width: 640px) {
     /* Extra small screens */
+    .editor-buttons-mobile {
+      grid-template-columns: 1fr;
+    }
+    
     .prompt-library-grid {
       grid-template-columns: 1fr !important;
     }
@@ -146,6 +193,10 @@ All colors MUST be HSL.
 
   @media (min-width: 769px) and (max-width: 1024px) {
     /* Tablet adjustments */
+    .sidebar-tablet {
+      width: 200px;
+    }
+    
     .prompt-library-grid {
       grid-template-columns: repeat(2, 1fr) !important;
     }
@@ -154,6 +205,14 @@ All colors MUST be HSL.
   /* Utility classes for responsive design */
   .responsive-text {
     font-size: clamp(0.875rem, 2vw, 1rem);
+  }
+
+  .responsive-padding {
+    padding: clamp(1rem, 3vw, 1.5rem);
+  }
+
+  .responsive-gap {
+    gap: clamp(0.5rem, 2vw, 1rem);
   }
 
   /* Touch manipulation for better mobile performance */
@@ -205,59 +264,6 @@ All colors MUST be HSL.
     body {
       -webkit-text-size-adjust: 100%;
       text-size-adjust: 100%;
-    }
-  }
-
-  /* Custom transition utilities */
-  .transition-smooth {
-    transition-property: color, background-color, border-color, opacity;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    transition-duration: 250ms;
-  }
-
-  .transition-fast {
-    transition-duration: 150ms;
-  }
-
-  .transition-normal {
-    transition-duration: 250ms;
-  }
-
-  .transition-slow {
-    transition-duration: 350ms;
-  }
-
-  /* Improved spacing utilities for better visual hierarchy */
-  .spacing-tight {
-    gap: 0.5rem;
-  }
-
-  .spacing-normal {
-    gap: 1rem;
-  }
-
-  .spacing-relaxed {
-    gap: 1.5rem;
-  }
-
-  .spacing-loose {
-    gap: 2rem;
-  }
-
-  /* Focus visible enhancements */
-  .focus-ring {
-    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background;
-  }
-
-  /* Reduced motion support */
-  @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-      scroll-behavior: auto !important;
     }
   }
 }

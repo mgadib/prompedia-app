@@ -62,46 +62,6 @@
 - OpenRouter API Key ([Get it here](https://openrouter.ai/))
 - Supabase Project (optional for local development)
 
-### Environment Setup di Lovable.dev
-
-Aplikasi ini di-hosting di **Lovable.dev** dan menggunakan **Supabase Cloud**. Environment variables dikonfigurasi melalui Lovable dashboard, bukan file `.env` lokal.
-
-#### Langkah-langkah Setup:
-
-1. **Buka Project di Lovable Dashboard**
-   - Login ke [Lovable.dev](https://lovable.dev)
-   - Buka project Anda
-
-2. **Konfigurasi Environment Variables**
-   - Pergi ke **Settings** > **Environment Variables**
-   - Tambahkan variabel berikut:
-
-   ```
-   VITE_SUPABASE_URL=https://your-project.supabase.co
-   VITE_SUPABASE_ANON_KEY=your-anon-key-here
-   ```
-
-3. **Mendapatkan Supabase Credentials**
-   - Buka [Supabase Dashboard](https://supabase.com/dashboard)
-   - Pilih project Anda
-   - Pergi ke **Settings** > **API**
-   - Copy **"Project URL"** untuk `VITE_SUPABASE_URL`
-   - Copy **"anon public"** key untuk `VITE_SUPABASE_ANON_KEY`
-
-4. **Catatan Penting**
-   - Environment variables akan otomatis tersedia saat build di Lovable
-   - Untuk development/preview, aplikasi menggunakan fallback values
-   - Di production, pastikan env vars sudah diset dengan benar
-
-#### Optional Environment Variables:
-
-```
-VITE_SITE_URL=https://your-domain.com
-VITE_SITE_TITLE=Prompedia.app - Prompt Engineering Laboratory
-```
-
-**Note:** `MODE`, `DEV`, dan `PROD` diatur otomatis oleh Vite berdasarkan build mode.
-
 ### Thinking Modes
 
 | Mode | Icon | Purpose | Output Structure |
@@ -170,17 +130,11 @@ prompedia-ai/
 │   ├── lib/                # Core logic
 │   │   ├── models.ts       # AI model configs
 │   │   ├── modes.ts        # Thinking modes
-│   │   ├── i18n.ts         # Internationalization
 │   │   ├── rate-limiting.ts
 │   │   └── ...
-│   ├── locales/            # i18n translation files
-│   │   ├── en/             # English translations
-│   │   └── id/             # Indonesian translations
 │   ├── integrations/
 │   │   └── supabase/       # Supabase client
 │   └── pages/              # Route components
-├── docs/
-│   └── i18n-guide.md       # i18n documentation
 ├── supabase/
 │   ├── functions/          # Edge Functions
 │   │   ├── ai-processor/
@@ -188,16 +142,6 @@ prompedia-ai/
 │   └── config.toml
 └── public/                 # Static assets
 ```
-
-## 🌐 Internationalization (i18n)
-
-Aplikasi mendukung multiple bahasa dengan implementasi i18n yang lengkap:
-- **Supported Languages**: English (en), Bahasa Indonesia (id)
-- **Lazy Loading**: Non-critical namespaces loaded on-demand
-- **100% Coverage**: Semua user-facing strings menggunakan i18n
-- **Best Practices**: Namespace-based organization, helper functions untuk non-React contexts
-
-Untuk informasi lengkap tentang i18n, lihat [i18n Guide](docs/i18n-guide.md).
 
 ## 🔒 Security Features
 

@@ -27,16 +27,6 @@
   "backToOriginalTitle": "Back to original prompt",
   "forwardToResultTitle": "Forward to AI result",
   "seoTitle": "Prompt Detail",
-  "seoDescription": "Explore this public prompt on Prompedia.",
-  "defaultDescription": "View and use this AI prompt: {{title}}",
-  "forkTitle": "Fork of {{title}}",
-  "copyPrefix": "Copy of ",
-  "shortcuts": {
-    "newPrompt": {
-      "name": "New Prompt",
-      "shortName": "New",
-      "description": "Create a new prompt"
-    }
-  }
+  "seoDescription": "Explore this public prompt on Prompedia."
 }
 

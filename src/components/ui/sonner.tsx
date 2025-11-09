@@ -1,12 +1,10 @@
+import { useTheme } from "next-themes";
 import { Toaster as Sonner, toast } from "sonner";
 
 type ToasterProps = React.ComponentProps<typeof Sonner>;
 
 const Toaster = ({ ...props }: ToasterProps) => {
-  // Simple theme detection without next-themes dependency
-  const theme = typeof window !== 'undefined' 
-    ? (localStorage.getItem('theme') || 'system') 
-    : 'system';
+  const { theme = "system" } = useTheme();
 
   return (
     <Sonner

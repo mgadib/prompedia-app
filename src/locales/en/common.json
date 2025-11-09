@@ -31,15 +31,9 @@
     "goToHome": "Go to Home",
     "returnToHome": "Return to Home",
     "tryAgain": "Try again",
-    "backToHome": "Back to Home",
-    "moreActions": "More Actions",
-    "aiActions": "AI Actions",
-    "undo": "Undo"
+    "backToHome": "Back to Home"
   },
   "labels": {
-    "improve": "Improve",
-    "transform": "Transform",
-    "analyze": "Analyze",
     "email": "Email",
     "password": "Password",
     "username": "Username",
@@ -90,8 +84,7 @@
     "usageLimit": "Usage Limit",
     "status": "STATUS",
     "mode": "MODE",
-    "model": "MODEL",
-    "processing": "Processing..."
+    "model": "MODEL"
   },
   "messages": {
     "welcomeBack": "Welcome back!",
@@ -100,8 +93,7 @@
     "dontHaveAccount": "Don't have an account? Sign up",
     "alreadyHaveAccount": "Already have an account? Sign in",
     "joinPrompedia": "Join Prompedia to unlock unlimited prompts.",
-    "enterCredentials": "Welcome back! Enter your credentials to continue.",
-    "undoNotAvailable": "Undo not available. Please restore manually if needed."
+    "enterCredentials": "Welcome back! Enter your credentials to continue."
   },
   "notFound": {
     "title": "404",
@@ -118,48 +110,6 @@
   "changeLanguage": "Change Language",
   "user": "User",
   "home": "Home",
-  "public": "Public",
-  "ui": {
-    "toggleSidebar": "Toggle Sidebar",
-    "pagination": "Pagination",
-    "goToPreviousPage": "Go to previous page",
-    "goToNextPage": "Go to next page",
-    "previous": "Previous",
-    "next": "Next",
-    "morePages": "More pages",
-    "breadcrumb": "Breadcrumb",
-    "more": "More",
-    "previousSlide": "Previous slide",
-    "nextSlide": "Next slide"
-  },
-  "languages": {
-    "en": "English",
-    "id": "Bahasa Indonesia"
-  },
-  "error": {
-    "occurred": "An Error Occurred",
-    "description": "The application encountered an unexpected error. Please try reloading the page.",
-    "tryAgain": "Try Again",
-    "tryAgainAria": "Try again to recover from error",
-    "reloadPage": "Reload Page",
-    "reloadPageAria": "Reload the page",
-    "errorDetails": "Error Details (Development)"
-  },
-  "fallbackToIndividual": "Falling back to individual tag loading",
-  "initializingWorkspace": "Initializing your workspace",
-  "loadingPrompedia": "Loading Prompedia...",
-  "seo": {
-    "description": "Build, optimize, and manage AI prompts with Prompedia AI. Free prompt engineering platform with 6 thinking modes, AI model integration, and public prompt library. Perfect for ChatGPT, Claude, and other AI tools.",
-    "features": {
-      "aiEnhancement": "AI Prompt Enhancement",
-      "publicLibrary": "Public Prompt Library",
-      "privateManagement": "Private Prompt Management",
-      "thinkingModes": "Multiple Thinking Modes (Meta Prompt, Self-Refine, Chain-of-Thought, Self-Consistency, Chain-of-Prompt, Role Prompt)",
-      "modelIntegration": "AI Model Integration (Llama 4 Maverick, Qwen 3 30B, Qwen 2.5 72B, Llama 3.1 70B)",
-      "usageTracking": "Usage Tracking & Rate Limiting",
-      "tagSystem": "Smart Tag System",
-      "realTimeProcessing": "Real-time AI Processing"
-    }
-  }
+  "public": "Public"
 }
 

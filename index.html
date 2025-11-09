@@ -5,11 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
     <meta http-equiv="Content-Security-Policy" content="
       default-src 'self';
-      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://kecpjbrlvaoujdnerhwe.supabase.co https://openrouter.ai https://cdn.emteng.co https://cdn.lovable.app https://cdn.jsdelivr.net;
-      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.emteng.co https://cdn.lovable.app;
+      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://kecpjbrlvaoujdnerhwe.supabase.co https://openrouter.ai;
+      style-src 'self' 'unsafe-inline';
       font-src 'self' data: https://fonts.gstatic.com;
       img-src 'self' data: https: blob:;
-      connect-src 'self' https://kecpjbrlvaoujdnerhwe.supabase.co https://openrouter.ai wss://kecpjbrlvaoujdnerhwe.supabase.co https://*.supabase.co https://api.lovable.app;
+      connect-src 'self' https://kecpjbrlvaoujdnerhwe.supabase.co https://openrouter.ai wss://kecpjbrlvaoujdnerhwe.supabase.co;
+      frame-ancestors 'none';
       base-uri 'self';
       form-action 'self';
     ">
@@ -88,6 +89,16 @@
         "priceCurrency": "USD",
         "availability": "https://schema.org/InStock"
       },
+      "featureList": [
+        "AI Prompt Enhancement",
+        "Public Prompt Library",
+        "Private Prompt Management",
+        "Multiple Thinking Modes (Meta Prompt, Self-Refine, Chain-of-Thought, Self-Consistency, Chain-of-Prompt, Role Prompt)",
+        "AI Model Integration (Llama 4 Maverick, Qwen 3 30B, Qwen 2.5 72B, Llama 3.1 70B)",
+        "Usage Tracking & Rate Limiting",
+        "Smart Tag System",
+        "Real-time AI Processing"
+      ],
       "screenshot": "https://prompedia.app/og-image.png",
       "aggregateRating": {
         "@type": "AggregateRating",
