@@ -201,26 +201,15 @@ const PublicPromptDetail = () => {
             <ArrowLeft className="w-4 h-4 mr-2" />
             {t('common:buttons.back')}
           </Button>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleCopyUrl}
-              className="font-mono"
-            >
-              <Copy className="w-4 h-4 mr-2" />
-              {t('library:copyUrl')}
-            </Button>
-            <Button
-              variant="default"
-              size="sm"
-              onClick={handleUsePrompt}
-              className="font-mono"
-            >
-              <Download className="w-4 h-4 mr-2" />
-              {t('prompt:usePrompt')}
-            </Button>
-          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleCopyUrl}
+            className="font-mono"
+          >
+            <Copy className="w-4 h-4 mr-2" />
+            {t('library:copyUrl')}
+          </Button>
         </div>
       </header>
 
@@ -273,46 +262,13 @@ const PublicPromptDetail = () => {
         </div>
 
         {/* Prompt Content */}
-        <div className="bg-card border border-border rounded-lg p-6 mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-foreground font-mono">{t('prompt:promptContent')}</h2>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleCopyContent}
-              className="font-mono"
-            >
-              <Copy className="w-4 h-4 mr-2" />
-              {t('common:buttons.copy')}
-            </Button>
-          </div>
+        <div className="bg-card border border-border rounded-lg p-6">
+          <h2 className="text-lg font-semibold text-foreground font-mono mb-4">{t('prompt:promptContent')}</h2>
           <div className="bg-muted/20 p-4 rounded-lg">
             <pre className="text-sm font-mono whitespace-pre-wrap text-foreground leading-relaxed">
               {prompt.content}
             </pre>
           </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-3">
-          <Button
-            variant="default"
-            size="lg"
-            onClick={handleUsePrompt}
-            className="flex-1 font-mono"
-          >
-            <Download className="w-5 h-5 mr-2" />
-            {t('prompt:useThisPrompt')}
-          </Button>
-          <Button
-            variant="outline"
-            size="lg"
-            onClick={handleCopyContent}
-            className="flex-1 font-mono"
-          >
-            <Copy className="w-5 h-5 mr-2" />
-            {t('prompt:copyContent')}
-          </Button>
         </div>
       </main>
     </div>

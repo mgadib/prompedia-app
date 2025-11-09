@@ -135,11 +135,11 @@ export async function trackQuery<T>(
 
   try {
     const result = await queryFn();
-    endTracking(true);
+    endTracking();
     return result;
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    endTracking(false, errorMessage);
+    endTracking();
     throw error;
   }
 }

@@ -137,10 +137,7 @@ export class SupabaseService {
     
     let query = supabase
       .from('prompts')
-      .select(`
-        ${selectFields},
-        users!prompts_user_id_fkey1(username, display_name)
-      `)
+      .select(selectFields)
       .order('id', { ascending: false })
 
     if (userId) {
@@ -157,7 +154,7 @@ export class SupabaseService {
 
     const { data, error } = await query
     if (error) throw error
-    return data || []
+    return (data || []) as unknown as Prompt[]
   }
 
   static async getPublicPrompts(
@@ -182,10 +179,7 @@ export class SupabaseService {
     
     let query = supabase
       .from('prompts')
-      .select(`
-        ${selectFields},
-        users!prompts_user_id_fkey1(username, display_name)
-      `)
+      .select(selectFields)
       .eq('is_public', true)
       .order('id', { ascending: false })
 
@@ -199,7 +193,7 @@ export class SupabaseService {
 
     const { data, error } = await query
     if (error) throw error
-    return data || []
+    return (data || []) as unknown as Prompt[]
   }
 
   static async getFeaturedPrompts(): Promise<Prompt[]> {

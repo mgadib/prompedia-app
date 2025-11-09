@@ -277,7 +277,7 @@ const TagPage: React.FC = () => {
               <h3 className="text-lg font-semibold mb-2 font-mono">{t('library:problemOccurred')}</h3>
               <p className="text-sm text-center mb-4">{error}</p>
               <div className="flex items-center gap-2">
-                <Button variant="default" onClick={loadData} className="touch-manipulation">{t('common:buttons.tryAgain')}</Button>
+                <Button variant="default" onClick={() => loadData()} className="touch-manipulation">{t('common:buttons.tryAgain')}</Button>
                 <Link to="/" className="text-sm underline">{t('library:backToHome')}</Link>
               </div>
             </div>

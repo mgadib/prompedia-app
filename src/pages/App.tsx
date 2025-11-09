@@ -21,7 +21,6 @@ import { AVAILABLE_MODELS } from '@/lib/models';
 import { THINKING_MODES } from '@/lib/modes';
 import { SupabaseService } from '@/lib/supabase-service';
 import { supabase } from '@/integrations/supabase/client';
-import { User } from '@supabase/supabase-js';
 import { toast } from 'sonner';
 import { rateLimitingService } from '@/lib/rate-limiting';
 import { STORAGE_KEYS } from '@/lib/constants';
@@ -629,6 +628,10 @@ const AppPage = () => {
     if (isMobile) {
       setMobileSidebarOpen(false);
     }
+  };
+
+  const handleLogin = () => {
+    setShowAuthModal(true);
   };
 
   const handleLoginWithMobile = () => {
