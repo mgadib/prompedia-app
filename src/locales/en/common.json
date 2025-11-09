@@ -90,7 +90,8 @@
     "usageLimit": "Usage Limit",
     "status": "STATUS",
     "mode": "MODE",
-    "model": "MODEL"
+    "model": "MODEL",
+    "processing": "Processing..."
   },
   "messages": {
     "welcomeBack": "Welcome back!",
@@ -143,6 +144,12 @@
     "reloadPage": "Reload Page",
     "reloadPageAria": "Reload the page",
     "errorDetails": "Error Details (Development)"
+  },
+  "fallbackToIndividual": "Falling back to individual tag loading",
+  "initializingWorkspace": "Initializing your workspace",
+  "loadingPrompedia": "Loading Prompedia...",
+  "seo": {
+    "description": "Build, optimize, and manage AI prompts with Prompedia AI. Free prompt engineering platform with 6 thinking modes, AI model integration, and public prompt library. Perfect for ChatGPT, Claude, and other AI tools."
   }
 }
 

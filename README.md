@@ -170,11 +170,17 @@ prompedia-ai/
 │   ├── lib/                # Core logic
 │   │   ├── models.ts       # AI model configs
 │   │   ├── modes.ts        # Thinking modes
+│   │   ├── i18n.ts         # Internationalization
 │   │   ├── rate-limiting.ts
 │   │   └── ...
+│   ├── locales/            # i18n translation files
+│   │   ├── en/             # English translations
+│   │   └── id/             # Indonesian translations
 │   ├── integrations/
 │   │   └── supabase/       # Supabase client
 │   └── pages/              # Route components
+├── docs/
+│   └── i18n-guide.md       # i18n documentation
 ├── supabase/
 │   ├── functions/          # Edge Functions
 │   │   ├── ai-processor/
@@ -182,6 +188,16 @@ prompedia-ai/
 │   └── config.toml
 └── public/                 # Static assets
 ```
+
+## 🌐 Internationalization (i18n)
+
+Aplikasi mendukung multiple bahasa dengan implementasi i18n yang lengkap:
+- **Supported Languages**: English (en), Bahasa Indonesia (id)
+- **Lazy Loading**: Non-critical namespaces loaded on-demand
+- **100% Coverage**: Semua user-facing strings menggunakan i18n
+- **Best Practices**: Namespace-based organization, helper functions untuk non-React contexts
+
+Untuk informasi lengkap tentang i18n, lihat [i18n Guide](docs/i18n-guide.md).
 
 ## 🔒 Security Features
 

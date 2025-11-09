@@ -32,6 +32,19 @@
   "noPromptsWithTag": "No prompts with this tag",
   "problemOccurred": "A problem occurred",
   "backToHome": "Back to home",
-  "tagPageDescription": "List of prompts with tag \"{{tag}}\""
+  "tagPageDescription": "List of prompts with tag \"{{tag}}\"",
+  "tagBreadcrumb": "Tag: {{tag}}",
+  "shortcuts": {
+    "myLibrary": {
+      "name": "My Library",
+      "shortName": "Library",
+      "description": "View your prompt library"
+    },
+    "publicLibrary": {
+      "name": "Public Library",
+      "shortName": "Public",
+      "description": "Browse public prompts"
+    }
+  }
 }
 

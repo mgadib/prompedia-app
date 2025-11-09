@@ -1,4 +1,5 @@
 {
+  "_comment": "PWA Manifest - Static file required by PWA specification. Shortcuts use English as default language. Translations available in locale files (library.json and prompt.json shortcuts section) for future dynamic generation if needed.",
   "name": "Prompedia AI - Prompt Engineering Laboratory",
   "short_name": "Prompedia AI",
   "description": "Advanced prompt engineering platform for building, optimizing, and managing AI prompts with 6 thinking modes and AI model integration",

@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { VALIDATION, ERROR_MESSAGES } from '@/lib/constants';
+import { VALIDATION } from '@/lib/constants';
+import { getValidationMessage } from '@/lib/i18n-helpers';
 
 /**
  * Authentication validation schemas
@@ -9,12 +10,12 @@ import { VALIDATION, ERROR_MESSAGES } from '@/lib/constants';
 // Schema dasar untuk auth
 export const emailSchema = z
   .string()
-  .email(ERROR_MESSAGES.AUTH.LOGIN_FAILED)
-  .min(1, 'Email wajib diisi');
+  .email(getValidationMessage('user.emailInvalid'))
+  .min(1, getValidationMessage('emailRequired'));
 
 export const passwordSchema = z
   .string()
-  .min(VALIDATION.USER.PASSWORD_MIN_LENGTH, `Password minimal ${VALIDATION.USER.PASSWORD_MIN_LENGTH} karakter`);
+  .min(VALIDATION.USER.PASSWORD_MIN_LENGTH, getValidationMessage('passwordMinLength', { min: VALIDATION.USER.PASSWORD_MIN_LENGTH }));
 
 // Schema autentikasi
 export const loginSchema = z.object({
@@ -27,7 +28,7 @@ export const registerSchema = z.object({
   password: passwordSchema,
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
-  message: 'Password tidak cocok',
+  message: getValidationMessage('passwordMismatch'),
   path: ['confirmPassword'],
 });
 

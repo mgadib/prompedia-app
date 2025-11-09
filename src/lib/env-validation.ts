@@ -1,12 +1,13 @@
 import { z } from 'zod';
+import { getErrorMessage } from './i18n-helpers';
 
 /**
  * Environment variable validation schema
  * Ensures all required environment variables are present and valid at runtime
  */
 const EnvSchema = z.object({
-  VITE_SUPABASE_URL: z.string().url('Invalid Supabase URL'),
-  VITE_SUPABASE_ANON_KEY: z.string().min(1, 'Supabase anon key is required'),
+  VITE_SUPABASE_URL: z.string().url(getErrorMessage('env.invalidSupabaseUrl')),
+  VITE_SUPABASE_ANON_KEY: z.string().min(1, getErrorMessage('env.supabaseKeyRequired')),
   MODE: z.enum(['development', 'production', 'test']),
   DEV: z.boolean(),
   PROD: z.boolean()

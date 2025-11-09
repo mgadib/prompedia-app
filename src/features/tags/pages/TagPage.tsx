@@ -183,7 +183,7 @@ const TagPage: React.FC = () => {
     <div className="flex-1 flex flex-col min-w-0 overflow-hidden transition-opacity duration-300 will-change-[opacity]">
         <SEO
           title={pageTitle}
-          description={t('library:tagPageDescription', { tag: tagName }) || `Browse prompts tagged with "${tagName}" on Prompedia AI. Discover ${prompts.length} ${prompts.length === 1 ? 'prompt' : 'prompts'} in this collection.`}
+          description={t('library:tagPageDescription', { tag: tagName })}
           url={`${ENV.SITE_URL || window.location.origin}/tags/${encodeURIComponent(tagName)}`}
           canonical={`${ENV.SITE_URL || window.location.origin}/tags/${encodeURIComponent(tagName)}`}
           type="website"
@@ -198,7 +198,7 @@ const TagPage: React.FC = () => {
           breadcrumbs={[
             { name: t('common:home'), url: ENV.SITE_URL || window.location.origin },
             { name: t('common:public'), url: `${ENV.SITE_URL || window.location.origin}/` },
-            { name: `Tag: ${tagName}`, url: `${ENV.SITE_URL || window.location.origin}/tags/${encodeURIComponent(tagName)}` },
+            { name: t('library:tagBreadcrumb', { tag: tagName }), url: `${ENV.SITE_URL || window.location.origin}/tags/${encodeURIComponent(tagName)}` },
           ]}
         />
 

@@ -27,6 +27,13 @@
   "backToOriginalTitle": "Kembali ke prompt asli",
   "forwardToResultTitle": "Maju ke hasil AI",
   "seoTitle": "Detail Prompt",
-  "seoDescription": "Jelajahi prompt publik ini di Prompedia."
+  "seoDescription": "Jelajahi prompt publik ini di Prompedia.",
+  "shortcuts": {
+    "newPrompt": {
+      "name": "Prompt Baru",
+      "shortName": "Baru",
+      "description": "Buat prompt baru"
+    }
+  }
 }
 

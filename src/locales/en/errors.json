@@ -15,12 +15,17 @@
     "createFailed": "Failed to create new prompt",
     "copyFailed": "Failed to copy content",
     "visibilityUpdateFailed": "Failed to update prompt visibility",
-    "notFound": "Prompt not found"
+    "notFound": "Prompt not found",
+    "missingFields": "Missing required prompt fields",
+    "unauthorized": "Unauthorized: You do not own this prompt"
   },
   "auth": {
     "loginFailed": "Login failed. Please check your email and password.",
     "logoutFailed": "Failed to log out.",
-    "sessionExpired": "Your session has expired. Please sign in again."
+    "sessionExpired": "Your session has expired. Please sign in again.",
+    "unexpectedError": "An unexpected error occurred",
+    "authenticationError": "Authentication error occurred",
+    "logoutFailedGeneric": "Failed to logout"
   },
   "usage": {
     "limitReached": "Usage limit reached! {{type}} limit reached. {{error}}",
@@ -64,6 +69,22 @@
     "promptRemoveFailed": "Failed to remove prompt",
     "promptCopyFailed": "Failed to copy prompt",
     "promptDuplicateFailed": "Failed to duplicate prompt"
+  },
+  "storage": {
+    "saveFailed": "Failed to save data to local storage",
+    "loadFailed": "Failed to load data from local storage",
+    "missingFields": "Missing required fields",
+    "notAuthenticated": "User not authenticated for Supabase storage"
+  },
+  "service": {
+    "promptNotFound": "Prompt not found",
+    "unauthorized": "Unauthorized: You do not own this prompt",
+    "loadTagsFailed": "Failed to load tags",
+    "fallbackLoading": "Falling back to individual tag loading"
+  },
+  "env": {
+    "invalidSupabaseUrl": "Invalid Supabase URL",
+    "supabaseKeyRequired": "Supabase anon key is required"
   }
 }
 

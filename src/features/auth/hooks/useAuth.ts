@@ -3,6 +3,7 @@ import { User as SupabaseUser } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { clearUser } from '@/lib/storage';
 import { authManager } from '@/lib/auth-manager';
+import { getErrorMessage } from '@/lib/i18n-helpers';
 
 /**
  * Custom hook untuk mengelola state dan operasi autentikasi
@@ -32,7 +33,7 @@ export const useAuth = () => {
         }
       } catch (err) {
         console.error('Unexpected error:', err);
-        setError('An unexpected error occurred');
+        setError(getErrorMessage('auth.unexpectedError'));
       } finally {
         setLoading(false);
       }
@@ -50,7 +51,7 @@ export const useAuth = () => {
         setError(null);
       } catch (err) {
         console.error('Auth state change error:', err);
-        setError('Authentication error occurred');
+        setError(getErrorMessage('auth.authenticationError'));
       }
     });
 
@@ -69,7 +70,7 @@ export const useAuth = () => {
       setUserState(null);
     } catch (err) {
       console.error('Logout error:', err);
-      setError('Failed to logout');
+      setError(getErrorMessage('auth.logoutFailedGeneric'));
       throw err;
     }
   };

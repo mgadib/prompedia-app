@@ -252,8 +252,8 @@ const AppPage = () => {
             <div className="absolute top-0 left-0 w-12 h-12 border-4 border-primary border-t-transparent rounded-full" />
           </div>
           <div className="text-center">
-            <p className="text-sm text-muted-foreground font-mono">Loading Prompedia...</p>
-            <p className="text-xs text-muted-foreground/60 font-mono mt-1">Initializing your workspace</p>
+            <p className="text-sm text-muted-foreground font-mono">{t('common:loadingPrompedia')}</p>
+            <p className="text-xs text-muted-foreground/60 font-mono mt-1">{t('common:initializingWorkspace')}</p>
           </div>
         </div>
       </div>
@@ -265,7 +265,7 @@ const AppPage = () => {
       <React.Suspense fallback={null}>
         <SEO
           title={ENV.SITE_TITLE}
-          description={t('common:seo.description') || 'Build, optimize, and manage AI prompts with Prompedia AI. Free prompt engineering platform with 6 thinking modes, AI model integration, and public prompt library. Perfect for ChatGPT, Claude, and other AI tools.'}
+          description={t('common:seo.description')}
           url={homepageUrl}
           canonical={homepageUrl}
           type="website"
@@ -378,7 +378,7 @@ const AppPage = () => {
               <Menu className="h-5 w-5" />
             </Button>
             <div className="flex-1">
-              <h1 className="text-sm font-semibold font-mono">Prompedia AI</h1>
+              <h1 className="text-sm font-semibold font-mono">{t('common:app.name')}</h1>
             </div>
           </div>
         )}

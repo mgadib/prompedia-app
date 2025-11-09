@@ -4,13 +4,36 @@
     "titleMaxLength": "Judul maksimal {{max}} karakter",
     "contentMaxLength": "Konten maksimal {{max}} karakter",
     "tagsMaxCount": "Maksimal {{max}} tag",
-    "tagMaxLength": "Tag maksimal {{max}} karakter"
+    "tagMaxLength": "Tag maksimal {{max}} karakter",
+    "empty": "Prompt tidak boleh kosong",
+    "exceedsMaxLength": "Prompt melebihi panjang maksimum {{maxLength}} karakter"
   },
   "user": {
     "emailInvalid": "Alamat email tidak valid",
-    "passwordMinLength": "Kata sandi minimal {{min}} karakter"
+    "emailRequired": "Email wajib diisi",
+    "passwordMinLength": "Kata sandi minimal {{min}} karakter",
+    "passwordMismatch": "Kata sandi tidak cocok",
+    "usernameRequired": "Username wajib diisi",
+    "usernameTooLong": "Username maksimal {{max}} karakter",
+    "displayNameRequired": "Nama tampilan wajib diisi",
+    "displayNameTooLong": "Nama tampilan maksimal {{max}} karakter"
   },
   "required": "Field ini wajib diisi",
-  "invalid": "Nilai tidak valid"
+  "invalid": "Nilai tidak valid",
+  "tagMaxLength": "Tag maksimal {{max}} karakter",
+  "tagsMaxCount": "Maksimal {{max}} tag",
+  "emailRequired": "Email wajib diisi",
+  "passwordMinLength": "Kata sandi minimal {{min}} karakter",
+  "passwordMismatch": "Kata sandi tidak cocok",
+  "usernameRequired": "Username wajib diisi",
+  "usernameTooLong": "Username maksimal {{max}} karakter",
+  "displayNameRequired": "Nama tampilan wajib diisi",
+  "displayNameTooLong": "Nama tampilan maksimal {{max}} karakter",
+  "inputExceedsMaxLength": "Input melebihi panjang maksimum {{maxLength}} karakter",
+  "promptEmpty": "Prompt tidak boleh kosong",
+  "promptExceedsMaxLength": "Prompt melebihi panjang maksimum {{maxLength}} karakter",
+  "modelRequired": "Model atau model_id harus disediakan",
+  "modeRequired": "Mode atau mode_id harus disediakan",
+  "missingFields": "Field wajib tidak lengkap"
 }
 

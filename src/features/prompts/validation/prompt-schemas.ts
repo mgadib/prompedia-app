@@ -1,6 +1,7 @@
 import { z } from 'zod';
-import { VALIDATION, ERROR_MESSAGES } from '@/lib/constants';
+import { VALIDATION } from '@/lib/constants';
 import { sanitizeString } from '@/shared/validation/common';
+import { getValidationMessage } from '@/lib/i18n-helpers';
 
 /**
  * Prompt validation schemas
@@ -10,22 +11,22 @@ import { sanitizeString } from '@/shared/validation/common';
 // Schema validasi untuk prompt
 export const promptTitleSchema = z
   .string()
-  .min(VALIDATION.PROMPT.TITLE_MIN_LENGTH, ERROR_MESSAGES.PROMPT.TITLE_REQUIRED)
-  .max(VALIDATION.PROMPT.TITLE_MAX_LENGTH, ERROR_MESSAGES.PROMPT.TITLE_TOO_LONG)
+  .min(VALIDATION.PROMPT.TITLE_MIN_LENGTH, getValidationMessage('prompt.titleMinLength', { min: VALIDATION.PROMPT.TITLE_MIN_LENGTH }))
+  .max(VALIDATION.PROMPT.TITLE_MAX_LENGTH, getValidationMessage('prompt.titleMaxLength', { max: VALIDATION.PROMPT.TITLE_MAX_LENGTH }))
   .trim();
 
 export const promptContentSchema = z
   .string()
-  .max(VALIDATION.PROMPT.CONTENT_MAX_LENGTH, ERROR_MESSAGES.PROMPT.CONTENT_TOO_LONG);
+  .max(VALIDATION.PROMPT.CONTENT_MAX_LENGTH, getValidationMessage('prompt.contentMaxLength', { max: VALIDATION.PROMPT.CONTENT_MAX_LENGTH }));
 
 export const promptTagSchema = z
   .string()
-  .max(VALIDATION.PROMPT.TAG_MAX_LENGTH, `Tag maksimal ${VALIDATION.PROMPT.TAG_MAX_LENGTH} karakter`)
+  .max(VALIDATION.PROMPT.TAG_MAX_LENGTH, getValidationMessage('tagMaxLength', { max: VALIDATION.PROMPT.TAG_MAX_LENGTH }))
   .trim();
 
 export const promptTagsSchema = z
   .array(promptTagSchema)
-  .max(VALIDATION.PROMPT.TAGS_MAX_COUNT, `Maksimal ${VALIDATION.PROMPT.TAGS_MAX_COUNT} tag`);
+  .max(VALIDATION.PROMPT.TAGS_MAX_COUNT, getValidationMessage('tagsMaxCount', { max: VALIDATION.PROMPT.TAGS_MAX_COUNT }));
 
 // Schema prompt lengkap (diperbarui untuk database minimalis)
 export const promptSchema = z.object({
@@ -47,10 +48,10 @@ export const promptSchema = z.object({
   user_id: z.string().optional(),
 }).refine(
   (data) => data.model || data.model_id, 
-  { message: "Either model or model_id must be provided" }
+  { message: getValidationMessage('modelRequired') }
 ).refine(
   (data) => data.mode || data.mode_id,
-  { message: "Either mode or mode_id must be provided" }
+  { message: getValidationMessage('modeRequired') }
 );
 
 /**
@@ -65,11 +66,11 @@ export function validateAIPromptInput(prompt: string): string {
   
   // Pengecekan tambahan khusus untuk input AI
   if (sanitized.length < 1) {
-    throw new Error('Prompt cannot be empty');
+    throw new Error(getValidationMessage('promptEmpty'));
   }
   
   if (sanitized.length > VALIDATION.PROMPT.CONTENT_MAX_LENGTH) {
-    throw new Error(`Prompt exceeds maximum length of ${VALIDATION.PROMPT.CONTENT_MAX_LENGTH}`);
+    throw new Error(getValidationMessage('promptExceedsMaxLength', { maxLength: VALIDATION.PROMPT.CONTENT_MAX_LENGTH }));
   }
   
   return sanitized;

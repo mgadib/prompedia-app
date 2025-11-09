@@ -129,13 +129,13 @@ export function usePromptTags(
       setAllTags(Array.from(tagSet));
       setError(null);
     } catch (err) {
-      const error = err instanceof Error ? err : new Error('Failed to load tags');
+      const error = err instanceof Error ? err : new Error(getServiceErrorMessage('loadTagsFailed'));
       console.error('Failed to load tags in batch:', error);
 
       // Fallback to individual loading if enabled
       if (enableFallback) {
         try {
-          console.warn('Falling back to individual tag loading');
+          console.warn(getCommonMessage('fallbackToIndividual'));
           const fallbackStartTime = performance.now();
           const promptsWithTagsData: PromptWithTags[] = [];
           const tagSet = new Set<string>();

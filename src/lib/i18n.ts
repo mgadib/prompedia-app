@@ -130,8 +130,13 @@ function initializeI18n(): void {
       },
       react: {
         useSuspense: false, // Disable suspense for better error handling
+        bindI18n: 'languageChanged loaded', // Bind to languageChanged and loaded events for reactivity
+        bindI18nStore: 'added removed', // Bind to store events for reactivity
       },
     });
+
+  // Track loaded namespaces across all languages
+  const loadedNamespaces = new Set<string>();
 
   // Preload namespaces when they're first requested
   const originalLoadNamespaces = i18n.loadNamespaces.bind(i18n);
@@ -145,7 +150,11 @@ function initializeI18n(): void {
         if (!i18n.hasResourceBundle(language, namespace)) {
           const translation = await loadTranslation(language, namespace);
           i18n.addResourceBundle(language, namespace, translation, true, true);
+          loadedNamespaces.add(namespace);
         }
+      } else {
+        // Track critical namespaces too
+        loadedNamespaces.add(namespace);
       }
     }
     
@@ -158,11 +167,18 @@ function initializeI18n(): void {
       document.documentElement.lang = lng;
       localStorage.setItem(STORAGE_KEYS.LANGUAGE, lng);
       
-      // Preload critical namespaces for new language
-      for (const namespace of CRITICAL_NAMESPACES) {
+      // Reload all previously loaded namespaces for the new language
+      for (const namespace of loadedNamespaces) {
         if (!i18n.hasResourceBundle(lng, namespace)) {
-          const translation = loadCriticalTranslation(lng, namespace);
-          i18n.addResourceBundle(lng, namespace, translation, true, true);
+          if (CRITICAL_NAMESPACES.includes(namespace as typeof CRITICAL_NAMESPACES[number])) {
+            // Load critical namespace
+            const translation = loadCriticalTranslation(lng, namespace);
+            i18n.addResourceBundle(lng, namespace, translation, true, true);
+          } else {
+            // Load lazy namespace
+            const translation = await loadTranslation(lng, namespace);
+            i18n.addResourceBundle(lng, namespace, translation, true, true);
+          }
         }
       }
     }

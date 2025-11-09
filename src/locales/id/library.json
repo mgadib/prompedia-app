@@ -32,6 +32,19 @@
   "noPromptsWithTag": "Belum ada prompt dengan tag ini",
   "problemOccurred": "Terjadi masalah",
   "backToHome": "Kembali ke beranda",
-  "tagPageDescription": "Daftar prompt dengan tag \"{{tag}}\""
+  "tagPageDescription": "Daftar prompt dengan tag \"{{tag}}\"",
+  "tagBreadcrumb": "Tag: {{tag}}",
+  "shortcuts": {
+    "myLibrary": {
+      "name": "Perpustakaan Saya",
+      "shortName": "Perpustakaan",
+      "description": "Lihat perpustakaan prompt Anda"
+    },
+    "publicLibrary": {
+      "name": "Perpustakaan Publik",
+      "shortName": "Publik",
+      "description": "Jelajahi prompt publik"
+    }
+  }
 }
 

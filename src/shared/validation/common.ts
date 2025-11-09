@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { VALIDATION, ERROR_MESSAGES } from '@/lib/constants';
+import { getValidationMessage, getErrorMessage } from '@/lib/i18n-helpers';
 
 /**
  * Common validation utilities and shared schemas
@@ -61,7 +62,7 @@ export function safeValidate<T>(
     }
     return { 
       success: false, 
-      error: new ValidationError(ERROR_MESSAGES.VALIDATION) 
+      error: new ValidationError(getErrorMessage('validation')) 
     };
   }
 }
@@ -99,7 +100,7 @@ export function sanitizeString(input: string, maxLength: number = 50000): string
 
   // Menerapkan batas panjang SEBELUM pemrosesan untuk efisiensi
   if (input.length > maxLength) {
-    throw new ValidationError(`Input exceeds maximum length of ${maxLength}`);
+    throw new ValidationError(getValidationMessage('inputExceedsMaxLength', { maxLength }));
   }
 
   return input
@@ -125,8 +126,12 @@ export function sanitizeString(input: string, maxLength: number = 50000): string
 // Schema user (diperbarui untuk database minimalis)
 export const userProfileSchema = z.object({
   id: z.string().uuid(),
-  username: z.string().min(1, 'Username wajib diisi').max(50, 'Username terlalu panjang'),
-  display_name: z.string().min(1, 'Nama tampilan wajib diisi').max(100, 'Nama terlalu panjang'),
+  username: z.string()
+    .min(1, getValidationMessage('usernameRequired'))
+    .max(50, getValidationMessage('usernameTooLong', { max: 50 })),
+  display_name: z.string()
+    .min(1, getValidationMessage('displayNameRequired'))
+    .max(100, getValidationMessage('displayNameTooLong', { max: 100 })),
 });
 
 export type UserProfile = z.infer<typeof userProfileSchema>;

@@ -1,6 +1,7 @@
 import { STORAGE_KEYS, ERROR_MESSAGES } from './constants';
 import { validateData, userProfileSchema } from '@/shared/validation/common';
 import { promptSchema } from '@/features/prompts/validation/prompt-schemas';
+import { getValidationMessage, getStorageErrorMessage, getErrorMessage } from './i18n-helpers';
 
 export interface User {
   id: string;
@@ -72,7 +73,7 @@ function safeLocalStorageSet(key: string, value: string): void {
   } catch (error) {
     console.error(`Failed to save to localStorage (${key}):`, error);
     throw new StorageError(
-      'Gagal menyimpan data ke penyimpanan lokal',
+      getStorageErrorMessage('saveFailed'),
       'save'
     );
   }
@@ -145,7 +146,7 @@ export const promptStorage = {
   savePrompt: (prompt: Prompt): Prompt => {
     try {
       if (!prompt.id || !prompt.title || !prompt.content || !prompt.model) {
-        throw new Error('Missing required fields');
+        throw new Error(getValidationMessage('missingFields'));
       }
       
       const prompts = promptStorage.getPrompts();
@@ -167,7 +168,7 @@ export const promptStorage = {
   deletePrompt: (id: string): void => {
     try {
       if (!id) {
-        throw new Error('Prompt ID is required');
+        throw new Error(getValidationMessage('missingFields'));
       }
       
       const prompts = promptStorage.getPrompts().filter(p => p.id !== id);
@@ -199,7 +200,7 @@ export const promptStorage = {
   // Manajemen prompt saat ini
   setCurrentPrompt: (promptId: string): void => {
     if (!promptId) {
-      throw new StorageError('Prompt ID is required', 'setCurrentPrompt');
+      throw new StorageError(getValidationMessage('missingFields'), 'setCurrentPrompt');
     }
     safeLocalStorageSet(STORAGE_KEYS.CURRENT_PROMPT, promptId);
   },

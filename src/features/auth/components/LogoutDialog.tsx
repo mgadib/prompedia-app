@@ -22,7 +22,8 @@ interface LogoutDialogProps {
 }
 
 const LogoutDialog = ({ userName, onConfirm, isCollapsed = false }: LogoutDialogProps) => {
-  const { t } = useTranslation();
+  // Preload required namespaces: auth and common
+  const { t } = useTranslation(['auth', 'common']);
   const isMobile = useIsMobile();
   const displayName = userName || t('common:user');
   

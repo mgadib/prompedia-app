@@ -2,6 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Tag, Prompt } from '@/lib/storage';
 import { Database } from '@/integrations/supabase/types';
 import { isTag, isPrompt, convertSupabaseTagToTag, convertSupabasePromptToPrompt, type PromptTagJoinResponse } from '@/lib/types/supabase-responses';
+import { getErrorMessage, getServiceErrorMessage } from '@/lib/i18n-helpers';
 
 type SupabaseTag = Database['public']['Tables']['tags']['Row'];
 type SupabasePrompt = Database['public']['Tables']['prompts']['Row'];
@@ -159,12 +160,12 @@ export class TagService {
         .single();
 
       if (promptError || !prompt) {
-        throw new Error('Prompt not found');
+        throw new Error(getErrorMessage('prompt.notFound'));
       }
 
       // Mengecek apakah user memiliki prompt ini
       if (prompt.user_id !== userId) {
-        throw new Error('Unauthorized: You do not own this prompt');
+        throw new Error(getErrorMessage('prompt.unauthorized'));
       }
 
       // Sekarang aman untuk memperbarui tag

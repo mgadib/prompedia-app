@@ -4,6 +4,7 @@ import { Prompt, User as LocalUser } from './storage';
 import { storageLogger, supabaseLogger } from './logger';
 import { promptSchema } from '@/features/prompts/validation/prompt-schemas';
 import { z } from 'zod';
+import { getErrorMessage, getStorageErrorMessage } from './i18n-helpers';
 
 /**
  * Storage manager terpadu yang menangani Supabase dan localStorage
@@ -249,7 +250,7 @@ class StorageManager {
         
         // Validate prompt data - ensure required fields are present
         if (!prompt.id || !prompt.title || !prompt.content || !prompt.model) {
-          throw new StorageError('Missing required prompt fields');
+          throw new StorageError(getErrorMessage('prompt.missingFields'));
         }
         
         if (this.isAuthenticated()) {
@@ -264,7 +265,7 @@ class StorageManager {
         });
       } catch (error) {
         storageLogger.error('Failed to save prompt', error as Error, { promptId: prompt.id });
-        throw new StorageError('Gagal menyimpan prompt', error as Error);
+        throw new StorageError(getErrorMessage('prompt.saveFailed'), error as Error);
       }
     });
   }
@@ -274,7 +275,7 @@ class StorageManager {
    */
   private async savePromptToSupabase(prompt: Prompt): Promise<void> {
     if (!this.authUser) {
-      throw new StorageError('User not authenticated for Supabase storage');
+      throw new StorageError(getStorageErrorMessage('notAuthenticated'));
     }
 
     try {
@@ -365,7 +366,7 @@ class StorageManager {
         return this.getPromptsFromLocalStorage();
       }
       
-      throw new StorageError('Failed to retrieve prompts', error as Error);
+      throw new StorageError(getErrorMessage('prompt.loadFailed'), error as Error);
     }
   }
 

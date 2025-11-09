@@ -90,7 +90,8 @@
     "usageLimit": "Batas Penggunaan",
     "status": "STATUS",
     "mode": "MODE",
-    "model": "MODEL"
+    "model": "MODEL",
+    "processing": "Memproses..."
   },
   "messages": {
     "welcomeBack": "Selamat datang kembali!",
@@ -143,6 +144,12 @@
     "reloadPage": "Muat Ulang Halaman",
     "reloadPageAria": "Muat ulang halaman",
     "errorDetails": "Detail Kesalahan (Development)"
+  },
+  "fallbackToIndividual": "Kembali ke pemuatan tag individual",
+  "initializingWorkspace": "Menginisialisasi workspace Anda",
+  "loadingPrompedia": "Memuat Prompedia...",
+  "seo": {
+    "description": "Bangun, optimalkan, dan kelola AI prompt dengan Prompedia AI. Platform prompt engineering gratis dengan 6 thinking mode, integrasi model AI, dan perpustakaan prompt publik. Sempurna untuk ChatGPT, Claude, dan tools AI lainnya."
   }
 }
 

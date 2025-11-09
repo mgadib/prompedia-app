@@ -15,12 +15,17 @@
     "createFailed": "Gagal membuat prompt baru",
     "copyFailed": "Gagal menyalin konten",
     "visibilityUpdateFailed": "Gagal memperbarui visibilitas prompt",
-    "notFound": "Prompt tidak ditemukan"
+    "notFound": "Prompt tidak ditemukan",
+    "missingFields": "Field wajib prompt tidak lengkap",
+    "unauthorized": "Tidak diizinkan: Anda tidak memiliki prompt ini"
   },
   "auth": {
     "loginFailed": "Gagal masuk. Periksa email dan password Anda.",
     "logoutFailed": "Gagal keluar dari akun.",
-    "sessionExpired": "Sesi Anda telah berakhir. Silakan masuk kembali."
+    "sessionExpired": "Sesi Anda telah berakhir. Silakan masuk kembali.",
+    "unexpectedError": "Terjadi kesalahan yang tidak terduga",
+    "authenticationError": "Terjadi kesalahan autentikasi",
+    "logoutFailedGeneric": "Gagal keluar"
   },
   "usage": {
     "limitReached": "Batas penggunaan tercapai! Batas {{type}} tercapai. {{error}}",
@@ -64,6 +69,22 @@
     "promptRemoveFailed": "Gagal menghapus prompt",
     "promptCopyFailed": "Gagal menyalin prompt",
     "promptDuplicateFailed": "Gagal menduplikasi prompt"
+  },
+  "storage": {
+    "saveFailed": "Gagal menyimpan data ke penyimpanan lokal",
+    "loadFailed": "Gagal memuat data dari penyimpanan lokal",
+    "missingFields": "Field wajib tidak lengkap",
+    "notAuthenticated": "Pengguna tidak terautentikasi untuk penyimpanan Supabase"
+  },
+  "service": {
+    "promptNotFound": "Prompt tidak ditemukan",
+    "unauthorized": "Tidak diizinkan: Anda tidak memiliki prompt ini",
+    "loadTagsFailed": "Gagal memuat tag",
+    "fallbackLoading": "Kembali ke pemuatan tag individual"
+  },
+  "env": {
+    "invalidSupabaseUrl": "URL Supabase tidak valid",
+    "supabaseKeyRequired": "Kunci anon Supabase wajib diisi"
   }
 }
 

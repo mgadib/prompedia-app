@@ -4,13 +4,36 @@
     "titleMaxLength": "Title must not exceed {{max}} characters",
     "contentMaxLength": "Content must not exceed {{max}} characters",
     "tagsMaxCount": "Maximum {{max}} tags allowed",
-    "tagMaxLength": "Tag must not exceed {{max}} characters"
+    "tagMaxLength": "Tag must not exceed {{max}} characters",
+    "empty": "Prompt cannot be empty",
+    "exceedsMaxLength": "Prompt exceeds maximum length of {{maxLength}}"
   },
   "user": {
     "emailInvalid": "Invalid email address",
-    "passwordMinLength": "Password must be at least {{min}} characters"
+    "emailRequired": "Email is required",
+    "passwordMinLength": "Password must be at least {{min}} characters",
+    "passwordMismatch": "Passwords do not match",
+    "usernameRequired": "Username is required",
+    "usernameTooLong": "Username must not exceed {{max}} characters",
+    "displayNameRequired": "Display name is required",
+    "displayNameTooLong": "Display name must not exceed {{max}} characters"
   },
   "required": "This field is required",
-  "invalid": "Invalid value"
+  "invalid": "Invalid value",
+  "tagMaxLength": "Tag must not exceed {{max}} characters",
+  "tagsMaxCount": "Maximum {{max}} tags allowed",
+  "emailRequired": "Email is required",
+  "passwordMinLength": "Password must be at least {{min}} characters",
+  "passwordMismatch": "Passwords do not match",
+  "usernameRequired": "Username is required",
+  "usernameTooLong": "Username must not exceed {{max}} characters",
+  "displayNameRequired": "Display name is required",
+  "displayNameTooLong": "Display name must not exceed {{max}} characters",
+  "inputExceedsMaxLength": "Input exceeds maximum length of {{maxLength}}",
+  "promptEmpty": "Prompt cannot be empty",
+  "promptExceedsMaxLength": "Prompt exceeds maximum length of {{maxLength}}",
+  "modelRequired": "Either model or model_id must be provided",
+  "modeRequired": "Either mode or mode_id must be provided",
+  "missingFields": "Missing required fields"
 }
 

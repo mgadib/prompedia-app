@@ -35,11 +35,28 @@ const Sidebar = ({
   mobileSidebarOpen,
   setMobileSidebarOpen
 }: SidebarProps) => {
-  const { t } = useTranslation();
+  // Preload required namespaces: library, auth, and common
+  const { t, i18n } = useTranslation(['library', 'auth', 'common']);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [allTags, setAllTags] = useState<string[]>([]);
   const isMobile = useIsMobile();
   const location = useLocation();
+  
+  // Ensure namespaces are loaded and reload when language changes
+  useEffect(() => {
+    const loadNamespaces = async () => {
+      const currentLang = i18n.language || 'en';
+      const namespaces = ['library', 'auth'];
+      
+      for (const ns of namespaces) {
+        if (!i18n.hasResourceBundle(currentLang, ns)) {
+          await i18n.loadNamespaces(ns);
+        }
+      }
+    };
+    
+    loadNamespaces();
+  }, [i18n, i18n.language]); // Add i18n.language to dependency to trigger reload on language change
   
   // Mengecek apakah kita berada di halaman tag
   const isOnTagPage = location.pathname.startsWith('/tags/');
