@@ -10,7 +10,6 @@ type Tag = Database['public']['Tables']['tags']['Row']
 type AIModel = Database['public']['Tables']['ai_models']['Row']
 type ThinkingMode = Database['public']['Tables']['thinking_modes']['Row']
 type UserSession = Database['public']['Tables']['user_sessions']['Row']
-type PromptTag = Database['public']['Tables']['prompt_tags']['Row']
 
 // Type untuk operasi insert
 type UserInsert = Database['public']['Tables']['users']['Insert']
@@ -165,7 +164,7 @@ export class SupabaseService {
 
     const { data, error } = await query
     if (error) throw error
-    return (data || []) as Prompt[]
+    return ((data || []).filter(p => p !== null)) as unknown as Prompt[]
   }
 
   static async getPublicPrompts(
@@ -204,7 +203,7 @@ export class SupabaseService {
 
     const { data, error } = await query
     if (error) throw error
-    return (data || []) as Prompt[]
+    return ((data || []).filter(p => p !== null)) as unknown as Prompt[]
   }
 
   static async getFeaturedPrompts(): Promise<Prompt[]> {
@@ -539,7 +538,7 @@ export class SupabaseService {
     const fileExt = file.name.split('.').pop()
     const fileName = `${userId}-${Date.now()}.${fileExt}`
 
-    const { data, error } = await supabase.storage
+    const { error } = await supabase.storage
       .from('avatars')
       .upload(fileName, file)
 
@@ -557,7 +556,7 @@ export class SupabaseService {
     const fileExt = file.name.split('.').pop()
     const fileName = `${userId}-${Date.now()}.${fileExt}`
 
-    const { data, error } = await supabase.storage
+    const { error } = await supabase.storage
       .from('prompt-assets')
       .upload(fileName, file)
 
@@ -598,14 +597,14 @@ export class SupabaseService {
     // Sinkronisasi prompt lokal ke Supabase
     for (const localPrompt of userLocalPrompts) {
       try {
-        const newPrompt = await this.createPrompt({
+        await this.createPrompt({
           user_id: user.id,
           title: localPrompt.title,
           content: localPrompt.content,
-          description: localPrompt.description,
-          model_id: localPrompt.model_id,
-          mode_id: localPrompt.mode_id,
-          color: localPrompt.color,
+          description: localPrompt.description || null,
+          model_id: localPrompt.model_id || '',
+          mode_id: localPrompt.mode_id || '',
+          color: localPrompt.color || '#3b82f6',
           is_public: localPrompt.is_public
         })
 

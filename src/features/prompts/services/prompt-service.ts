@@ -3,7 +3,6 @@ import { Database } from '@/integrations/supabase/types';
 import { Prompt } from '@/lib/storage';
 import { convertSupabasePromptToPrompt, isPrompt } from '@/lib/types/supabase-responses';
 
-type SupabasePrompt = Database['public']['Tables']['prompts']['Row'];
 type PromptInsert = Database['public']['Tables']['prompts']['Insert'];
 
 /**
@@ -62,7 +61,7 @@ export class PromptService {
     if (error) throw error;
     
     return (data || [])
-      .filter((p): p is SupabasePrompt => p !== null && typeof p === 'object' && 'id' in p)
+      .filter(p => p !== null && typeof p === 'object' && 'id' in p)
       .map(p => convertSupabasePromptToPrompt(p));
   }
 
@@ -105,7 +104,7 @@ export class PromptService {
     if (error) throw error;
     
     return (data || [])
-      .filter((p): p is SupabasePrompt => p !== null && typeof p === 'object' && 'id' in p)
+      .filter(p => p !== null && typeof p === 'object' && 'id' in p)
       .map(p => convertSupabasePromptToPrompt(p));
   }
 
@@ -199,7 +198,7 @@ export class PromptService {
     if (error) throw error;
     
     return (data || [])
-      .filter((p): p is SupabasePrompt => p !== null && typeof p === 'object' && 'id' in p)
+      .filter(p => p !== null && typeof p === 'object' && 'id' in p)
       .map(p => convertSupabasePromptToPrompt(p));
   }
 }

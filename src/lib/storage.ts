@@ -1,7 +1,7 @@
 import { STORAGE_KEYS, ERROR_MESSAGES } from './constants';
 import { validateData, userProfileSchema } from '@/shared/validation/common';
 import { promptSchema } from '@/features/prompts/validation/prompt-schemas';
-import { getValidationMessage, getStorageErrorMessage, getErrorMessage } from './i18n-helpers';
+import { getValidationMessage, getStorageErrorMessage } from './i18n-helpers';
 
 export interface User {
   id: string;
@@ -111,9 +111,9 @@ export const userStorage = {
   
   getUser: (): User | null => {
     const data = safeLocalStorageGet(STORAGE_KEYS.USER);
-    const parsed = safeJsonParse(data, null);
+    const parsed = safeJsonParse<User | null>(data, null);
     
-    if (!parsed || !parsed.id) return null;
+    if (!parsed || !(parsed as any)?.id) return null;
     
     return parsed as User;
   },

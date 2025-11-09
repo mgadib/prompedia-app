@@ -425,7 +425,7 @@ export class TagService {
 
       // Build result with tags
       const result: (Prompt & { tags: Tag[] })[] = (prompts || [])
-        .filter((p): p is SupabasePrompt => p !== null && typeof p === 'object' && 'id' in p)
+        .filter(p => p !== null && typeof p === 'object' && 'id' in p)
         .map(p => ({
           ...convertSupabasePromptToPrompt(p),
           tags: tagsByPromptId.get(p.id) || []
@@ -537,7 +537,7 @@ export class TagService {
 
       // Build result with tags
       const result: (Prompt & { tags: Tag[] })[] = (prompts || [])
-        .filter((p): p is SupabasePrompt => p !== null && typeof p === 'object' && 'id' in p)
+        .filter(p => p !== null && typeof p === 'object' && 'id' in p)
         .map(p => ({
           ...convertSupabasePromptToPrompt(p),
           tags: tagsByPromptId.get(p.id) || []

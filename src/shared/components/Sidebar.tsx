@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChevronLeft, ChevronRight, Play, User, LogOut, Lock, Users, Hash, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { Play, User, Hash } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import LogoutDialog from '@/features/auth/components/LogoutDialog';
@@ -38,15 +38,15 @@ const Sidebar = ({
 }: SidebarProps) => {
   // Preload required namespaces: library, auth, and common
   const { t } = useTranslation(['library', 'auth', 'common']);
-  const { isReady } = useTranslationReady({ namespaces: ['library', 'auth'], showLoading: false });
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const { isReady: _isReady } = useTranslationReady({ namespaces: ['library', 'auth'], showLoading: false });
+  const [isCollapsed, _setIsCollapsed] = useState(false);
   const [allTags, setAllTags] = useState<string[]>([]);
   const isMobile = useIsMobile();
   const location = useLocation();
   
   // Mengecek apakah kita berada di halaman tag
   const isOnTagPage = location.pathname.startsWith('/tags/');
-  const activeTag = isOnTagPage ? decodeURIComponent(location.pathname.split('/tags/')[1]) : null;
+  const activeTag = isOnTagPage ? decodeURIComponent(location.pathname.split('/tags/')[1] || '') : null;
 
   useEffect(() => {
     const loadUserMostUsedTags = async () => {

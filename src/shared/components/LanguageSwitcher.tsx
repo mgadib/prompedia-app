@@ -33,10 +33,10 @@ const LanguageSwitcher = ({ isCollapsed = false }: { isCollapsed?: boolean }) =>
           title={isCollapsed || isMobile ? t('changeLanguage') : ''}
         >
           <Languages className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'}`} />
-          {!isCollapsed && !isMobile && (
+          {!isCollapsed && !isMobile && currentLang && (
             <span className="flex items-center gap-2">
-              <span>{currentLang.flag}</span>
-              <span>{currentLang.label}</span>
+              <span>{currentLang?.flag}</span>
+              <span>{currentLang?.label}</span>
             </span>
           )}
         </Button>

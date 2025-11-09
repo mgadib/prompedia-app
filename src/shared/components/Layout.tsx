@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { User as SupabaseUser } from '@supabase/supabase-js';
 import { clearUser, clearCurrentPrompt } from '@/lib/storage';
 import { toast } from '@/shared/utils/toast';
 import { getSuccessMessage, getErrorMessage } from '@/lib/i18n-helpers';

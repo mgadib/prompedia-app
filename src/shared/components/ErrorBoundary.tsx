@@ -85,15 +85,14 @@ export const ErrorBoundary: React.FC<ErrorBoundaryProps> = ({
   fallback: Fallback = ErrorFallback,
   onError 
 }) => {
-  const handleError = (error: Error, errorInfo: { componentStack: string }) => {
+  const handleError = (error: Error, errorInfo: { componentStack: string | null }) => {
     console.error('ErrorBoundary caught an error:', error, errorInfo);
     
     // Call custom error handler if provided
     if (onError) {
       onError(error, {
-        componentStack: errorInfo.componentStack,
-        errorBoundary: null,
-      });
+        componentStack: errorInfo.componentStack || '',
+      } as React.ErrorInfo);
     }
   };
 

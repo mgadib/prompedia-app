@@ -1,11 +1,10 @@
 import { supabase } from '@/integrations/supabase/client';
-import { Tag, Prompt } from '@/lib/storage';
+import { Tag } from '@/lib/storage';
 import { Database } from '@/integrations/supabase/types';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { isTag, convertSupabaseTagToTag, convertSupabasePromptToPrompt, type PromptTagJoinResponse } from '../types/supabase-responses';
+import { isTag, convertSupabaseTagToTag } from '../types/supabase-responses';
 
 type SupabaseTag = Database['public']['Tables']['tags']['Row'];
-type SupabasePrompt = Database['public']['Tables']['prompts']['Row'];
 type TagInsert = Database['public']['Tables']['tags']['Insert'];
 
 /**
@@ -92,7 +91,7 @@ export class TagServiceInstance {
 
       if (error) throw error;
       return (data || [])
-        .map((item: PromptTagJoinResponse) => item.tags)
+        .map((item: any) => item.tags)
         .filter((tag): tag is SupabaseTag => tag !== null && isTag(tag))
         .map(convertSupabaseTagToTag);
     } catch (error) {

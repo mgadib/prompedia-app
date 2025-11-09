@@ -27,7 +27,7 @@ interface PromptEditorProps {
   user?: User | null;
 }
 
-const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewPrompt, isFocusMode: _isFocusMode = false, onToggleFocus: _onToggleFocus, user }: PromptEditorProps) => {
+const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt: _onDeletePrompt, onNewPrompt, isFocusMode: _isFocusMode = false, onToggleFocus: _onToggleFocus, user }: PromptEditorProps) => {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
 
