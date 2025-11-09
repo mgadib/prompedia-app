@@ -9,8 +9,9 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
-    headers: mode === 'development' ? {} : {
-      // Header Content Security Policy untuk production
+    headers: {
+      // Header Content Security Policy untuk semua mode
+      // frame-ancestors hanya bisa di HTTP header, tidak bisa di meta tag
       'Content-Security-Policy': [
         "default-src 'self'",
         "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://kecpjbrlvaoujdnerhwe.supabase.co https://openrouter.ai",
@@ -18,11 +19,13 @@ export default defineConfig(({ mode }) => ({
         "img-src 'self' data: https: blob:",
         "font-src 'self' data:",
         "connect-src 'self' https://kecpjbrlvaoujdnerhwe.supabase.co https://openrouter.ai wss://kecpjbrlvaoujdnerhwe.supabase.co",
-        "frame-ancestors 'none'",
+        mode === 'development' 
+          ? "frame-ancestors 'self' https://lovable.app https://*.lovable.app"
+          : "frame-ancestors 'none'",
         "base-uri 'self'",
         "form-action 'self'"
       ].join('; '),
-      'X-Frame-Options': 'DENY',
+      'X-Frame-Options': mode === 'development' ? 'SAMEORIGIN' : 'DENY',
       'X-Content-Type-Options': 'nosniff',
       'Referrer-Policy': 'strict-origin-when-cross-origin',
       'Permissions-Policy': 'geolocation=(), microphone=(), camera=()'

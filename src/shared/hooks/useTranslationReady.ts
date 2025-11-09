@@ -42,6 +42,10 @@ interface UseTranslationReadyResult {
  * return <ComponentThatUsesTranslations />;
  * ```
  */
+// Cache untuk track failed loading attempts per namespace (mencegah infinite retry)
+const failedLoadingAttempts = new Map<string, number>();
+const MAX_RETRY_ATTEMPTS = 2; // Maximum retry attempts sebelum give up
+
 export function useTranslationReady(
   options: UseTranslationReadyOptions = {}
 ): UseTranslationReadyResult {
@@ -58,14 +62,32 @@ export function useTranslationReady(
       return;
     }
 
+    const language = i18n.language || 'en';
+    
     // Check if all namespaces are already loaded
     const allLoaded = namespaces.every(ns => 
-      i18n.hasResourceBundle(i18n.language || 'en', ns)
+      i18n.hasResourceBundle(language, ns)
     );
 
     if (allLoaded) {
       setIsReady(true);
       setIsLoading(false);
+      setError(null);
+      return;
+    }
+
+    // Check if any namespace has exceeded max retry attempts
+    const hasFailedNamespaces = namespaces.some(ns => {
+      const key = `${language}:${ns}`;
+      const attempts = failedLoadingAttempts.get(key) || 0;
+      return attempts >= MAX_RETRY_ATTEMPTS;
+    });
+
+    // If we have failed namespaces, set ready immediately to prevent infinite loop
+    if (hasFailedNamespaces) {
+      setIsReady(true);
+      setIsLoading(false);
+      setError(new Error('Some translation namespaces failed to load'));
       return;
     }
 
@@ -75,12 +97,52 @@ export function useTranslationReady(
       setError(null);
 
       try {
-        await ensureNamespacesLoaded(namespaces, i18n.language || 'en');
+        await ensureNamespacesLoaded(namespaces, language);
+        
+        // Check if all namespaces are now loaded
+        const allNowLoaded = namespaces.every(ns => 
+          i18n.hasResourceBundle(language, ns)
+        );
+        
+        if (allNowLoaded) {
+          // Reset failed attempts on success
+          namespaces.forEach(ns => {
+            const key = `${language}:${ns}`;
+            failedLoadingAttempts.delete(key);
+          });
+        } else {
+          // Some namespaces failed to load, increment attempt counter
+          namespaces.forEach(ns => {
+            if (!i18n.hasResourceBundle(language, ns)) {
+              const key = `${language}:${ns}`;
+              const attempts = (failedLoadingAttempts.get(key) || 0) + 1;
+              failedLoadingAttempts.set(key, attempts);
+            }
+          });
+        }
+        
         setIsReady(true);
         setIsLoading(false);
       } catch (err) {
         const error = err instanceof Error ? err : new Error('Failed to load translation namespaces');
-        console.error('[useTranslationReady] Error loading namespaces:', error);
+        
+        // Increment failed attempts for all namespaces
+        namespaces.forEach(ns => {
+          const key = `${language}:${ns}`;
+          const attempts = (failedLoadingAttempts.get(key) || 0) + 1;
+          failedLoadingAttempts.set(key, attempts);
+        });
+        
+        // Only log error if not exceeded max attempts (to prevent spam)
+        const maxAttemptsReached = namespaces.some(ns => {
+          const key = `${language}:${ns}`;
+          return (failedLoadingAttempts.get(key) || 0) >= MAX_RETRY_ATTEMPTS;
+        });
+        
+        if (!maxAttemptsReached) {
+          console.error('[useTranslationReady] Error loading namespaces:', error);
+        }
+        
         setError(error);
         setIsLoading(false);
         // Still set ready to true to prevent infinite loading
@@ -90,7 +152,7 @@ export function useTranslationReady(
     };
 
     loadNamespaces();
-  }, [namespaces, i18n.language, showLoading, i18n]);
+  }, [namespaces, i18n.language, showLoading]);
 
   // Reset ready state when language changes
   useEffect(() => {

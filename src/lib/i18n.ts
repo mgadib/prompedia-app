@@ -22,11 +22,29 @@ const criticalTranslationModules = import.meta.glob<{ default: Record<string, un
   import: 'default',
 });
 
+// Cache untuk track failed namespaces (untuk mencegah infinite retry loop)
+const failedNamespaces = new Set<string>();
+// Track logged errors untuk mencegah spam di console
+const loggedErrors = new Set<string>();
+
+/**
+ * Get cache key untuk failed namespace
+ */
+function getFailedNamespaceKey(language: string, namespace: string): string {
+  return `${language}:${namespace}`;
+}
+
 /**
  * Load translation file untuk bahasa dan namespace tertentu (lazy)
- * Improved path matching and error handling
+ * Improved path matching and error handling dengan failed namespace cache
  */
 async function loadTranslation(language: string, namespace: string, retries = 3): Promise<Record<string, unknown>> {
+  const failedKey = getFailedNamespaceKey(language, namespace);
+  
+  // Check cache: jika namespace sudah diketahui gagal, return empty object
+  if (failedNamespaces.has(failedKey)) {
+    return {};
+  }
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       // Normalize path patterns - try multiple matching strategies
@@ -49,9 +67,15 @@ async function loadTranslation(language: string, namespace: string, retries = 3)
       
       if (!modulePath) {
         if (attempt === retries) {
-          console.error(`[i18n] Translation module not found after ${retries} attempts: ${language}/${namespace}`);
-          console.error(`[i18n] Available paths:`, Object.keys(lazyTranslationModules).slice(0, 5));
-          throw new Error(`Translation module not found: ${language}/${namespace}`);
+          // Mark as failed dan log error hanya sekali
+          failedNamespaces.add(failedKey);
+          if (!loggedErrors.has(failedKey)) {
+            loggedErrors.add(failedKey);
+            console.error(`[i18n] Translation module not found after ${retries} attempts: ${language}/${namespace}`);
+            console.error(`[i18n] Available paths:`, Object.keys(lazyTranslationModules).slice(0, 5));
+          }
+          // Return empty object instead of throwing untuk prevent infinite loop
+          return {};
         }
         // Retry with slight delay
         await new Promise(resolve => setTimeout(resolve, 50 * attempt));
@@ -62,8 +86,14 @@ async function loadTranslation(language: string, namespace: string, retries = 3)
       const moduleLoader = lazyTranslationModules[modulePath];
       if (!moduleLoader) {
         if (attempt === retries) {
-          console.error(`[i18n] Translation loader not found: ${language}/${namespace} at path: ${modulePath}`);
-          throw new Error(`Translation loader not found: ${language}/${namespace}`);
+          // Mark as failed dan log error hanya sekali
+          failedNamespaces.add(failedKey);
+          if (!loggedErrors.has(failedKey)) {
+            loggedErrors.add(failedKey);
+            console.error(`[i18n] Translation loader not found: ${language}/${namespace} at path: ${modulePath}`);
+          }
+          // Return empty object instead of throwing untuk prevent infinite loop
+          return {};
         }
         await new Promise(resolve => setTimeout(resolve, 50 * attempt));
         continue;
@@ -80,8 +110,14 @@ async function loadTranslation(language: string, namespace: string, retries = 3)
       return translation;
     } catch (error) {
       if (attempt === retries) {
-        console.error(`[i18n] Error loading translation ${language}/${namespace} after ${retries} attempts:`, error);
-        throw error;
+        // Mark as failed dan log error hanya sekali
+        failedNamespaces.add(failedKey);
+        if (!loggedErrors.has(failedKey)) {
+          loggedErrors.add(failedKey);
+          console.error(`[i18n] Error loading translation ${language}/${namespace} after ${retries} attempts:`, error);
+        }
+        // Return empty object instead of throwing untuk prevent infinite loop
+        return {};
       }
       // Retry with exponential backoff
       await new Promise(resolve => setTimeout(resolve, 100 * attempt));
@@ -89,7 +125,7 @@ async function loadTranslation(language: string, namespace: string, retries = 3)
   }
   
   // Should never reach here, but TypeScript needs it
-  throw new Error(`Failed to load translation ${language}/${namespace}`);
+  return {};
 }
 
 /**
@@ -212,20 +248,21 @@ function initializeI18n(): void {
     for (const namespace of nsArray) {
       if (!CRITICAL_NAMESPACES.includes(namespace as typeof CRITICAL_NAMESPACES[number])) {
         if (!i18n.hasResourceBundle(language, namespace)) {
-          try {
-            const translation = await loadTranslation(language, namespace);
-            
-            // Only add if we got actual translation data
-            if (Object.keys(translation).length > 0) {
-              i18n.addResourceBundle(language, namespace, translation, true, true);
-              loadedNamespaces.add(namespace);
-            } else {
+          const translation = await loadTranslation(language, namespace);
+          
+          // Only add if we got actual translation data
+          if (Object.keys(translation).length > 0) {
+            i18n.addResourceBundle(language, namespace, translation, true, true);
+            loadedNamespaces.add(namespace);
+            // Remove from failed cache if successfully loaded
+            failedNamespaces.delete(getFailedNamespaceKey(language, namespace));
+          } else {
+            // Check if it's a known failed namespace
+            const failedKey = getFailedNamespaceKey(language, namespace);
+            if (!failedNamespaces.has(failedKey)) {
+              // Only warn if it's not a known failure (to prevent spam)
               console.warn(`[i18n] Skipping empty translation for ${language}/${namespace}`);
             }
-          } catch (error) {
-            console.error(`[i18n] Failed to load namespace ${namespace} for language ${language}:`, error);
-            // Don't add to loadedNamespaces if loading failed
-            // This allows retry on next attempt
           }
         } else {
           // Already loaded, just track it
@@ -262,10 +299,18 @@ function initializeI18n(): void {
               const translation = await loadTranslation(lng, namespace);
               if (Object.keys(translation).length > 0) {
                 i18n.addResourceBundle(lng, namespace, translation, true, true);
+                // Remove from failed cache if successfully loaded
+                failedNamespaces.delete(getFailedNamespaceKey(lng, namespace));
               }
             }
           } catch (error) {
-            console.error(`[i18n] Failed to reload namespace ${namespace} for language ${lng}:`, error);
+            // This should not happen anymore since loadTranslation returns empty object instead of throwing
+            // But keep for safety
+            const failedKey = getFailedNamespaceKey(lng, namespace);
+            if (!loggedErrors.has(failedKey)) {
+              loggedErrors.add(failedKey);
+              console.error(`[i18n] Failed to reload namespace ${namespace} for language ${lng}:`, error);
+            }
           }
         }
       }
