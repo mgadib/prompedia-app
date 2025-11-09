@@ -36,5 +36,5 @@ export const trackEvent = (name: AnalyticsEventName | string, payload?: Record<s
   };
 
   // Log JSON terstruktur; bisa dikirim ke external collector nanti
-  logger.info('ANALYTICS', `Event: ${name}`, evt);
+  logger.info('ANALYTICS', `Event: ${name}`, evt as Record<string, unknown>);
 };

@@ -81,12 +81,12 @@ async function getUniquePublicTagNames(): Promise<string[]> {
  */
 function formatDate(date?: string | null): string {
   if (!date) {
-    return new Date().toISOString().split('T')[0];
+    return new Date().toISOString().split('T')[0] || '';
   }
   try {
-    return new Date(date).toISOString().split('T')[0];
+    return new Date(date).toISOString().split('T')[0] || '';
   } catch {
-    return new Date().toISOString().split('T')[0];
+    return new Date().toISOString().split('T')[0] || '';
   }
 }
 
@@ -130,7 +130,6 @@ ${urlEntries}
  * Generate complete sitemap with all routes
  */
 export async function generateSitemap(): Promise<string> {
-  const baseUrl = ENV.SITE_URL || 'https://prompedia.app';
   const today = formatDate();
   
   const urls: SitemapUrl[] = [];

@@ -16,7 +16,6 @@
  * ```
  */
 
-export { PromptService, promptService } from './prompt-service';
-export { AuthService, authService } from './auth-service';
+export { PromptService, promptService } from '@/features/prompts/services/prompt-service';
 export { TagServiceInstance, tagServiceInstance } from './tag-service-instance';
 

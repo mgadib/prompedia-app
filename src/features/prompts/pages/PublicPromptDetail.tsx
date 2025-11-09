@@ -77,26 +77,12 @@ const PublicPromptDetail = () => {
     }
   }, [loading, prompt, id]);
 
-  const _handleCopyContent = () => {
-    if (prompt) {
-      navigator.clipboard.writeText(prompt.content);
-      toast.success('prompt.contentCopied');
-      trackEvent('copy_prompt_content', { prompt_id: id });
-    }
-  };
-
   const handleCopyUrl = () => {
     const baseUrl = ENV.SITE_URL || window.location.origin;
     const url = `${baseUrl}/p/${id}`;
     navigator.clipboard.writeText(url);
     toast.success('prompt.urlCopied');
     trackEvent('copy_prompt_url', { prompt_id: id });
-  };
-
-  const _handleUsePrompt = () => {
-    // Navigasi ke halaman utama dengan ID prompt di URL
-    trackEvent('use_prompt', { prompt_id: id });
-    navigate(`/?prompt=${id}`);
   };
 
   if (loading) {

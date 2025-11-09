@@ -309,53 +309,6 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
     }
   };
 
-  const __handleDelete = async (promptId: string) => {
-    try {
-      const user = await supabase.auth.getUser().then(({ data }) => data.user);
-
-      // User guest tidak bisa menghapus prompt
-      if (!user) {
-        toast.error('actions.signInToDelete');
-        return;
-      }
-
-      // Mengecek apakah user bisa melakukan panggilan AI (menghapus memerlukan quota)
-      const rateLimitCheck = await rateLimitingService.canMakeAICall(user);
-      if (!rateLimitCheck.allowed) {
-        toast.error('usage.waitBeforeDeleting');
-        return;
-      }
-
-      if (onDeletePrompt) {
-        onDeletePrompt(promptId);
-      } else {
-        await storageManager.deletePrompt(promptId);
-        try {
-          onPromptChange({
-            id: crypto.randomUUID(),
-            user_id: currentPrompt?.user_id || '',
-            title: t('prompt:untitled'),
-            content: '',
-            model: AVAILABLE_MODELS[1]?.id ?? AVAILABLE_MODELS[0]?.id ?? '',
-            mode: (THINKING_MODES[5]?.id ?? THINKING_MODES[0]?.id ?? 'normal') as 'meta-prompt' | 'thinking' | 'normal',
-            color: '#3b82f6',
-            is_public: false,
-            is_featured: false,
-          });
-        } catch (error) {
-          console.error('Failed to update prompt:', error);
-          toast.error('prompt.updateFailed');
-        }
-      }
-      toast.success('prompt.deleted');
-
-      // Menambah counter penggunaan setelah delete berhasil
-      await rateLimitingService.incrementUsage(user);
-    } catch (error) {
-      console.error('Failed to delete prompt:', error);
-      toast.error('prompt.deleteFailed');
-    }
-  };
 
 
   return (

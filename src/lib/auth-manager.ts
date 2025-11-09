@@ -10,7 +10,6 @@ class AuthManager {
   private sessionCacheTimestamp: number = 0;
   private readonly SESSION_CACHE_TTL = 30 * 1000; // 30 detik cache
   private authStateListeners: Set<(user: SupabaseUser | null) => void> = new Set();
-  private authStateSubscription: { unsubscribe: () => void } | null = null;
   private initializationPromise: Promise<void> | null = null;
 
   constructor() {
@@ -31,8 +30,8 @@ class AuthManager {
         await this.refreshSession();
 
         // Setup shared auth state change listener
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(
-          async (event, session) => {
+        supabase.auth.onAuthStateChange(
+          async (_event, session) => {
             this.sessionCache = session;
             this.sessionCacheTimestamp = Date.now();
             
@@ -48,8 +47,6 @@ class AuthManager {
             });
           }
         );
-
-        this.authStateSubscription = subscription;
       } catch (error) {
         console.error('Failed to initialize auth manager:', error);
       }
