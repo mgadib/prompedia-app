@@ -8,7 +8,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/shared/utils/toast';
 import { Sparkles, Loader2 } from 'lucide-react';
 import { useIsMobile } from '@/shared/hooks/use-mobile';
-import { getSuccessMessage, getErrorMessage } from '@/lib/i18n-helpers';
 
 interface AuthModalProps {
   isOpen: boolean;

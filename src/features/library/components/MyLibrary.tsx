@@ -77,23 +77,15 @@ const MyLibrary = ({
     try {
       await onDeletePrompt(prompt.id);
       
-      // Show toast with undo action
+      // Show toast
       toast.success('prompt.deleted', {
-        action: {
-          label: t('common:buttons.undo'),
-          onClick: async () => {
-            // Note: This would require a restore function in storageManager
-            // For now, we'll just show a message
-            toast.info('messages.undoNotAvailable');
-          },
-        },
-        duration: 5000,
+        duration: 5000
       });
     } catch (error) {
       console.error('Failed to delete prompt:', error);
       toast.error('prompt.deleteFailed');
     }
-  }, [t, onDeletePrompt]);
+  }, [onDeletePrompt]);
 
   const handleEdit = useCallback((prompt: PromptWithTags) => {
     onEditPrompt(prompt);
@@ -302,7 +294,7 @@ const MyLibrary = ({
         prompt={selectedPrompt}
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        onUse={handleUsePrompt}
+        onUse={(prompt) => handleUsePrompt(prompt as PromptWithTags)}
         onCopy={handleCopyPromptFromModal}
       />
 

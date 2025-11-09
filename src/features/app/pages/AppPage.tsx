@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 const AuthModal = React.lazy(() => import('@/features/auth/components/AuthModal'));
 const SEO = React.lazy(() => import('@/shared/components/SEO'));
 import AppViewSwitcher from '../components/AppViewSwitcher';
-import { storage, Prompt } from '@/lib/storage';
+import { storage } from '@/lib/storage';
 import { useIsMobile } from '@/shared/hooks/use-mobile';
 import { useSearchParams, useOutletContext } from 'react-router-dom';
 import { ENV } from '@/lib/constants';
@@ -47,7 +47,7 @@ const AppPage = () => {
   const { activeView, setActiveView, currentPrompt, setCurrentPrompt, showEditor, setShowEditor, isFocusMode, setIsFocusMode, isTransitioning, setIsTransitioning, prevAppIsPlaygroundActiveRef } = appState;
 
   const promptLoading = usePromptLoading(user);
-  const { allPrompts, setAllPrompts, publicPrompts, setPublicPrompts, loadAllPrompts, loadPublicPrompts } = promptLoading;
+  const { allPrompts, setAllPrompts, publicPrompts, loadAllPrompts, loadPublicPrompts } = promptLoading;
 
   const promptActions = usePromptActions({
     currentPrompt,
@@ -151,13 +151,10 @@ const AppPage = () => {
         }
       } else {
         setShowEditor(false);
-        setCurrentPrompt((prev) => {
-          if (prev) {
-            storage.clearCurrentPrompt();
-            return null;
-          }
-          return prev;
-        });
+        if (currentPrompt) {
+          storage.clearCurrentPrompt();
+          setCurrentPrompt(null);
+        }
       }
       
       prevAppIsPlaygroundActiveRef.current = appIsPlaygroundActive;
@@ -209,7 +206,7 @@ const AppPage = () => {
   };
 
   const handleToggleFocus = () => {
-    setIsFocusMode(prev => !prev);
+    setIsFocusMode(!isFocusMode);
   };
 
   // Mobile-specific handlers

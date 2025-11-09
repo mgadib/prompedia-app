@@ -93,7 +93,7 @@ const PublicPromptDetail = () => {
     trackEvent('copy_prompt_url', { prompt_id: id });
   };
 
-  const handleUsePrompt = () => {
+  const _handleUsePrompt = () => {
     // Navigasi ke halaman utama dengan ID prompt di URL
     trackEvent('use_prompt', { prompt_id: id });
     navigate(`/?prompt=${id}`);

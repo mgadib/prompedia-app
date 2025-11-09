@@ -162,7 +162,10 @@ export function useAIActions({
       setContent(nextContent);
       setViewState('ai-result');
       
-      toast.success('actions.actionSuccess', { action: actionId });
+      toast.success('actions.actionSuccess', { 
+        count: 1,
+        defaultValue: 'Action completed successfully'
+      });
 
       // Menambah counter penggunaan setelah response AI berhasil
       await rateLimitingService.incrementUsage(user);

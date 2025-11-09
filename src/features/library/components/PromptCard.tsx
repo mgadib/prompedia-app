@@ -34,15 +34,12 @@ const PromptCard = ({
   currentPromptId,
   onClick,
   onEdit,
-  onUse,
   onCopy,
   onDelete,
-  onCopyUrl,
   showCreator = false,
   creatorData,
 }: PromptCardProps) => {
   const { t } = useTranslation();
-  const isMobile = useIsMobile();
 
   const handleCardClick = () => {
     // Always open modal when card is clicked

@@ -1,6 +1,5 @@
 import { useState, useRef } from 'react';
 import { Prompt } from '@/lib/storage';
-import { storage } from '@/lib/storage';
 
 interface UseAppStateReturn {
   activeView: 'my-library' | 'public-library';

@@ -16,7 +16,7 @@ interface UsePromptLoadingReturn {
   loadPublicPrompts: () => Promise<void>;
 }
 
-export function usePromptLoading(user: { id: string } | null | undefined): UsePromptLoadingReturn {
+export function usePromptLoading(_user: { id: string } | null | undefined): UsePromptLoadingReturn {
   const { t } = useTranslation();
   const [allPrompts, setAllPrompts] = useState<Prompt[]>([]);
   const [publicPrompts, setPublicPrompts] = useState<Prompt[]>([]);

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { TagService } from '@/features/tags/services/tag-service';
 import { trackEvent } from '@/lib/analytics';
+import { getServiceErrorMessage, getCommonMessage } from '@/lib/i18n-helpers';
 import type { Prompt } from '@/lib/storage';
 import type { PromptWithTags } from '@/shared/types/prompts';
 
