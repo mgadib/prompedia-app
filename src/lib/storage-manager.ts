@@ -303,7 +303,7 @@ class StorageManager {
 
       const { error } = await supabase
         .from('prompts')
-        .upsert(promptData, { onConflict: 'id' });
+        .upsert([promptData], { onConflict: 'id' });
 
       if (error) {
         supabaseLogger.error('Supabase upsert failed', error, { 
