@@ -71,7 +71,7 @@ const Sidebar = ({
       !isMobile && (isFocusMode 
         ? 'w-0 overflow-hidden opacity-0' 
         : isCollapsed ? 'w-16' : 'w-64')
-    } ${!isMobile && 'border-r border-sidebar-border'} transition-all duration-300 ease-in-out relative`}>
+    } ${!isMobile && 'border-r border-sidebar-border'} transition-all duration-200 ease-in-out relative sidebar-transition`}>
 
       {/* Bagian Logo */}
       <div className={`border-b border-sidebar-border ${isMobile ? 'p-4' : 'p-6'}`}>
@@ -96,14 +96,14 @@ const Sidebar = ({
           {onNewPrompt && (
             <button
               onClick={onNewPrompt}
-              className={`w-full flex items-center ${isMobile || isCollapsed ? 'justify-center' : 'gap-3'} ${isMobile ? 'px-4 py-3 min-h-[44px]' : 'px-3 py-2'} rounded-lg text-sm transition-all duration-200 font-mono group touch-manipulation ${
+              className={`w-full flex items-center ${isMobile || isCollapsed ? 'justify-center' : 'gap-3'} ${isMobile ? 'px-4 py-3 min-h-[44px]' : 'px-3 py-2'} rounded-lg text-sm transition-all duration-150 font-mono group touch-manipulation ${
                 isPlaygroundActive && !isOnTagPage
                   ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-md font-semibold'
                   : 'text-sidebar-foreground hover:bg-sidebar-accent/20 hover:text-sidebar-accent-foreground hover:shadow-sm'
               }`}
               title={isMobile || isCollapsed ? t('library:playground') : ''}
             >
-              <Play className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${isPlaygroundActive && !isOnTagPage ? 'fill-current' : 'group-hover:scale-110'} transition-transform`} />
+              <Play className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${isPlaygroundActive && !isOnTagPage ? 'fill-current' : 'group-hover:scale-110'} transition-transform duration-150`} />
               {!isMobile && !isCollapsed && t('library:playground')}
             </button>
           )}
@@ -112,28 +112,28 @@ const Sidebar = ({
           {user && (
             <button
               onClick={() => onViewChange('my-library')}
-              className={`w-full flex items-center ${isMobile || isCollapsed ? 'justify-center' : 'gap-3'} ${isMobile ? 'px-4 py-3 min-h-[44px]' : 'px-3 py-2'} rounded-lg text-sm transition-all duration-200 font-mono group touch-manipulation ${
+              className={`w-full flex items-center ${isMobile || isCollapsed ? 'justify-center' : 'gap-3'} ${isMobile ? 'px-4 py-3 min-h-[44px]' : 'px-3 py-2'} rounded-lg text-sm transition-all duration-150 font-mono group touch-manipulation ${
                 activeView === 'my-library' && !isPlaygroundActive && !isOnTagPage
                   ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-md font-semibold'
                   : 'text-sidebar-foreground hover:bg-sidebar-accent/20 hover:text-sidebar-accent-foreground hover:shadow-sm'
               }`}
               title={isMobile || isCollapsed ? t('library:privateLibrary') : ''}
             >
-              <Lock className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${activeView === 'my-library' && !isPlaygroundActive && !isOnTagPage ? 'fill-current' : 'group-hover:scale-110'} transition-transform`} />
+              <Lock className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${activeView === 'my-library' && !isPlaygroundActive && !isOnTagPage ? 'fill-current' : 'group-hover:scale-110'} transition-transform duration-150`} />
               {!isMobile && !isCollapsed && t('library:privateLibrary')}
             </button>
           )}
 
           <button
             onClick={() => onViewChange('public-library')}
-            className={`w-full flex items-center ${isMobile || isCollapsed ? 'justify-center' : 'gap-3'} ${isMobile ? 'px-4 py-3 min-h-[44px]' : 'px-3 py-2'} rounded-lg text-sm transition-all duration-200 font-mono group touch-manipulation ${
+            className={`w-full flex items-center ${isMobile || isCollapsed ? 'justify-center' : 'gap-3'} ${isMobile ? 'px-4 py-3 min-h-[44px]' : 'px-3 py-2'} rounded-lg text-sm transition-all duration-150 font-mono group touch-manipulation ${
               activeView === 'public-library' && !isPlaygroundActive && !isOnTagPage
                 ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-md font-semibold'
                 : 'text-sidebar-foreground hover:bg-sidebar-accent/20 hover:text-sidebar-accent-foreground hover:shadow-sm'
             }`}
             title={isMobile || isCollapsed ? t('library:publicLibrary') : ''}
           >
-            <Users className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${activeView === 'public-library' && !isPlaygroundActive && !isOnTagPage ? 'fill-current' : 'group-hover:scale-110'} transition-transform`} />
+            <Users className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${activeView === 'public-library' && !isPlaygroundActive && !isOnTagPage ? 'fill-current' : 'group-hover:scale-110'} transition-transform duration-150`} />
             {!isMobile && !isCollapsed && t('library:publicLibrary')}
           </button>
         </div>

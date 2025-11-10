@@ -371,15 +371,11 @@ const AppPage = () => {
         return;
       }
 
-      // Smooth transition - don't clear current prompt immediately
+      // Instant state update for immediate UI response
       setActiveView(view);
       setShowEditor(false);
-      
-      // Clear prompt after a small delay to prevent flash
-      setTimeout(() => {
-        setCurrentPrompt(null);
-        storage.clearCurrentPrompt();
-      }, 100);
+      setCurrentPrompt(null);
+      storage.clearCurrentPrompt();
     } catch (error) {
       console.error('Failed to change view:', error);
       toast.error(t('errors:library.switchViewFailed'));
@@ -507,10 +503,10 @@ const AppPage = () => {
   };
 
   return (
-    <div className="flex h-screen bg-background overflow-hidden">
+    <div className="flex h-screen bg-background overflow-hidden stable-layout">
       {/* Desktop Sidebar */}
       {!isMobile && (
-        <div className={`transition-opacity duration-500 ${isInitializing ? 'opacity-0' : 'opacity-100'} hidden md:block`}>
+        <div className={`sidebar-transition hidden md:block ${isInitializing ? 'opacity-0' : 'opacity-100'}`}>
           <Sidebar
             activeView={activeView}
             onViewChange={handleViewChange}
@@ -543,7 +539,7 @@ const AppPage = () => {
       )}
 
       {/* Main Content Area */}
-      <div className={`flex-1 flex flex-col transition-opacity duration-500 ${isInitializing ? 'opacity-0' : 'opacity-100'} min-w-0 overflow-hidden ${isMobile ? 'h-screen' : ''}`}>
+      <div className={`flex-1 flex flex-col min-w-0 overflow-hidden ${isMobile ? 'h-screen' : ''} ${isInitializing ? 'opacity-0' : 'opacity-100 view-transition'}`}>
         {/* Mobile Hamburger Menu Button */}
         {isMobile && (
           <div className="md:hidden border-b border-border bg-card flex-shrink-0 px-4 py-3 flex items-center gap-3 z-10">
@@ -563,37 +559,41 @@ const AppPage = () => {
         )}
 
         <ErrorBoundary>
-          {showEditor ? (
-            <PromptEditor
-              currentPrompt={currentPrompt}
-              onPromptChange={handlePromptChange}
-              onDeletePrompt={handleDeletePrompt}
-              onNewPrompt={handleNewPrompt}
-              isFocusMode={isFocusMode}
-              onToggleFocus={handleToggleFocus}
-              user={user}
-            />
-          ) : (
-            <>
-              {activeView === 'my-library' ? (
-                <MyLibrary
-                  prompts={myPromptsWithTags}
-                  onSelectPrompt={handleSelectPrompt}
-                  onEditPrompt={handleEditPrompt}
-                  onDeletePrompt={handleDeletePrompt}
-                  onCopyPrompt={handleCopyPrompt}
-                  currentPromptId={currentPrompt?.id}
-                />
-              ) : (
-                <PublicLibrary
-                  prompts={publicPromptsWithTags}
-                  onSelectPrompt={handleSelectPrompt}
-                  onUsePrompt={handleUsePrompt}
-                  currentPromptId={currentPrompt?.id}
-                />
-              )}
-            </>
-          )}
+          <div key={`${showEditor}-${activeView}`} className="view-transition w-full h-full">
+            {showEditor ? (
+              <PromptEditor
+                currentPrompt={currentPrompt}
+                onPromptChange={handlePromptChange}
+                onDeletePrompt={handleDeletePrompt}
+                onNewPrompt={handleNewPrompt}
+                isFocusMode={isFocusMode}
+                onToggleFocus={handleToggleFocus}
+                user={user}
+              />
+            ) : (
+              <>
+                {activeView === 'my-library' ? (
+                  <MyLibrary
+                    key="my-library"
+                    prompts={myPromptsWithTags}
+                    onSelectPrompt={handleSelectPrompt}
+                    onEditPrompt={handleEditPrompt}
+                    onDeletePrompt={handleDeletePrompt}
+                    onCopyPrompt={handleCopyPrompt}
+                    currentPromptId={currentPrompt?.id}
+                  />
+                ) : (
+                  <PublicLibrary
+                    key="public-library"
+                    prompts={publicPromptsWithTags}
+                    onSelectPrompt={handleSelectPrompt}
+                    onUsePrompt={handleUsePrompt}
+                    currentPromptId={currentPrompt?.id}
+                  />
+                )}
+              </>
+            )}
+          </div>
         </ErrorBoundary>
       </div>
 

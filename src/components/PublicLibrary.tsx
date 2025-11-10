@@ -204,7 +204,7 @@ const PublicLibrary = ({
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full view-transition">
       {/* Search and Filter Header */}
       <div className="border-b border-border bg-card/50 sm:p-4 md:p-6 p-3">
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center">
