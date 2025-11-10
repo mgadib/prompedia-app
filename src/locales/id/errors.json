@@ -18,12 +18,12 @@
     "notFound": "Prompt tidak ditemukan"
   },
   "auth": {
-    "loginFailed": "Gagal masuk. Periksa email dan password Anda.",
+    "loginFailed": "Gagal masuk. Periksa email dan kata sandi Anda.",
     "logoutFailed": "Gagal keluar dari akun.",
     "sessionExpired": "Sesi Anda telah berakhir. Silakan masuk kembali."
   },
   "usage": {
-    "limitReached": "Batas penggunaan tercapai! Batas {{type}} tercapai. {{error}}",
+    "limitReached": "Batas penggunaan {{type}} tercapai",
     "dailyLimit": "Harian",
     "guestLimit": "Tamu",
     "waitBeforeSaving": "Harap tunggu sebelum menyimpan. Batas penggunaan tercapai.",
@@ -48,7 +48,7 @@
     "serviceLimitReached": "Batas penggunaan layanan tercapai. Silakan coba lagi sebentar lagi.",
     "apiAuthFailed": "Autentikasi API gagal. Silakan hubungi dukungan.",
     "requestTimeout": "Permintaan timeout. Silakan coba lagi.",
-    "actionFailed": "Gagal {{action}} konten"
+    "actionFailed": "Gagal memproses konten dengan {{action}}"
   },
   "library": {
     "loadFailed": "Gagal memuat perpustakaan publik",

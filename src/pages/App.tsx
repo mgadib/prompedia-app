@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -43,6 +43,21 @@ const AppPage = () => {
   const isMobile = useIsMobile();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  const isFirstMount = useRef(true);
+
+  // Check if app has been initialized in this session
+  useEffect(() => {
+    const hasInitialized = sessionStorage.getItem('prompedia-initialized');
+    if (hasInitialized) {
+      // Skip loading state if app was already initialized
+      setLoading(false);
+      setIsInitializing(false);
+      isFirstMount.current = false;
+    } else {
+      // Mark as initialized after first load
+      sessionStorage.setItem('prompedia-initialized', 'true');
+    }
+  }, []);
 
   // Handle navigation state from tag page
   useEffect(() => {
@@ -69,10 +84,10 @@ const AppPage = () => {
 
       setLoading(false);
       
-      // Menambahkan delay kecil untuk memastikan transisi yang mulus
+      // Reduced delay untuk transisi yang lebih cepat (dari 300ms ke 100ms)
       setTimeout(() => {
         setIsInitializing(false);
-      }, 300);
+      }, 100);
     } catch (error) {
       console.error('Auth check error:', error);
       setLoading(false);
@@ -81,6 +96,7 @@ const AppPage = () => {
   }, []);
 
   useEffect(() => {
+    // Always check auth, but loading state is controlled by sessionStorage check above
     checkAuth();
   }, [checkAuth]);
 
@@ -392,6 +408,9 @@ const AppPage = () => {
       setShowEditor(false);
       setCurrentPrompt(null);
       storage.clearCurrentPrompt();
+      
+      // Scroll to top saat view berubah
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
       console.error('Failed to change view:', error);
       toast.error(t('errors:library.switchViewFailed'));
@@ -434,7 +453,7 @@ const AppPage = () => {
     const newPrompt: Prompt = {
       id: crypto.randomUUID(),
       user_id: user?.id || 'guest',
-      title: 'Untitled Prompt',
+      title: t('prompt:untitled'),
       content: '',
       model: AVAILABLE_MODELS[1].id,
       color: '#3b82f6',
@@ -488,8 +507,8 @@ const AppPage = () => {
             <div className="absolute top-0 left-0 w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
           </div>
           <div className="text-center">
-            <p className="text-sm text-muted-foreground font-mono">Loading Prompedia...</p>
-            <p className="text-xs text-muted-foreground/60 font-mono mt-1">Initializing your workspace</p>
+            <p className="text-sm text-muted-foreground font-mono">{t('common:status.loadingApp')}</p>
+            <p className="text-xs text-muted-foreground/60 font-mono mt-1">{t('common:status.initializingWorkspace')}</p>
           </div>
         </div>
       </div>

@@ -1,6 +1,7 @@
 import { Prompt, Tag } from '@/lib/storage';
 import { Badge } from '@/components/ui/badge';
 import { FileText, Lock, Globe } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface PromptWithTags extends Prompt {
   tags: Tag[];
@@ -13,10 +14,12 @@ interface PromptLibraryProps {
 }
 
 const PromptLibrary = ({ prompts, onSelectPrompt, currentPromptId }: PromptLibraryProps) => {
+  const { t } = useTranslation();
+  
   if (prompts.length === 0) {
     return (
       <div className="flex items-center justify-center h-full text-muted-foreground">
-        <p className="text-sm">No prompts yet. Create your first one!</p>
+        <p className="text-sm">{t('library:emptyStateNoPrompts')}</p>
       </div>
     );
   }
@@ -75,7 +78,7 @@ const PromptLibrary = ({ prompts, onSelectPrompt, currentPromptId }: PromptLibra
           </div>
 
           <div className="text-xs text-muted-foreground font-mono">
-            {prompt.model} • {prompt.is_featured ? 'Featured' : 'Standard'}
+            {prompt.model} • {prompt.is_featured ? t('common:labels.featured') : t('common:labels.standard')}
           </div>
         </button>
       ))}

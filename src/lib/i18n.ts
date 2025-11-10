@@ -89,6 +89,11 @@ function initializeI18n(): void {
       interpolation: {
         escapeValue: false, // React already escapes values
       },
+      // Pluralization rules
+      // Bahasa Indonesia menggunakan pluralization sederhana
+      // Untuk count, kita bisa menggunakan struktur yang natural untuk semua nilai
+      pluralSeparator: '_',
+      contextSeparator: '_',
       detection: {
         // Order of detection methods
         order: ['localStorage', 'navigator', 'htmlTag'],
@@ -102,17 +107,36 @@ function initializeI18n(): void {
       },
     });
 
-  // Update HTML lang attribute when language changes
-  i18n.on('languageChanged', (lng) => {
+  // RTL language codes
+  const RTL_LANGUAGES = ['ar', 'he', 'ur', 'fa', 'yi', 'ji', 'iw', 'ku', 'ps', 'sd'];
+  
+  /**
+   * Check if a language is RTL
+   */
+  const isRTL = (lang: string): boolean => {
+    const langCode = lang.split('-')[0].toLowerCase();
+    return RTL_LANGUAGES.includes(langCode);
+  };
+
+  /**
+   * Update HTML lang and dir attributes when language changes
+   */
+  const updateHTMLAttributes = (lng: string) => {
     if (typeof document !== 'undefined') {
       document.documentElement.lang = lng;
+      document.documentElement.dir = isRTL(lng) ? 'rtl' : 'ltr';
       localStorage.setItem(STORAGE_KEYS.LANGUAGE, lng);
     }
+  };
+
+  // Update HTML lang and dir attributes when language changes
+  i18n.on('languageChanged', (lng) => {
+    updateHTMLAttributes(lng);
   });
 
-  // Set initial HTML lang attribute
+  // Set initial HTML lang and dir attributes
   if (typeof document !== 'undefined') {
-    document.documentElement.lang = i18n.language;
+    updateHTMLAttributes(i18n.language);
   }
 }
 

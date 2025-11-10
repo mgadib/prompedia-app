@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { formatNumber } from '@/lib/i18n-formatting';
 import { Prompt, Tag } from '@/lib/storage';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { FileText, Globe, User, Copy, Download, Search, Filter, Link as LinkIcon } from 'lucide-react';
+import { FileText, Globe, User, Copy, Download, Search, Filter, Link as LinkIcon, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { SupabaseService } from '@/lib/supabase-service';
@@ -12,6 +13,8 @@ import { TagService } from '@/lib/tag-service';
 import PromptDetailModal from './PromptDetailModal';
 import { trackEvent } from '@/lib/analytics';
 import { ENV } from '@/lib/constants';
+import { useDebounce } from '@/hooks/useDebounce';
+import { useDoubleClickPrevention } from '@/hooks/useDoubleClickPrevention';
 
 interface PromptWithTags extends Prompt {
   tags: Tag[];
@@ -49,6 +52,11 @@ const PublicLibrary = ({
   const [promptsWithTags, setPromptsWithTags] = useState<PromptWithTags[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoadingTags, setIsLoadingTags] = useState(false);
+  const [copyingPromptId, setCopyingPromptId] = useState<string | null>(null);
+  const [usingPromptId, setUsingPromptId] = useState<string | null>(null);
+  
+  // Debounce search term untuk performa yang lebih baik
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
   // Prompt public sudah difilter di App.tsx dan diteruskan sebagai props
 
@@ -100,20 +108,33 @@ const PublicLibrary = ({
 
   // allTags sudah dimuat di state melalui useEffect
 
-  // Memfilter prompt berdasarkan pencarian dan tag
+  // Memfilter prompt berdasarkan pencarian dan tag (menggunakan debounced search)
   let filteredPrompts = promptsWithTags.filter(prompt => {
-    const matchesSearch = prompt.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (prompt.description?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
+    const matchesSearch = prompt.title.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+                         (prompt.description?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ?? false);
     const matchesTag = !selectedTag || prompt.tags.some(tag => tag.name === selectedTag);
     return matchesSearch && matchesTag;
   });
 
-  const handleCopy = (e: React.MouseEvent, prompt: PromptWithTags) => {
+  const handleCopy = useDoubleClickPrevention((e: React.MouseEvent, prompt: PromptWithTags) => {
     e.stopPropagation();
-    navigator.clipboard.writeText(prompt.content);
-    toast.success(t('success:prompt.contentCopied'));
-    trackEvent('copy_prompt_content', { prompt_id: prompt.id });
-  };
+    if (copyingPromptId !== prompt.id) {
+      setCopyingPromptId(prompt.id);
+      
+      // Optimistic update - langsung tampilkan feedback
+      toast.success(t('success:prompt.contentCopied'));
+      trackEvent('copy_prompt_content', { prompt_id: prompt.id });
+      
+      // Execute copy operation
+      navigator.clipboard.writeText(prompt.content).catch((error) => {
+        console.error('Failed to copy:', error);
+        toast.error(t('errors:prompt.copyFailed'));
+      });
+      
+      // Reset copying state after a delay
+      setTimeout(() => setCopyingPromptId(null), 1000);
+    }
+  });
 
   const handleCopyUrl = (e: React.MouseEvent, promptId: string) => {
     e.stopPropagation();
@@ -124,12 +145,20 @@ const PublicLibrary = ({
     trackEvent('copy_prompt_url', { prompt_id: promptId });
   };
 
-  const handleUse = (e: React.MouseEvent, prompt: PromptWithTags) => {
+  const handleUse = useDoubleClickPrevention((e: React.MouseEvent, prompt: PromptWithTags) => {
     e.stopPropagation();
-    onUsePrompt(prompt);
-    toast.success(t('success:prompt.loadedForEditing'));
-    trackEvent('use_prompt', { prompt_id: prompt.id });
-  };
+    if (usingPromptId !== prompt.id) {
+      setUsingPromptId(prompt.id);
+      
+      // Optimistic update - langsung panggil callback
+      onUsePrompt(prompt);
+      toast.success(t('success:prompt.loadedForEditing'));
+      trackEvent('use_prompt', { prompt_id: prompt.id });
+      
+      // Reset using state after a delay
+      setTimeout(() => setUsingPromptId(null), 1000);
+    }
+  });
 
   const handleCardClick = (prompt: PromptWithTags) => {
     setSelectedPrompt(prompt);
@@ -245,20 +274,20 @@ const PublicLibrary = ({
             <div className="flex items-center gap-2">
               <Globe className="w-4 h-4 text-primary" />
               <span className="text-foreground font-semibold">
-                {filteredPrompts.length.toLocaleString()}
+                {formatNumber(filteredPrompts.length)}
               </span>
               <span className="text-muted-foreground">
-                of {prompts.length.toLocaleString()}
+                {t('common:labels.of')} {formatNumber(prompts.length)}
               </span>
             </div>
             
             {/* Filter indicators */}
-            {(searchTerm || selectedTag) && (
+            {(debouncedSearchTerm || selectedTag) && (
               <div className="flex items-center gap-2 text-xs">
-                {searchTerm && (
+                {debouncedSearchTerm && (
                   <Badge variant="secondary" className="text-xs">
                     <Search className="w-3 h-3 mr-1" />
-                    "{searchTerm}"
+                    "{debouncedSearchTerm}"
                   </Badge>
                 )}
                 {selectedTag && (
@@ -407,21 +436,31 @@ const PublicLibrary = ({
                         size="sm"
                         variant="ghost"
                         onClick={(e) => handleCopy(e, prompt)}
-                        className="h-8 w-8 p-0 hover:bg-primary/20"
+                        disabled={copyingPromptId === prompt.id}
+                        className="h-8 w-8 p-0 hover:bg-primary/20 transition-all active:scale-95"
                         title={t('library:copyContentToClipboard')}
                         aria-label={t('library:copyContentToClipboard')}
                       >
-                        <Copy className="w-3 h-3" />
+                        {copyingPromptId === prompt.id ? (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : (
+                          <Copy className="w-3 h-3" />
+                        )}
                       </Button>
                       <Button
                         size="sm"
                         variant="ghost"
                         onClick={(e) => handleUse(e, prompt)}
-                        className="h-8 w-8 p-0 hover:bg-primary/20"
+                        disabled={usingPromptId === prompt.id}
+                        className="h-8 w-8 p-0 hover:bg-primary/20 transition-all active:scale-95"
                         title={t('library:useThisPrompt')}
                         aria-label={t('library:useThisPrompt')}
                       >
-                        <Download className="w-3 h-3" />
+                        {usingPromptId === prompt.id ? (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : (
+                          <Download className="w-3 h-3" />
+                        )}
                       </Button>
                       {/* Direct link to detail page */}
                       <Link

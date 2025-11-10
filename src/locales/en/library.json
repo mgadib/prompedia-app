@@ -9,6 +9,7 @@
   "allTags": "All tags",
   "noPrompts": "No prompts yet",
   "noPublicPrompts": "No public prompts yet",
+  "emptyStateNoPrompts": "No prompts yet. Create your first one!",
   "createFirstPrompt": "Create your first prompt to get started with your personal library!",
   "beFirstToShare": "Be the first to share a prompt with the community!",
   "noMatches": "No prompts match your search criteria",

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { Sparkles, Loader2 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { getSuccessMessage, getErrorMessage } from '@/lib/i18n-helpers';
+import { autoFocus, trapFocus } from '@/lib/focus-trap';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -24,6 +25,28 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
   const isMobile = useIsMobile();
+  const dialogContentRef = useRef<HTMLDivElement>(null);
+  const firstInputRef = useRef<HTMLInputElement>(null);
+
+  // Auto-focus dan focus trap saat modal dibuka
+  useEffect(() => {
+    if (isOpen && dialogContentRef.current) {
+      // Reset form saat modal dibuka
+      if (!isLogin) {
+        setUsername('');
+      }
+      setEmail('');
+      setPassword('');
+      
+      // Auto-focus pada input pertama
+      autoFocus(dialogContentRef.current);
+      
+      // Setup focus trap
+      const cleanup = trapFocus(dialogContentRef.current);
+      
+      return cleanup;
+    }
+  }, [isOpen, isLogin]);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,7 +100,10 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={`${isMobile ? 'max-w-[calc(100vw-2rem)] mx-4' : 'sm:max-w-md'} max-h-[90vh] overflow-y-auto`}>
+      <DialogContent 
+        ref={dialogContentRef}
+        className={`${isMobile ? 'max-w-[calc(100vw-2rem)] mx-4' : 'sm:max-w-md'} max-h-[90vh] overflow-y-auto`}
+      >
         <DialogHeader>
           <div className={`flex items-center justify-center gap-2 ${isMobile ? 'mb-3' : 'mb-4'}`}>
             <Sparkles className={`${isMobile ? 'w-5 h-5' : 'w-6 h-6'} text-primary`} />
@@ -107,6 +133,8 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
                 required={!isLogin}
                 className="font-mono"
                 disabled={loading}
+                ref={!isLogin ? firstInputRef : undefined}
+                autoFocus={!isLogin}
               />
             </div>
           )}
@@ -124,6 +152,8 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
               required
               className="font-mono"
               disabled={loading}
+              ref={isLogin ? firstInputRef : undefined}
+              autoFocus={isLogin}
             />
           </div>
 

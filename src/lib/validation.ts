@@ -1,40 +1,57 @@
 import { z } from 'zod';
 import { VALIDATION, ERROR_MESSAGES } from './constants';
+import { getValidationMessage } from './i18n-helpers';
 
 /**
  * Schema validasi dan utilitas
  * Logika validasi terpusat menggunakan Zod untuk type safety
+ * 
+ * Note: Validation messages use i18n translation keys for internationalization.
+ * Messages are resolved at validation time, not at schema definition time.
  */
+
 
 // Schema dasar
 export const emailSchema = z
   .string()
-  .email(ERROR_MESSAGES.AUTH.LOGIN_FAILED)
-  .min(1, 'Email wajib diisi');
+  .email(getValidationMessage('user.emailInvalid'))
+  .min(1, getValidationMessage('user.emailRequired'));
 
 export const passwordSchema = z
   .string()
-  .min(VALIDATION.USER.PASSWORD_MIN_LENGTH, `Password minimal ${VALIDATION.USER.PASSWORD_MIN_LENGTH} karakter`);
+  .min(VALIDATION.USER.PASSWORD_MIN_LENGTH, () => 
+    getValidationMessage('user.passwordMinLength', { min: VALIDATION.USER.PASSWORD_MIN_LENGTH })
+  );
 
 // Schema validasi untuk prompt
 export const promptTitleSchema = z
   .string()
-  .min(VALIDATION.PROMPT.TITLE_MIN_LENGTH, ERROR_MESSAGES.PROMPT.TITLE_REQUIRED)
-  .max(VALIDATION.PROMPT.TITLE_MAX_LENGTH, ERROR_MESSAGES.PROMPT.TITLE_TOO_LONG)
+  .min(VALIDATION.PROMPT.TITLE_MIN_LENGTH, () => 
+    getValidationMessage('prompt.titleMinLength', { min: VALIDATION.PROMPT.TITLE_MIN_LENGTH })
+  )
+  .max(VALIDATION.PROMPT.TITLE_MAX_LENGTH, () => 
+    getValidationMessage('prompt.titleMaxLength', { max: VALIDATION.PROMPT.TITLE_MAX_LENGTH })
+  )
   .trim();
 
 export const promptContentSchema = z
   .string()
-  .max(VALIDATION.PROMPT.CONTENT_MAX_LENGTH, ERROR_MESSAGES.PROMPT.CONTENT_TOO_LONG);
+  .max(VALIDATION.PROMPT.CONTENT_MAX_LENGTH, () => 
+    getValidationMessage('prompt.contentMaxLength', { max: VALIDATION.PROMPT.CONTENT_MAX_LENGTH })
+  );
 
 export const promptTagSchema = z
   .string()
-  .max(VALIDATION.PROMPT.TAG_MAX_LENGTH, `Tag maksimal ${VALIDATION.PROMPT.TAG_MAX_LENGTH} karakter`)
+  .max(VALIDATION.PROMPT.TAG_MAX_LENGTH, () => 
+    getValidationMessage('prompt.tagMaxLength', { max: VALIDATION.PROMPT.TAG_MAX_LENGTH })
+  )
   .trim();
 
 export const promptTagsSchema = z
   .array(promptTagSchema)
-  .max(VALIDATION.PROMPT.TAGS_MAX_COUNT, `Maksimal ${VALIDATION.PROMPT.TAGS_MAX_COUNT} tag`);
+  .max(VALIDATION.PROMPT.TAGS_MAX_COUNT, () => 
+    getValidationMessage('prompt.tagsMaxCount', { max: VALIDATION.PROMPT.TAGS_MAX_COUNT })
+  );
 
 // Schema prompt lengkap (diperbarui untuk database minimalis)
 export const promptSchema = z.object({
@@ -58,10 +75,10 @@ export const promptSchema = z.object({
   // created_at dan updated_at tidak disimpan dalam schema minimalis
 }).refine(
   (data) => data.model || data.model_id, 
-  { message: "Either model or model_id must be provided" }
+  { message: () => getValidationMessage('prompt.modelOrModelIdRequired') }
 ).refine(
   (data) => data.mode || data.mode_id,
-  { message: "Either mode or mode_id must be provided" }
+  { message: () => getValidationMessage('prompt.modeOrModeIdRequired') }
 );
 
 // Schema autentikasi
@@ -75,7 +92,7 @@ export const registerSchema = z.object({
   password: passwordSchema,
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
-  message: 'Password tidak cocok',
+  message: () => getValidationMessage('user.passwordMismatch'),
   path: ['confirmPassword'],
 });
 
@@ -83,8 +100,12 @@ export const registerSchema = z.object({
 // Note: role field removed - user_roles table tidak digunakan di aplikasi
 export const userProfileSchema = z.object({
   id: z.string().uuid(),
-  username: z.string().min(1, 'Username wajib diisi').max(50, 'Username terlalu panjang'),
-  display_name: z.string().min(1, 'Nama tampilan wajib diisi').max(100, 'Nama terlalu panjang'),
+  username: z.string()
+    .min(1, () => getValidationMessage('user.usernameRequired'))
+    .max(50, () => getValidationMessage('user.usernameTooLong')),
+  display_name: z.string()
+    .min(1, () => getValidationMessage('user.displayNameRequired'))
+    .max(100, () => getValidationMessage('user.displayNameTooLong')),
   // role field removed - tidak ada lagi di database
 });
 
@@ -181,7 +202,9 @@ export function sanitizeString(input: string, maxLength: number = 50000): string
 
   // Menerapkan batas panjang SEBELUM pemrosesan untuk efisiensi
   if (input.length > maxLength) {
-    throw new ValidationError(`Input exceeds maximum length of ${maxLength}`);
+    throw new ValidationError(
+      getValidationMessage('inputExceedsMaxLength', { max: maxLength })
+    );
   }
 
   return input
@@ -216,11 +239,13 @@ export function validateAIPromptInput(prompt: string): string {
   
   // Pengecekan tambahan khusus untuk input AI
   if (sanitized.length < 1) {
-    throw new ValidationError('Prompt cannot be empty');
+    throw new ValidationError(getValidationMessage('prompt.cannotBeEmpty'));
   }
   
   if (sanitized.length > VALIDATION.PROMPT.CONTENT_MAX_LENGTH) {
-    throw new ValidationError(`Prompt exceeds maximum length of ${VALIDATION.PROMPT.CONTENT_MAX_LENGTH}`);
+    throw new ValidationError(
+      getValidationMessage('prompt.exceedsMaxLength', { max: VALIDATION.PROMPT.CONTENT_MAX_LENGTH })
+    );
   }
   
   return sanitized;

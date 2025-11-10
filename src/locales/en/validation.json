@@ -1,16 +1,27 @@
 {
   "prompt": {
-    "titleMinLength": "Title must be at least {{min}} character",
+    "titleMinLength": "Title must be at least {{min}} characters",
     "titleMaxLength": "Title must not exceed {{max}} characters",
     "contentMaxLength": "Content must not exceed {{max}} characters",
     "tagsMaxCount": "Maximum {{max}} tags allowed",
-    "tagMaxLength": "Tag must not exceed {{max}} characters"
+    "tagMaxLength": "Tag must not exceed {{max}} characters",
+    "modelOrModelIdRequired": "Either model or model_id must be provided",
+    "modeOrModeIdRequired": "Either mode or mode_id must be provided",
+    "cannotBeEmpty": "Prompt cannot be empty",
+    "exceedsMaxLength": "Prompt exceeds maximum length of {{max}}"
   },
   "user": {
     "emailInvalid": "Invalid email address",
-    "passwordMinLength": "Password must be at least {{min}} characters"
+    "emailRequired": "Email is required",
+    "passwordMinLength": "Password must be at least {{min}} characters",
+    "passwordMismatch": "Passwords do not match",
+    "usernameRequired": "Username is required",
+    "usernameTooLong": "Username is too long",
+    "displayNameRequired": "Display name is required",
+    "displayNameTooLong": "Display name is too long"
   },
   "required": "This field is required",
-  "invalid": "Invalid value"
+  "invalid": "Invalid value",
+  "inputExceedsMaxLength": "Input exceeds maximum length of {{max}}"
 }
 
