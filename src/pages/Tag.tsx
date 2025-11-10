@@ -79,13 +79,13 @@ const TagPage: React.FC = () => {
   }, [loadData]);
 
   const handleViewChange = (view: 'my-library' | 'public-library') => {
-    // Mengarahkan ke halaman utama; AppPage akan mengelola tampilan pustaka
-    navigate('/', { replace: false });
+    // Smooth navigation ke halaman utama
+    navigate('/', { replace: false, state: { targetView: view } });
   };
 
   const handleNewPrompt = () => {
-    // Mengarahkan ke halaman utama untuk playground
-    navigate('/', { replace: false });
+    // Smooth navigation ke playground
+    navigate('/', { replace: false, state: { openPlayground: true } });
   };
 
   const handleLogout = async () => {
@@ -149,19 +149,21 @@ const TagPage: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen bg-background overflow-hidden">
+    <div className="flex h-screen bg-background overflow-hidden stable-layout">
       {/* Sidebar Desktop */}
       {!isMobile && (
-        <Sidebar
-          activeView={user ? 'my-library' : 'public-library'}
-          onViewChange={handleViewChange}
-          onNewPrompt={handleNewPrompt}
-          onLogout={handleLogout}
-          onLogin={handleLogin}
-          user={user}
-          isPlaygroundActive={false}
-          isFocusMode={false}
-        />
+        <div className="sidebar-transition hidden md:block">
+          <Sidebar
+            activeView={user ? 'my-library' : 'public-library'}
+            onViewChange={handleViewChange}
+            onNewPrompt={handleNewPrompt}
+            onLogout={handleLogout}
+            onLogin={handleLogin}
+            user={user}
+            isPlaygroundActive={false}
+            isFocusMode={false}
+          />
+        </div>
       )}
 
       {/* Sidebar Mobile */}
@@ -181,7 +183,7 @@ const TagPage: React.FC = () => {
       )}
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden view-transition">
         <SEO title={pageTitle} description={t('library:tagPageDescription', { tag: tagName })} tags={[tagName]} />
 
         {/* Mobile top bar */}
@@ -224,24 +226,26 @@ const TagPage: React.FC = () => {
 
         <div className="flex-1 overflow-y-auto">
           {isLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 p-3 sm:p-4 md:p-6">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="bg-card border rounded-lg p-4 sm:p-6 space-y-4">
-                  <div className="flex justify-between">
-                    <div className="h-4 w-20 bg-muted animate-pulse rounded" />
-                    <div className="h-4 w-16 bg-muted animate-pulse rounded" />
+            <div className="view-transition">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 p-3 sm:p-4 md:p-6">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="bg-card border rounded-lg p-4 sm:p-6 space-y-4">
+                    <div className="flex justify-between">
+                      <div className="h-4 w-20 bg-muted animate-pulse rounded" />
+                      <div className="h-4 w-16 bg-muted animate-pulse rounded" />
+                    </div>
+                    <div className="h-6 w-3/4 bg-muted animate-pulse rounded" />
+                    <div className="space-y-2">
+                      <div className="h-4 w-full bg-muted animate-pulse rounded" />
+                      <div className="h-4 w-5/6 bg-muted animate-pulse rounded" />
+                    </div>
+                    <div className="flex gap-2">
+                      <div className="h-6 w-16 bg-muted animate-pulse rounded" />
+                      <div className="h-6 w-20 bg-muted animate-pulse rounded" />
+                    </div>
                   </div>
-                  <div className="h-6 w-3/4 bg-muted animate-pulse rounded" />
-                  <div className="space-y-2">
-                    <div className="h-4 w-full bg-muted animate-pulse rounded" />
-                    <div className="h-4 w-5/6 bg-muted animate-pulse rounded" />
-                  </div>
-                  <div className="flex gap-2">
-                    <div className="h-6 w-16 bg-muted animate-pulse rounded" />
-                    <div className="h-6 w-20 bg-muted animate-pulse rounded" />
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           ) : error ? (
             <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-8">
@@ -254,13 +258,13 @@ const TagPage: React.FC = () => {
               </div>
             </div>
           ) : prompts.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-8">
+            <div className="view-transition flex flex-col items-center justify-center h-full text-muted-foreground p-8">
               <Hash className="w-16 h-16 mb-4 opacity-50" />
               <h3 className="text-lg font-semibold mb-2 font-mono">{t('library:noPrompts')}</h3>
               <p className="text-sm text-center">{t('library:noPromptsWithTag')}</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 p-3 sm:p-4 md:p-6">
+            <div className="view-transition grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 p-3 sm:p-4 md:p-6">
               {prompts.map((prompt) => (
                 <div
                   key={prompt.id}

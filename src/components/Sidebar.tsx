@@ -147,14 +147,19 @@ const Sidebar = ({
                 <Link
                   key={tag}
                   to={`/tags/${encodeURIComponent(tag)}`}
-                  className={`w-full flex items-center ${isMobile || isCollapsed ? 'justify-center' : 'gap-3'} ${isMobile ? 'px-4 py-3 min-h-[44px]' : 'px-3 py-2'} rounded-lg text-sm transition-all duration-200 font-mono group touch-manipulation ${
+                  onClick={() => {
+                    if (isMobile && setMobileSidebarOpen) {
+                      setMobileSidebarOpen(false);
+                    }
+                  }}
+                  className={`w-full flex items-center ${isMobile || isCollapsed ? 'justify-center' : 'gap-3'} ${isMobile ? 'px-4 py-3 min-h-[44px]' : 'px-3 py-2'} rounded-lg text-sm transition-all duration-150 font-mono group touch-manipulation ${
                     isActiveTag
                       ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-md font-semibold'
                       : 'text-sidebar-foreground hover:bg-sidebar-accent/20 hover:text-sidebar-accent-foreground hover:shadow-sm'
                   }`}
                   title={isMobile || isCollapsed ? tag : ''}
                 >
-                  <Hash className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${isActiveTag ? '' : 'group-hover:scale-110'} transition-transform text-prompedia-green-400`} />
+                  <Hash className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${isActiveTag ? '' : 'group-hover:scale-110'} transition-transform duration-150 text-prompedia-green-400`} />
                   {!isMobile && !isCollapsed && <span className="truncate">{tag}</span>}
                 </Link>
               );

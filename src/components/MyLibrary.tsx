@@ -359,18 +359,26 @@ const MyLibrary = ({
                 {prompt.tags.length > 0 && (
                   <div className="flex flex-wrap gap-1 mb-4">
                     {prompt.tags.slice(0, 3).map(tag => (
-                      <Badge
+                      <a
                         key={tag.id}
-                        variant="secondary"
-                        className="text-xs bg-prompedia-green-500/20 text-prompedia-green-400 border border-prompedia-green-500/30 font-mono"
-                        style={{
-                          backgroundColor: `${tag.color}20`,
-                          color: tag.color,
-                          borderColor: `${tag.color}30`
+                        href={`/tags/${encodeURIComponent(tag.name)}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
                         }}
+                        className="inline-block"
                       >
-                        {tag.name}
-                      </Badge>
+                        <Badge
+                          variant="secondary"
+                          className="text-xs bg-prompedia-green-500/20 text-prompedia-green-400 border border-prompedia-green-500/30 font-mono hover:bg-prompedia-green-500/30 transition-colors cursor-pointer"
+                          style={{
+                            backgroundColor: `${tag.color}20`,
+                            color: tag.color,
+                            borderColor: `${tag.color}30`
+                          }}
+                        >
+                          {tag.name}
+                        </Badge>
+                      </a>
                     ))}
                     {prompt.tags.length > 3 && (
                       <Badge variant="secondary" className="text-xs font-mono">

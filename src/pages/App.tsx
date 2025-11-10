@@ -9,7 +9,7 @@ import PublicLibrary from '@/components/PublicLibrary';
 import AuthModal from '@/components/AuthModal';
 import { storage, Prompt, Tag } from '@/lib/storage';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 
 interface PromptWithTags extends Prompt {
   tags: Tag[];
@@ -28,6 +28,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 const AppPage = () => {
   const { t } = useTranslation();
+  const location = useLocation();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isInitializing, setIsInitializing] = useState(true);
@@ -42,6 +43,21 @@ const AppPage = () => {
   const isMobile = useIsMobile();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+
+  // Handle navigation state from tag page
+  useEffect(() => {
+    const state = location.state as any;
+    if (state?.targetView) {
+      setActiveView(state.targetView);
+      setShowEditor(false);
+      // Clear state
+      navigate(location.pathname, { replace: true, state: {} });
+    } else if (state?.openPlayground) {
+      setShowEditor(true);
+      // Clear state
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, navigate, location.pathname]);
 
   const checkAuth = useCallback(async () => {
     try {
