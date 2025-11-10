@@ -159,17 +159,17 @@ const AppPage = () => {
     }
   }, []);
 
-  // Efek gabungan untuk memuat kedua jenis prompt
+  // Load prompts on mount only
   useEffect(() => {
     loadAllPrompts();
     loadPublicPrompts();
   }, [loadAllPrompts, loadPublicPrompts]);
 
-  // Efek terpisah untuk refresh berkala hanya untuk prompt public
+  // Refresh public prompts periodically with longer interval to reduce load
   useEffect(() => {
     const interval = setInterval(() => {
       loadPublicPrompts();
-    }, 30000);
+    }, 60000); // Increased from 30s to 60s
 
     return () => clearInterval(interval);
   }, [loadPublicPrompts]);
@@ -371,11 +371,15 @@ const AppPage = () => {
         return;
       }
 
-      // Mereset state playground saat beralih ke tampilan library
-      setCurrentPrompt(null);
-      storage.clearCurrentPrompt();
+      // Smooth transition - don't clear current prompt immediately
       setActiveView(view);
       setShowEditor(false);
+      
+      // Clear prompt after a small delay to prevent flash
+      setTimeout(() => {
+        setCurrentPrompt(null);
+        storage.clearCurrentPrompt();
+      }, 100);
     } catch (error) {
       console.error('Failed to change view:', error);
       toast.error(t('errors:library.switchViewFailed'));

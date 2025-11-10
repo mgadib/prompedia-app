@@ -43,6 +43,13 @@ const TagPage: React.FC = () => {
   }, [tagName]);
 
   const loadData = useCallback(async () => {
+    if (!tagName) {
+      setError(t('errors:tag.notFound'));
+      setPrompts([]);
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
@@ -56,12 +63,6 @@ const TagPage: React.FC = () => {
         setUser(null);
       }
 
-      if (!tagName) {
-        setError(t('errors:tag.notFound'));
-        setPrompts([]);
-        return;
-      }
-
       const promptList = await TagService.getPromptsByTagName(tagName, user?.id);
       setPrompts(promptList);
     } catch (err) {
@@ -71,7 +72,7 @@ const TagPage: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [tagName]);
+  }, [tagName, t]);
 
   useEffect(() => {
     loadData();
@@ -223,9 +224,24 @@ const TagPage: React.FC = () => {
 
         <div className="flex-1 overflow-y-auto">
           {isLoading ? (
-            <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-8">
-              <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4" />
-              <p className="text-sm font-mono">{t('common:status.loadingTagPrompts')}</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 p-3 sm:p-4 md:p-6">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="bg-card border rounded-lg p-4 sm:p-6 space-y-4">
+                  <div className="flex justify-between">
+                    <div className="h-4 w-20 bg-muted animate-pulse rounded" />
+                    <div className="h-4 w-16 bg-muted animate-pulse rounded" />
+                  </div>
+                  <div className="h-6 w-3/4 bg-muted animate-pulse rounded" />
+                  <div className="space-y-2">
+                    <div className="h-4 w-full bg-muted animate-pulse rounded" />
+                    <div className="h-4 w-5/6 bg-muted animate-pulse rounded" />
+                  </div>
+                  <div className="flex gap-2">
+                    <div className="h-6 w-16 bg-muted animate-pulse rounded" />
+                    <div className="h-6 w-20 bg-muted animate-pulse rounded" />
+                  </div>
+                </div>
+              ))}
             </div>
           ) : error ? (
             <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-8">
