@@ -74,7 +74,9 @@ const AppPage = () => {
         setIsInitializing(false);
       }, 300);
     } catch (error) {
-      console.error('Auth check error:', error);
+      if (import.meta.env.DEV) {
+        console.error('Auth check error:', error);
+      }
       setLoading(false);
       setIsInitializing(false);
     }
@@ -114,7 +116,9 @@ const AppPage = () => {
           setShowEditor(true);
         }
       } catch (error) {
-        console.error('Failed to load prompt from query:', error);
+        if (import.meta.env.DEV) {
+          console.error('Failed to load prompt from query:', error);
+        }
         toast.error(t('errors:prompt.loadFailed'));
       } finally {
         // Bersihkan query `use` dari URL
@@ -156,24 +160,25 @@ const AppPage = () => {
       const prompts = await storageManager.getPrompts();
       setAllPrompts(prompts || []);
     } catch (error) {
-      console.error('Failed to load prompts:', error);
+      if (import.meta.env.DEV) {
+        console.error('Failed to load prompts:', error);
+      }
       setAllPrompts([]);
-      // Jangan tampilkan error toast karena tidak kritis untuk playground
     }
   }, []);
 
   const loadPublicPrompts = useCallback(async () => {
     try {
-      console.log('Loading public prompts...');
       const publicPromptsData = await SupabaseService.getPublicPrompts();
-      console.log('Public prompts loaded:', publicPromptsData.length);
       setPublicPrompts(publicPromptsData);
     } catch (error) {
-      console.error('Failed to load public prompts:', error);
+      if (import.meta.env.DEV) {
+        console.error('Failed to load public prompts:', error);
+      }
       toast.error(t('errors:library.loadFailed'));
       setPublicPrompts([]);
     }
-  }, []);
+  }, [t]);
 
   // Load prompts on mount only
   useEffect(() => {
@@ -287,9 +292,11 @@ const AppPage = () => {
       // Memuat ulang prompt setelah penghapusan berhasil
       await loadAllPrompts();
     } catch (error) {
-      console.error('Failed to delete prompt:', error);
+      if (import.meta.env.DEV) {
+        console.error('Failed to delete prompt:', error);
+      }
       toast.error(t('errors:prompt.deleteFailed'));
-      throw error; // Re-throw error so MyLibrary can handle it
+      throw error;
     }
   };
 
@@ -348,7 +355,9 @@ const AppPage = () => {
       // Menambah counter penggunaan setelah salinan berhasil
       await rateLimitingService.incrementUsage(user);
     } catch (error) {
-      console.error('Failed to copy prompt:', error);
+      if (import.meta.env.DEV) {
+        console.error('Failed to copy prompt:', error);
+      }
       toast.error(t('errors:prompt.copyFailed'));
     }
   };
@@ -393,7 +402,9 @@ const AppPage = () => {
       setCurrentPrompt(null);
       storage.clearCurrentPrompt();
     } catch (error) {
-      console.error('Failed to change view:', error);
+      if (import.meta.env.DEV) {
+        console.error('Failed to change view:', error);
+      }
       toast.error(t('errors:library.switchViewFailed'));
     }
   };
@@ -426,7 +437,9 @@ const AppPage = () => {
         }
       }
     } catch (error) {
-      console.error('Rate limit check failed:', error);
+      if (import.meta.env.DEV) {
+        console.error('Rate limit check failed:', error);
+      }
       toast.error(t('errors:usage.checkFailed'));
       return;
     }
@@ -459,7 +472,9 @@ const AppPage = () => {
       setUser(null);
       toast.success(t('success:auth.logoutSuccess'));
     } catch (error) {
-      console.error('Logout error:', error);
+      if (import.meta.env.DEV) {
+        console.error('Logout error:', error);
+      }
       toast.error(t('errors:auth.logoutFailed'));
     }
   };

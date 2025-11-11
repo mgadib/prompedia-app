@@ -29,7 +29,9 @@ function loadTranslation(language: string, namespace: string): Record<string, un
     );
     
     if (!moduleEntry) {
-      console.warn(`Translation module not found: ${language}/${namespace}`);
+      if (import.meta.env.DEV) {
+        console.warn(`Translation module not found: ${language}/${namespace}`);
+      }
       return {};
     }
     
@@ -39,8 +41,9 @@ function loadTranslation(language: string, namespace: string): Record<string, un
     // Dengan import: 'default', module langsung berisi default export (object JSON)
     return (module as Record<string, unknown>) || {};
   } catch (error) {
-    console.error(`Error loading translation ${language}/${namespace}:`, error);
-    // Return empty object sebagai fallback
+    if (import.meta.env.DEV) {
+      console.error(`Error loading translation ${language}/${namespace}:`, error);
+    }
     return {};
   }
 }
@@ -120,7 +123,9 @@ function initializeI18n(): void {
 try {
   initializeI18n();
 } catch (error) {
-  console.error('Failed to initialize i18n:', error);
+  if (import.meta.env.DEV) {
+    console.error('Failed to initialize i18n:', error);
+  }
   // Fallback: initialize with empty resources
   i18n
     .use(LanguageDetector)

@@ -9,8 +9,9 @@ import "@/lib/i18n"; // Inisialisasi i18n
 try {
   validateEnv();
 } catch (error) {
-  console.error('Failed to start application:', error);
-  // Error akan ditampilkan di console dengan pesan yang membantu
+  if (import.meta.env.DEV) {
+    console.error('Failed to start application:', error);
+  }
 }
 
 createRoot(document.getElementById("root")!).render(

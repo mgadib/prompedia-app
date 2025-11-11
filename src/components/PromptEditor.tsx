@@ -98,7 +98,9 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       const tags = await TagService.getPromptTags(promptId);
       setSelectedTags(tags.map(tag => tag.name));
     } catch (error) {
-      console.error('Failed to load prompt tags:', error);
+      if (import.meta.env.DEV) {
+        console.error('Failed to load prompt tags:', error);
+      }
       setSelectedTags([]);
     }
   };
@@ -127,7 +129,9 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
         const rateLimitCheck = await rateLimitingService.canMakeAICall(user);
         setUserCanUseAI(rateLimitCheck.allowed);
       } catch (error) {
-        console.error('Failed to check rate limits:', error);
+        if (import.meta.env.DEV) {
+          console.error('Failed to check rate limits:', error);
+        }
         setUserCanUseAI(false);
       }
     };
@@ -173,12 +177,16 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
         try {
           onPromptChange(newPrompt);
         } catch (error) {
-          console.error('Failed to update prompt:', error);
+          if (import.meta.env.DEV) {
+            console.error('Failed to update prompt:', error);
+          }
           toast.error(t('errors:prompt.updateFailed'));
         }
         toast.success(t('success:prompt.created'));
       } catch (error) {
-        console.error('Failed to create new prompt:', error);
+        if (import.meta.env.DEV) {
+          console.error('Failed to create new prompt:', error);
+        }
         toast.error(t('errors:prompt.createFailed'));
       }
     }
@@ -190,25 +198,8 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       return;
     }
 
-    console.log('Save button clicked:', {
-      title,
-      content,
-      currentPrompt: currentPrompt?.id,
-      hasCurrentPrompt: !!currentPrompt
-    });
-
     try {
       const user = await supabase.auth.getUser().then(({ data }) => data.user);
-
-      console.log('Save attempt:', {
-        title,
-        content,
-        user,
-        hasUser: !!user,
-        userId: user?.id,
-        currentPromptId: currentPrompt?.id,
-        storageManagerAuth: storageManager.getAuthDebugInfo()
-      });
 
       // User guest tidak bisa menyimpan prompt (hanya localStorage auto-save untuk session saat ini)
       if (!user) {
@@ -245,8 +236,6 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
         original_prompt_id: currentPrompt?.original_prompt_id || null,
       };
 
-      console.log('Prompt to save:', promptToSave);
-
       await storageManager.savePrompt(promptToSave);
       
       // Menyimpan tag untuk prompt
@@ -257,7 +246,9 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       try {
         onPromptChange(promptToSave);
       } catch (error) {
-        console.error('Failed to update prompt:', error);
+        if (import.meta.env.DEV) {
+          console.error('Failed to update prompt:', error);
+        }
         toast.error(t('errors:prompt.updateFailed'));
       }
       toast.success(t('success:prompt.saved'));
@@ -265,17 +256,9 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       // Menambah counter penggunaan setelah save berhasil
       await rateLimitingService.incrementUsage(user);
     } catch (error) {
-      console.error('Failed to save prompt:', error);
-      console.error('Error details:', {
-        errorType: typeof error,
-        errorMessage: error instanceof Error ? error.message : String(error),
-        errorStack: error instanceof Error ? error.stack : undefined,
-        title,
-        content,
-        userId: user?.id,
-        hasUser: !!user,
-        storageManagerAuth: storageManager.getAuthDebugInfo()
-      });
+      if (import.meta.env.DEV) {
+        console.error('Failed to save prompt:', error);
+      }
       toast.error(error instanceof Error ? error.message : t('errors:prompt.saveFailed'));
     }
   };
@@ -290,7 +273,9 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       await navigator.clipboard.writeText(content);
       toast.success(t('success:prompt.contentCopied'));
     } catch (error) {
-      console.error('Failed to copy content:', error);
+      if (import.meta.env.DEV) {
+        console.error('Failed to copy content:', error);
+      }
       toast.error(t('errors:prompt.copyFailed'));
     }
   };
@@ -301,27 +286,8 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       return;
     }
 
-    console.log('Share button clicked:', {
-      title,
-      content,
-      currentPrompt: currentPrompt?.id,
-      hasCurrentPrompt: !!currentPrompt,
-      currentIsPublic: currentPrompt?.is_public
-    });
-
     try {
       const user = await supabase.auth.getUser().then(({ data }) => data.user);
-
-      console.log('Share attempt:', {
-        title,
-        content,
-        user,
-        hasUser: !!user,
-        userId: user?.id,
-        currentIsPublic: currentPrompt?.is_public,
-        currentPromptId: currentPrompt?.id,
-        storageManagerAuth: storageManager.getAuthDebugInfo()
-      });
 
       // User guest tidak bisa membuat prompt public atau menyimpan prompt
       if (!user) {
@@ -350,8 +316,6 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
         original_prompt_id: currentPrompt?.original_prompt_id || null,
       };
 
-      console.log('Updated prompt for sharing:', updatedPrompt);
-
       await storageManager.savePrompt(updatedPrompt);
       
       // Menyimpan tag untuk prompt
@@ -362,22 +326,16 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       try {
         onPromptChange(updatedPrompt);
       } catch (error) {
-        console.error('Failed to update prompt:', error);
+        if (import.meta.env.DEV) {
+          console.error('Failed to update prompt:', error);
+        }
         toast.error(t('errors:prompt.updateFailed'));
       }
       toast.success(updatedPrompt.is_public ? t('success:prompt.nowPublic') : t('success:prompt.nowPrivate'));
     } catch (error) {
-      console.error('Failed to update prompt visibility:', error);
-      console.error('Error details:', {
-        errorType: typeof error,
-        errorMessage: error instanceof Error ? error.message : String(error),
-        errorStack: error instanceof Error ? error.stack : undefined,
-        title,
-        content,
-        userId: user?.id,
-        hasUser: !!user,
-        storageManagerAuth: storageManager.getAuthDebugInfo()
-      });
+      if (import.meta.env.DEV) {
+        console.error('Failed to update prompt visibility:', error);
+      }
       toast.error(t('errors:prompt.visibilityUpdateFailed'));
     }
   };
@@ -416,7 +374,9 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
             is_featured: false,
           });
         } catch (error) {
-          console.error('Failed to update prompt:', error);
+          if (import.meta.env.DEV) {
+            console.error('Failed to update prompt:', error);
+          }
           toast.error(t('errors:prompt.updateFailed'));
         }
       }
@@ -425,7 +385,9 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       // Menambah counter penggunaan setelah delete berhasil
       await rateLimitingService.incrementUsage(user);
     } catch (error) {
-      console.error('Failed to delete prompt:', error);
+      if (import.meta.env.DEV) {
+        console.error('Failed to delete prompt:', error);
+      }
       toast.error(t('errors:prompt.deleteFailed'));
     }
   };
@@ -485,19 +447,17 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
         }
       });
 
-      // Penanganan error yang ditingkatkan
       if (error) {
-        console.error('Edge function error:', error);
-        
-        // Mencoba mengekstrak pesan error yang lebih bermakna
-        let errorMessage = t('errors:actions.failedToProcess');
-        
-        if (error.message) {
-          errorMessage = error.message;
+        if (import.meta.env.DEV) {
+          console.error('Edge function error:', error);
+          if (error.context) {
+            console.error('Error context:', error.context);
+          }
         }
         
-        if (error.context) {
-          console.error('Error context:', error.context);
+        let errorMessage = t('errors:actions.failedToProcess');
+        if (error.message) {
+          errorMessage = error.message;
         }
         
         throw new Error(errorMessage);
@@ -509,13 +469,17 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
 
       // Mengecek error API dalam response
       if (data.error) {
-        console.error('API error response:', data);
+        if (import.meta.env.DEV) {
+          console.error('API error response:', data);
+        }
         throw new Error(data.error);
       }
       
       const processedContent = data?.choices?.[0]?.message?.content || data?.response || '';
       if (!processedContent) {
-        console.error('No content in response:', data);
+        if (import.meta.env.DEV) {
+          console.error('No content in response:', data);
+        }
         throw new Error(t('errors:actions.noContentResponse'));
       }
       
@@ -541,9 +505,10 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       await rateLimitingService.incrementUsage(user);
 
     } catch (error) {
-      console.error(`Error processing ${actionId}:`, error);
+      if (import.meta.env.DEV) {
+        console.error(`Error processing ${actionId}:`, error);
+      }
       
-      // Pesan error yang lebih detail
       let errorMsg = t('errors:actions.actionFailed', { action: actionId });
       if (error instanceof Error) {
         errorMsg = error.message;

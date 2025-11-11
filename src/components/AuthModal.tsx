@@ -68,7 +68,9 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
         setIsLogin(true);
       }
     } catch (error: any) {
-      console.error('Auth error:', error);
+      if (import.meta.env.DEV) {
+        console.error('Auth error:', error);
+      }
       toast.error(error.message || t('auth:anErrorOccurred'));
     } finally {
       setLoading(false);

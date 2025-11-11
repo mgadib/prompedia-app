@@ -37,17 +37,21 @@ export function validateEnv(): Env {
       PROD: import.meta.env.PROD
     });
 
-    console.log('✅ Environment validation passed');
+    if (import.meta.env.DEV) {
+      console.log('✅ Environment validation passed');
+    }
     return validatedEnv;
   } catch (error) {
     if (error instanceof z.ZodError) {
-      console.error('❌ Environment validation failed:');
-      error.errors.forEach(err => {
-        console.error(`  - ${err.path.join('.')}: ${err.message}`);
-      });
-      console.error('\n💡 Please check your .env file and ensure all required variables are set.');
-      console.error('   See .env.example for reference.\n');
-      throw new Error('Invalid environment configuration. See console for details.');
+      const errorMessage = error.errors.map(err => 
+        `${err.path.join('.')}: ${err.message}`
+      ).join(', ');
+      
+      if (import.meta.env.DEV) {
+        console.error('❌ Environment validation failed:', errorMessage);
+      }
+      
+      throw new Error(`Invalid environment configuration: ${errorMessage}`);
     }
     throw error;
   }

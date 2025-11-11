@@ -284,7 +284,6 @@ export class SupabaseService {
   static async incrementViewCount(id: string): Promise<void> {
     // Catatan: Tracking view count dihapus dalam schema minimalis
     // Views sekarang ditrack secara eksternal jika diperlukan
-    console.log('View count increment called for prompt:', id)
   }
 
   // ========================================
@@ -539,11 +538,15 @@ export class SupabaseService {
         // Tag ditangani terpisah melalui tabel prompt_tags
         // Tidak ada property tags di interface Prompt lagi
       } catch (error) {
-        console.error('Error syncing prompt:', error)
+        if (import.meta.env.DEV) {
+          console.error('Error syncing prompt:', error);
+        }
       }
     }
 
-    console.log(`Synced ${userLocalPrompts.length} prompts from local storage`)
+    if (import.meta.env.DEV) {
+      console.log(`Synced ${userLocalPrompts.length} prompts from local storage`);
+    }
   }
 
   // ========================================

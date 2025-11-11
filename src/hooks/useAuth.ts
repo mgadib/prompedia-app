@@ -18,13 +18,17 @@ export const useAuth = () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error) {
-          console.error('Error getting session:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error getting session:', error);
+          }
           setError(error.message);
         } else {
           setUserState(session?.user ?? null);
         }
       } catch (err) {
-        console.error('Unexpected error:', err);
+        if (import.meta.env.DEV) {
+          console.error('Unexpected error:', err);
+        }
         setError('An unexpected error occurred');
       } finally {
         setLoading(false);
@@ -43,7 +47,9 @@ export const useAuth = () => {
           }
           setError(null);
         } catch (err) {
-          console.error('Auth state change error:', err);
+          if (import.meta.env.DEV) {
+            console.error('Auth state change error:', err);
+          }
           setError('Authentication error occurred');
         }
       }
@@ -63,7 +69,9 @@ export const useAuth = () => {
       clearUser();
       setUserState(null);
     } catch (err) {
-      console.error('Logout error:', err);
+      if (import.meta.env.DEV) {
+        console.error('Logout error:', err);
+      }
       setError('Failed to logout');
       throw err;
     }
