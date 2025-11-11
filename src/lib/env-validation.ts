@@ -3,10 +3,12 @@ import { z } from 'zod';
 /**
  * Environment variable validation schema
  * Ensures all required environment variables are present and valid at runtime
+ * Note: Supabase credentials are optional as they're hardcoded in the client
  */
 const EnvSchema = z.object({
-  VITE_SUPABASE_URL: z.string().url('Invalid Supabase URL'),
-  VITE_SUPABASE_ANON_KEY: z.string().min(1, 'Supabase anon key is required'),
+  VITE_SUPABASE_URL: z.string().url('Invalid Supabase URL').optional(),
+  VITE_SUPABASE_ANON_KEY: z.string().min(1, 'Supabase anon key is required').optional(),
+  VITE_SUPABASE_PUBLISHABLE_KEY: z.string().min(1, 'Supabase publishable key is required').optional(),
   VITE_OPENROUTER_API_KEY: z.string().min(1, 'OpenRouter API key is required').optional(),
   MODE: z.enum(['development', 'production', 'test']),
   DEV: z.boolean(),
@@ -31,6 +33,7 @@ export function validateEnv(): Env {
     validatedEnv = EnvSchema.parse({
       VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
       VITE_SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY,
+      VITE_SUPABASE_PUBLISHABLE_KEY: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
       VITE_OPENROUTER_API_KEY: import.meta.env.VITE_OPENROUTER_API_KEY,
       MODE: import.meta.env.MODE,
       DEV: import.meta.env.DEV,
