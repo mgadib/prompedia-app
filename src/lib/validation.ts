@@ -19,37 +19,37 @@ export const emailSchema = z
 
 export const passwordSchema = z
   .string()
-  .min(VALIDATION.USER.PASSWORD_MIN_LENGTH, () => 
+  .min(VALIDATION.USER.PASSWORD_MIN_LENGTH, 
     getValidationMessage('user.passwordMinLength', { min: VALIDATION.USER.PASSWORD_MIN_LENGTH })
   );
 
 // Schema validasi untuk prompt
 export const promptTitleSchema = z
   .string()
-  .min(VALIDATION.PROMPT.TITLE_MIN_LENGTH, () => 
+  .min(VALIDATION.PROMPT.TITLE_MIN_LENGTH, 
     getValidationMessage('prompt.titleMinLength', { min: VALIDATION.PROMPT.TITLE_MIN_LENGTH })
   )
-  .max(VALIDATION.PROMPT.TITLE_MAX_LENGTH, () => 
+  .max(VALIDATION.PROMPT.TITLE_MAX_LENGTH, 
     getValidationMessage('prompt.titleMaxLength', { max: VALIDATION.PROMPT.TITLE_MAX_LENGTH })
   )
   .trim();
 
 export const promptContentSchema = z
   .string()
-  .max(VALIDATION.PROMPT.CONTENT_MAX_LENGTH, () => 
+  .max(VALIDATION.PROMPT.CONTENT_MAX_LENGTH, 
     getValidationMessage('prompt.contentMaxLength', { max: VALIDATION.PROMPT.CONTENT_MAX_LENGTH })
   );
 
 export const promptTagSchema = z
   .string()
-  .max(VALIDATION.PROMPT.TAG_MAX_LENGTH, () => 
+  .max(VALIDATION.PROMPT.TAG_MAX_LENGTH, 
     getValidationMessage('prompt.tagMaxLength', { max: VALIDATION.PROMPT.TAG_MAX_LENGTH })
   )
   .trim();
 
 export const promptTagsSchema = z
   .array(promptTagSchema)
-  .max(VALIDATION.PROMPT.TAGS_MAX_COUNT, () => 
+  .max(VALIDATION.PROMPT.TAGS_MAX_COUNT, 
     getValidationMessage('prompt.tagsMaxCount', { max: VALIDATION.PROMPT.TAGS_MAX_COUNT })
   );
 
@@ -75,10 +75,10 @@ export const promptSchema = z.object({
   // created_at dan updated_at tidak disimpan dalam schema minimalis
 }).refine(
   (data) => data.model || data.model_id, 
-  { message: () => getValidationMessage('prompt.modelOrModelIdRequired') }
+  { message: getValidationMessage('prompt.modelOrModelIdRequired') }
 ).refine(
   (data) => data.mode || data.mode_id,
-  { message: () => getValidationMessage('prompt.modeOrModeIdRequired') }
+  { message: getValidationMessage('prompt.modeOrModeIdRequired') }
 );
 
 // Schema autentikasi
@@ -92,7 +92,7 @@ export const registerSchema = z.object({
   password: passwordSchema,
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
-  message: () => getValidationMessage('user.passwordMismatch'),
+  message: getValidationMessage('user.passwordMismatch'),
   path: ['confirmPassword'],
 });
 
@@ -101,11 +101,11 @@ export const registerSchema = z.object({
 export const userProfileSchema = z.object({
   id: z.string().uuid(),
   username: z.string()
-    .min(1, () => getValidationMessage('user.usernameRequired'))
-    .max(50, () => getValidationMessage('user.usernameTooLong')),
+    .min(1, getValidationMessage('user.usernameRequired'))
+    .max(50, getValidationMessage('user.usernameTooLong')),
   display_name: z.string()
-    .min(1, () => getValidationMessage('user.displayNameRequired'))
-    .max(100, () => getValidationMessage('user.displayNameTooLong')),
+    .min(1, getValidationMessage('user.displayNameRequired'))
+    .max(100, getValidationMessage('user.displayNameTooLong')),
   // role field removed - tidak ada lagi di database
 });
 
