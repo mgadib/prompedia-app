@@ -29,11 +29,7 @@ const TagPage: React.FC = () => {
   const isMobile = useIsMobile();
 
   const [prompts, setPrompts] = useState<PromptWithTags[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(() => {
-    // Check sessionStorage synchronously to avoid loading flash
-    const sessionInitialized = sessionStorage.getItem('prompedia-initialized');
-    return !sessionInitialized; // Only show loading on first load
-  });
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
@@ -54,15 +50,10 @@ const TagPage: React.FC = () => {
       return;
     }
 
-    // Only show loading if this is the first load
-    const sessionInitialized = sessionStorage.getItem('prompedia-initialized');
-    if (!sessionInitialized) {
-      setIsLoading(true);
-    }
+    setIsLoading(true);
     setError(null);
 
     try {
-      // Use getSession which reads from cache quickly
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         setUserId(user.id);

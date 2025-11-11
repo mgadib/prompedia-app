@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -43,21 +43,6 @@ const AppPage = () => {
   const isMobile = useIsMobile();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
-  const isFirstMount = useRef(true);
-
-  // Check if app has been initialized in this session
-  useEffect(() => {
-    const hasInitialized = sessionStorage.getItem('prompedia-initialized');
-    if (hasInitialized) {
-      // Skip loading state if app was already initialized
-      setLoading(false);
-      setIsInitializing(false);
-      isFirstMount.current = false;
-    } else {
-      // Mark as initialized after first load
-      sessionStorage.setItem('prompedia-initialized', 'true');
-    }
-  }, []);
 
   // Handle navigation state from tag page
   useEffect(() => {
@@ -84,10 +69,10 @@ const AppPage = () => {
 
       setLoading(false);
       
-      // Reduced delay untuk transisi yang lebih cepat (dari 300ms ke 100ms)
+      // Menambahkan delay kecil untuk memastikan transisi yang mulus
       setTimeout(() => {
         setIsInitializing(false);
-      }, 100);
+      }, 300);
     } catch (error) {
       console.error('Auth check error:', error);
       setLoading(false);
@@ -96,7 +81,6 @@ const AppPage = () => {
   }, []);
 
   useEffect(() => {
-    // Always check auth, but loading state is controlled by sessionStorage check above
     checkAuth();
   }, [checkAuth]);
 
@@ -340,8 +324,8 @@ const AppPage = () => {
         user_id: prompt.user_id || '',
         title: prompt.title || '',
         content: prompt.content || '',
-        model_id: prompt.model_id || AVAILABLE_MODELS[1].id,
-        mode_id: prompt.mode_id || THINKING_MODES[5].id,
+        model: prompt.model || AVAILABLE_MODELS[1].id,
+        mode: (prompt.mode || THINKING_MODES[5].id) as 'meta-prompt' | 'thinking' | 'normal',
         color: prompt.color || '#3b82f6',
         is_public: prompt.is_public || false,
         is_featured: prompt.is_featured || false,
@@ -381,8 +365,8 @@ const AppPage = () => {
       user_id: prompt.user_id || '',
       title: prompt.title || '',
       content: prompt.content || '',
-      model_id: prompt.model_id || AVAILABLE_MODELS[1].id,
-      mode_id: prompt.mode_id || THINKING_MODES[5].id,
+      model: prompt.model || AVAILABLE_MODELS[1].id,
+      mode: (prompt.mode || THINKING_MODES[5].id) as 'meta-prompt' | 'thinking' | 'normal',
       color: prompt.color || '#3b82f6',
       is_public: prompt.is_public || false,
       is_featured: prompt.is_featured || false,
@@ -408,9 +392,6 @@ const AppPage = () => {
       setShowEditor(false);
       setCurrentPrompt(null);
       storage.clearCurrentPrompt();
-      
-      // Scroll to top saat view berubah
-      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
       console.error('Failed to change view:', error);
       toast.error(t('errors:library.switchViewFailed'));
@@ -453,11 +434,11 @@ const AppPage = () => {
     const newPrompt: Prompt = {
       id: crypto.randomUUID(),
       user_id: user?.id || 'guest',
-      title: t('prompt:untitled'),
+      title: 'Untitled Prompt',
       content: '',
-      model_id: AVAILABLE_MODELS[1].id,
+      model: AVAILABLE_MODELS[1].id,
       color: '#3b82f6',
-      mode_id: THINKING_MODES[5].id,
+      mode: THINKING_MODES[5].id as 'meta-prompt' | 'thinking' | 'normal',
       is_public: false,
       is_featured: false,
     };
@@ -507,8 +488,8 @@ const AppPage = () => {
             <div className="absolute top-0 left-0 w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
           </div>
           <div className="text-center">
-            <p className="text-sm text-muted-foreground font-mono">{t('common:status.loadingApp')}</p>
-            <p className="text-xs text-muted-foreground/60 font-mono mt-1">{t('common:status.initializingWorkspace')}</p>
+            <p className="text-sm text-muted-foreground font-mono">Loading Prompedia...</p>
+            <p className="text-xs text-muted-foreground/60 font-mono mt-1">Initializing your workspace</p>
           </div>
         </div>
       </div>

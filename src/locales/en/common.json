@@ -49,16 +49,7 @@
     "standard": "Standard",
     "tag": "Tag",
     "openMenu": "Open menu",
-    "back": "Back",
-    "english": "English",
-    "bahasaIndonesia": "Bahasa Indonesia",
-    "of": "of",
-    "previous": "Previous",
-    "next": "Next",
-    "morePages": "More pages",
-    "toggleSidebar": "Toggle Sidebar",
-    "breadcrumb": "breadcrumb",
-    "more": "More"
+    "back": "Back"
   },
   "placeholders": {
     "enterEmail": "Enter your email",
@@ -77,8 +68,6 @@
   },
   "status": {
     "loading": "Loading...",
-    "loadingApp": "Loading Prompedia...",
-    "initializingWorkspace": "Initializing your workspace",
     "loadingPrompts": "Loading prompts...",
     "loadingYourLibrary": "Loading your library...",
     "loadingPrompt": "Loading prompt...",
@@ -93,7 +82,6 @@
     "original": "Original",
     "characterLimitNear": "Character Limit Near",
     "usageLimit": "Usage Limit",
-    "deleting": "Deleting...",
     "status": "STATUS",
     "mode": "MODE",
     "model": "MODEL"
@@ -122,13 +110,6 @@
   "changeLanguage": "Change Language",
   "user": "User",
   "home": "Home",
-  "public": "Public",
-  "errorBoundary": {
-    "title": "An Error Occurred",
-    "description": "The application encountered an unexpected error. Please try reloading the page.",
-    "tryAgain": "Try Again",
-    "reloadPage": "Reload Page",
-    "errorDetails": "Error Details (Development)"
-  }
+  "public": "Public"
 }
 

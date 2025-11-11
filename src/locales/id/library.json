@@ -2,14 +2,13 @@
   "myLibrary": "Perpustakaan Saya",
   "privateLibrary": "Perpustakaan Pribadi",
   "publicLibrary": "Perpustakaan Publik",
-  "playground": "Area Uji Coba",
+  "playground": "Playground",
   "searchPrompts": "Cari prompt...",
   "searchPublicPrompts": "Cari prompt publik...",
   "filterByTag": "Filter berdasarkan tag",
   "allTags": "Semua tag",
   "noPrompts": "Belum ada prompt",
   "noPublicPrompts": "Belum ada prompt publik",
-  "emptyStateNoPrompts": "Belum ada prompt. Buat prompt pertama Anda!",
   "createFirstPrompt": "Buat prompt pertama Anda untuk memulai perpustakaan pribadi Anda!",
   "beFirstToShare": "Jadilah yang pertama membagikan prompt dengan komunitas!",
   "noMatches": "Tidak ada prompt yang sesuai dengan kriteria pencarian",
@@ -23,7 +22,7 @@
   "unknownModel": "Model tidak diketahui",
   "deletePrompt": "Hapus Prompt",
   "deleteConfirm": "Apakah Anda yakin ingin menghapus \"{{title}}\"? Tindakan ini tidak dapat dibatalkan.",
-  "editPrompt": "Ubah prompt",
+  "editPrompt": "Edit prompt",
   "copyPrompt": "Salin prompt",
   "copyUrl": "Salin URL",
   "copyContentToClipboard": "Salin konten ke clipboard",
@@ -32,7 +31,7 @@
   "viewDetails": "Lihat detail untuk {{title}}",
   "noPromptsWithTag": "Belum ada prompt dengan tag ini",
   "problemOccurred": "Terjadi masalah",
-  "backToHome": "Kembali ke Beranda",
+  "backToHome": "Kembali ke beranda",
   "tagPageDescription": "Daftar prompt dengan tag \"{{tag}}\""
 }
 

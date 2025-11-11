@@ -140,7 +140,7 @@ const PublicPromptDetail = () => {
         jsonLd={{
           '@context': 'https://schema.org',
           '@type': 'CreativeWork',
-          name: prompt.title || t('prompt:untitled'),
+          name: prompt.title || 'Untitled Prompt',
           description: prompt.description || '',
           url: `https://prompedia.app/p/${id}`,
           keywords: tags.map(t => t.name).join(', '),

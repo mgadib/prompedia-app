@@ -5,10 +5,10 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import AppPage from './pages/App';
-import TagPage from './pages/Tag';
+const AppPage = React.lazy(() => import('./pages/App'));
 const NotFound = React.lazy(() => import('./pages/NotFound'));
 const PublicPromptDetail = React.lazy(() => import('./pages/PublicPromptDetail'));
+const TagPage = React.lazy(() => import('./pages/Tag'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -53,8 +53,8 @@ const App = () => (
           >
             <Routes>
               <Route path="/" element={<AppPage />} />
-              <Route path="/tags/:name" element={<TagPage />} />
               <Route path="/p/:id" element={<PublicPromptDetail />} />
+              <Route path="/tags/:name" element={<TagPage />} />
               {/* TAMBAHKAN SEMUA ROUTE CUSTOM DI ATAS ROUTE CATCH-ALL "*" */}
               <Route path="*" element={<NotFound />} />
             </Routes>

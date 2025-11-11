@@ -20,10 +20,10 @@
   "actions": {
     "refined": "Konten berhasil diperbaiki",
     "expanded": "Konten berhasil diperluas",
-    "reimagined": "Konten berhasil direimajinasi",
+    "reimagined": "Konten berhasil direimajinasikan",
     "reformatted": "Konten berhasil diformat ulang",
-    "selfReviewed": "Konten berhasil ditinjau sendiri",
-    "actionSuccess": "Konten berhasil {{action}}"
+    "selfReviewed": "Konten berhasil direview sendiri",
+    "actionSuccess": "Konten berhasil di{{action}}"
   },
   "prompt": {
     "promptCreated": "Prompt berhasil dibuat",

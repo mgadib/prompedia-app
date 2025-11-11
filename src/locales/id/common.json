@@ -2,13 +2,13 @@
   "app": {
     "name": "Prompedia AI",
     "description": "Laboratorium Prompt Engineering",
-    "tagline": "Laboratorium Prompt Engineering"
+    "tagline": "Prompt Engineering Lab"
   },
   "buttons": {
     "save": "Simpan",
     "cancel": "Batal",
     "delete": "Hapus",
-    "edit": "Ubah",
+    "edit": "Edit",
     "copy": "Salin",
     "share": "Bagikan",
     "new": "Baru",
@@ -20,7 +20,7 @@
     "createAccount": "Buat Akun",
     "processing": "Memproses...",
     "loading": "Memuat...",
-    "clear": "Bersihkan",
+    "clear": "Hapus Filter",
     "view": "Lihat",
     "use": "Gunakan",
     "back": "Kembali",
@@ -49,16 +49,7 @@
     "standard": "Standar",
     "tag": "Tag",
     "openMenu": "Buka menu",
-    "back": "Kembali",
-    "english": "Bahasa Inggris",
-    "bahasaIndonesia": "Bahasa Indonesia",
-    "of": "dari",
-    "previous": "Sebelumnya",
-    "next": "Selanjutnya",
-    "morePages": "Halaman lainnya",
-    "toggleSidebar": "Buka/Tutup Sidebar",
-    "breadcrumb": "breadcrumb",
-    "more": "Lainnya"
+    "back": "Kembali"
   },
   "placeholders": {
     "enterEmail": "Masukkan email Anda",
@@ -77,8 +68,6 @@
   },
   "status": {
     "loading": "Memuat...",
-    "loadingApp": "Memuat Prompedia...",
-    "initializingWorkspace": "Menginisialisasi workspace Anda",
     "loadingPrompts": "Memuat prompt...",
     "loadingYourLibrary": "Memuat perpustakaan Anda...",
     "loadingPrompt": "Memuat prompt...",
@@ -93,7 +82,6 @@
     "original": "Asli",
     "characterLimitNear": "Mendekati Batas Karakter",
     "usageLimit": "Batas Penggunaan",
-    "deleting": "Menghapus...",
     "status": "STATUS",
     "mode": "MODE",
     "model": "MODEL"
@@ -104,7 +92,7 @@
     "minimumCharacters": "Minimal 8 karakter",
     "dontHaveAccount": "Belum punya akun? Daftar",
     "alreadyHaveAccount": "Sudah punya akun? Masuk",
-    "joinPrompedia": "Bergabung dengan Prompedia untuk mendapatkan akses tak terbatas.",
+    "joinPrompedia": "Bergabung dengan Prompedia untuk membuka akses tak terbatas.",
     "enterCredentials": "Selamat datang kembali! Masukkan kredensial Anda untuk melanjutkan."
   },
   "notFound": {
@@ -115,20 +103,13 @@
   },
   "warnings": {
     "signInForAI": "Masuk untuk menggunakan fitur AI dengan prompt ini",
-    "remainingCalls": "Tersisa {{count}} panggilan AI.",
-    "remainingCallsWithSignIn": "Tersisa {{count}} panggilan AI. Masuk untuk akses tak terbatas!",
-    "remainingDailyCalls": "Tersisa {{count}} panggilan AI harian."
+    "remainingCalls": "{{count}} panggilan AI tersisa.",
+    "remainingCallsWithSignIn": "{{count}} panggilan AI tersisa. Masuk untuk akses tak terbatas!",
+    "remainingDailyCalls": "{{count}} panggilan AI harian tersisa."
   },
   "changeLanguage": "Ubah Bahasa",
   "user": "Pengguna",
   "home": "Beranda",
-  "public": "Publik",
-  "errorBoundary": {
-    "title": "Terjadi Kesalahan",
-    "description": "Aplikasi mengalami kesalahan yang tidak terduga. Silakan coba muat ulang halaman.",
-    "tryAgain": "Coba Lagi",
-    "reloadPage": "Muat Ulang Halaman",
-    "errorDetails": "Detail Kesalahan (Development)"
-  }
+  "public": "Publik"
 }
 

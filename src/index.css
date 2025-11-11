@@ -80,15 +80,6 @@ All colors MUST be HSL.
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* RTL Support */
-  [dir="rtl"] {
-    direction: rtl;
-  }
-
-  [dir="ltr"] {
-    direction: ltr;
-  }
-
   /* Ensure inputs have minimum 16px to prevent iOS zoom */
   input, select, textarea {
     font-size: 16px;
@@ -276,51 +267,45 @@ All colors MUST be HSL.
     }
   }
 
-  /* Smooth view transitions - Optimized with GPU acceleration */
+  /* Smooth view transitions */
   .view-transition {
-    animation: fadeIn 0.2s ease-out;
-    will-change: opacity, transform;
-    transform: translateZ(0); /* Force GPU acceleration */
+    animation: fadeIn 0.3s ease-in-out;
   }
 
   .view-transition-exit {
-    animation: fadeOut 0.15s ease-in;
-    will-change: opacity, transform;
-    transform: translateZ(0);
+    animation: fadeOut 0.2s ease-in-out;
   }
 
   @keyframes fadeIn {
     from {
       opacity: 0;
-      transform: translateY(4px) translateZ(0);
+      transform: translateY(8px);
     }
     to {
       opacity: 1;
-      transform: translateY(0) translateZ(0);
+      transform: translateY(0);
     }
   }
 
   @keyframes fadeOut {
     from {
       opacity: 1;
-      transform: translateY(0) translateZ(0);
+      transform: translateY(0);
     }
     to {
       opacity: 0;
-      transform: translateY(-4px) translateZ(0);
+      transform: translateY(-8px);
     }
   }
 
   /* Prevent layout shift during transitions */
   .stable-layout {
     min-height: 100vh;
-    contain: layout style paint;
+    will-change: contents;
   }
 
-  /* Smooth sidebar transitions - Optimized */
+  /* Smooth sidebar transitions */
   .sidebar-transition {
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    will-change: width, opacity;
-    transform: translateZ(0);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 }

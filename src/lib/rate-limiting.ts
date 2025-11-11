@@ -20,9 +20,6 @@ export interface AIUsage {
 export class RateLimitingService {
   private static instance: RateLimitingService;
   private guestSessionId: string | null = null;
-  // Cache untuk rate limit checks (TTL: 5 detik)
-  private cache: Map<string, { result: any; timestamp: number }> = new Map();
-  private readonly CACHE_TTL = 5000; // 5 seconds
 
   private constructor() {
     this.initializeGuestSession();
@@ -83,28 +80,13 @@ export class RateLimitingService {
     error?: string;
   }> {
     try {
-      // Check cache first
-      const cacheKey = user ? `auth_${user.id}` : 'guest';
-      const cached = this.cache.get(cacheKey);
-      const now = Date.now();
-      
-      if (cached && (now - cached.timestamp) < this.CACHE_TTL) {
-        return cached.result;
-      }
-      
-      let result;
       if (user) {
         // User terautentikasi: cek dari database untuk akurasi yang lebih baik
-        result = await this.checkAuthenticatedUserUsage(user.id);
+        return await this.checkAuthenticatedUserUsage(user.id);
       } else {
         // Guest user: validasi di server-side untuk mencegah manipulasi client-side
-        result = await this.checkGuestUsage();
+        return await this.checkGuestUsage();
       }
-      
-      // Cache result
-      this.cache.set(cacheKey, { result, timestamp: now });
-      
-      return result;
     } catch (error) {
       console.error('Error checking AI usage:', error);
       return {
@@ -126,10 +108,6 @@ export class RateLimitingService {
     error?: string;
   }> {
     try {
-      // Invalidate cache setelah increment
-      const cacheKey = user ? `auth_${user.id}` : 'guest';
-      this.cache.delete(cacheKey);
-      
       if (user) {
         // User terautentikasi: update di database untuk persistensi
         return await this.incrementAuthenticatedUserUsage(user.id);

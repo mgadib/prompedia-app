@@ -1,17 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Prompt, Tag } from '@/lib/storage';
-import { formatNumber } from '@/lib/i18n-formatting';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { FileText, Lock, Globe, Edit, Trash2, Search, Filter, Copy, Loader2 } from 'lucide-react';
+import { FileText, Lock, Globe, Edit, Trash2, Search, Filter, Copy } from 'lucide-react';
 import { toast } from 'sonner';
 import { SupabaseService } from '@/lib/supabase-service';
 import { TagService } from '@/lib/tag-service';
 import PromptDetailModal from './PromptDetailModal';
-import { useDebounce } from '@/hooks/useDebounce';
-import { useDoubleClickPrevention } from '@/hooks/useDoubleClickPrevention';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -54,11 +51,6 @@ const MyLibrary = ({
   const [allTags, setAllTags] = useState<string[]>([]);
   const [promptsWithTags, setPromptsWithTags] = useState<PromptWithTags[]>([]);
   const [isLoadingTags, setIsLoadingTags] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [copyingPromptId, setCopyingPromptId] = useState<string | null>(null);
-  
-  // Debounce search term untuk performa yang lebih baik
-  const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
   const loadTagsForPrompts = useCallback(async () => {
     if (prompts.length === 0) {
@@ -105,10 +97,10 @@ const MyLibrary = ({
     loadTagsForPrompts();
   }, [loadTagsForPrompts]);
 
-  // Memfilter prompt berdasarkan pencarian dan tag (menggunakan debounced search)
+  // Memfilter prompt berdasarkan pencarian dan tag
   const filteredPrompts = promptsWithTags.filter(prompt => {
-    const matchesSearch = prompt.title.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
-                         (prompt.description?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ?? false);
+    const matchesSearch = prompt.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (prompt.description?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
     const matchesTag = !selectedTag || prompt.tags.some(tag => tag.name === selectedTag);
     return matchesSearch && matchesTag;
   });
@@ -119,10 +111,9 @@ const MyLibrary = ({
     setIsDeleteDialogOpen(true);
   };
 
-  const handleDeleteConfirm = useDoubleClickPrevention(async () => {
+  const handleDeleteConfirm = async () => {
     if (!promptToDelete) return;
     
-    setIsDeleting(true);
     try {
       await onDeletePrompt(promptToDelete.id);
       toast.success(t('success:prompt.deleted'));
@@ -130,11 +121,10 @@ const MyLibrary = ({
       console.error('Failed to delete prompt:', error);
       toast.error(t('errors:prompt.deleteFailed'));
     } finally {
-      setIsDeleting(false);
       setIsDeleteDialogOpen(false);
       setPromptToDelete(null);
     }
-  });
+  };
 
   const handleDeleteCancel = () => {
     setIsDeleteDialogOpen(false);
@@ -146,15 +136,12 @@ const MyLibrary = ({
     onEditPrompt(prompt);
   };
 
-  const handleCopy = useDoubleClickPrevention((e: React.MouseEvent, prompt: PromptWithTags) => {
+  const handleCopy = (e: React.MouseEvent, prompt: PromptWithTags) => {
     e.stopPropagation();
-    if (onCopyPrompt && copyingPromptId !== prompt.id) {
-      setCopyingPromptId(prompt.id);
+    if (onCopyPrompt) {
       onCopyPrompt(prompt);
-      // Reset copying state after a delay
-      setTimeout(() => setCopyingPromptId(null), 1000);
     }
-  });
+  };
 
   const handleCardClick = (prompt: PromptWithTags) => {
     setSelectedPrompt(prompt);
@@ -262,20 +249,20 @@ const MyLibrary = ({
             <div className="flex items-center gap-2">
               <FileText className="w-4 h-4 text-primary" />
               <span className="text-foreground font-semibold">
-                {formatNumber(filteredPrompts.length)}
+                {filteredPrompts.length.toLocaleString()}
               </span>
               <span className="text-muted-foreground">
-                {t('common:labels.of')} {formatNumber(prompts.length)}
+                of {prompts.length.toLocaleString()}
               </span>
             </div>
             
             {/* Filter indicators */}
-            {(debouncedSearchTerm || selectedTag) && (
+            {(searchTerm || selectedTag) && (
               <div className="flex items-center gap-2 text-xs">
-                {debouncedSearchTerm && (
+                {searchTerm && (
                   <Badge variant="secondary" className="text-xs">
                     <Search className="w-3 h-3 mr-1" />
-                    "{debouncedSearchTerm}"
+                    "{searchTerm}"
                   </Badge>
                 )}
                 {selectedTag && (
@@ -415,16 +402,11 @@ const MyLibrary = ({
                         size="sm"
                         variant="ghost"
                         onClick={(e) => handleCopy(e, prompt)}
-                        disabled={copyingPromptId === prompt.id}
-                        className="h-8 w-8 p-0 hover:bg-blue-500/20 hover:text-blue-500 transition-all active:scale-95"
+                        className="h-8 w-8 p-0 hover:bg-blue-500/20 hover:text-blue-500"
                         title={t('library:copyPrompt')}
                         aria-label={t('library:copyPrompt')}
                       >
-                        {copyingPromptId === prompt.id ? (
-                          <Loader2 className="w-3 h-3 animate-spin" />
-                        ) : (
-                          <Copy className="w-3 h-3" />
-                        )}
+                        <Copy className="w-3 h-3" />
                       </Button>
                     )}
                     <Button
@@ -481,17 +463,9 @@ const MyLibrary = ({
             </AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleDeleteConfirm}
-              disabled={isDeleting}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {isDeleting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {t('common:status.deleting')}
-                </>
-              ) : (
-                t('common:buttons.delete')
-              )}
+              {t('common:buttons.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

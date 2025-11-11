@@ -24,11 +24,3 @@ export const getCommonMessage = (key: string, options?: any): string => {
   return String(i18n.t(`common:${key}`, options));
 };
 
-/**
- * Get translated validation message
- * Use this in non-React contexts, especially for Zod validation schemas
- */
-export const getValidationMessage = (key: string, options?: any): string => {
-  return String(i18n.t(`validation:${key}`, options));
-};
-

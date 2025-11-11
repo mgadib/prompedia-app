@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Copy, Save, Share2, FileText, Trash2, ArrowLeft, ArrowRight, CheckCircle, Lock, Globe, Leaf, EyeOff, Loader2 } from 'lucide-react';
-import { formatNumber, formatDate } from '@/lib/i18n-formatting';
+import { Copy, Save, Share2, FileText, Trash2, ArrowLeft, ArrowRight, CheckCircle, Lock, Globe, Leaf, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -20,8 +19,6 @@ import TagInput from './TagInput';
 import ActionButtons from './ActionButtons';
 import DeletePromptDialog from './DeletePromptDialog';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useDoubleClickPrevention } from '@/hooks/useDoubleClickPrevention';
-import { useFormPersistence } from '@/hooks/useFormPersistence';
 
 type ViewState = 'original' | 'ai-result';
 
@@ -48,20 +45,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
   const [isActionLoading, setIsActionLoading] = useState(false);
   const [loadingAction, setLoadingAction] = useState<string>('');
   const [userCanUseAI, setUserCanUseAI] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
-  const [isSharing, setIsSharing] = useState(false);
-  const [isCopying, setIsCopying] = useState(false);
   const isMobile = useIsMobile();
-  
-  // Form persistence untuk mencegah kehilangan data
-  const { loadDraft, clearDraft } = useFormPersistence(
-    title,
-    content,
-    model,
-    mode,
-    selectedTags,
-    !currentPrompt // Hanya enable untuk draft baru, bukan prompt yang sudah disimpan
-  );
 
 
   useEffect(() => {
@@ -93,34 +77,20 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       setOriginalContent('');
       setAiResultContent('');
       setViewState('original');
-      
-      // Clear draft karena prompt sudah dimuat
-      clearDraft();
     } else {
-      // Cek apakah ada draft yang tersimpan
-      const draft = loadDraft();
-      if (draft && draft.title && draft.content) {
-        // Restore draft jika ada
-        setTitle(draft.title);
-        setContent(draft.content);
-        if (draft.model) setModel(draft.model);
-        if (draft.mode) setMode(draft.mode);
-        if (draft.selectedTags) setSelectedTags(draft.selectedTags);
-      } else {
-        // Reset form ketika tidak ada prompt yang dipilih dan tidak ada draft
-        setTitle('');
-        setContent('');
-        setModel(AVAILABLE_MODELS[1].id);
-        setMode(THINKING_MODES[5].id);
-        setSelectedTags([]);
-      }
+      // Reset form ketika tidak ada prompt yang dipilih
+      setTitle('');
+      setContent('');
+      setModel(AVAILABLE_MODELS[1].id);
+      setMode(THINKING_MODES[5].id);
+      setSelectedTags([]);
 
       // Reset state hasil AI
       setOriginalContent('');
       setAiResultContent('');
       setViewState('original');
     }
-  }, [currentPrompt, clearDraft, loadDraft]);
+  }, [currentPrompt]);
 
   // Memuat tag untuk sebuah prompt
   const loadPromptTags = async (promptId: string) => {
@@ -214,13 +184,11 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
     }
   };
 
-  const handleSave = useDoubleClickPrevention(async () => {
+  const handleSave = async () => {
     if (!title || !content) {
       toast.error(t('errors:actions.enterTitleAndContent'));
       return;
     }
-
-    if (isSaving) return;
 
     console.log('Save button clicked:', {
       title,
@@ -229,7 +197,6 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       hasCurrentPrompt: !!currentPrompt
     });
 
-    setIsSaving(true);
     try {
       const user = await supabase.auth.getUser().then(({ data }) => data.user);
 
@@ -297,9 +264,6 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
 
       // Menambah counter penggunaan setelah save berhasil
       await rateLimitingService.incrementUsage(user);
-      
-      // Clear draft setelah save berhasil
-      clearDraft();
     } catch (error) {
       console.error('Failed to save prompt:', error);
       console.error('Error details:', {
@@ -313,41 +277,29 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
         storageManagerAuth: storageManager.getAuthDebugInfo()
       });
       toast.error(error instanceof Error ? error.message : t('errors:prompt.saveFailed'));
-    } finally {
-      setIsSaving(false);
     }
-  });
+  };
 
-  const handleCopy = useDoubleClickPrevention(async () => {
+  const handleCopy = async () => {
     if (!content) {
       toast.error(t('errors:actions.noContent'));
       return;
     }
 
-    if (isCopying) return;
-
-    setIsCopying(true);
-    
-    // Optimistic update - langsung tampilkan feedback
-    toast.success(t('success:prompt.contentCopied'));
-    
     try {
       await navigator.clipboard.writeText(content);
+      toast.success(t('success:prompt.contentCopied'));
     } catch (error) {
       console.error('Failed to copy content:', error);
       toast.error(t('errors:prompt.copyFailed'));
-    } finally {
-      setTimeout(() => setIsCopying(false), 500);
     }
-  });
+  };
 
-  const handleShare = useDoubleClickPrevention(async () => {
+  const handleShare = async () => {
     if (!title || !content) {
       toast.error(t('errors:actions.enterTitleAndContent'));
       return;
     }
-
-    if (isSharing) return;
 
     console.log('Share button clicked:', {
       title,
@@ -357,7 +309,6 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       currentIsPublic: currentPrompt?.is_public
     });
 
-    setIsSharing(true);
     try {
       const user = await supabase.auth.getUser().then(({ data }) => data.user);
 
@@ -428,10 +379,8 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
         storageManagerAuth: storageManager.getAuthDebugInfo()
       });
       toast.error(t('errors:prompt.visibilityUpdateFailed'));
-    } finally {
-      setIsSharing(false);
     }
-  });
+  };
 
   const handleDelete = async (promptId: string) => {
     try {
@@ -656,45 +605,33 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
               onClick={handleCopy}
               variant="ghost"
               size={isMobile ? "icon" : "sm"}
-              className={`hover:bg-accent/20 hover:text-accent font-mono touch-manipulation transition-all active:scale-95 ${isMobile ? 'h-9 w-9' : ''}`}
-              disabled={!content || isCopying}
+              className={`hover:bg-accent/20 hover:text-accent font-mono touch-manipulation ${isMobile ? 'h-9 w-9' : ''}`}
+              disabled={!content}
               title={isMobile ? t('common:buttons.copy') : ''}
             >
-              {isCopying ? (
-                <Loader2 className={`${isMobile ? 'w-4 h-4' : 'w-4 h-4'} ${isMobile ? '' : 'mr-2'} animate-spin`} />
-              ) : (
-                <Copy className={`${isMobile ? 'w-4 h-4' : 'w-4 h-4'} ${isMobile ? '' : 'mr-2'}`} />
-              )}
+              <Copy className={`${isMobile ? 'w-4 h-4' : 'w-4 h-4'} ${isMobile ? '' : 'mr-2'}`} />
               {isMobile ? '' : t('common:buttons.copy')}
             </Button>
             <Button
               onClick={handleSave}
               variant="ghost"
               size={isMobile ? "icon" : "sm"}
-              className={`hover:bg-accent/20 hover:text-accent font-mono touch-manipulation transition-all active:scale-95 ${isMobile ? 'h-9 w-9' : ''}`}
-              disabled={!title || !content || isSaving}
+              className={`hover:bg-accent/20 hover:text-accent font-mono touch-manipulation ${isMobile ? 'h-9 w-9' : ''}`}
+              disabled={!title || !content}
               title={isMobile ? t('common:buttons.save') : ''}
             >
-              {isSaving ? (
-                <Loader2 className={`${isMobile ? 'w-4 h-4' : 'w-4 h-4'} ${isMobile ? '' : 'mr-2'} animate-spin`} />
-              ) : (
-                <Save className={`${isMobile ? 'w-4 h-4' : 'w-4 h-4'} ${isMobile ? '' : 'mr-2'}`} />
-              )}
+              <Save className={`${isMobile ? 'w-4 h-4' : 'w-4 h-4'} ${isMobile ? '' : 'mr-2'}`} />
               {isMobile ? '' : t('common:buttons.save')}
             </Button>
             <Button
               onClick={handleShare}
               variant="ghost"
               size={isMobile ? "icon" : "sm"}
-              className={`hover:bg-accent/20 hover:text-accent font-mono touch-manipulation transition-all active:scale-95 ${isMobile ? 'h-9 w-9' : ''}`}
-              disabled={!title || !content || isSharing}
+              className={`hover:bg-accent/20 hover:text-accent font-mono touch-manipulation ${isMobile ? 'h-9 w-9' : ''}`}
+              disabled={!title || !content}
               title={isMobile ? (currentPrompt?.is_public ? t('common:buttons.makePrivate') : t('common:buttons.share')) : ''}
             >
-              {isSharing ? (
-                <Loader2 className={`${isMobile ? 'w-4 h-4' : 'w-4 h-4'} ${isMobile ? '' : 'mr-2'} animate-spin`} />
-              ) : (
-                <Share2 className={`${isMobile ? 'w-4 h-4' : 'w-4 h-4'} ${isMobile ? '' : 'mr-2'}`} />
-              )}
+              <Share2 className={`${isMobile ? 'w-4 h-4' : 'w-4 h-4'} ${isMobile ? '' : 'mr-2'}`} />
               {isMobile ? '' : (currentPrompt?.is_public ? t('common:buttons.makePrivate') : t('common:buttons.share'))}
             </Button>
             <DeletePromptDialog
@@ -845,7 +782,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
             <div className="flex items-center gap-1 text-xs font-mono">
               <span>#</span>
               <span className={content.length > 45000 ? "text-red-400" : content.length > 40000 ? "text-yellow-400" : "text-muted-foreground"}>
-                {formatNumber(content.length)}/50,000
+                {content.length.toLocaleString()}/50,000
               </span>
             </div>
 
@@ -853,7 +790,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
             {!isMobile && (
               <div className="flex items-center gap-1 text-xs text-muted-foreground font-mono">
                 <span>📅</span>
-                <span>{formatDate(new Date())}</span>
+                <span>{new Date().toLocaleDateString()}</span>
               </div>
             )}
 

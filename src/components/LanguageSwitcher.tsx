@@ -16,8 +16,8 @@ const LanguageSwitcher = ({ isCollapsed = false }: { isCollapsed?: boolean }) =>
   const isMobile = useIsMobile();
 
   const languages = [
-    { code: 'en', labelKey: 'common:labels.english', flag: '🇺🇸' },
-    { code: 'id', labelKey: 'common:labels.bahasaIndonesia', flag: '🇮🇩' },
+    { code: 'en', label: 'English', flag: '🇺🇸' },
+    { code: 'id', label: 'Bahasa Indonesia', flag: '🇮🇩' },
   ];
 
   const currentLang = languages.find(lang => lang.code === currentLanguage) || languages[0];
@@ -34,7 +34,7 @@ const LanguageSwitcher = ({ isCollapsed = false }: { isCollapsed?: boolean }) =>
           {!isCollapsed && !isMobile && (
             <span className="flex items-center gap-2">
               <span>{currentLang.flag}</span>
-              <span>{t(currentLang.labelKey)}</span>
+              <span>{currentLang.label}</span>
             </span>
           )}
         </Button>
@@ -47,7 +47,7 @@ const LanguageSwitcher = ({ isCollapsed = false }: { isCollapsed?: boolean }) =>
             className={`flex items-center gap-2 cursor-pointer ${currentLanguage === lang.code ? 'bg-accent' : ''}`}
           >
             <span className="text-lg">{lang.flag}</span>
-            <span>{t(lang.labelKey)}</span>
+            <span>{lang.label}</span>
             {currentLanguage === lang.code && (
               <span className="ml-auto text-xs text-primary">✓</span>
             )}

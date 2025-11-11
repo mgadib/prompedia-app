@@ -1,13 +1,10 @@
 import { Prompt } from '@/lib/storage';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Copy, X, Lock, Globe, Link as LinkIcon, Loader2 } from 'lucide-react';
+import { Copy, X, Lock, Globe, Link as LinkIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useTranslation } from 'react-i18next';
-import { useState } from 'react';
-import { useDoubleClickPrevention } from '@/hooks/useDoubleClickPrevention';
-import { ENV } from '@/lib/constants';
 
 interface PromptDetailModalProps {
   prompt: Prompt | null;
@@ -26,64 +23,31 @@ const PromptDetailModal = ({
 }: PromptDetailModalProps) => {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
-  const [isCopying, setIsCopying] = useState(false);
-  const [isCopyingUrl, setIsCopyingUrl] = useState(false);
-  const [isUsing, setIsUsing] = useState(false);
   
   if (!prompt) return null;
 
-  const handleCopy = useDoubleClickPrevention(async () => {
-    if (isCopying) return;
-    
-    setIsCopying(true);
-    // Optimistic update - langsung tampilkan feedback
-    toast.success(t('success:prompt.contentCopied'));
-    
-    try {
-      if (onCopy) {
-        onCopy(prompt);
-      } else {
-        // Perilaku copy default - menyalin konten prompt ke clipboard
-        await navigator.clipboard.writeText(prompt.content);
-      }
-    } catch (error) {
-      console.error('Failed to copy:', error);
-      toast.error(t('errors:prompt.copyFailed'));
-    } finally {
-      setTimeout(() => setIsCopying(false), 500);
+  const handleCopy = () => {
+    if (onCopy) {
+      onCopy(prompt);
+    } else {
+      // Perilaku copy default - menyalin konten prompt ke clipboard
+      navigator.clipboard.writeText(prompt.content);
+      toast.success(t('success:prompt.contentCopied'));
     }
-  });
+  };
 
-  const handleCopyUrl = useDoubleClickPrevention(async () => {
-    if (isCopyingUrl) return;
-    
-    setIsCopyingUrl(true);
-    // Optimistic update
+  const handleCopyUrl = () => {
+    const url = `https://prompedia.app/p/${prompt.id}`;
+    navigator.clipboard.writeText(url);
     toast.success(t('success:prompt.urlCopied'));
-    
-    try {
-      const base = ENV.SITE_URL || window.location.origin;
-      const url = `${base}/p/${prompt.id}`;
-      await navigator.clipboard.writeText(url);
-    } catch (error) {
-      console.error('Failed to copy URL:', error);
-      toast.error(t('errors:prompt.copyFailed'));
-    } finally {
-      setTimeout(() => setIsCopyingUrl(false), 500);
-    }
-  });
+  };
 
-  const handleUse = useDoubleClickPrevention(async () => {
-    if (isUsing) return;
-    
-    setIsUsing(true);
-    // Optimistic update - langsung panggil callback
+  const handleUse = () => {
     if (onUse) {
       onUse(prompt);
     }
     onClose();
-    setTimeout(() => setIsUsing(false), 500);
-  });
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -103,15 +67,10 @@ const PromptDetailModal = ({
                 size={isMobile ? "default" : "sm"}
                 variant="outline"
                 onClick={handleCopyUrl}
-                disabled={isCopyingUrl}
-                className={`font-mono touch-manipulation transition-all active:scale-95 ${isMobile ? 'flex-1 min-h-[44px]' : ''}`}
+                className={`font-mono touch-manipulation ${isMobile ? 'flex-1 min-h-[44px]' : ''}`}
                 title={t('library:copyUrl')}
               >
-                {isCopyingUrl ? (
-                  <Loader2 className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${isMobile ? '' : 'mr-2'} animate-spin`} />
-                ) : (
-                  <LinkIcon className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${isMobile ? '' : 'mr-2'}`} />
-                )}
+                <LinkIcon className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${isMobile ? '' : 'mr-2'}`} />
                 {isMobile ? '' : t('common:buttons.url')}
               </Button>
             )}
@@ -120,14 +79,9 @@ const PromptDetailModal = ({
               size={isMobile ? "default" : "sm"}
               variant="outline"
               onClick={handleCopy}
-              disabled={isCopying}
-              className={`font-mono touch-manipulation transition-all active:scale-95 ${isMobile ? 'flex-1 min-h-[44px]' : ''}`}
+              className={`font-mono touch-manipulation ${isMobile ? 'flex-1 min-h-[44px]' : ''}`}
             >
-              {isCopying ? (
-                <Loader2 className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${isMobile ? '' : 'mr-2'} animate-spin`} />
-              ) : (
-                <Copy className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${isMobile ? '' : 'mr-2'}`} />
-              )}
+              <Copy className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${isMobile ? '' : 'mr-2'}`} />
               {isMobile ? '' : t('common:buttons.copy')}
             </Button>
             
@@ -135,12 +89,8 @@ const PromptDetailModal = ({
               <Button
                 size={isMobile ? "default" : "sm"}
                 onClick={handleUse}
-                disabled={isUsing}
-                className={`font-mono bg-primary hover:bg-primary/90 touch-manipulation transition-all active:scale-95 ${isMobile ? 'flex-1 min-h-[44px]' : ''}`}
+                className={`font-mono bg-primary hover:bg-primary/90 touch-manipulation ${isMobile ? 'flex-1 min-h-[44px]' : ''}`}
               >
-                {isUsing ? (
-                  <Loader2 className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${isMobile ? '' : 'mr-2'} animate-spin`} />
-                ) : null}
                 {isMobile ? t('common:buttons.use') : t('prompt:usePrompt')}
               </Button>
             )}

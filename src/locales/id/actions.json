@@ -1,30 +1,30 @@
 {
   "refine": {
-    "label": "Sempurnakan",
+    "label": "Refine",
     "description": "Memperbaiki hasil agar lebih jelas, fokus, dan efektif",
     "purpose": "Reflective thinking - melihat ulang dengan kesadaran",
     "thinkingPattern": "reflective"
   },
   "expand": {
-    "label": "Perluas",
+    "label": "Expand",
     "description": "Memperluas hasil dengan tambahan konteks, contoh, atau elaborasi",
     "purpose": "Exploratory thinking - perluas ruang ide",
     "thinkingPattern": "exploratory"
   },
   "reimagine": {
-    "label": "Reimajinasi",
+    "label": "Reimagine",
     "description": "Menciptakan versi baru dengan pendekatan kreatif",
     "purpose": "Divergent thinking - melihat dari sisi berbeda",
     "thinkingPattern": "divergent"
   },
   "reformat": {
-    "label": "Ubah Format",
-    "description": "Ubah bentuk output tanpa mengubah makna",
+    "label": "Reformat",
+    "description": "Ubah bentuk output tanpa ubah makna",
     "purpose": "Structural thinking - ubah bentuk, jaga isi",
     "thinkingPattern": "structural"
   },
   "selfReview": {
-    "label": "Tinjauan Mandiri",
+    "label": "Self-Review",
     "description": "Evaluasi diri hasil sebelumnya secara objektif",
     "purpose": "Metacognitive thinking - menilai kualitas pikirannya sendiri",
     "thinkingPattern": "metacognitive"

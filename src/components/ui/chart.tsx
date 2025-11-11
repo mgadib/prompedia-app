@@ -2,7 +2,6 @@ import * as React from "react";
 import * as RechartsPrimitive from "recharts";
 
 import { cn } from "@/lib/utils";
-import { formatNumber } from "@/lib/i18n-formatting";
 
 // Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: "", dark: ".dark" } as const;
@@ -210,13 +209,7 @@ const ChartTooltipContent = React.forwardRef<
                       </div>
                       {item.value && (
                         <span className="font-mono font-medium tabular-nums text-foreground">
-                          {formatNumber(
-                            Array.isArray(item.value) 
-                              ? item.value[0] as number
-                              : typeof item.value === 'string' 
-                                ? parseFloat(item.value) 
-                                : item.value
-                          )}
+                          {item.value.toLocaleString()}
                         </span>
                       )}
                     </div>
