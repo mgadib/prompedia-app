@@ -25,7 +25,7 @@
     "description": "Menguji stabilitas prompt dengan multiple reasoning",
     "purpose": "Comparative reasoning - pengujian konsistensi",
     "thinkingPattern": "AI menghasilkan beberapa reasoning path dan memilih yang paling konsisten",
-    "outputStructure": ["Multiple Reasoning Paths", "Analisis Konsistensi", "Versi Terbaik"]
+    "outputStructure": ["Jalur Penalaran Ganda", "Analisis Konsistensi", "Versi Terbaik"]
   },
   "chainOfPrompt": {
     "label": "Chain-of-Prompt",
@@ -39,7 +39,7 @@
     "description": "Berdiskusi atau menilai prompt dengan persona tertentu",
     "purpose": "Dialogic reasoning - perspektif multi-angle",
     "thinkingPattern": "AI berbicara sebagai persona: Reviewer, Editor, Developer, atau Researcher",
-    "outputStructure": ["Persona Introduction", "Analysis", "Recommendations"]
+    "outputStructure": ["Pengenalan Persona", "Analisis", "Rekomendasi"]
   }
 }
 

@@ -111,6 +111,10 @@
   "toggleSidebar": "Toggle Sidebar",
   "user": "User",
   "home": "Home",
-  "public": "Public"
+  "public": "Public",
+  "languages": {
+    "english": "English",
+    "indonesian": "Bahasa Indonesia"
+  }
 }
 

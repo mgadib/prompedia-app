@@ -10,7 +10,12 @@
     "contentCopied": "Prompt content copied to clipboard",
     "nowPublic": "Prompt is now public",
     "nowPrivate": "Prompt is now private",
-    "copiedSuccessfully": "Prompt copied successfully"
+    "copiedSuccessfully": "Prompt copied successfully",
+    "promptCreated": "Prompt created successfully",
+    "promptUpdated": "Prompt updated successfully",
+    "promptRemoved": "Prompt removed successfully",
+    "promptCopied": "Prompt copied successfully",
+    "promptDuplicated": "Prompt duplicated successfully"
   },
   "auth": {
     "loginSuccess": "Successfully signed in",
@@ -24,13 +29,6 @@
     "reformatted": "Content reformatted successfully",
     "selfReviewed": "Content self-reviewed successfully",
     "actionSuccess": "Content {{action}}d successfully"
-  },
-  "prompt": {
-    "promptCreated": "Prompt created successfully",
-    "promptUpdated": "Prompt updated successfully",
-    "promptRemoved": "Prompt removed successfully",
-    "promptCopied": "Prompt copied successfully",
-    "promptDuplicated": "Prompt duplicated successfully"
   }
 }
 

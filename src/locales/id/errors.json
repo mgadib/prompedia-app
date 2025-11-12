@@ -18,7 +18,7 @@
     "notFound": "Prompt tidak ditemukan"
   },
   "auth": {
-    "loginFailed": "Gagal masuk. Periksa email dan password Anda.",
+    "loginFailed": "Gagal masuk. Periksa email dan kata sandi Anda.",
     "logoutFailed": "Gagal keluar dari akun.",
     "sessionExpired": "Sesi Anda telah berakhir. Silakan masuk kembali."
   },

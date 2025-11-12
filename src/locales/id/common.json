@@ -108,9 +108,13 @@
     "remainingDailyCalls": "{{count}} panggilan AI harian tersisa."
   },
   "changeLanguage": "Ubah Bahasa",
-  "toggleSidebar": "Toggle Sidebar",
+  "toggleSidebar": "Buka/Tutup Sidebar",
   "user": "Pengguna",
   "home": "Beranda",
-  "public": "Publik"
+  "public": "Publik",
+  "languages": {
+    "english": "English",
+    "indonesian": "Bahasa Indonesia"
+  }
 }
 
