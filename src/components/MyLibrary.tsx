@@ -252,7 +252,7 @@ const MyLibrary = ({
                 {filteredPrompts.length.toLocaleString()}
               </span>
               <span className="text-muted-foreground">
-                of {prompts.length.toLocaleString()}
+                {t('library:promptCount', { count: filteredPrompts.length, total: prompts.length })}
               </span>
             </div>
             

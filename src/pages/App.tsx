@@ -447,7 +447,7 @@ const AppPage = () => {
     const newPrompt: Prompt = {
       id: crypto.randomUUID(),
       user_id: user?.id || 'guest',
-      title: 'Untitled Prompt',
+      title: t('prompt:untitled'),
       content: '',
       model: AVAILABLE_MODELS[1].id,
       color: '#3b82f6',

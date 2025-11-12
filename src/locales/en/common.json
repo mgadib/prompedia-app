@@ -108,6 +108,7 @@
     "remainingDailyCalls": "{{count}} daily AI calls remaining."
   },
   "changeLanguage": "Change Language",
+  "toggleSidebar": "Toggle Sidebar",
   "user": "User",
   "home": "Home",
   "public": "Public"
