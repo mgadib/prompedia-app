@@ -2,6 +2,7 @@ import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import i18n from '@/lib/i18n';
 
 interface Props {
   children: ReactNode;
@@ -59,9 +60,9 @@ export class ErrorBoundary extends Component<Props, State> {
           <div className="max-w-md w-full space-y-4">
             <Alert variant="destructive">
               <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5" />
-              <AlertTitle className="font-mono text-base sm:text-lg">An Error Occurred</AlertTitle>
+              <AlertTitle className="font-mono text-base sm:text-lg">{i18n.t('errors:boundary.title')}</AlertTitle>
               <AlertDescription className="font-mono text-sm">
-                The application encountered an unexpected error. Please try reloading the page.
+                {i18n.t('errors:boundary.description')}
               </AlertDescription>
             </Alert>
 
@@ -72,21 +73,21 @@ export class ErrorBoundary extends Component<Props, State> {
                 variant="outline"
               >
                 <RefreshCw className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                Try Again
+                {i18n.t('errors:boundary.tryAgain')}
               </Button>
               
               <Button 
                 onClick={() => window.location.reload()} 
                 className="w-full font-mono touch-manipulation min-h-[44px] sm:min-h-0"
               >
-                Reload Page
+                {i18n.t('errors:boundary.reloadPage')}
               </Button>
             </div>
 
             {process.env.NODE_ENV === 'development' && this.state.error && (
               <details className="mt-4 p-3 sm:p-4 bg-muted rounded-md text-sm font-mono">
                 <summary className="cursor-pointer font-medium touch-manipulation min-h-[44px] flex items-center sm:min-h-0">
-                  Error Details (Development)
+                  {i18n.t('errors:boundary.errorDetails')}
                 </summary>
                 <pre className="mt-2 whitespace-pre-wrap text-xs overflow-x-auto">
                   {this.state.error.toString()}

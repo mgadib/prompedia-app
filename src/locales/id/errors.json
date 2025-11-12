@@ -64,6 +64,13 @@
     "promptRemoveFailed": "Gagal menghapus prompt",
     "promptCopyFailed": "Gagal menyalin prompt",
     "promptDuplicateFailed": "Gagal menduplikasi prompt"
+  },
+  "boundary": {
+    "title": "Terjadi Kesalahan",
+    "description": "Aplikasi mengalami kesalahan yang tidak terduga. Silakan muat ulang halaman.",
+    "tryAgain": "Coba Lagi",
+    "reloadPage": "Muat Ulang Halaman",
+    "errorDetails": "Detail Kesalahan (Development)"
   }
 }
 

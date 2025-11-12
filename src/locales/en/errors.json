@@ -64,6 +64,13 @@
     "promptRemoveFailed": "Failed to remove prompt",
     "promptCopyFailed": "Failed to copy prompt",
     "promptDuplicateFailed": "Failed to duplicate prompt"
+  },
+  "boundary": {
+    "title": "An Error Occurred",
+    "description": "The application encountered an unexpected error. Please try reloading the page.",
+    "tryAgain": "Try Again",
+    "reloadPage": "Reload Page",
+    "errorDetails": "Error Details (Development)"
   }
 }
 
