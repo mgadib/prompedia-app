@@ -9,6 +9,45 @@ const ALLOWED_ORIGINS = [
   'http://localhost:8083'
 ];
 
+// IP-based rate limiting (in-memory)
+const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
+const RATE_LIMIT_MAX_REQUESTS = 100;
+
+interface RateLimitEntry {
+  count: number;
+  windowStart: number;
+}
+
+const ipRateLimits = new Map<string, RateLimitEntry>();
+
+// Cleanup old entries periodically
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, entry] of ipRateLimits.entries()) {
+    if (now - entry.windowStart > RATE_LIMIT_WINDOW_MS) {
+      ipRateLimits.delete(ip);
+    }
+  }
+}, 5 * 60 * 1000); // Cleanup every 5 minutes
+
+const checkRateLimit = (ip: string): { allowed: boolean; remaining: number } => {
+  const now = Date.now();
+  const entry = ipRateLimits.get(ip);
+
+  if (!entry || now - entry.windowStart > RATE_LIMIT_WINDOW_MS) {
+    // New window
+    ipRateLimits.set(ip, { count: 1, windowStart: now });
+    return { allowed: true, remaining: RATE_LIMIT_MAX_REQUESTS - 1 };
+  }
+
+  if (entry.count >= RATE_LIMIT_MAX_REQUESTS) {
+    return { allowed: false, remaining: 0 };
+  }
+
+  entry.count++;
+  return { allowed: true, remaining: RATE_LIMIT_MAX_REQUESTS - entry.count };
+};
+
 const corsHeaders = (origin: string | null): Record<string, string> => {
   // Mengizinkan domain preview Lovable dan origin yang dikonfigurasi
   const isLovablePreview = origin?.includes('.lovable.app') || origin?.includes('.lovableproject.com') || false;
@@ -65,6 +104,26 @@ serve(async (req) => {
   // Menangani request CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders(req.headers.get('origin')) })
+  }
+
+  // Check IP-based rate limit
+  const rateLimit = checkRateLimit(ip);
+  if (!rateLimit.allowed) {
+    console.warn(`[${requestId}] Rate limit exceeded for IP: ${ip}`);
+    return new Response(JSON.stringify({
+      error: 'Rate limit exceeded',
+      message: `You have exceeded the maximum of ${RATE_LIMIT_MAX_REQUESTS} requests per hour. Please try again later.`,
+      retry_after: RATE_LIMIT_WINDOW_MS / 1000 // seconds
+    }), {
+      status: 429,
+      headers: {
+        ...corsHeaders(req.headers.get('origin')),
+        'Content-Type': 'application/json',
+        'X-RateLimit-Limit': RATE_LIMIT_MAX_REQUESTS.toString(),
+        'X-RateLimit-Remaining': '0',
+        'Retry-After': Math.ceil(RATE_LIMIT_WINDOW_MS / 1000).toString()
+      },
+    });
   }
 
   try {
