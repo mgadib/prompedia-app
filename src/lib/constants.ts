@@ -43,7 +43,7 @@ export const UI_CONFIG = {
     COLLAPSED: 64,  // 4rem
   },
   DEBOUNCE_DELAY: 500, // Delay debounce auto-save dalam ms
-  TOAST_DURATION: 700, // Durasi notifikasi toast (0.7 detik)
+  TOAST_DURATION: 1777, // Durasi notifikasi toast (1.777 detik)
   ANIMATION_DURATION: 300, // Durasi animasi standar
 } as const;
 

@@ -11,7 +11,7 @@ import i18n from './i18n';
  */
 export const showSuccessToast = (key: string, options?: Record<string, unknown>) => {
   const message = i18n.t(key, options);
-  toast.success(message, { duration: 700 });
+  toast.success(message, { duration: 1777 });
 };
 
 /**
@@ -19,7 +19,7 @@ export const showSuccessToast = (key: string, options?: Record<string, unknown>)
  */
 export const showErrorToast = (key: string, options?: Record<string, unknown>) => {
   const message = i18n.t(key, options);
-  toast.error(message, { duration: 700 });
+  toast.error(message, { duration: 1777 });
 };
 
 /**
@@ -27,7 +27,7 @@ export const showErrorToast = (key: string, options?: Record<string, unknown>) =
  */
 export const showWarningToast = (key: string, options?: Record<string, unknown>) => {
   const message = i18n.t(key, options);
-  toast.warning(message, { duration: 700 });
+  toast.warning(message, { duration: 1777 });
 };
 
 /**
@@ -35,7 +35,7 @@ export const showWarningToast = (key: string, options?: Record<string, unknown>)
  */
 export const showInfoToast = (key: string, options?: Record<string, unknown>) => {
   const message = i18n.t(key, options);
-  toast.info(message, { duration: 700 });
+  toast.info(message, { duration: 1777 });
 };
 
 /**
@@ -43,7 +43,7 @@ export const showInfoToast = (key: string, options?: Record<string, unknown>) =>
  */
 export const showLoadingToast = (key: string, options?: Record<string, unknown>) => {
   const message = i18n.t(key, options);
-  return toast.loading(message, { duration: 700 });
+  return toast.loading(message, { duration: 1777 });
 };
 
 /**
@@ -94,6 +94,6 @@ export const showErrorToastWithFallback = (
     }
   }
   
-  toast.error(message, { duration: 700 });
+  toast.error(message, { duration: 1777 });
 };
 
