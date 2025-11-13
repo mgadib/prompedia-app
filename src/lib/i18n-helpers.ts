@@ -24,3 +24,11 @@ export const getCommonMessage = (key: string, options?: Record<string, unknown>)
   return String(i18n.t(`common:${key}`, options));
 };
 
+/**
+ * Get translated validation message
+ * Use this in non-React contexts (validation schemas, etc.)
+ */
+export const getValidationMessage = (key: string, options?: Record<string, unknown>): string => {
+  return String(i18n.t(`validation:${key}`, options));
+};
+

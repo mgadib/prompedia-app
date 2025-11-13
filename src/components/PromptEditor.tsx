@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { formatDate, formatNumber } from '@/lib/i18n-formatting';
 import { Copy, Save, Share2, FileText, Trash2, ArrowLeft, ArrowRight, CheckCircle, Lock, Globe, Leaf, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -731,7 +732,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
             <div className="flex items-center gap-1 text-xs font-mono">
               <span>#</span>
               <span className={content.length > 45000 ? "text-red-400" : content.length > 40000 ? "text-yellow-400" : "text-muted-foreground"}>
-                {content.length.toLocaleString()}/50,000
+                {formatNumber(content.length)}/{formatNumber(50000)}
               </span>
             </div>
 
@@ -739,7 +740,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
             {!isMobile && (
               <div className="flex items-center gap-1 text-xs text-muted-foreground font-mono">
                 <span>📅</span>
-                <span>{new Date().toLocaleDateString()}</span>
+                <span>{formatDate(new Date())}</span>
               </div>
             )}
 

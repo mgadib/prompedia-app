@@ -1,46 +1,58 @@
 import { z } from 'zod';
 import { VALIDATION, ERROR_MESSAGES } from './constants';
+import { getValidationMessage } from './i18n-helpers';
 
 /**
  * Schema validasi dan utilitas
  * Logika validasi terpusat menggunakan Zod untuk type safety
  */
 
-// Schema dasar
-export const emailSchema = z
+// Schema dasar dengan i18n support
+// Menggunakan function untuk lazy evaluation karena i18n mungkin belum ter-initialize saat module load
+const getEmailSchema = () => z
   .string()
-  .email(ERROR_MESSAGES.AUTH.LOGIN_FAILED)
-  .min(1, 'Email wajib diisi');
+  .email(getValidationMessage('user.emailInvalid'))
+  .min(1, getValidationMessage('user.emailRequired'));
 
-export const passwordSchema = z
+const getPasswordSchema = () => z
   .string()
-  .min(VALIDATION.USER.PASSWORD_MIN_LENGTH, `Password minimal ${VALIDATION.USER.PASSWORD_MIN_LENGTH} karakter`);
+  .min(VALIDATION.USER.PASSWORD_MIN_LENGTH, getValidationMessage('user.passwordMinLength', { min: VALIDATION.USER.PASSWORD_MIN_LENGTH }));
 
-// Schema validasi untuk prompt
-export const promptTitleSchema = z
+// Export schemas sebagai functions untuk lazy evaluation
+export const emailSchema = getEmailSchema();
+export const passwordSchema = getPasswordSchema();
+
+// Schema validasi untuk prompt dengan i18n
+const getPromptTitleSchema = () => z
   .string()
-  .min(VALIDATION.PROMPT.TITLE_MIN_LENGTH, ERROR_MESSAGES.PROMPT.TITLE_REQUIRED)
-  .max(VALIDATION.PROMPT.TITLE_MAX_LENGTH, ERROR_MESSAGES.PROMPT.TITLE_TOO_LONG)
+  .min(VALIDATION.PROMPT.TITLE_MIN_LENGTH, getValidationMessage('prompt.titleMinLength', { min: VALIDATION.PROMPT.TITLE_MIN_LENGTH }))
+  .max(VALIDATION.PROMPT.TITLE_MAX_LENGTH, getValidationMessage('prompt.titleMaxLength', { max: VALIDATION.PROMPT.TITLE_MAX_LENGTH }))
   .trim();
 
-export const promptContentSchema = z
+const getPromptContentSchema = () => z
   .string()
-  .max(VALIDATION.PROMPT.CONTENT_MAX_LENGTH, ERROR_MESSAGES.PROMPT.CONTENT_TOO_LONG);
+  .max(VALIDATION.PROMPT.CONTENT_MAX_LENGTH, getValidationMessage('prompt.contentMaxLength', { max: VALIDATION.PROMPT.CONTENT_MAX_LENGTH }));
 
-export const promptTagSchema = z
+const getPromptTagSchema = () => z
   .string()
-  .max(VALIDATION.PROMPT.TAG_MAX_LENGTH, `Tag maksimal ${VALIDATION.PROMPT.TAG_MAX_LENGTH} karakter`)
+  .max(VALIDATION.PROMPT.TAG_MAX_LENGTH, getValidationMessage('prompt.tagMaxLength', { max: VALIDATION.PROMPT.TAG_MAX_LENGTH }))
   .trim();
 
-export const promptTagsSchema = z
-  .array(promptTagSchema)
-  .max(VALIDATION.PROMPT.TAGS_MAX_COUNT, `Maksimal ${VALIDATION.PROMPT.TAGS_MAX_COUNT} tag`);
+const getPromptTagsSchema = () => z
+  .array(getPromptTagSchema())
+  .max(VALIDATION.PROMPT.TAGS_MAX_COUNT, getValidationMessage('prompt.tagsMaxCount', { max: VALIDATION.PROMPT.TAGS_MAX_COUNT }));
+
+// Export schemas
+export const promptTitleSchema = getPromptTitleSchema();
+export const promptContentSchema = getPromptContentSchema();
+export const promptTagSchema = getPromptTagSchema();
+export const promptTagsSchema = getPromptTagsSchema();
 
 // Schema prompt lengkap (diperbarui untuk database minimalis)
-export const promptSchema = z.object({
+const getPromptSchema = () => z.object({
   id: z.string().uuid().optional(),
-  title: promptTitleSchema,
-  content: promptContentSchema,
+  title: getPromptTitleSchema(),
+  content: getPromptContentSchema(),
   
   // Mendukung field lama dan baru untuk backward compatibility
   model: z.string().optional(),
@@ -58,35 +70,46 @@ export const promptSchema = z.object({
   // created_at dan updated_at tidak disimpan dalam schema minimalis
 }).refine(
   (data) => data.model || data.model_id, 
-  { message: "Either model or model_id must be provided" }
+  { message: getValidationMessage('modelOrModelIdRequired') }
 ).refine(
   (data) => data.mode || data.mode_id,
-  { message: "Either mode or mode_id must be provided" }
+  { message: getValidationMessage('modeOrModeIdRequired') }
 );
 
-// Schema autentikasi
-export const loginSchema = z.object({
-  email: emailSchema,
-  password: passwordSchema,
+export const promptSchema = getPromptSchema();
+
+// Schema autentikasi dengan i18n
+const getLoginSchema = () => z.object({
+  email: getEmailSchema(),
+  password: getPasswordSchema(),
 });
 
-export const registerSchema = z.object({
-  email: emailSchema,
-  password: passwordSchema,
+const getRegisterSchema = () => z.object({
+  email: getEmailSchema(),
+  password: getPasswordSchema(),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
-  message: 'Password tidak cocok',
+  message: getValidationMessage('user.passwordMismatch'),
   path: ['confirmPassword'],
 });
 
+export const loginSchema = getLoginSchema();
+export const registerSchema = getRegisterSchema();
+
 // Schema user (diperbarui untuk database minimalis)
 // Note: role field removed - user_roles table tidak digunakan di aplikasi
-export const userProfileSchema = z.object({
+const getUserProfileSchema = () => z.object({
   id: z.string().uuid(),
-  username: z.string().min(1, 'Username wajib diisi').max(50, 'Username terlalu panjang'),
-  display_name: z.string().min(1, 'Nama tampilan wajib diisi').max(100, 'Nama terlalu panjang'),
+  username: z.string()
+    .min(1, getValidationMessage('user.usernameRequired'))
+    .max(50, getValidationMessage('user.usernameTooLong')),
+  display_name: z.string()
+    .min(1, getValidationMessage('user.displayNameRequired'))
+    .max(100, getValidationMessage('user.displayNameTooLong')),
   // role field removed - tidak ada lagi di database
 });
+
+export const userProfileSchema = getUserProfileSchema();
 
 // Fungsi utilitas validasi
 export class ValidationError extends Error {
@@ -181,7 +204,7 @@ export function sanitizeString(input: string, maxLength: number = 50000): string
 
   // Menerapkan batas panjang SEBELUM pemrosesan untuk efisiensi
   if (input.length > maxLength) {
-    throw new ValidationError(`Input exceeds maximum length of ${maxLength}`);
+    throw new ValidationError(getValidationMessage('inputExceedsMaxLength', { max: maxLength }));
   }
 
   return input
@@ -216,11 +239,11 @@ export function validateAIPromptInput(prompt: string): string {
   
   // Pengecekan tambahan khusus untuk input AI
   if (sanitized.length < 1) {
-    throw new ValidationError('Prompt cannot be empty');
+    throw new ValidationError(getValidationMessage('prompt.cannotBeEmpty'));
   }
   
   if (sanitized.length > VALIDATION.PROMPT.CONTENT_MAX_LENGTH) {
-    throw new ValidationError(`Prompt exceeds maximum length of ${VALIDATION.PROMPT.CONTENT_MAX_LENGTH}`);
+    throw new ValidationError(getValidationMessage('prompt.exceedsMaxLength', { max: VALIDATION.PROMPT.CONTENT_MAX_LENGTH }));
   }
   
   return sanitized;
@@ -234,7 +257,7 @@ export function validateAIPromptInput(prompt: string): string {
  */
 export function validatePromptTitle(title: string): string {
   const sanitized = sanitizeString(title);
-  return validateData(promptTitleSchema, sanitized);
+  return validateData(getPromptTitleSchema(), sanitized);
 }
 
 /**
@@ -245,7 +268,7 @@ export function validatePromptTitle(title: string): string {
  */
 export function validatePromptContent(content: string): string {
   const sanitized = sanitizeString(content);
-  return validateData(promptContentSchema, sanitized);
+  return validateData(getPromptContentSchema(), sanitized);
 }
 
 // Ekspor type untuk digunakan di tempat lain

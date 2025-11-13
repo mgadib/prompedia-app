@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { formatNumber } from '@/lib/i18n-formatting';
 import { Prompt, Tag } from '@/lib/storage';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -249,7 +250,7 @@ const MyLibrary = ({
             <div className="flex items-center gap-2">
               <FileText className="w-4 h-4 text-primary" />
               <span className="text-foreground font-semibold">
-                {filteredPrompts.length.toLocaleString()}
+                {formatNumber(filteredPrompts.length)}
               </span>
               <span className="text-muted-foreground">
                 {t('library:promptCount', { count: filteredPrompts.length, total: prompts.length })}
