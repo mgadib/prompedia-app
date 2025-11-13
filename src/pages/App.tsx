@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Menu } from 'lucide-react';
+import { ArrowLeft, Copy, Download, FileText, Globe, Hash, Link as LinkIcon, Lock, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Sidebar from '@/components/Sidebar';
 import PromptEditor from '@/components/PromptEditor';
@@ -9,12 +9,14 @@ import PublicLibrary from '@/components/PublicLibrary';
 import AuthModal from '@/components/AuthModal';
 import { storage, Prompt, Tag } from '@/lib/storage';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 interface PromptWithTags extends Prompt {
   tags: Tag[];
 }
 import { storageManager } from '@/lib/storage-manager';
+import { Badge } from '@/components/ui/badge';
+import SEO from '@/components/SEO';
 import { AVAILABLE_MODELS } from '@/lib/models';
 import { THINKING_MODES } from '@/lib/modes';
 import { SupabaseService } from '@/lib/supabase-service';
@@ -22,8 +24,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
 import { toast } from 'sonner';
 import { rateLimitingService } from '@/lib/rate-limiting';
-import { STORAGE_KEYS } from '@/lib/constants';
+import { ENV, STORAGE_KEYS } from '@/lib/constants';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { TagService } from '@/lib/tag-service';
+import { trackEvent } from '@/lib/analytics';
+import PromptDetailModal from '@/components/PromptDetailModal';
 
 
 const AppPage = () => {
@@ -43,6 +48,22 @@ const AppPage = () => {
   const isMobile = useIsMobile();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  const params = useParams<{ name?: string }>();
+  const activeTagName = params.name ? decodeURIComponent(params.name) : null;
+  const isTagView = Boolean(activeTagName);
+  const [tagPrompts, setTagPrompts] = useState<PromptWithTags[]>([]);
+  const [isTagLoading, setIsTagLoading] = useState(false);
+  const [tagError, setTagError] = useState<string | null>(null);
+  const [selectedTagPrompt, setSelectedTagPrompt] = useState<PromptWithTags | null>(null);
+  const [isTagModalOpen, setIsTagModalOpen] = useState(false);
+
+  const tagPageTitle = useMemo(() => {
+    if (!activeTagName) return null;
+    return `Tag: ${activeTagName} — ${ENV.SITE_TITLE}`;
+  }, [activeTagName]);
+  const contentViewKey = isTagView
+    ? `tag-${activeTagName || 'none'}`
+    : `${showEditor}-${activeView}`;
 
   // Handle navigation state from tag page
   useEffect(() => {
@@ -58,6 +79,414 @@ const AppPage = () => {
       navigate(location.pathname, { replace: true, state: {} });
     }
   }, [location.state, navigate, location.pathname]);
+
+  const loadTagPrompts = useCallback(async () => {
+    if (!activeTagName) return;
+
+    setIsTagLoading(true);
+    setTagError(null);
+
+    try {
+      let currentUser = user;
+
+      if (!currentUser) {
+        const {
+          data: { user: supabaseUser },
+        } = await supabase.auth.getUser();
+
+        if (supabaseUser) {
+          setUser(supabaseUser);
+          currentUser = supabaseUser;
+        }
+      }
+
+      const promptList = await TagService.getPromptsByTagName(
+        activeTagName,
+        currentUser?.id
+      );
+      setTagPrompts(promptList);
+    } catch (error) {
+      const message = (error as Error)?.message || t('errors:tag.loadFailed');
+      setTagError(message);
+      setTagPrompts([]);
+    } finally {
+      setIsTagLoading(false);
+    }
+  }, [activeTagName, t, user]);
+
+  useEffect(() => {
+    if (!isTagView) {
+      setTagPrompts([]);
+      setTagError(null);
+      setIsTagModalOpen(false);
+      setSelectedTagPrompt(null);
+      return;
+    }
+
+    loadTagPrompts();
+  }, [isTagView, loadTagPrompts, activeTagName]);
+
+  const handleTagCardClick = (prompt: PromptWithTags) => {
+    setSelectedTagPrompt(prompt);
+    setIsTagModalOpen(true);
+    trackEvent('open_prompt_modal', { prompt_id: prompt.id }, user?.id ?? undefined);
+  };
+
+  const handleCloseTagModal = () => {
+    setIsTagModalOpen(false);
+    setSelectedTagPrompt(null);
+  };
+
+  const handleTagCopy = useCallback(
+    async (event: React.MouseEvent, prompt: PromptWithTags) => {
+      event.stopPropagation();
+      try {
+        await navigator.clipboard.writeText(prompt.content);
+        toast.success(t('success:prompt.contentCopied'));
+        trackEvent('copy_prompt_content', { prompt_id: prompt.id }, user?.id ?? undefined);
+      } catch (error) {
+        if (import.meta.env.DEV) {
+          console.error('Failed to copy prompt content:', error);
+        }
+        toast.error(t('errors:prompt.copyFailed'));
+      }
+    },
+    [t, user?.id]
+  );
+
+  const handleTagCopyUrl = useCallback(
+    async (event: React.MouseEvent, promptId: string) => {
+      event.stopPropagation();
+      try {
+        const base = ENV.SITE_URL || window.location.origin;
+        const url = `${base}/p/${promptId}`;
+        await navigator.clipboard.writeText(url);
+        toast.success(t('success:prompt.urlCopied'));
+        trackEvent('copy_prompt_url', { prompt_id: promptId }, user?.id ?? undefined);
+      } catch (error) {
+        if (import.meta.env.DEV) {
+          console.error('Failed to copy prompt URL:', error);
+        }
+        toast.error(t('errors:prompt.copyFailed'));
+      }
+    },
+    [t, user?.id]
+  );
+
+  const handleTagUse = useCallback(
+    (event: React.MouseEvent, prompt: PromptWithTags) => {
+      event.stopPropagation();
+      navigate(`/?use=${encodeURIComponent(prompt.id)}`);
+      toast.success(t('success:prompt.loadedForEditing'));
+      trackEvent('use_prompt', { prompt_id: prompt.id }, user?.id ?? undefined);
+    },
+    [navigate, t, user?.id]
+  );
+
+  const handleUsePromptFromModal = useCallback(
+    (prompt: Prompt) => {
+      navigate(`/?use=${encodeURIComponent(prompt.id)}`);
+      toast.success(t('success:prompt.loadedForEditing'));
+      trackEvent('use_prompt', { prompt_id: prompt.id }, user?.id ?? undefined);
+    },
+    [navigate, t, user?.id]
+  );
+
+  const handleCopyPromptFromModal = useCallback(
+    async (prompt: Prompt) => {
+      try {
+        await navigator.clipboard.writeText(prompt.content);
+        toast.success(t('success:prompt.contentCopied'));
+        trackEvent('copy_prompt_content', { prompt_id: prompt.id }, user?.id ?? undefined);
+      } catch (error) {
+        if (import.meta.env.DEV) {
+          console.error('Failed to copy prompt content:', error);
+        }
+        toast.error(t('errors:prompt.copyFailed'));
+      }
+    },
+    [t, user?.id]
+  );
+
+  const renderTagContent = () => (
+    <div key={contentViewKey} className="flex h-full flex-col">
+      {tagPageTitle && (
+        <SEO
+          title={tagPageTitle}
+          description={t('library:tagPageDescription', { tag: activeTagName })}
+          tags={activeTagName ? [activeTagName] : undefined}
+        />
+      )}
+
+      {isMobile ? (
+        <div className="md:hidden border-b border-border bg-card flex-shrink-0 px-4 py-3 flex items-center gap-3 z-10">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setMobileSidebarOpen(true)}
+            className="h-9 w-9 touch-manipulation"
+            aria-label={t('common:labels.openMenu')}
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+          <div className="flex items-center gap-2">
+            <Hash className="w-5 h-5 text-prompedia-green-400" />
+            <h1 className="text-sm font-semibold font-mono truncate">{activeTagName || t('common:labels.tag')}</h1>
+          </div>
+        </div>
+      ) : (
+        <div className="border-b border-border bg-card flex-shrink-0 px-4 py-3 flex items-center gap-3 z-10">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate(-1)}
+            className="h-9 w-9 touch-manipulation"
+            aria-label={t('common:labels.back')}
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div className="flex items-center gap-2">
+            <Hash className="w-5 h-5 text-prompedia-green-400" />
+            <h1 className="text-sm sm:text-base font-semibold font-mono truncate">{activeTagName || t('common:labels.tag')}</h1>
+          </div>
+        </div>
+      )}
+
+      <div className="flex-1 overflow-y-auto">
+        {isTagLoading ? (
+          <div className="view-transition">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 p-3 sm:p-4 md:p-6">
+              {Array.from({ length: 6 }).map((_, index) => (
+                <div key={index} className="bg-card border rounded-lg p-4 sm:p-6 space-y-4">
+                  <div className="flex justify-between">
+                    <div className="h-4 w-20 bg-muted animate-pulse rounded" />
+                    <div className="h-4 w-16 bg-muted animate-pulse rounded" />
+                  </div>
+                  <div className="h-6 w-3/4 bg-muted animate-pulse rounded" />
+                  <div className="space-y-2">
+                    <div className="h-4 w-full bg-muted animate-pulse rounded" />
+                    <div className="h-4 w-5/6 bg-muted animate-pulse rounded" />
+                  </div>
+                  <div className="flex gap-2">
+                    <div className="h-6 w-16 bg-muted animate-pulse rounded" />
+                    <div className="h-6 w-20 bg-muted animate-pulse rounded" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : tagError ? (
+          <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-8">
+            <Hash className="w-12 h-12 mb-4 opacity-50" />
+            <h3 className="text-lg font-semibold mb-2 font-mono">{t('library:problemOccurred')}</h3>
+            <p className="text-sm text-center mb-4">{tagError}</p>
+            <div className="flex items-center gap-2">
+              <Button variant="default" onClick={loadTagPrompts} className="touch-manipulation">
+                {t('common:buttons.tryAgain')}
+              </Button>
+              <Link to="/" className="text-sm underline">
+                {t('library:backToHome')}
+              </Link>
+            </div>
+          </div>
+        ) : tagPrompts.length === 0 ? (
+          <div className="view-transition flex flex-col items-center justify-center h-full text-muted-foreground p-8">
+            <Hash className="w-16 h-16 mb-4 opacity-50" />
+            <h3 className="text-lg font-semibold mb-2 font-mono">{t('library:noPrompts')}</h3>
+            <p className="text-sm text-center">{t('library:noPromptsWithTag')}</p>
+          </div>
+        ) : (
+          <div className="view-transition grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 p-3 sm:p-4 md:p-6">
+            {tagPrompts.map((prompt) => (
+              <div
+                key={prompt.id}
+                onClick={() => handleTagCardClick(prompt)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    handleTagCardClick(prompt);
+                  }
+                }}
+                role="button"
+                tabIndex={0}
+                aria-label={t('library:openDetails', { title: prompt.title || t('prompt:untitled') })}
+                className="group relative bg-card border rounded-lg p-4 sm:p-6 transition-all duration-200 hover:shadow-lg hover:border-primary/50 touch-manipulation hover:bg-accent/10 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="w-3 h-3 rounded-full"
+                      style={{ backgroundColor: prompt.color || '#10b981' }}
+                    />
+                    <FileText className="w-4 h-4 text-muted-foreground" />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {prompt.is_public ? (
+                      <div className="flex items-center gap-1 text-primary">
+                        <Globe className="w-4 h-4" />
+                        <span className="text-xs font-mono">{t('common:labels.public')}</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1 text-muted-foreground">
+                        <Lock className="w-4 h-4" />
+                        <span className="text-xs font-mono">{t('common:labels.private')}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <h3 className="font-bold text-lg mb-2 line-clamp-2 font-mono group-hover:text-primary transition-colors">
+                  {prompt.title || t('prompt:untitled')}
+                </h3>
+
+                {prompt.description && (
+                  <p className="text-sm text-muted-foreground mb-4 line-clamp-3 font-mono leading-relaxed">
+                    {prompt.description}
+                  </p>
+                )}
+
+                {prompt.tags && prompt.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mb-4">
+                    {prompt.tags.slice(0, 3).map((tag) => (
+                      <Link key={tag.id} to={`/tags/${encodeURIComponent(tag.name)}`}>
+                        <Badge
+                          variant="secondary"
+                          className="text-xs bg-prompedia-green-500/20 text-prompedia-green-400 border border-prompedia-green-500/30 font-mono"
+                          style={{
+                            backgroundColor: `${tag.color}20`,
+                            color: tag.color,
+                            borderColor: `${tag.color}30`,
+                          }}
+                        >
+                          {tag.name}
+                        </Badge>
+                      </Link>
+                    ))}
+                    {prompt.tags.length > 3 && (
+                      <Badge variant="secondary" className="text-xs font-mono">
+                        +{prompt.tags.length - 3}
+                      </Badge>
+                    )}
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between pt-4 border-t border-border/50">
+                  <div className="text-xs text-muted-foreground font-mono">
+                    <div>
+                      {t('prompt:model')}: {prompt.model || t('library:unknownModel')}
+                    </div>
+                    <div>{prompt.is_featured ? t('common:labels.featured') : t('common:labels.standard')}</div>
+                  </div>
+
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={(event) => handleTagCopyUrl(event, prompt.id)}
+                      className="h-8 w-8 p-0 hover:bg-primary/20"
+                      title={t('library:copyUrl')}
+                      aria-label={t('library:copyUrl')}
+                    >
+                      <LinkIcon className="w-3 h-3" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={(event) => handleTagCopy(event, prompt)}
+                      className="h-8 w-8 p-0 hover:bg-primary/20"
+                      title={t('library:copyContentToClipboard')}
+                      aria-label={t('library:copyContentToClipboard')}
+                    >
+                      <Copy className="w-3 h-3" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={(event) => handleTagUse(event, prompt)}
+                      className="h-8 w-8 p-0 hover:bg-primary/20"
+                      title={t('library:useThisPrompt')}
+                      aria-label={t('library:useThisPrompt')}
+                    >
+                      <Download className="w-3 h-3" />
+                    </Button>
+                    <Link
+                      to={`/p/${prompt.id}`}
+                      onClick={(event) => event.stopPropagation()}
+                      aria-label={t('library:viewDetails', { title: prompt.title || t('prompt:untitled') })}
+                      className="text-xs font-mono px-2 py-1 rounded hover:bg-primary/20"
+                    >
+                      {t('common:buttons.view')}
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <PromptDetailModal
+        prompt={selectedTagPrompt}
+        isOpen={isTagModalOpen}
+        onClose={handleCloseTagModal}
+        onUse={handleUsePromptFromModal}
+        onCopy={handleCopyPromptFromModal}
+      />
+    </div>
+  );
+
+  const renderDefaultContent = () => (
+    <div key={contentViewKey} className="flex h-full flex-col">
+      {isMobile && (
+        <div className="md:hidden border-b border-border bg-card flex-shrink-0 px-4 py-3 flex items-center gap-3 z-10">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setMobileSidebarOpen(true)}
+            className="h-9 w-9 touch-manipulation"
+            aria-label={t('common:labels.openMenu')}
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+          <div className="flex-1">
+            <h1 className="text-sm font-semibold font-mono">Prompedia AI</h1>
+          </div>
+        </div>
+      )}
+
+      <div className="flex-1 view-transition w-full h-full">
+        {showEditor ? (
+          <PromptEditor
+            currentPrompt={currentPrompt}
+            onPromptChange={handlePromptChange}
+            onDeletePrompt={handleDeletePrompt}
+            onNewPrompt={handleNewPrompt}
+            isFocusMode={isFocusMode}
+            onToggleFocus={handleToggleFocus}
+            user={user}
+          />
+        ) : activeView === 'my-library' ? (
+          <MyLibrary
+            key="my-library"
+            prompts={myPromptsWithTags}
+            onSelectPrompt={handleSelectPrompt}
+            onEditPrompt={handleEditPrompt}
+            onDeletePrompt={handleDeletePrompt}
+            onCopyPrompt={handleCopyPrompt}
+            currentPromptId={currentPrompt?.id}
+          />
+        ) : (
+          <PublicLibrary
+            key="public-library"
+            prompts={publicPromptsWithTags}
+            onSelectPrompt={handleSelectPrompt}
+            onUsePrompt={handleUsePrompt}
+            currentPromptId={currentPrompt?.id}
+          />
+        )}
+      </div>
+    </div>
+  );
 
   const checkAuth = useCallback(async () => {
     try {
@@ -401,6 +830,12 @@ const AppPage = () => {
       setShowEditor(false);
       setCurrentPrompt(null);
       storage.clearCurrentPrompt();
+      setIsTagModalOpen(false);
+      setSelectedTagPrompt(null);
+
+      if (isTagView) {
+        navigate('/', { replace: false, state: { targetView: view } });
+      }
     } catch (error) {
       if (import.meta.env.DEV) {
         console.error('Failed to change view:', error);
@@ -464,6 +899,12 @@ const AppPage = () => {
     // Clear any previous prompt data from storage
     storage.clearCurrentPrompt();
     storage.setCurrentPrompt(newPrompt.id);
+    setIsTagModalOpen(false);
+    setSelectedTagPrompt(null);
+
+    if (isTagView) {
+      navigate('/', { replace: false, state: { openPlayground: true } });
+    }
   };
 
   const handleLogout = async () => {
@@ -545,7 +986,7 @@ const AppPage = () => {
             onLogout={handleLogout}
             onLogin={handleLogin}
             user={user}
-            isPlaygroundActive={showEditor}
+            isPlaygroundActive={showEditor && !isTagView}
             isFocusMode={isFocusMode}
             mobileSidebarOpen={undefined}
             setMobileSidebarOpen={undefined}
@@ -562,7 +1003,7 @@ const AppPage = () => {
           onLogout={handleLogout}
           onLogin={handleLoginWithMobile}
           user={user}
-          isPlaygroundActive={showEditor}
+          isPlaygroundActive={showEditor && !isTagView}
           isFocusMode={isFocusMode}
           mobileSidebarOpen={mobileSidebarOpen}
           setMobileSidebarOpen={setMobileSidebarOpen}
@@ -571,60 +1012,8 @@ const AppPage = () => {
 
       {/* Main Content Area */}
       <div className={`flex-1 flex flex-col min-w-0 overflow-hidden ${isMobile ? 'h-screen' : ''} ${isInitializing ? 'opacity-0' : 'opacity-100 view-transition'}`}>
-        {/* Mobile Hamburger Menu Button */}
-        {isMobile && (
-          <div className="md:hidden border-b border-border bg-card flex-shrink-0 px-4 py-3 flex items-center gap-3 z-10">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setMobileSidebarOpen(true)}
-              className="h-9 w-9 touch-manipulation"
-              aria-label={t('common:labels.openMenu')}
-            >
-              <Menu className="h-5 w-5" />
-            </Button>
-            <div className="flex-1">
-              <h1 className="text-sm font-semibold font-mono">Prompedia AI</h1>
-            </div>
-          </div>
-        )}
-
         <ErrorBoundary>
-          <div key={`${showEditor}-${activeView}`} className="view-transition w-full h-full">
-            {showEditor ? (
-              <PromptEditor
-                currentPrompt={currentPrompt}
-                onPromptChange={handlePromptChange}
-                onDeletePrompt={handleDeletePrompt}
-                onNewPrompt={handleNewPrompt}
-                isFocusMode={isFocusMode}
-                onToggleFocus={handleToggleFocus}
-                user={user}
-              />
-            ) : (
-              <>
-                {activeView === 'my-library' ? (
-                  <MyLibrary
-                    key="my-library"
-                    prompts={myPromptsWithTags}
-                    onSelectPrompt={handleSelectPrompt}
-                    onEditPrompt={handleEditPrompt}
-                    onDeletePrompt={handleDeletePrompt}
-                    onCopyPrompt={handleCopyPrompt}
-                    currentPromptId={currentPrompt?.id}
-                  />
-                ) : (
-                  <PublicLibrary
-                    key="public-library"
-                    prompts={publicPromptsWithTags}
-                    onSelectPrompt={handleSelectPrompt}
-                    onUsePrompt={handleUsePrompt}
-                    currentPromptId={currentPrompt?.id}
-                  />
-                )}
-              </>
-            )}
-          </div>
+          {isTagView ? renderTagContent() : renderDefaultContent()}
         </ErrorBoundary>
       </div>
 
