@@ -83,6 +83,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "ai_usage_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "guest_sessions"
+            referencedColumns: ["session_id"]
+          },
+          {
             foreignKeyName: "ai_usage_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
