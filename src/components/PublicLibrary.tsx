@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatNumber } from '@/lib/i18n-formatting';
 import { Prompt, Tag } from '@/lib/storage';
@@ -39,10 +39,11 @@ const PublicLibrary = ({
   const [promptsWithTags, setPromptsWithTags] = useState<PromptWithTags[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoadingTags, setIsLoadingTags] = useState(false);
+  const prevPromptsRef = useRef<PromptWithTags[]>([]);
 
   // Prompt public sudah difilter di App.tsx dan diteruskan sebagai props
 
-  const loadPublicPromptsWithTags = useCallback(async () => {
+  const loadPublicPromptsWithTags = useCallback(async (skipLoadingState = false) => {
     if (prompts.length === 0) {
       setPromptsWithTags([]);
       setAllTags([]);
@@ -50,7 +51,9 @@ const PublicLibrary = ({
       return;
     }
 
-    setIsLoadingTags(true);
+    if (!skipLoadingState) {
+      setIsLoadingTags(true);
+    }
     try {
       // Batch load all tags in a single query instead of N queries
       const promptIds = prompts.map(p => p.id);
@@ -75,15 +78,79 @@ const PublicLibrary = ({
       setPromptsWithTags(prompts.map(p => ({ ...p, tags: [] })));
       setAllTags([]);
     } finally {
-      setIsLoadingTags(false);
+      if (!skipLoadingState) {
+        setIsLoadingTags(false);
+      }
     }
   }, [prompts]);
 
-  // Memuat tag untuk prompt public
+  // Optimistic update: sync promptsWithTags dengan prompts prop
+  // Jika prompt dihapus, langsung filter tanpa reload tags
+  // Jika prompt ditambahkan, baru reload tags
   useEffect(() => {
-    loadPublicPromptsWithTags();
-    trackEvent('view_public_library');
-  }, [loadPublicPromptsWithTags]);
+    const prevPrompts = prevPromptsRef.current;
+    const prevPromptIds = new Set(prevPrompts.map(p => p.id));
+    const newPromptIds = new Set(prompts.map(p => p.id));
+    
+    // Skip jika prompts tidak berubah
+    if (prevPrompts.length === prompts.length && 
+        prevPrompts.every((p, i) => p.id === prompts[i]?.id)) {
+      return;
+    }
+    
+    // Jika initial load (prevPrompts kosong), reload tags
+    if (prevPrompts.length === 0 && prompts.length > 0) {
+      prevPromptsRef.current = prompts;
+      loadPublicPromptsWithTags();
+      trackEvent('view_public_library');
+      return;
+    }
+    
+    // Jika ada prompt yang dihapus (prompts.length < prevPrompts.length)
+    if (prompts.length < prevPrompts.length) {
+      // Optimistic update: langsung filter tanpa loading state
+      setPromptsWithTags(prev => {
+        const filtered = prev.filter(p => newPromptIds.has(p.id));
+        
+        // Update allTags berdasarkan tags yang masih ada
+        const tagSet = new Set<string>();
+        filtered.forEach(prompt => {
+          prompt.tags.forEach(tag => tagSet.add(tag.name));
+        });
+        setAllTags(Array.from(tagSet));
+        
+        return filtered;
+      });
+      prevPromptsRef.current = prompts;
+      return;
+    }
+    
+    // Jika ada prompt baru yang ditambahkan, reload tags
+    const hasNewPrompts = prompts.some(p => !prevPromptIds.has(p.id));
+    if (hasNewPrompts) {
+      prevPromptsRef.current = prompts;
+      loadPublicPromptsWithTags();
+      return;
+    }
+    
+    // Jika hanya update (misalnya edit), sync tanpa reload tags
+    setPromptsWithTags(prev => {
+      const updated = prev.map(existing => {
+        const updatedPrompt = prompts.find(p => p.id === existing.id);
+        if (updatedPrompt) {
+          return {
+            ...updatedPrompt,
+            tags: existing.tags // Keep existing tags
+          };
+        }
+        return existing;
+      });
+      return updated;
+    });
+    
+    // Update ref untuk next comparison
+    prevPromptsRef.current = prompts;
+  }, [prompts, loadPublicPromptsWithTags]);
 
   // allTags sudah dimuat di state melalui useEffect
 

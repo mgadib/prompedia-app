@@ -602,8 +602,8 @@ const AppPage = () => {
         setCurrentPrompt(null);
         setShowEditor(false);
       }
-      // Memuat ulang prompt setelah penghapusan berhasil
-      await loadAllPrompts();
+      // Update state langsung tanpa reload untuk menghindari flicker
+      setAllPrompts(prevPrompts => prevPrompts.filter(p => p.id !== promptId));
     } catch (error) {
       if (import.meta.env.DEV) {
         console.error('Failed to delete prompt:', error);
