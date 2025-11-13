@@ -228,13 +228,11 @@ const PublicPromptDetail = () => {
         )}
 
         {/* Metadata */}
-        <div className="flex flex-wrap gap-4 mb-6 text-sm text-muted-foreground font-mono">
-          {prompt.model_id && <span>{t('prompt:model')}: {prompt.model_id}</span>}
-          {prompt.mode_id && <span>{t('prompt:mode')}: {prompt.mode_id}</span>}
-          {prompt.is_featured && (
+        {prompt.is_featured && (
+          <div className="flex flex-wrap gap-4 mb-6 text-sm text-muted-foreground font-mono">
             <Badge variant="outline" className="font-mono">{t('common:labels.featured')}</Badge>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Prompt Content */}
         <div className="bg-card border border-border rounded-lg p-6 mb-6">

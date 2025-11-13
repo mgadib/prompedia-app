@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Copy, Download, FileText, Globe, Hash, Link as LinkIcon, Lock, Menu } from 'lucide-react';
+import { ArrowLeft, Hash, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Sidebar from '@/components/Sidebar';
 import PromptEditor from '@/components/PromptEditor';
 import MyLibrary from '@/components/MyLibrary';
 import PublicLibrary from '@/components/PublicLibrary';
 import AuthModal from '@/components/AuthModal';
+import PromptCard from '@/components/PromptCard';
 import { storage, Prompt, Tag } from '@/lib/storage';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
@@ -15,7 +16,6 @@ interface PromptWithTags extends Prompt {
   tags: Tag[];
 }
 import { storageManager } from '@/lib/storage-manager';
-import { Badge } from '@/components/ui/badge';
 import SEO from '@/components/SEO';
 import { AVAILABLE_MODELS } from '@/lib/models';
 import { THINKING_MODES } from '@/lib/modes';
@@ -138,8 +138,7 @@ const AppPage = () => {
   };
 
   const handleTagCopy = useCallback(
-    async (event: React.MouseEvent, prompt: PromptWithTags) => {
-      event.stopPropagation();
+    async (prompt: PromptWithTags) => {
       try {
         await navigator.clipboard.writeText(prompt.content);
         showSuccessToast('success:prompt.contentCopied');
@@ -155,8 +154,7 @@ const AppPage = () => {
   );
 
   const handleTagCopyUrl = useCallback(
-    async (event: React.MouseEvent, promptId: string) => {
-      event.stopPropagation();
+    async (promptId: string) => {
       try {
         const base = ENV.SITE_URL || window.location.origin;
         const url = `${base}/p/${promptId}`;
@@ -174,13 +172,12 @@ const AppPage = () => {
   );
 
   const handleTagUse = useCallback(
-    (event: React.MouseEvent, prompt: PromptWithTags) => {
-      event.stopPropagation();
+    (prompt: PromptWithTags) => {
       navigate(`/?use=${encodeURIComponent(prompt.id)}`);
       showSuccessToast('success:prompt.loadedForEditing');
       trackEvent('use_prompt', { prompt_id: prompt.id }, user?.id ?? undefined);
     },
-    [navigate, t, user?.id]
+    [navigate, user?.id]
   );
 
   const handleUsePromptFromModal = useCallback(
@@ -298,128 +295,15 @@ const AppPage = () => {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 p-3 sm:p-4 md:p-6">
             {tagPrompts.map((prompt) => (
-              <div
+              <PromptCard
                 key={prompt.id}
-                onClick={() => handleTagCardClick(prompt)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault();
-                    handleTagCardClick(prompt);
-                  }
-                }}
-                role="button"
-                tabIndex={0}
-                aria-label={t('library:openDetails', { title: prompt.title || t('prompt:untitled') })}
-                className="group relative bg-card border rounded-lg p-4 sm:p-6 hover:shadow-lg hover:border-primary/50 touch-manipulation hover:bg-accent/10 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <div
-                      className="w-3 h-3 rounded-full"
-                      style={{ backgroundColor: prompt.color || '#10b981' }}
-                    />
-                    <FileText className="w-4 h-4 text-muted-foreground" />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {prompt.is_public ? (
-                      <div className="flex items-center gap-1 text-primary">
-                        <Globe className="w-4 h-4" />
-                        <span className="text-xs font-mono">{t('common:labels.public')}</span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-1 text-muted-foreground">
-                        <Lock className="w-4 h-4" />
-                        <span className="text-xs font-mono">{t('common:labels.private')}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <h3 className="font-bold text-lg mb-2 line-clamp-2 font-mono group-hover:text-primary transition-colors">
-                  {prompt.title || t('prompt:untitled')}
-                </h3>
-
-                {prompt.description && (
-                  <p className="text-sm text-muted-foreground mb-4 line-clamp-3 font-mono leading-relaxed">
-                    {prompt.description}
-                  </p>
-                )}
-
-                {prompt.tags && prompt.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mb-4">
-                    {prompt.tags.slice(0, 3).map((tag) => (
-                      <Link key={tag.id} to={`/tags/${encodeURIComponent(tag.name)}`}>
-                        <Badge
-                          variant="secondary"
-                          className="text-xs bg-prompedia-green-500/20 text-prompedia-green-400 border border-prompedia-green-500/30 font-mono"
-                          style={{
-                            backgroundColor: `${tag.color}20`,
-                            color: tag.color,
-                            borderColor: `${tag.color}30`,
-                          }}
-                        >
-                          {tag.name}
-                        </Badge>
-                      </Link>
-                    ))}
-                    {prompt.tags.length > 3 && (
-                      <Badge variant="secondary" className="text-xs font-mono">
-                        +{prompt.tags.length - 3}
-                      </Badge>
-                    )}
-                  </div>
-                )}
-
-                <div className="flex items-center justify-between pt-4 border-t border-border/50">
-                  <div className="text-xs text-muted-foreground font-mono">
-                    <div>
-                      {t('prompt:model')}: {prompt.model || t('library:unknownModel')}
-                    </div>
-                    <div>{prompt.is_featured ? t('common:labels.featured') : t('common:labels.standard')}</div>
-                  </div>
-
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={(event) => handleTagCopyUrl(event, prompt.id)}
-                      className="h-8 w-8 p-0 hover:bg-primary/20"
-                      title={t('library:copyUrl')}
-                      aria-label={t('library:copyUrl')}
-                    >
-                      <LinkIcon className="w-3 h-3" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={(event) => handleTagCopy(event, prompt)}
-                      className="h-8 w-8 p-0 hover:bg-primary/20"
-                      title={t('library:copyContentToClipboard')}
-                      aria-label={t('library:copyContentToClipboard')}
-                    >
-                      <Copy className="w-3 h-3" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={(event) => handleTagUse(event, prompt)}
-                      className="h-8 w-8 p-0 hover:bg-primary/20"
-                      title={t('library:useThisPrompt')}
-                      aria-label={t('library:useThisPrompt')}
-                    >
-                      <Download className="w-3 h-3" />
-                    </Button>
-                    <Link
-                      to={`/p/${prompt.id}`}
-                      onClick={(event) => event.stopPropagation()}
-                      aria-label={t('library:viewDetails', { title: prompt.title || t('prompt:untitled') })}
-                      className="text-xs font-mono px-2 py-1 rounded hover:bg-primary/20"
-                    >
-                      {t('common:buttons.view')}
-                    </Link>
-                  </div>
-                </div>
-              </div>
+                prompt={prompt}
+                variant="tag-view"
+                onCardClick={handleTagCardClick}
+                onCopy={handleTagCopy}
+                onCopyUrl={handleTagCopyUrl}
+                onUse={handleTagUse}
+              />
             ))}
           </div>
         )}
@@ -778,7 +662,10 @@ const AppPage = () => {
       };
 
       await storageManager.savePrompt(copiedPrompt);
-      handlePromptChange(copiedPrompt);
+      
+      // Update allPrompts dengan prompt yang baru di-copy tanpa mengubah currentPrompt atau membuka editor
+      setAllPrompts(prevPrompts => [...prevPrompts, copiedPrompt]);
+      
       showSuccessToast('success:prompt.copiedSuccessfully');
 
       // Menambah counter penggunaan setelah salinan berhasil

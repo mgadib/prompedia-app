@@ -5,11 +5,12 @@ import { Prompt, Tag } from '@/lib/storage';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { FileText, Lock, Globe, Edit, Trash2, Search, Filter, Copy } from 'lucide-react';
+import { FileText, Search, Filter } from 'lucide-react';
 import { showSuccessToast, showErrorToast } from '@/lib/toast-helpers';
 import { SupabaseService } from '@/lib/supabase-service';
 import { TagService } from '@/lib/tag-service';
 import PromptDetailModal from './PromptDetailModal';
+import PromptCard from './PromptCard';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -39,7 +40,6 @@ const MyLibrary = ({
   onSelectPrompt,
   onEditPrompt,
   onDeletePrompt,
-  onCopyPrompt,
   currentPromptId
 }: MyLibraryProps) => {
   const { t } = useTranslation();
@@ -97,8 +97,7 @@ const MyLibrary = ({
 
   // Memfilter prompt berdasarkan pencarian dan tag
   const filteredPrompts = promptsWithTags.filter(prompt => {
-    const matchesSearch = prompt.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (prompt.description?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
+    const matchesSearch = prompt.title.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesTag = !selectedTag || prompt.tags.some(tag => tag.name === selectedTag);
     return matchesSearch && matchesTag;
   });
@@ -129,21 +128,22 @@ const MyLibrary = ({
     setPromptToDelete(null);
   };
 
-  const handleEdit = (e: React.MouseEvent, prompt: PromptWithTags) => {
-    e.stopPropagation();
-    onEditPrompt(prompt);
-  };
-
-  const handleCopy = (e: React.MouseEvent, prompt: PromptWithTags) => {
-    e.stopPropagation();
-    if (onCopyPrompt) {
-      onCopyPrompt(prompt);
-    }
-  };
-
   const handleCardClick = (prompt: PromptWithTags) => {
     setSelectedPrompt(prompt);
     setIsModalOpen(true);
+  };
+
+  const handleEdit = (prompt: PromptWithTags) => {
+    onEditPrompt(prompt);
+  };
+
+  const handleDelete = (prompt: PromptWithTags) => {
+    handleDeleteClick(prompt);
+  };
+
+  const handleCopy = (prompt: PromptWithTags) => {
+    navigator.clipboard.writeText(prompt.content);
+    showSuccessToast('success:prompt.contentCopied');
   };
 
   const handleCloseModal = () => {
@@ -299,140 +299,16 @@ const MyLibrary = ({
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 p-3 sm:p-4 md:p-6">
             {filteredPrompts.map((prompt) => (
-              <div
+              <PromptCard
                 key={prompt.id}
-                onClick={() => handleCardClick(prompt)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    handleCardClick(prompt);
-                  }
-                }}
-                role="button"
-                tabIndex={0}
-                aria-label={t('library:openDetails', { title: prompt.title || t('prompt:untitled') })}
-                className={`group relative bg-card border rounded-lg p-4 sm:p-6 cursor-pointer hover:shadow-lg hover:border-primary/50 touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
-                  currentPromptId === prompt.id
-                    ? 'border-primary bg-accent/20 shadow-md'
-                    : 'border-border hover:bg-accent/10'
-                }`}
-              >
-                {/* Header with status indicator */}
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <div
-                      className="w-3 h-3 rounded-full"
-                      style={{ backgroundColor: prompt.color || '#10b981' }}
-                    />
-                    <FileText className="w-4 h-4 text-muted-foreground" />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {prompt.is_public ? (
-                      <div className="flex items-center gap-1 text-primary">
-                        <Globe className="w-4 h-4" />
-                        <span className="text-xs font-mono">{t('common:labels.public')}</span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-1 text-muted-foreground">
-                        <Lock className="w-4 h-4" />
-                        <span className="text-xs font-mono">{t('common:labels.private')}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Title */}
-                <h3 className="font-bold text-lg mb-2 line-clamp-2 font-mono group-hover:text-primary">
-                  {prompt.title || t('prompt:untitled')}
-                </h3>
-
-                {/* Description */}
-                {prompt.description && (
-                  <p className="text-sm text-muted-foreground mb-4 line-clamp-3 font-mono leading-relaxed">
-                    {prompt.description}
-                  </p>
-                )}
-
-                {/* Tags */}
-                {prompt.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mb-4">
-                    {prompt.tags.slice(0, 3).map(tag => (
-                      <a
-                        key={tag.id}
-                        href={`/tags/${encodeURIComponent(tag.name)}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                        }}
-                        className="inline-block"
-                      >
-                        <Badge
-                          variant="secondary"
-                          className="text-xs bg-prompedia-green-500/20 text-prompedia-green-400 border border-prompedia-green-500/30 font-mono hover:bg-prompedia-green-500/30 cursor-pointer"
-                          style={{
-                            backgroundColor: `${tag.color}20`,
-                            color: tag.color,
-                            borderColor: `${tag.color}30`
-                          }}
-                        >
-                          {tag.name}
-                        </Badge>
-                      </a>
-                    ))}
-                    {prompt.tags.length > 3 && (
-                      <Badge variant="secondary" className="text-xs font-mono">
-                        +{prompt.tags.length - 3}
-                      </Badge>
-                    )}
-                  </div>
-                )}
-
-                {/* Footer with metadata */}
-                <div className="flex items-center justify-between pt-4 border-t border-border/50">
-                  <div className="text-xs text-muted-foreground font-mono">
-                    <div>{prompt.model || t('library:unknownModel')}</div>
-                    <div>{prompt.is_featured ? t('common:labels.featured') : t('common:labels.standard')}</div>
-                  </div>
-                  
-                  {/* Action buttons */}
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
-                    {onCopyPrompt && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={(e) => handleCopy(e, prompt)}
-                        className="h-8 w-8 p-0 hover:bg-blue-500/20 hover:text-blue-500"
-                        title={t('library:copyPrompt')}
-                        aria-label={t('library:copyPrompt')}
-                      >
-                        <Copy className="w-3 h-3" />
-                      </Button>
-                    )}
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={(e) => handleEdit(e, prompt)}
-                      className="h-8 w-8 p-0 hover:bg-primary/20"
-                        title={t('library:editPrompt')}
-                        aria-label={t('library:editPrompt')}
-                    >
-                      <Edit className="w-3 h-3" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteClick(prompt);
-                      }}
-                      className="h-8 w-8 p-0 hover:bg-destructive/20 hover:text-destructive"
-                        title={t('library:deletePrompt')}
-                        aria-label={t('library:deletePrompt')}
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
+                prompt={prompt}
+                variant="my-library"
+                currentPromptId={currentPromptId}
+                onCardClick={handleCardClick}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onCopy={handleCopy}
+              />
             ))}
           </div>
         )}

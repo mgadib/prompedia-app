@@ -88,8 +88,9 @@ const PromptDetailModal = ({
             {onUse && (
               <Button
                 size={isMobile ? "default" : "sm"}
+                variant="outline"
                 onClick={handleUse}
-                className={`font-mono bg-primary hover:bg-primary/90 touch-manipulation ${isMobile ? 'flex-1 min-h-[44px]' : ''}`}
+                className={`font-mono touch-manipulation ${isMobile ? 'flex-1 min-h-[44px]' : ''}`}
               >
                 {isMobile ? t('common:buttons.use') : t('prompt:usePrompt')}
               </Button>
@@ -123,8 +124,6 @@ const PromptDetailModal = ({
               <div className={`flex ${isMobile ? 'flex-col gap-2' : 'items-center justify-between'} text-xs text-muted-foreground font-mono`}>
                 <div className={`flex ${isMobile ? 'flex-wrap gap-2' : 'items-center gap-4'}`}>
                   <span>{t('common:status.status')}: {prompt.is_featured ? t('common:labels.featured') : t('common:labels.standard')}</span>
-                  {prompt.mode && <span>{t('common:status.mode')}: {prompt.mode}</span>}
-                  {prompt.model && <span>{t('common:status.model')}: {prompt.model}</span>}
                 </div>
                 <div className="flex items-center gap-2">
                   {prompt.is_public ? (
