@@ -171,7 +171,7 @@ const TagInput = ({ selectedTagNames, onChange, user }: TagInputProps) => {
 
         {/* Tag Suggestions */}
         {showSuggestions && filteredSuggestions.length > 0 && selectedTagNames.length < 3 && (
-          <div className={`absolute top-full left-0 right-0 z-10 mt-1 bg-card border border-border rounded-md shadow-lg max-h-32 overflow-y-auto ${isMobile ? 'max-h-40' : ''}`}>
+          <div className={`absolute top-full left-0 right-0 z-10 mt-1 bg-card border border-border rounded-md shadow-lg max-h-32 overflow-y-auto custom-scrollbar ${isMobile ? 'max-h-40' : ''}`}>
             {filteredSuggestions.slice(0, 5).map(tag => (
               <button
                 key={tag}

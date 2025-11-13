@@ -29,6 +29,7 @@
   "seoTitle": "Prompt Detail",
   "seoDescription": "Explore this public prompt on Prompedia.",
   "copySuffix": " (Copy)",
-  "duplicatedTitle": "Duplicated Prompt"
+  "duplicatedTitle": "Duplicated Prompt",
+  "createdBy": "Created by"
 }
 

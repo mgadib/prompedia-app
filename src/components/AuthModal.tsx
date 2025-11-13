@@ -79,7 +79,7 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={`${isMobile ? 'max-w-[calc(100vw-2rem)] mx-4' : 'sm:max-w-md'} max-h-[90vh] overflow-y-auto`}>
+      <DialogContent className={`${isMobile ? 'max-w-[calc(100vw-2rem)] mx-4' : 'sm:max-w-md'} max-h-[90vh] overflow-y-auto custom-scrollbar`}>
         <DialogHeader>
           <div className={`flex items-center justify-center gap-2 ${isMobile ? 'mb-3' : 'mb-4'}`}>
             <Sparkles className={`${isMobile ? 'w-5 h-5' : 'w-6 h-6'} text-primary`} />

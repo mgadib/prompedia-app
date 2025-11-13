@@ -237,7 +237,7 @@ const MyLibrary = ({
             </div>
           </div>
         </div>
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto custom-scrollbar">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 p-3 sm:p-4 md:p-6">
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="bg-card border rounded-lg p-4 sm:p-6 space-y-4">
@@ -358,7 +358,7 @@ const MyLibrary = ({
       </div>
 
       {/* Prompts Grid */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto custom-scrollbar">
         {filteredPrompts.length === 0 ? (
           <div className="flex items-center justify-center h-full text-muted-foreground">
             <p className="text-sm font-mono">{t('library:noMatches')}</p>

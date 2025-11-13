@@ -6,7 +6,7 @@ import { SupabaseService } from '@/lib/supabase-service';
 import { TagService } from '@/lib/tag-service';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Copy, ArrowLeft, Globe, Download } from 'lucide-react';
+import { Copy, ArrowLeft, Globe } from 'lucide-react';
 import { showSuccessToast } from '@/lib/toast-helpers';
 import SEO from '@/components/SEO';
 import { trackEvent } from '@/lib/analytics';
@@ -19,6 +19,7 @@ const PublicPromptDetail = () => {
   const [tags, setTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [creator, setCreator] = useState<{ username?: string; display_name?: string } | null>(null);
 
   useEffect(() => {
     const loadPrompt = async () => {
@@ -50,6 +51,17 @@ const PublicPromptDetail = () => {
 
         setPrompt(publicPrompt);
 
+        // Extract creator info from prompt response
+        if (publicPrompt && typeof publicPrompt === 'object' && 'users' in publicPrompt) {
+          const userData = (publicPrompt as any).users;
+          if (userData && typeof userData === 'object') {
+            setCreator({
+              username: userData.username || null,
+              display_name: userData.display_name || null,
+            });
+          }
+        }
+
         // Memuat tag
         try {
           const promptTags = await TagService.getPromptTags(id);
@@ -76,25 +88,11 @@ const PublicPromptDetail = () => {
     }
   }, [loading, prompt, id]);
 
-  const handleCopyContent = () => {
-    if (prompt) {
-      navigator.clipboard.writeText(prompt.content);
-      showSuccessToast('success:prompt.contentCopied');
-      trackEvent('copy_prompt_content', { prompt_id: id });
-    }
-  };
-
   const handleCopyUrl = () => {
     const url = `https://prompedia.app/p/${id}`;
     navigator.clipboard.writeText(url);
     showSuccessToast('success:prompt.urlCopied');
     trackEvent('copy_prompt_url', { prompt_id: id });
-  };
-
-  const handleUsePrompt = () => {
-    // Navigasi ke halaman utama dengan ID prompt di URL
-    trackEvent('use_prompt', { prompt_id: id });
-    navigate(`/?prompt=${id}`);
   };
 
   if (loading) {
@@ -175,15 +173,6 @@ const PublicPromptDetail = () => {
               <Copy className="w-4 h-4 mr-2" />
               {t('library:copyUrl')}
             </Button>
-            <Button
-              variant="default"
-              size="sm"
-              onClick={handleUsePrompt}
-              className="font-mono"
-            >
-              <Download className="w-4 h-4 mr-2" />
-              {t('prompt:usePrompt')}
-            </Button>
           </div>
         </div>
       </header>
@@ -227,26 +216,25 @@ const PublicPromptDetail = () => {
           </div>
         )}
 
-        {/* Metadata */}
-        {prompt.is_featured && (
-          <div className="flex flex-wrap gap-4 mb-6 text-sm text-muted-foreground font-mono">
+        {/* Creator & Metadata */}
+        <div className="flex flex-wrap items-center gap-4 mb-6 text-sm font-mono">
+          {creator && (creator.username || creator.display_name) && (
+            <div className="flex items-center gap-1">
+              <span className="text-sm">👤</span>
+              <span className="text-xs font-semibold text-primary font-mono">
+                @{creator.display_name || creator.username || 'anonymous'}
+              </span>
+            </div>
+          )}
+          {prompt.is_featured && (
             <Badge variant="outline" className="font-mono">{t('common:labels.featured')}</Badge>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Prompt Content */}
         <div className="bg-card border border-border rounded-lg p-6 mb-6">
-          <div className="flex items-center justify-between mb-4">
+          <div className="mb-4">
             <h2 className="text-lg font-semibold text-foreground font-mono">{t('prompt:promptContent')}</h2>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleCopyContent}
-              className="font-mono"
-            >
-              <Copy className="w-4 h-4 mr-2" />
-              {t('common:buttons.copy')}
-            </Button>
           </div>
           <div className="bg-muted/20 p-4 rounded-lg">
             <pre className="text-sm font-mono whitespace-pre-wrap text-foreground leading-relaxed">
@@ -254,29 +242,18 @@ const PublicPromptDetail = () => {
             </pre>
           </div>
         </div>
-
-        {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-3">
-          <Button
-            variant="default"
-            size="lg"
-            onClick={handleUsePrompt}
-            className="flex-1 font-mono"
-          >
-            <Download className="w-5 h-5 mr-2" />
-            {t('prompt:useThisPrompt')}
-          </Button>
-          <Button
-            variant="outline"
-            size="lg"
-            onClick={handleCopyContent}
-            className="flex-1 font-mono"
-          >
-            <Copy className="w-5 h-5 mr-2" />
-            {t('prompt:copyContent')}
-          </Button>
-        </div>
       </main>
+
+      {/* Footer */}
+      <footer className="border-t border-border bg-card/50 mt-2">
+        <div className="container max-w-4xl mx-auto px-4 py-6">
+          <div className="text-center">
+            <p className="text-sm font-bold text-primary font-mono">
+              prompedia.app — Prompt Engineering Lab
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };

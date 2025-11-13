@@ -21,17 +21,6 @@ interface PromptCardProps {
   onUse?: (prompt: PromptWithTags) => void;
 }
 
-// Data mock untuk demonstrasi - di aplikasi nyata ini akan datang dari API
-const getMockUserData = (userId: string) => {
-  const users = {
-    'user1': { username: 'alex_dev', avatar: '👨‍💻' },
-    'user2': { username: 'sarah_writer', avatar: '✍️' },
-    'user3': { username: 'mike_designer', avatar: '🎨' },
-    'user4': { username: 'emma_analyst', avatar: '📊' },
-  };
-  return users[userId as keyof typeof users] || { username: 'anonymous', avatar: '👤' };
-};
-
 const PromptCard = ({
   prompt,
   variant,
@@ -86,9 +75,36 @@ const PromptCard = ({
     }
   };
 
-  const userData = variant === 'public-library' || variant === 'tag-view' 
-    ? getMockUserData(prompt.user_id || '') 
-    : null;
+  // Extract user data from prompt object (from Supabase join)
+  const getUserData = () => {
+    if (variant !== 'public-library' && variant !== 'tag-view') {
+      return null;
+    }
+
+    // Extract user data from prompt response (similar to PublicPromptDetail.tsx)
+    if (prompt && typeof prompt === 'object' && 'users' in prompt) {
+      const userData = (prompt as any).users;
+      if (userData && typeof userData === 'object') {
+        const username = userData.username || 'anonymous';
+        // Use display_name if available, otherwise fallback to username
+        const displayName = userData.display_name || username;
+        return {
+          username,
+          displayName,
+          avatar: '👤', // Default avatar emoji
+        };
+      }
+    }
+
+    // Fallback if no user data available
+    return {
+      username: 'anonymous',
+      displayName: 'anonymous',
+      avatar: '👤',
+    };
+  };
+
+  const userData = getUserData();
 
   const isSelected = currentPromptId === prompt.id;
 
@@ -128,15 +144,12 @@ const PromptCard = ({
           
           {/* Creator info (only for public-library and tag-view) */}
           {(variant === 'public-library' || variant === 'tag-view') && userData && (
-            <>
-              <span className="text-muted-foreground">|</span>
-              <div className="flex items-center gap-1">
-                <span className="text-sm">{userData.avatar}</span>
-                <span className="text-xs font-semibold text-primary font-mono">
-                  @{userData.username}
-                </span>
-              </div>
-            </>
+            <div className="flex items-center gap-1">
+              <span className="text-sm">{userData.avatar}</span>
+              <span className="text-xs font-semibold text-primary font-mono">
+                @{userData.displayName}
+              </span>
+            </div>
           )}
         </div>
         

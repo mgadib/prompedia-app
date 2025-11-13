@@ -125,6 +125,30 @@ All colors MUST be HSL.
     background: hsl(var(--border) / 0.8);
   }
 
+  /* Global custom scrollbar styling - konsisten dengan tema aplikasi */
+  .custom-scrollbar {
+    /* Firefox */
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 4px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--border) / 0.8);
+  }
+
   .prompedia-accent {
     color: hsl(var(--prompedia-green));
   }

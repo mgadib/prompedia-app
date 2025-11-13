@@ -95,7 +95,7 @@ const Sidebar = ({
       </div>
 
       {/* Navigasi Utama */}
-      <nav className={`flex-1 space-y-0.5 overflow-y-auto ${isMobile ? 'p-3' : 'p-4'}`}>
+      <nav className={`flex-1 space-y-0.5 overflow-y-auto custom-scrollbar ${isMobile ? 'p-3' : 'p-4'}`}>
         <div className="mb-2 space-y-0.5">
           {/* Tombol Playground */}
           {onNewPrompt && (

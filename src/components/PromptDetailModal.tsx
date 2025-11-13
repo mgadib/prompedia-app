@@ -108,7 +108,7 @@ const PromptDetailModal = ({
         </div>
 
         {/* Content */}
-        <div className="flex-1 min-h-0 overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-border [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb:hover]:bg-border/80">
+        <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar">
           <div className={`${isMobile ? 'px-4 pt-3 pb-4' : 'px-6 pt-4 pb-6'} space-y-4`}>
             {/* Prompt Content */}
             <div>
