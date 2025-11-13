@@ -254,22 +254,22 @@ const AppPage = () => {
 
       <div className="flex-1 overflow-y-auto">
         {isTagLoading ? (
-          <div className="view-transition">
+          <div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 p-3 sm:p-4 md:p-6">
               {Array.from({ length: 6 }).map((_, index) => (
                 <div key={index} className="bg-card border rounded-lg p-4 sm:p-6 space-y-4">
                   <div className="flex justify-between">
-                    <div className="h-4 w-20 bg-muted animate-pulse rounded" />
-                    <div className="h-4 w-16 bg-muted animate-pulse rounded" />
+                    <div className="h-4 w-20 bg-muted rounded" />
+                    <div className="h-4 w-16 bg-muted rounded" />
                   </div>
-                  <div className="h-6 w-3/4 bg-muted animate-pulse rounded" />
+                  <div className="h-6 w-3/4 bg-muted rounded" />
                   <div className="space-y-2">
-                    <div className="h-4 w-full bg-muted animate-pulse rounded" />
-                    <div className="h-4 w-5/6 bg-muted animate-pulse rounded" />
+                    <div className="h-4 w-full bg-muted rounded" />
+                    <div className="h-4 w-5/6 bg-muted rounded" />
                   </div>
                   <div className="flex gap-2">
-                    <div className="h-6 w-16 bg-muted animate-pulse rounded" />
-                    <div className="h-6 w-20 bg-muted animate-pulse rounded" />
+                    <div className="h-6 w-16 bg-muted rounded" />
+                    <div className="h-6 w-20 bg-muted rounded" />
                   </div>
                 </div>
               ))}
@@ -290,13 +290,13 @@ const AppPage = () => {
             </div>
           </div>
         ) : tagPrompts.length === 0 ? (
-          <div className="view-transition flex flex-col items-center justify-center h-full text-muted-foreground p-8">
+          <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-8">
             <Hash className="w-16 h-16 mb-4 opacity-50" />
             <h3 className="text-lg font-semibold mb-2 font-mono">{t('library:noPrompts')}</h3>
             <p className="text-sm text-center">{t('library:noPromptsWithTag')}</p>
           </div>
         ) : (
-          <div className="view-transition grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 p-3 sm:p-4 md:p-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 p-3 sm:p-4 md:p-6">
             {tagPrompts.map((prompt) => (
               <div
                 key={prompt.id}
@@ -310,7 +310,7 @@ const AppPage = () => {
                 role="button"
                 tabIndex={0}
                 aria-label={t('library:openDetails', { title: prompt.title || t('prompt:untitled') })}
-                className="group relative bg-card border rounded-lg p-4 sm:p-6 transition-all duration-200 hover:shadow-lg hover:border-primary/50 touch-manipulation hover:bg-accent/10 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                className="group relative bg-card border rounded-lg p-4 sm:p-6 hover:shadow-lg hover:border-primary/50 touch-manipulation hover:bg-accent/10 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-2">
@@ -454,7 +454,7 @@ const AppPage = () => {
         </div>
       )}
 
-      <div className="flex-1 view-transition w-full h-full">
+      <div className="flex-1 w-full h-full">
         {showEditor ? (
           <PromptEditor
             currentPrompt={currentPrompt}
@@ -939,7 +939,7 @@ const AppPage = () => {
         <div className="flex flex-col items-center gap-4">
           <div className="relative">
             <div className="w-12 h-12 border-4 border-primary/20 rounded-full" />
-            <div className="absolute top-0 left-0 w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+            <div className="absolute top-0 left-0 w-12 h-12 border-4 border-primary border-t-transparent rounded-full" />
           </div>
           <div className="text-center">
             <p className="text-sm text-muted-foreground font-mono">Loading Prompedia...</p>
@@ -976,7 +976,7 @@ const AppPage = () => {
     <div className="flex h-screen bg-background overflow-hidden stable-layout">
       {/* Desktop Sidebar */}
       {!isMobile && (
-        <div className={`sidebar-transition hidden md:block ${isInitializing ? 'opacity-0' : 'opacity-100'}`}>
+        <div className={`hidden md:block ${isInitializing ? 'opacity-0' : 'opacity-100'}`}>
           <Sidebar
             activeView={activeView}
             onViewChange={handleViewChange}
@@ -1009,7 +1009,7 @@ const AppPage = () => {
       )}
 
       {/* Main Content Area */}
-      <div className={`flex-1 flex flex-col min-w-0 overflow-hidden ${isMobile ? 'h-screen' : ''} ${isInitializing ? 'opacity-0' : 'opacity-100 view-transition'}`}>
+      <div className={`flex-1 flex flex-col min-w-0 overflow-hidden ${isMobile ? 'h-screen' : ''} ${isInitializing ? 'opacity-0' : 'opacity-100'}`}>
         <ErrorBoundary>
           {isTagView ? renderTagContent() : renderDefaultContent()}
         </ErrorBoundary>

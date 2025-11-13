@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatDate, formatNumber } from '@/lib/i18n-formatting';
 import { Copy, Save, Share2, FileText, Trash2, ArrowLeft, ArrowRight, CheckCircle, Lock, Globe, Leaf, EyeOff } from 'lucide-react';
@@ -47,7 +47,35 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
   const [loadingAction, setLoadingAction] = useState<string>('');
   const [userCanUseAI, setUserCanUseAI] = useState(true);
   const isMobile = useIsMobile();
+  
+  // Cache untuk tag yang sudah dimuat (Map<promptId, Tag[]>)
+  const tagsCacheRef = useRef<Map<string, string[]>>(new Map());
 
+  // Memuat tag untuk sebuah prompt dengan caching
+  const loadPromptTags = useCallback(async (promptId: string) => {
+    // Check cache first
+    const cachedTags = tagsCacheRef.current.get(promptId);
+    if (cachedTags !== undefined) {
+      setSelectedTags(cachedTags);
+      return;
+    }
+
+    try {
+      const tags = await TagService.getPromptTags(promptId);
+      const tagNames = tags.map(tag => tag.name);
+      
+      // Store in cache
+      tagsCacheRef.current.set(promptId, tagNames);
+      setSelectedTags(tagNames);
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.error('Failed to load prompt tags:', error);
+      }
+      // Cache empty array to avoid repeated failed requests
+      tagsCacheRef.current.set(promptId, []);
+      setSelectedTags([]);
+    }
+  }, []);
 
   useEffect(() => {
     if (currentPrompt) {
@@ -71,7 +99,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       setModel(sanitizedPrompt.model);
       setMode(sanitizedPrompt.mode);
       
-      // Memuat tag yang sudah ada untuk prompt
+      // Memuat tag yang sudah ada untuk prompt (dengan cache)
       loadPromptTags(sanitizedPrompt.id);
 
       // Reset state hasil AI saat memuat prompt baru
@@ -91,20 +119,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       setAiResultContent('');
       setViewState('original');
     }
-  }, [currentPrompt]);
-
-  // Memuat tag untuk sebuah prompt
-  const loadPromptTags = async (promptId: string) => {
-    try {
-      const tags = await TagService.getPromptTags(promptId);
-      setSelectedTags(tags.map(tag => tag.name));
-    } catch (error) {
-      if (import.meta.env.DEV) {
-        console.error('Failed to load prompt tags:', error);
-      }
-      setSelectedTags([]);
-    }
-  };
+  }, [currentPrompt, loadPromptTags]);
 
   // Menangani kembali ke prompt original
   const handleBack = useCallback(() => {
@@ -244,6 +259,11 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
         await TagService.savePromptTags(promptToSave.id, selectedTags, user.id);
       }
       
+      // Clear cache untuk prompt ini karena tag mungkin berubah
+      tagsCacheRef.current.delete(promptToSave.id);
+      // Update cache dengan tag baru
+      tagsCacheRef.current.set(promptToSave.id, selectedTags);
+      
       try {
         onPromptChange(promptToSave);
       } catch (error) {
@@ -323,6 +343,11 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       if (selectedTags.length > 0) {
         await TagService.savePromptTags(updatedPrompt.id, selectedTags, user.id);
       }
+      
+      // Clear cache untuk prompt ini karena tag mungkin berubah
+      tagsCacheRef.current.delete(updatedPrompt.id);
+      // Update cache dengan tag baru
+      tagsCacheRef.current.set(updatedPrompt.id, selectedTags);
       
       try {
         onPromptChange(updatedPrompt);
@@ -645,7 +670,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
                 onClick={handleBack}
                 variant="outline"
                 size={isMobile ? "default" : "sm"}
-                className={`${isMobile ? 'text-sm min-h-[44px]' : 'text-xs h-8'} px-3 hover:bg-secondary/20 transition-all font-mono touch-manipulation`}
+                className={`${isMobile ? 'text-sm min-h-[44px]' : 'text-xs h-8'} px-3 hover:bg-secondary/20 font-mono touch-manipulation`}
                 title={t('prompt:backToOriginalTitle')}
               >
                 <ArrowLeft className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${isMobile ? '' : 'mr-1'}`} />
@@ -658,7 +683,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
                 onClick={handleForward}
                 variant="outline"
                 size={isMobile ? "default" : "sm"}
-                className={`${isMobile ? 'text-sm min-h-[44px]' : 'text-xs h-8'} px-3 hover:bg-secondary/20 transition-all font-mono touch-manipulation`}
+                className={`${isMobile ? 'text-sm min-h-[44px]' : 'text-xs h-8'} px-3 hover:bg-secondary/20 font-mono touch-manipulation`}
                 title={t('prompt:forwardToResultTitle')}
               >
                 <ArrowRight className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} ${isMobile ? '' : 'mr-1'}`} />

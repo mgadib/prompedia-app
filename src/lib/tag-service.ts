@@ -197,6 +197,53 @@ export class TagService {
   }
 
   /**
+   * Get tags for multiple prompts in a single batch query
+   * This is much more efficient than calling getPromptTags() multiple times
+   * @param promptIds - Array of prompt IDs to get tags for
+   * @returns Map of promptId to Tag[] for O(1) lookup
+   */
+  static async getTagsForPrompts(promptIds: string[]): Promise<Map<string, Tag[]>> {
+    const result = new Map<string, Tag[]>();
+    
+    if (!promptIds || promptIds.length === 0) {
+      return result;
+    }
+
+    try {
+      // Single query to get all prompt_tags for all prompts
+      const { data, error } = await supabase
+        .from('prompt_tags')
+        .select(`
+          prompt_id,
+          tags!prompt_tags_tag_id_fkey(*)
+        `)
+        .in('prompt_id', promptIds);
+
+      if (error) throw error;
+
+      // Initialize all promptIds with empty arrays
+      promptIds.forEach(id => result.set(id, []));
+
+      // Group tags by prompt_id
+      if (data) {
+        data.forEach((item: any) => {
+          if (item.prompt_id && item.tags) {
+            const existingTags = result.get(item.prompt_id) || [];
+            result.set(item.prompt_id, [...existingTags, item.tags]);
+          }
+        });
+      }
+
+      return result;
+    } catch (error) {
+      console.error('Failed to get tags for prompts:', error);
+      // Return empty map with all promptIds initialized to empty arrays
+      promptIds.forEach(id => result.set(id, []));
+      return result;
+    }
+  }
+
+  /**
    * Add a tag to a prompt
    */
   static async addPromptTag(promptId: string, tagId: string): Promise<void> {
@@ -305,16 +352,15 @@ export class TagService {
 
       if (promptsError) throw promptsError;
 
-      const result: (Prompt & { tags: Tag[] })[] = [];
-      for (const p of (prompts || [])) {
-        try {
-          const tags = await this.getPromptTags(p.id);
-          result.push({ ...(p as Prompt), tags });
-        } catch (tErr) {
-          console.warn('Failed to load tags for prompt', p.id, tErr);
-          result.push({ ...(p as Prompt), tags: [] });
-        }
-      }
+      // Batch load all tags for all prompts in a single query
+      const loadedPromptIds = (prompts || []).map((p: any) => p.id).filter(Boolean);
+      const tagsMap = await this.getTagsForPrompts(loadedPromptIds);
+
+      // Map tags to prompts using batch-loaded data
+      const result: (Prompt & { tags: Tag[] })[] = (prompts || []).map((p: any) => ({
+        ...(p as Prompt),
+        tags: tagsMap.get(p.id) || []
+      }));
 
       return result;
     } catch (error) {
@@ -383,16 +429,15 @@ export class TagService {
       const { data: prompts, error: promptsError } = await query;
       if (promptsError) throw promptsError;
 
-      const result: (Prompt & { tags: Tag[] })[] = [];
-      for (const p of (prompts || [])) {
-        try {
-          const tags = await this.getPromptTags(p.id);
-          result.push({ ...(p as Prompt), tags });
-        } catch (tErr) {
-          console.warn('Failed to load tags for prompt', p.id, tErr);
-          result.push({ ...(p as Prompt), tags: [] });
-        }
-      }
+      // Batch load all tags for all prompts in a single query
+      const loadedPromptIds = (prompts || []).map((p: any) => p.id).filter(Boolean);
+      const tagsMap = await this.getTagsForPrompts(loadedPromptIds);
+
+      // Map tags to prompts using batch-loaded data
+      const result: (Prompt & { tags: Tag[] })[] = (prompts || []).map((p: any) => ({
+        ...(p as Prompt),
+        tags: tagsMap.get(p.id) || []
+      }));
 
       return result;
     } catch (error) {

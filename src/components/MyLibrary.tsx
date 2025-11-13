@@ -63,18 +63,15 @@ const MyLibrary = ({
 
     setIsLoadingTags(true);
     try {
-      // Load tags in parallel instead of serial for better performance
-      const tagPromises = prompts.map(async (prompt) => {
-        try {
-          const tags = await TagService.getPromptTags(prompt.id);
-          return { ...prompt, tags };
-        } catch (tagError) {
-          console.warn(`Failed to load tags for prompt ${prompt.id}:`, tagError);
-          return { ...prompt, tags: [] };
-        }
-      });
-
-      const promptsWithTagsData = await Promise.all(tagPromises);
+      // Batch load all tags in a single query instead of N queries
+      const promptIds = prompts.map(p => p.id);
+      const tagsMap = await TagService.getTagsForPrompts(promptIds);
+      
+      // Map tags to prompts using the batch-loaded data
+      const promptsWithTagsData = prompts.map(prompt => ({
+        ...prompt,
+        tags: tagsMap.get(prompt.id) || []
+      }));
       
       // Collect unique tags
       const tagSet = new Set<string>();
@@ -166,10 +163,10 @@ const MyLibrary = ({
         <div className="border-b border-border bg-card/50 sm:p-4 md:p-6 p-3">
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
             <div className="relative flex-1 w-full">
-              <div className="h-10 bg-muted animate-pulse rounded-md" />
+              <div className="h-10 bg-muted rounded-md" />
             </div>
             <div className="relative w-full sm:w-auto sm:min-w-[200px]">
-              <div className="h-10 bg-muted animate-pulse rounded-md" />
+              <div className="h-10 bg-muted rounded-md" />
             </div>
           </div>
         </div>
@@ -178,17 +175,17 @@ const MyLibrary = ({
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="bg-card border rounded-lg p-4 sm:p-6 space-y-4">
                 <div className="flex justify-between">
-                  <div className="h-4 w-20 bg-muted animate-pulse rounded" />
-                  <div className="h-4 w-16 bg-muted animate-pulse rounded" />
+                  <div className="h-4 w-20 bg-muted rounded" />
+                  <div className="h-4 w-16 bg-muted rounded" />
                 </div>
-                <div className="h-6 w-3/4 bg-muted animate-pulse rounded" />
+                <div className="h-6 w-3/4 bg-muted rounded" />
                 <div className="space-y-2">
-                  <div className="h-4 w-full bg-muted animate-pulse rounded" />
-                  <div className="h-4 w-5/6 bg-muted animate-pulse rounded" />
+                  <div className="h-4 w-full bg-muted rounded" />
+                  <div className="h-4 w-5/6 bg-muted rounded" />
                 </div>
                 <div className="flex gap-2">
-                  <div className="h-6 w-16 bg-muted animate-pulse rounded" />
-                  <div className="h-6 w-20 bg-muted animate-pulse rounded" />
+                  <div className="h-6 w-16 bg-muted rounded" />
+                  <div className="h-6 w-20 bg-muted rounded" />
                 </div>
               </div>
             ))}
@@ -209,7 +206,7 @@ const MyLibrary = ({
   }
 
   return (
-    <div className="flex flex-col h-full view-transition">
+    <div className="flex flex-col h-full">
       {/* Search and Filter Header */}
       <div className="border-b border-border bg-card/50 sm:p-4 md:p-6 p-3">
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center">
@@ -314,7 +311,7 @@ const MyLibrary = ({
                 role="button"
                 tabIndex={0}
                 aria-label={t('library:openDetails', { title: prompt.title || t('prompt:untitled') })}
-                className={`group relative bg-card border rounded-lg p-4 sm:p-6 cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-primary/50 active:scale-[0.98] touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
+                className={`group relative bg-card border rounded-lg p-4 sm:p-6 cursor-pointer hover:shadow-lg hover:border-primary/50 touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                   currentPromptId === prompt.id
                     ? 'border-primary bg-accent/20 shadow-md'
                     : 'border-border hover:bg-accent/10'
@@ -345,7 +342,7 @@ const MyLibrary = ({
                 </div>
 
                 {/* Title */}
-                <h3 className="font-bold text-lg mb-2 line-clamp-2 font-mono group-hover:text-primary transition-colors">
+                <h3 className="font-bold text-lg mb-2 line-clamp-2 font-mono group-hover:text-primary">
                   {prompt.title || t('prompt:untitled')}
                 </h3>
 
@@ -370,7 +367,7 @@ const MyLibrary = ({
                       >
                         <Badge
                           variant="secondary"
-                          className="text-xs bg-prompedia-green-500/20 text-prompedia-green-400 border border-prompedia-green-500/30 font-mono hover:bg-prompedia-green-500/30 transition-colors cursor-pointer"
+                          className="text-xs bg-prompedia-green-500/20 text-prompedia-green-400 border border-prompedia-green-500/30 font-mono hover:bg-prompedia-green-500/30 cursor-pointer"
                           style={{
                             backgroundColor: `${tag.color}20`,
                             color: tag.color,

@@ -158,7 +158,7 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
           >
             {loading ? (
               <>
-                <Loader2 className={`${isMobile ? 'mr-2 h-5 w-5' : 'mr-2 h-4 w-4'} animate-spin`} />
+                <Loader2 className={`${isMobile ? 'mr-2 h-5 w-5' : 'mr-2 h-4 w-4'}`} />
                 {t('auth:processing')}
               </>
             ) : isLogin ? (
