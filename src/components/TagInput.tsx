@@ -12,9 +12,10 @@ import { useIsMobile } from '@/hooks/use-mobile';
 interface TagInputProps {
   selectedTagNames: string[];
   onChange: (tagNames: string[]) => void;
+  user?: any; // User dari parent untuk menghindari redundant fetch
 }
 
-const TagInput = ({ selectedTagNames, onChange }: TagInputProps) => {
+const TagInput = ({ selectedTagNames, onChange, user }: TagInputProps) => {
   const { t } = useTranslation();
   const [input, setInput] = useState('');
   const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -25,10 +26,11 @@ const TagInput = ({ selectedTagNames, onChange }: TagInputProps) => {
   useEffect(() => {
     const loadSuggestions = async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
+        // Gunakan user prop yang sudah di-cache, fallback ke fetch jika tidak ada
+        const currentUser = user || (await supabase.auth.getUser().then(({ data }) => data.user));
+        if (currentUser) {
           // Mendapatkan tag user untuk saran
-          const userTags = await TagService.getUserTags(user.id);
+          const userTags = await TagService.getUserTags(currentUser.id);
           const tagNames = userTags.map(tag => tag.name);
           
           // Memfilter tag yang sudah dipilih
@@ -45,7 +47,7 @@ const TagInput = ({ selectedTagNames, onChange }: TagInputProps) => {
     };
 
     loadSuggestions();
-  }, [selectedTagNames]);
+  }, [selectedTagNames, user]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {

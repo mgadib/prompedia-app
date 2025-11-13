@@ -28,6 +28,10 @@ class StorageManager {
   private authUser: User | null = null;
   private isInitialized = false;
   private storageOperationQueue: Promise<any> = Promise.resolve();
+  // Cache untuk kapasitas storage (diperbarui setiap 5 menit atau saat diperlukan)
+  private capacityCache: StorageCapacityInfo | null = null;
+  private capacityCacheTimestamp: number = 0;
+  private readonly CAPACITY_CACHE_TTL = 5 * 60 * 1000; // 5 menit
 
   constructor() {
     this.initializeAuth();
@@ -148,69 +152,150 @@ class StorageManager {
 
   /**
    * Mengecek kapasitas dan ketersediaan localStorage
-   * Menggunakan test write untuk menentukan space yang tersedia
+   * Menggunakan navigator.storage.estimate() untuk performa optimal (async, non-blocking)
+   * Fallback ke single test write jika API tidak tersedia (sync, blocking minimal)
+   * Hasil di-cache untuk menghindari overhead berulang
    */
   private checkLocalStorageCapacity(): StorageCapacityInfo {
+    const now = Date.now();
+    
+    // Return cached result jika masih valid (O(1) untuk operasi normal)
+    if (this.capacityCache && (now - this.capacityCacheTimestamp) < this.CAPACITY_CACHE_TTL) {
+      return this.capacityCache;
+    }
+
+    // Jika cache expired, gunakan fallback sync method untuk immediate return
+    // Update cache async di background jika StorageManager API tersedia
+    const result = this.checkCapacityWithTestWrite();
+    
+    // Update cache async dengan StorageManager API jika tersedia (non-blocking)
+    if ('storage' in navigator && 'estimate' in navigator.storage) {
+      this.updateCapacityCacheAsync().catch(() => {
+        // Ignore errors - fallback sudah digunakan
+      });
+    }
+    
+    return result;
+  }
+
+  /**
+   * Update cache dengan StorageManager API secara async (non-blocking)
+   */
+  private async updateCapacityCacheAsync(): Promise<void> {
     try {
-      const testKey = '__storage_test__';
-      const testValue = 'x';
-      let used = 0;
-      
-      // Menghitung penggunaan saat ini
+      const estimate = await navigator.storage.estimate();
+      const quota = estimate.quota || 0;
+      const usage = estimate.usage || 0;
+      const available = quota - usage;
+      const percentage = quota > 0 ? (usage / quota) * 100 : 0;
+
+      this.capacityCache = {
+        used: usage,
+        available: Math.max(0, available),
+        total: quota,
+        percentage
+      };
+      this.capacityCacheTimestamp = Date.now();
+    } catch (error) {
+      // Ignore - fallback method sudah digunakan
+      storageLogger.debug('StorageManager API update failed, using fallback cache', error as Error);
+    }
+  }
+
+  /**
+   * Fallback: single test write untuk menentukan apakah storage penuh
+   * Hanya melakukan satu write test, bukan loop hingga 10MB
+   */
+  private checkCapacityWithTestWrite(): StorageCapacityInfo {
+    const testKey = '__storage_test__';
+    let used = 0;
+    
+    // Menghitung penggunaan saat ini (hanya iterasi, tidak blocking)
+    try {
       for (const key in localStorage) {
         if (Object.prototype.hasOwnProperty.call(localStorage, key)) {
           used += localStorage[key].length + key.length;
         }
       }
-
-      // Menguji space yang tersedia dengan test write
-      let available = 0;
-      try {
-        let testString = testValue;
-        while (true) {
-          localStorage.setItem(testKey, testString);
-          testString += testValue.repeat(1000);
-          available += 1000;
-          
-          // Batas keamanan untuk mencegah browser freeze
-          if (available > 10 * 1024 * 1024) break; // Batas 10MB
-        }
-      } catch {
-        // Storage penuh atau error
-      } finally {
-        localStorage.removeItem(testKey);
-      }
-
-      const total = used + available;
-      const percentage = total > 0 ? (used / total) * 100 : 0;
-
-      return { used, available, total, percentage };
-    } catch (error) {
-      storageLogger.error('Failed to check localStorage capacity', error as Error);
-      return { used: 0, available: 0, total: 0, percentage: 100 };
+    } catch {
+      // Ignore errors saat menghitung
     }
+
+    // Single test write untuk cek apakah masih ada space
+    let available = 0;
+    let canWrite = false;
+    try {
+      const testValue = 'x'.repeat(1024); // 1KB test
+      localStorage.setItem(testKey, testValue);
+      localStorage.removeItem(testKey);
+      canWrite = true;
+      // Jika bisa write, estimasi available space (konservatif)
+      // Asumsi default browser quota ~5-10MB, kita estimasi berdasarkan usage
+      const estimatedQuota = Math.max(5 * 1024 * 1024, used * 2); // Minimal 5MB atau 2x usage
+      available = Math.max(0, estimatedQuota - used);
+    } catch {
+      // Storage penuh atau error
+      canWrite = false;
+      available = 0;
+    }
+
+    const total = used + available;
+    const percentage = total > 0 ? (used / total) * 100 : 100;
+
+    const result: StorageCapacityInfo = {
+      used,
+      available,
+      total,
+      percentage
+    };
+
+    // Cache hasil
+    this.capacityCache = result;
+    this.capacityCacheTimestamp = Date.now();
+    
+    return result;
   }
 
   /**
    * Operasi localStorage yang aman dengan fallback
-   * Mengecek kapasitas sebelum write dan menangani error dengan graceful
+   * Mengecek kapasitas hanya jika cache sudah expired (O(1) untuk operasi normal)
+   * Menangani error dengan graceful
    */
   private safeLocalStorageSet(key: string, value: string): void {
     try {
+      // Cek kapasitas hanya jika cache expired (akan return cached jika masih valid)
       const capacity = this.checkLocalStorageCapacity();
       
+      // Validasi cepat: jika percentage > 90, coba write dulu (mungkin cache outdated)
       if (capacity.percentage > 90) {
-        throw new StorageError('localStorage is nearly full (>90%)');
+        // Invalidate cache dan coba write langsung
+        this.capacityCache = null;
+        this.capacityCacheTimestamp = 0;
       }
 
+      // Langsung write - browser akan throw error jika benar-benar penuh
       localStorage.setItem(key, value);
-      storageLogger.debug('localStorage set successful', { key, size: value.length });
+      
+      if (import.meta.env.DEV) {
+        const perfStart = performance.now();
+        storageLogger.debug('localStorage set successful', { key, size: value.length });
+        const perfEnd = performance.now();
+        if (perfEnd - perfStart > 10) {
+          console.warn(`[PERF] localStorage set took ${(perfEnd - perfStart).toFixed(2)}ms`);
+        }
+      } else {
+        storageLogger.debug('localStorage set successful', { key, size: value.length });
+      }
     } catch (error) {
       if (error instanceof StorageError) {
         throw error;
       }
       
       storageLogger.error('localStorage set failed', error as Error, { key });
+      
+      // Invalidate cache saat error untuk force recheck next time
+      this.capacityCache = null;
+      this.capacityCacheTimestamp = 0;
       
       if (error instanceof DOMException && error.code === 22) {
         throw new StorageError('localStorage quota exceeded', error as Error);

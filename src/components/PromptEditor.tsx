@@ -141,8 +141,9 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
   useEffect(() => {
     const checkRateLimits = async () => {
       try {
-        const user = await supabase.auth.getUser().then(({ data }) => data.user);
-        const rateLimitCheck = await rateLimitingService.canMakeAICall(user);
+        // Gunakan user prop yang sudah di-cache, fallback ke fetch jika tidak ada
+        const currentUser = user || (await supabase.auth.getUser().then(({ data }) => data.user));
+        const rateLimitCheck = await rateLimitingService.canMakeAICall(currentUser);
         setUserCanUseAI(rateLimitCheck.allowed);
       } catch (error) {
         if (import.meta.env.DEV) {
@@ -158,7 +159,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
     const interval = setInterval(checkRateLimits, 30000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [user]);
 
 
 
@@ -169,16 +170,17 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
     } else {
       // Fallback ke implementasi lokal
       try {
-        const user = await supabase.auth.getUser().then(({ data }) => data.user);
+        // Gunakan user prop yang sudah di-cache, fallback ke fetch jika tidak ada
+        const currentUser = user || (await supabase.auth.getUser().then(({ data }) => data.user));
         
-      if (!user) {
+      if (!currentUser) {
         showErrorToast('errors:actions.signInToCreate');
         return;
       }
 
         const newPrompt: Prompt = {
           id: crypto.randomUUID(),
-          user_id: user.id,
+          user_id: currentUser.id,
           title: t('prompt:untitled'),
           content: '',
           model: AVAILABLE_MODELS[1].id,
@@ -214,26 +216,24 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       return;
     }
 
+    if (import.meta.env.DEV) {
+      console.time('[PERF] handleSave');
+    }
+
     try {
-      const user = await supabase.auth.getUser().then(({ data }) => data.user);
+      // Gunakan user prop yang sudah di-cache, fallback ke fetch jika tidak ada
+      const currentUser = user || (await supabase.auth.getUser().then(({ data }) => data.user));
 
       // User guest tidak bisa menyimpan prompt (hanya localStorage auto-save untuk session saat ini)
-      if (!user) {
+      if (!currentUser) {
         showErrorToast('errors:actions.signInToSave');
         return;
       }
 
-      // Mengecek apakah user bisa melakukan panggilan AI (mereka perlu quota untuk menyimpan)
-      const rateLimitCheck = await rateLimitingService.canMakeAICall(user);
-      if (!rateLimitCheck.allowed) {
-        showErrorToast('errors:usage.waitBeforeSaving');
-        return;
-      }
-
-      // Membuat atau memperbarui prompt
+      // Membuat atau memperbarui prompt (tanpa rate-limit check - ini bukan AI call)
       const promptToSave: Prompt = {
         id: currentPrompt?.id || crypto.randomUUID(),
-        user_id: user.id,
+        user_id: currentUser.id,
         title: title || '',
         content: content || '',
         
@@ -256,7 +256,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       
       // Menyimpan tag untuk prompt
       if (selectedTags.length > 0) {
-        await TagService.savePromptTags(promptToSave.id, selectedTags, user.id);
+        await TagService.savePromptTags(promptToSave.id, selectedTags, currentUser.id);
       }
       
       // Clear cache untuk prompt ini karena tag mungkin berubah
@@ -273,14 +273,15 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
         showErrorToast('errors:prompt.updateFailed');
       }
       showSuccessToast('success:prompt.saved');
-
-      // Menambah counter penggunaan setelah save berhasil
-      await rateLimitingService.incrementUsage(user);
     } catch (error) {
       if (import.meta.env.DEV) {
         console.error('Failed to save prompt:', error);
       }
       showErrorToastWithFallback('errors:prompt.saveFailed', error);
+    } finally {
+      if (import.meta.env.DEV) {
+        console.timeEnd('[PERF] handleSave');
+      }
     }
   };
 
@@ -307,25 +308,24 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       return;
     }
 
+    if (import.meta.env.DEV) {
+      console.time('[PERF] handleShare');
+    }
+
     try {
-      const user = await supabase.auth.getUser().then(({ data }) => data.user);
+      // Gunakan user prop yang sudah di-cache, fallback ke fetch jika tidak ada
+      const currentUser = user || (await supabase.auth.getUser().then(({ data }) => data.user));
 
       // User guest tidak bisa membuat prompt public atau menyimpan prompt
-      if (!user) {
+      if (!currentUser) {
         showErrorToast('errors:actions.signInToShare');
         return;
       }
 
-      // Mengecek apakah user bisa melakukan panggilan AI (mereka perlu terautentikasi)
-      const rateLimitCheck = await rateLimitingService.canMakeAICall(user);
-      if (!rateLimitCheck.allowed) {
-        showErrorToast('errors:usage.waitBeforeChanges');
-        return;
-      }
-
+      // Toggle public status (tanpa rate-limit check - ini bukan AI call)
       const updatedPrompt: Prompt = {
         id: currentPrompt?.id || crypto.randomUUID(),
-        user_id: user.id,
+        user_id: currentUser.id,
         title: title || '',
         content: content || '',
         model: model || AVAILABLE_MODELS[1].id,
@@ -341,7 +341,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       
       // Menyimpan tag untuk prompt
       if (selectedTags.length > 0) {
-        await TagService.savePromptTags(updatedPrompt.id, selectedTags, user.id);
+        await TagService.savePromptTags(updatedPrompt.id, selectedTags, currentUser.id);
       }
       
       // Clear cache untuk prompt ini karena tag mungkin berubah
@@ -363,26 +363,29 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
         console.error('Failed to update prompt visibility:', error);
       }
       showErrorToast('errors:prompt.visibilityUpdateFailed');
+    } finally {
+      if (import.meta.env.DEV) {
+        console.timeEnd('[PERF] handleShare');
+      }
     }
   };
 
   const handleDelete = async (promptId: string) => {
+    if (import.meta.env.DEV) {
+      console.time('[PERF] handleDelete');
+    }
+
     try {
-      const user = await supabase.auth.getUser().then(({ data }) => data.user);
+      // Gunakan user prop yang sudah di-cache, fallback ke fetch jika tidak ada
+      const currentUser = user || (await supabase.auth.getUser().then(({ data }) => data.user));
 
       // User guest tidak bisa menghapus prompt
-      if (!user) {
+      if (!currentUser) {
         showErrorToast('errors:actions.signInToDelete');
         return;
       }
 
-      // Mengecek apakah user bisa melakukan panggilan AI (menghapus memerlukan quota)
-      const rateLimitCheck = await rateLimitingService.canMakeAICall(user);
-      if (!rateLimitCheck.allowed) {
-        showErrorToast('errors:usage.waitBeforeDeleting');
-        return;
-      }
-
+      // Hapus prompt (tanpa rate-limit check - ini bukan AI call)
       if (onDeletePrompt) {
         onDeletePrompt(promptId);
       } else {
@@ -407,14 +410,15 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
         }
       }
       showSuccessToast('success:prompt.deleted');
-
-      // Menambah counter penggunaan setelah delete berhasil
-      await rateLimitingService.incrementUsage(user);
     } catch (error) {
       if (import.meta.env.DEV) {
         console.error('Failed to delete prompt:', error);
       }
       showErrorToast('errors:prompt.deleteFailed');
+    } finally {
+      if (import.meta.env.DEV) {
+        console.timeEnd('[PERF] handleDelete');
+      }
     }
   };
 
@@ -425,16 +429,21 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       return;
     }
 
+    if (import.meta.env.DEV) {
+      console.time(`[PERF] handleAction-${actionId}`);
+    }
+
     try {
       setIsActionLoading(true);
       setLoadingAction(actionId);
 
-      // Mengecek batas penggunaan sebelum melakukan panggilan AI
-      const user = await supabase.auth.getUser().then(({ data }) => data.user);
-      const rateLimitCheck = await rateLimitingService.canMakeAICall(user);
+      // Mengecek batas penggunaan sebelum melakukan panggilan AI (ini adalah AI call, jadi rate-limit check diperlukan)
+      // Gunakan user prop yang sudah di-cache, fallback ke fetch jika tidak ada
+      const currentUser = user || (await supabase.auth.getUser().then(({ data }) => data.user));
+      const rateLimitCheck = await rateLimitingService.canMakeAICall(currentUser);
 
       if (!rateLimitCheck.allowed) {
-        const limitType = user ? t('errors:usage.dailyLimit') : t('errors:usage.guestLimit');
+        const limitType = currentUser ? t('errors:usage.dailyLimit') : t('errors:usage.guestLimit');
         showErrorToast('errors:usage.limitReached', { 
           type: limitType, 
           error: rateLimitCheck.error || '' 
@@ -444,7 +453,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
 
       // Menampilkan peringatan penggunaan tersisa ketika mendekati batas
       if (rateLimitCheck.usage.remaining <= 3) {
-        if (user) {
+        if (currentUser) {
           showWarningToast('common:warnings.remainingDailyCalls', { count: rateLimitCheck.usage.remaining });
         } else {
           showWarningToast('common:warnings.remainingCallsWithSignIn', { count: rateLimitCheck.usage.remaining });
@@ -526,7 +535,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       showSuccessToast('success:actions.actionSuccess', { action: actionId });
 
       // Menambah counter penggunaan setelah response AI berhasil
-      await rateLimitingService.incrementUsage(user);
+      await rateLimitingService.incrementUsage(currentUser);
 
     } catch (error) {
       if (import.meta.env.DEV) {
@@ -537,6 +546,9 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
     } finally {
       setIsActionLoading(false);
       setLoadingAction('');
+      if (import.meta.env.DEV) {
+        console.timeEnd(`[PERF] handleAction-${actionId}`);
+      }
     }
   };
 
@@ -649,7 +661,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
 
           {/* Tags Section */}
           <div className={`flex-1 ${isMobile ? 'w-full' : ''}`}>
-            <TagInput selectedTagNames={selectedTags} onChange={setSelectedTags} />
+            <TagInput selectedTagNames={selectedTags} onChange={setSelectedTags} user={user} />
           </div>
         </div>
 

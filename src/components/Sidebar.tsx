@@ -50,10 +50,11 @@ const Sidebar = ({
     const loadUserMostUsedTags = async () => {
       setIsLoadingTags(true);
       try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
+        // Gunakan user prop yang sudah di-cache, fallback ke fetch jika tidak ada
+        const currentUser = user || (await supabase.auth.getUser().then(({ data }) => data.user));
+        if (currentUser) {
           // Mendapatkan tag yang paling sering digunakan user (tepat 7)
-          const userTags = await TagService.getUserMostUsedTags(user.id, 7);
+          const userTags = await TagService.getUserMostUsedTags(currentUser.id, 7);
           const tagNames = userTags.map(tag => tag.name);
           setAllTags(tagNames);
         } else {
