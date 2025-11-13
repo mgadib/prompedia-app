@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { showSuccessToast, showErrorToast } from '@/lib/toast-helpers';
 import { Sparkles, Loader2 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { getSuccessMessage, getErrorMessage } from '@/lib/i18n-helpers';
@@ -39,13 +39,13 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
 
         if (error) throw error;
 
-        toast.success(t('auth:welcomeBack'));
+        showSuccessToast('auth:welcomeBack');
         onSuccess();
         onClose();
       } else {
         // Registrasi user baru
         if (!username.trim()) {
-          toast.error(t('auth:usernameRequired'));
+          showErrorToast('auth:usernameRequired');
           setLoading(false);
           return;
         }
@@ -64,14 +64,14 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
 
         if (error) throw error;
 
-        toast.success(t('auth:accountCreated'));
+        showSuccessToast('auth:accountCreated');
         setIsLogin(true);
       }
     } catch (error: any) {
       if (import.meta.env.DEV) {
         console.error('Auth error:', error);
       }
-      toast.error(error.message || t('auth:anErrorOccurred'));
+      showErrorToast('auth:anErrorOccurred');
     } finally {
       setLoading(false);
     }

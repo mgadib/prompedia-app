@@ -27,6 +27,8 @@
   "backToOriginalTitle": "Kembali ke prompt asli",
   "forwardToResultTitle": "Maju ke hasil AI",
   "seoTitle": "Detail Prompt",
-  "seoDescription": "Jelajahi prompt publik ini di Prompedia."
+  "seoDescription": "Jelajahi prompt publik ini di Prompedia.",
+  "copySuffix": " (Salin)",
+  "duplicatedTitle": "Prompt Diduplikasi"
 }
 

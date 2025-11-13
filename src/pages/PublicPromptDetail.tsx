@@ -7,7 +7,7 @@ import { TagService } from '@/lib/tag-service';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Copy, ArrowLeft, Globe, Download } from 'lucide-react';
-import { toast } from 'sonner';
+import { showSuccessToast } from '@/lib/toast-helpers';
 import SEO from '@/components/SEO';
 import { trackEvent } from '@/lib/analytics';
 
@@ -79,7 +79,7 @@ const PublicPromptDetail = () => {
   const handleCopyContent = () => {
     if (prompt) {
       navigator.clipboard.writeText(prompt.content);
-      toast.success(t('success:prompt.contentCopied'));
+      showSuccessToast('success:prompt.contentCopied');
       trackEvent('copy_prompt_content', { prompt_id: id });
     }
   };
@@ -87,7 +87,7 @@ const PublicPromptDetail = () => {
   const handleCopyUrl = () => {
     const url = `https://prompedia.app/p/${id}`;
     navigator.clipboard.writeText(url);
-    toast.success(t('success:prompt.urlCopied'));
+    showSuccessToast('success:prompt.urlCopied');
     trackEvent('copy_prompt_url', { prompt_id: id });
   };
 

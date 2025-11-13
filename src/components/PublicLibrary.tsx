@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { FileText, Globe, User, Copy, Download, Search, Filter, Link as LinkIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { toast } from 'sonner';
+import { showSuccessToast } from '@/lib/toast-helpers';
 import { SupabaseService } from '@/lib/supabase-service';
 import { TagService } from '@/lib/tag-service';
 import PromptDetailModal from './PromptDetailModal';
@@ -111,7 +111,7 @@ const PublicLibrary = ({
   const handleCopy = (e: React.MouseEvent, prompt: PromptWithTags) => {
     e.stopPropagation();
     navigator.clipboard.writeText(prompt.content);
-    toast.success(t('success:prompt.contentCopied'));
+    showSuccessToast('success:prompt.contentCopied');
     trackEvent('copy_prompt_content', { prompt_id: prompt.id });
   };
 
@@ -120,14 +120,14 @@ const PublicLibrary = ({
     const base = ENV.SITE_URL || window.location.origin;
     const url = `${base}/p/${promptId}`;
     navigator.clipboard.writeText(url);
-    toast.success(t('success:prompt.urlCopied'));
+    showSuccessToast('success:prompt.urlCopied');
     trackEvent('copy_prompt_url', { prompt_id: promptId });
   };
 
   const handleUse = (e: React.MouseEvent, prompt: PromptWithTags) => {
     e.stopPropagation();
     onUsePrompt(prompt);
-    toast.success(t('success:prompt.loadedForEditing'));
+    showSuccessToast('success:prompt.loadedForEditing');
     trackEvent('use_prompt', { prompt_id: prompt.id });
   };
 
@@ -144,13 +144,13 @@ const PublicLibrary = ({
 
   const handleUsePromptFromModal = (prompt: Prompt) => {
     onUsePrompt({ ...prompt, tags: selectedPrompt?.tags || [] });
-    toast.success(t('success:prompt.loadedForEditing'));
+    showSuccessToast('success:prompt.loadedForEditing');
     trackEvent('use_prompt', { prompt_id: prompt.id });
   };
 
   const handleCopyPromptFromModal = (prompt: Prompt) => {
     navigator.clipboard.writeText(prompt.content);
-    toast.success(t('success:prompt.contentCopied'));
+    showSuccessToast('success:prompt.contentCopied');
     trackEvent('copy_prompt_content', { prompt_id: prompt.id });
   };
 

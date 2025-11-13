@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { FileText, Lock, Globe, Edit, Trash2, Search, Filter, Copy } from 'lucide-react';
-import { toast } from 'sonner';
+import { showSuccessToast, showErrorToast } from '@/lib/toast-helpers';
 import { SupabaseService } from '@/lib/supabase-service';
 import { TagService } from '@/lib/tag-service';
 import PromptDetailModal from './PromptDetailModal';
@@ -116,10 +116,10 @@ const MyLibrary = ({
     
     try {
       await onDeletePrompt(promptToDelete.id);
-      toast.success(t('success:prompt.deleted'));
+      showSuccessToast('success:prompt.deleted');
     } catch (error) {
       console.error('Failed to delete prompt:', error);
-      toast.error(t('errors:prompt.deleteFailed'));
+      showErrorToast('errors:prompt.deleteFailed');
     } finally {
       setIsDeleteDialogOpen(false);
       setPromptToDelete(null);
@@ -155,7 +155,7 @@ const MyLibrary = ({
 
   const handleUsePrompt = (prompt: PromptWithTags) => {
     onSelectPrompt(prompt);
-    toast.success(t('success:prompt.loaded'));
+    showSuccessToast('success:prompt.loaded');
   };
 
   // Show skeleton while loading instead of spinner

@@ -22,7 +22,7 @@ import { THINKING_MODES } from '@/lib/modes';
 import { SupabaseService } from '@/lib/supabase-service';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
-import { toast } from 'sonner';
+import { showSuccessToast, showErrorToast, showWarningToast } from '@/lib/toast-helpers';
 import { rateLimitingService } from '@/lib/rate-limiting';
 import { ENV, STORAGE_KEYS } from '@/lib/constants';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -142,16 +142,16 @@ const AppPage = () => {
       event.stopPropagation();
       try {
         await navigator.clipboard.writeText(prompt.content);
-        toast.success(t('success:prompt.contentCopied'));
+        showSuccessToast('success:prompt.contentCopied');
         trackEvent('copy_prompt_content', { prompt_id: prompt.id }, user?.id ?? undefined);
       } catch (error) {
         if (import.meta.env.DEV) {
           console.error('Failed to copy prompt content:', error);
         }
-        toast.error(t('errors:prompt.copyFailed'));
+        showErrorToast('errors:prompt.copyFailed');
       }
     },
-    [t, user?.id]
+    [user?.id]
   );
 
   const handleTagCopyUrl = useCallback(
@@ -161,23 +161,23 @@ const AppPage = () => {
         const base = ENV.SITE_URL || window.location.origin;
         const url = `${base}/p/${promptId}`;
         await navigator.clipboard.writeText(url);
-        toast.success(t('success:prompt.urlCopied'));
+        showSuccessToast('success:prompt.urlCopied');
         trackEvent('copy_prompt_url', { prompt_id: promptId }, user?.id ?? undefined);
       } catch (error) {
         if (import.meta.env.DEV) {
           console.error('Failed to copy prompt URL:', error);
         }
-        toast.error(t('errors:prompt.copyFailed'));
+        showErrorToast('errors:prompt.copyFailed');
       }
     },
-    [t, user?.id]
+    [user?.id]
   );
 
   const handleTagUse = useCallback(
     (event: React.MouseEvent, prompt: PromptWithTags) => {
       event.stopPropagation();
       navigate(`/?use=${encodeURIComponent(prompt.id)}`);
-      toast.success(t('success:prompt.loadedForEditing'));
+      showSuccessToast('success:prompt.loadedForEditing');
       trackEvent('use_prompt', { prompt_id: prompt.id }, user?.id ?? undefined);
     },
     [navigate, t, user?.id]
@@ -186,7 +186,7 @@ const AppPage = () => {
   const handleUsePromptFromModal = useCallback(
     (prompt: Prompt) => {
       navigate(`/?use=${encodeURIComponent(prompt.id)}`);
-      toast.success(t('success:prompt.loadedForEditing'));
+      showSuccessToast('success:prompt.loadedForEditing');
       trackEvent('use_prompt', { prompt_id: prompt.id }, user?.id ?? undefined);
     },
     [navigate, t, user?.id]
@@ -196,16 +196,16 @@ const AppPage = () => {
     async (prompt: Prompt) => {
       try {
         await navigator.clipboard.writeText(prompt.content);
-        toast.success(t('success:prompt.contentCopied'));
+        showSuccessToast('success:prompt.contentCopied');
         trackEvent('copy_prompt_content', { prompt_id: prompt.id }, user?.id ?? undefined);
       } catch (error) {
         if (import.meta.env.DEV) {
           console.error('Failed to copy prompt content:', error);
         }
-        toast.error(t('errors:prompt.copyFailed'));
+        showErrorToast('errors:prompt.copyFailed');
       }
     },
-    [t, user?.id]
+    [user?.id]
   );
 
   const renderTagContent = () => (
@@ -524,7 +524,7 @@ const AppPage = () => {
       try {
         const prompt = await SupabaseService.getPrompt(promptId);
         if (!prompt) {
-          toast.error(t('errors:prompt.notFound'));
+          showErrorToast('errors:prompt.notFound');
         } else {
           const sanitizedPrompt: Prompt = {
             id: prompt.id || '',
@@ -548,7 +548,7 @@ const AppPage = () => {
         if (import.meta.env.DEV) {
           console.error('Failed to load prompt from query:', error);
         }
-        toast.error(t('errors:prompt.loadFailed'));
+        showErrorToast('errors:prompt.loadFailed');
       } finally {
         // Bersihkan query `use` dari URL
         const params = new URLSearchParams(searchParams);
@@ -604,10 +604,10 @@ const AppPage = () => {
       if (import.meta.env.DEV) {
         console.error('Failed to load public prompts:', error);
       }
-      toast.error(t('errors:library.loadFailed'));
+      showErrorToast('errors:library.loadFailed');
       setPublicPrompts([]);
     }
-  }, [t]);
+  }, []);
 
   // Load prompts on mount only
   useEffect(() => {
@@ -724,7 +724,7 @@ const AppPage = () => {
       if (import.meta.env.DEV) {
         console.error('Failed to delete prompt:', error);
       }
-      toast.error(t('errors:prompt.deleteFailed'));
+      showErrorToast('errors:prompt.deleteFailed');
       throw error;
     }
   };
@@ -733,7 +733,7 @@ const AppPage = () => {
     const user = await supabase.auth.getUser().then(({ data }) => data.user);
 
     if (!user) {
-      toast.error(t('errors:actions.signInToCopy'));
+      showErrorToast('errors:actions.signInToCopy');
       return;
     }
 
@@ -741,16 +741,16 @@ const AppPage = () => {
       // Mengecek apakah user bisa melakukan panggilan AI (menyalin memerlukan quota)
       const rateLimitCheck = await rateLimitingService.canMakeAICall(user);
       if (!rateLimitCheck.allowed) {
-        toast.error(t('errors:usage.waitBeforeCopying'));
+        showErrorToast('errors:usage.waitBeforeCopying');
         return;
       }
 
       // Show warning when approaching limit
       if (rateLimitCheck.usage.remaining <= 3) {
         if (user) {
-          toast.warning(t('common:warnings.remainingDailyCalls', { count: rateLimitCheck.usage.remaining }));
+          showWarningToast('common:warnings.remainingDailyCalls', { count: rateLimitCheck.usage.remaining });
         } else {
-          toast.warning(t('common:warnings.remainingCallsWithSignIn', { count: rateLimitCheck.usage.remaining }));
+          showWarningToast('common:warnings.remainingCallsWithSignIn', { count: rateLimitCheck.usage.remaining });
         }
       }
 
@@ -779,7 +779,7 @@ const AppPage = () => {
 
       await storageManager.savePrompt(copiedPrompt);
       handlePromptChange(copiedPrompt);
-      toast.success(t('success:prompt.copiedSuccessfully'));
+      showSuccessToast('success:prompt.copiedSuccessfully');
 
       // Menambah counter penggunaan setelah salinan berhasil
       await rateLimitingService.incrementUsage(user);
@@ -787,14 +787,14 @@ const AppPage = () => {
       if (import.meta.env.DEV) {
         console.error('Failed to copy prompt:', error);
       }
-      toast.error(t('errors:prompt.copyFailed'));
+      showErrorToast('errors:prompt.copyFailed');
     }
   };
 
   const handleUsePrompt = (prompt: PromptWithTags) => {
     // User guest hanya bisa menggunakan prompt untuk melihat, bukan untuk pemrosesan AI
     if (!user) {
-      toast.warning(t('common:warnings.signInForAI'));
+      showWarningToast('common:warnings.signInForAI');
     }
 
     // Ensure prompt has required fields for new schema
@@ -821,7 +821,7 @@ const AppPage = () => {
     try {
       // User guest tidak bisa mengakses library private
       if (!user && view === 'my-library') {
-        toast.error(t('errors:actions.signInToAccessLibrary'));
+        showErrorToast('errors:actions.signInToAccessLibrary');
         return;
       }
 
@@ -840,7 +840,7 @@ const AppPage = () => {
       if (import.meta.env.DEV) {
         console.error('Failed to change view:', error);
       }
-      toast.error(t('errors:library.switchViewFailed'));
+      showErrorToast('errors:library.switchViewFailed');
     }
   };
 
@@ -851,12 +851,10 @@ const AppPage = () => {
 
       if (!rateLimitCheck.allowed) {
         const limitType = user ? t('errors:usage.dailyLimit') : t('errors:usage.guestLimit');
-        toast.error(
-          t('errors:usage.limitReached', { 
-            type: limitType, 
-            error: rateLimitCheck.error || '' 
-          })
-        );
+        showErrorToast('errors:usage.limitReached', { 
+          type: limitType, 
+          error: rateLimitCheck.error || '' 
+        });
         if (!user) {
           setShowAuthModal(true);
         }
@@ -866,16 +864,16 @@ const AppPage = () => {
       // Show warning when approaching limit
       if (rateLimitCheck.usage.remaining <= 3) {
         if (user) {
-          toast.warning(t('common:warnings.remainingDailyCalls', { count: rateLimitCheck.usage.remaining }));
+          showWarningToast('common:warnings.remainingDailyCalls', { count: rateLimitCheck.usage.remaining });
         } else {
-          toast.warning(t('common:warnings.remainingCallsWithSignIn', { count: rateLimitCheck.usage.remaining }));
+          showWarningToast('common:warnings.remainingCallsWithSignIn', { count: rateLimitCheck.usage.remaining });
         }
       }
     } catch (error) {
       if (import.meta.env.DEV) {
         console.error('Rate limit check failed:', error);
       }
-      toast.error(t('errors:usage.checkFailed'));
+      showErrorToast('errors:usage.checkFailed');
       return;
     }
 
@@ -911,19 +909,19 @@ const AppPage = () => {
     try {
       await supabase.auth.signOut();
       setUser(null);
-      toast.success(t('success:auth.logoutSuccess'));
+      showSuccessToast('success:auth.logoutSuccess');
     } catch (error) {
       if (import.meta.env.DEV) {
         console.error('Logout error:', error);
       }
-      toast.error(t('errors:auth.logoutFailed'));
+      showErrorToast('errors:auth.logoutFailed');
     }
   };
 
   const handleAuthSuccess = () => {
     // Mereset counter playground setelah login berhasil
     localStorage.removeItem(STORAGE_KEYS.GUEST_USAGE);
-    toast.success(t('success:auth.welcomeUnlimited'));
+    showSuccessToast('success:auth.welcomeUnlimited');
   };
 
   const handleLogin = () => {

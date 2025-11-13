@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { Prompt } from '@/lib/storage';
 import { storageManager } from '@/lib/storage-manager';
 import { setCurrentPrompt } from '@/lib/storage';
-import { toast } from 'sonner';
+import { showSuccessToast, showErrorToastWithFallback } from '@/lib/toast-helpers';
 import i18n from '@/lib/i18n';
 
 /**
@@ -13,11 +13,11 @@ export const usePromptOperations = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleError = useCallback((error: unknown, defaultMessage: string) => {
-    const errorMessage = error instanceof Error ? error.message : defaultMessage;
+  const handleError = useCallback((error: unknown, translationKey: string) => {
+    const errorMessage = i18n.t(translationKey);
     setError(errorMessage);
-    toast.error(errorMessage);
-    console.error(defaultMessage, error);
+    showErrorToastWithFallback(translationKey, error);
+    console.error(translationKey, error);
   }, []);
 
   const createPrompt = useCallback(async (promptData: Omit<Prompt, 'id'>) => {
@@ -33,10 +33,10 @@ export const usePromptOperations = () => {
       await storageManager.savePrompt(newPrompt);
       setCurrentPrompt(newPrompt.id);
       
-      toast.success(i18n.t('success:prompt.promptCreated'));
+      showSuccessToast('success:prompt.promptCreated');
       return newPrompt;
     } catch (err) {
-      handleError(err, i18n.t('errors:promptOperations.promptCreateFailed'));
+      handleError(err, 'errors:promptOperations.promptCreateFailed');
       throw err;
     } finally {
       setLoading(false);
@@ -64,10 +64,10 @@ export const usePromptOperations = () => {
 
       await storageManager.savePrompt(updatedPrompt);
       
-      toast.success(i18n.t('success:prompt.promptUpdated'));
+      showSuccessToast('success:prompt.promptUpdated');
       return updatedPrompt;
     } catch (err) {
-      handleError(err, i18n.t('errors:promptOperations.promptUpdateFailed'));
+      handleError(err, 'errors:promptOperations.promptUpdateFailed');
       throw err;
     } finally {
       setLoading(false);
@@ -81,9 +81,9 @@ export const usePromptOperations = () => {
 
       await storageManager.deletePrompt(promptId);
       
-      toast.success(i18n.t('success:prompt.promptRemoved'));
+      showSuccessToast('success:prompt.promptRemoved');
     } catch (err) {
-      handleError(err, i18n.t('errors:promptOperations.promptRemoveFailed'));
+      handleError(err, 'errors:promptOperations.promptRemoveFailed');
       throw err;
     } finally {
       setLoading(false);
@@ -98,16 +98,16 @@ export const usePromptOperations = () => {
       const copiedPrompt: Prompt = {
         ...originalPrompt,
         id: crypto.randomUUID(),
-        title: `${originalPrompt.title} (Copy)`,
+        title: `${originalPrompt.title}${i18n.t('prompt:copySuffix')}`,
         is_public: false // Salinan bersifat private secara default
       };
 
       await storageManager.savePrompt(copiedPrompt);
       
-      toast.success(i18n.t('success:prompt.promptCopied'));
+      showSuccessToast('success:prompt.promptCopied');
       return copiedPrompt;
     } catch (err) {
-      handleError(err, i18n.t('errors:promptOperations.promptCopyFailed'));
+      handleError(err, 'errors:promptOperations.promptCopyFailed');
       throw err;
     } finally {
       setLoading(false);
@@ -123,7 +123,7 @@ export const usePromptOperations = () => {
       // Untuk saat ini, ini adalah struktur placeholder
       const duplicatedPrompt: Prompt = {
         id: crypto.randomUUID(),
-        title: newTitle || `Duplicated Prompt`,
+        title: newTitle || i18n.t('prompt:duplicatedTitle'),
         content: '',
         model: 'gpt-4',
         mode: 'meta-prompt',
@@ -135,10 +135,10 @@ export const usePromptOperations = () => {
 
       await storageManager.savePrompt(duplicatedPrompt);
       
-      toast.success(i18n.t('success:prompt.promptDuplicated'));
+      showSuccessToast('success:prompt.promptDuplicated');
       return duplicatedPrompt;
     } catch (err) {
-      handleError(err, i18n.t('errors:promptOperations.promptDuplicateFailed'));
+      handleError(err, 'errors:promptOperations.promptDuplicateFailed');
       throw err;
     } finally {
       setLoading(false);

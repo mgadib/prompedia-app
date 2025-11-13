@@ -4,7 +4,7 @@ import { Copy, Save, Share2, FileText, Trash2, ArrowLeft, ArrowRight, CheckCircl
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { toast } from 'sonner';
+import { showSuccessToast, showErrorToast, showWarningToast, showErrorToastWithFallback } from '@/lib/toast-helpers';
 import { storage, Prompt } from '@/lib/storage';
 import { storageManager } from '@/lib/storage-manager';
 import { AVAILABLE_MODELS } from '@/lib/models';
@@ -156,7 +156,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
         const user = await supabase.auth.getUser().then(({ data }) => data.user);
         
       if (!user) {
-        toast.error(t('errors:actions.signInToCreate'));
+        showErrorToast('errors:actions.signInToCreate');
         return;
       }
 
@@ -180,21 +180,21 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
           if (import.meta.env.DEV) {
             console.error('Failed to update prompt:', error);
           }
-          toast.error(t('errors:prompt.updateFailed'));
+          showErrorToast('errors:prompt.updateFailed');
         }
-        toast.success(t('success:prompt.created'));
+        showSuccessToast('success:prompt.created');
       } catch (error) {
         if (import.meta.env.DEV) {
           console.error('Failed to create new prompt:', error);
         }
-        toast.error(t('errors:prompt.createFailed'));
+        showErrorToast('errors:prompt.createFailed');
       }
     }
   };
 
   const handleSave = async () => {
     if (!title || !content) {
-      toast.error(t('errors:actions.enterTitleAndContent'));
+      showErrorToast('errors:actions.enterTitleAndContent');
       return;
     }
 
@@ -203,14 +203,14 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
 
       // User guest tidak bisa menyimpan prompt (hanya localStorage auto-save untuk session saat ini)
       if (!user) {
-        toast.error(t('errors:actions.signInToSave'));
+        showErrorToast('errors:actions.signInToSave');
         return;
       }
 
       // Mengecek apakah user bisa melakukan panggilan AI (mereka perlu quota untuk menyimpan)
       const rateLimitCheck = await rateLimitingService.canMakeAICall(user);
       if (!rateLimitCheck.allowed) {
-        toast.error(t('errors:usage.waitBeforeSaving'));
+        showErrorToast('errors:usage.waitBeforeSaving');
         return;
       }
 
@@ -249,9 +249,9 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
         if (import.meta.env.DEV) {
           console.error('Failed to update prompt:', error);
         }
-        toast.error(t('errors:prompt.updateFailed'));
+        showErrorToast('errors:prompt.updateFailed');
       }
-      toast.success(t('success:prompt.saved'));
+      showSuccessToast('success:prompt.saved');
 
       // Menambah counter penggunaan setelah save berhasil
       await rateLimitingService.incrementUsage(user);
@@ -259,30 +259,30 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       if (import.meta.env.DEV) {
         console.error('Failed to save prompt:', error);
       }
-      toast.error(error instanceof Error ? error.message : t('errors:prompt.saveFailed'));
+      showErrorToastWithFallback('errors:prompt.saveFailed', error);
     }
   };
 
   const handleCopy = async () => {
     if (!content) {
-      toast.error(t('errors:actions.noContent'));
+      showErrorToast('errors:actions.noContent');
       return;
     }
 
     try {
       await navigator.clipboard.writeText(content);
-      toast.success(t('success:prompt.contentCopied'));
+      showSuccessToast('success:prompt.contentCopied');
     } catch (error) {
       if (import.meta.env.DEV) {
         console.error('Failed to copy content:', error);
       }
-      toast.error(t('errors:prompt.copyFailed'));
+      showErrorToast('errors:prompt.copyFailed');
     }
   };
 
   const handleShare = async () => {
     if (!title || !content) {
-      toast.error(t('errors:actions.enterTitleAndContent'));
+      showErrorToast('errors:actions.enterTitleAndContent');
       return;
     }
 
@@ -291,14 +291,14 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
 
       // User guest tidak bisa membuat prompt public atau menyimpan prompt
       if (!user) {
-        toast.error(t('errors:actions.signInToShare'));
+        showErrorToast('errors:actions.signInToShare');
         return;
       }
 
       // Mengecek apakah user bisa melakukan panggilan AI (mereka perlu terautentikasi)
       const rateLimitCheck = await rateLimitingService.canMakeAICall(user);
       if (!rateLimitCheck.allowed) {
-        toast.error(t('errors:usage.waitBeforeChanges'));
+        showErrorToast('errors:usage.waitBeforeChanges');
         return;
       }
 
@@ -329,14 +329,14 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
         if (import.meta.env.DEV) {
           console.error('Failed to update prompt:', error);
         }
-        toast.error(t('errors:prompt.updateFailed'));
+        showErrorToast('errors:prompt.updateFailed');
       }
-      toast.success(updatedPrompt.is_public ? t('success:prompt.nowPublic') : t('success:prompt.nowPrivate'));
+      showSuccessToast(updatedPrompt.is_public ? 'success:prompt.nowPublic' : 'success:prompt.nowPrivate');
     } catch (error) {
       if (import.meta.env.DEV) {
         console.error('Failed to update prompt visibility:', error);
       }
-      toast.error(t('errors:prompt.visibilityUpdateFailed'));
+      showErrorToast('errors:prompt.visibilityUpdateFailed');
     }
   };
 
@@ -346,14 +346,14 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
 
       // User guest tidak bisa menghapus prompt
       if (!user) {
-        toast.error(t('errors:actions.signInToDelete'));
+        showErrorToast('errors:actions.signInToDelete');
         return;
       }
 
       // Mengecek apakah user bisa melakukan panggilan AI (menghapus memerlukan quota)
       const rateLimitCheck = await rateLimitingService.canMakeAICall(user);
       if (!rateLimitCheck.allowed) {
-        toast.error(t('errors:usage.waitBeforeDeleting'));
+        showErrorToast('errors:usage.waitBeforeDeleting');
         return;
       }
 
@@ -377,10 +377,10 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
           if (import.meta.env.DEV) {
             console.error('Failed to update prompt:', error);
           }
-          toast.error(t('errors:prompt.updateFailed'));
+          showErrorToast('errors:prompt.updateFailed');
         }
       }
-      toast.success(t('success:prompt.deleted'));
+      showSuccessToast('success:prompt.deleted');
 
       // Menambah counter penggunaan setelah delete berhasil
       await rateLimitingService.incrementUsage(user);
@@ -388,14 +388,14 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       if (import.meta.env.DEV) {
         console.error('Failed to delete prompt:', error);
       }
-      toast.error(t('errors:prompt.deleteFailed'));
+      showErrorToast('errors:prompt.deleteFailed');
     }
   };
 
 
   const handleAction = async (actionId: string) => {
     if (!content.trim()) {
-      toast.error(t('errors:actions.enterContent'));
+      showErrorToast('errors:actions.enterContent');
       return;
     }
 
@@ -409,21 +409,19 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
 
       if (!rateLimitCheck.allowed) {
         const limitType = user ? t('errors:usage.dailyLimit') : t('errors:usage.guestLimit');
-        toast.error(
-          t('errors:usage.limitReached', { 
-            type: limitType, 
-            error: rateLimitCheck.error || '' 
-          })
-        );
+        showErrorToast('errors:usage.limitReached', { 
+          type: limitType, 
+          error: rateLimitCheck.error || '' 
+        });
         return;
       }
 
       // Menampilkan peringatan penggunaan tersisa ketika mendekati batas
       if (rateLimitCheck.usage.remaining <= 3) {
         if (user) {
-          toast.warning(t('common:warnings.remainingDailyCalls', { count: rateLimitCheck.usage.remaining }));
+          showWarningToast('common:warnings.remainingDailyCalls', { count: rateLimitCheck.usage.remaining });
         } else {
-          toast.warning(t('common:warnings.remainingCallsWithSignIn', { count: rateLimitCheck.usage.remaining }));
+          showWarningToast('common:warnings.remainingCallsWithSignIn', { count: rateLimitCheck.usage.remaining });
         }
       }
 
@@ -499,7 +497,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
       setViewState('ai-result');
       
       
-      toast.success(t('success:actions.actionSuccess', { action: actionId }));
+      showSuccessToast('success:actions.actionSuccess', { action: actionId });
 
       // Menambah counter penggunaan setelah response AI berhasil
       await rateLimitingService.incrementUsage(user);
@@ -509,21 +507,7 @@ const PromptEditor = ({ currentPrompt, onPromptChange, onDeletePrompt, onNewProm
         console.error(`Error processing ${actionId}:`, error);
       }
       
-      let errorMsg = t('errors:actions.actionFailed', { action: actionId });
-      if (error instanceof Error) {
-        errorMsg = error.message;
-        
-        // Menampilkan tipe error spesifik
-        if (errorMsg.includes('rate limit') || errorMsg.includes('429')) {
-          errorMsg = t('errors:actions.serviceLimitReached');
-        } else if (errorMsg.includes('API key') || errorMsg.includes('401')) {
-          errorMsg = t('errors:actions.apiAuthFailed');
-        } else if (errorMsg.includes('timeout')) {
-          errorMsg = t('errors:actions.requestTimeout');
-        }
-      }
-      
-      toast.error(errorMsg);
+      showErrorToastWithFallback('errors:actions.actionFailed', error, 'errors:actions.failedToProcess');
     } finally {
       setIsActionLoading(false);
       setLoadingAction('');

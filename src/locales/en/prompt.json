@@ -27,6 +27,8 @@
   "backToOriginalTitle": "Back to original prompt",
   "forwardToResultTitle": "Forward to AI result",
   "seoTitle": "Prompt Detail",
-  "seoDescription": "Explore this public prompt on Prompedia."
+  "seoDescription": "Explore this public prompt on Prompedia.",
+  "copySuffix": " (Copy)",
+  "duplicatedTitle": "Duplicated Prompt"
 }
 
