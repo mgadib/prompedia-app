@@ -12,11 +12,11 @@ export default defineConfig(({ mode }) => ({
       // Header Content Security Policy untuk production
       'Content-Security-Policy': [
         "default-src 'self'",
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://kecpjbrlvaoujdnerhwe.supabase.co https://openrouter.ai",
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://kecpjbrlvaoujdnerhwe.supabase.co",
         "style-src 'self' 'unsafe-inline'",
         "img-src 'self' data: https: blob:",
         "font-src 'self' data:",
-        "connect-src 'self' https://kecpjbrlvaoujdnerhwe.supabase.co https://openrouter.ai wss://kecpjbrlvaoujdnerhwe.supabase.co",
+        "connect-src 'self' https://kecpjbrlvaoujdnerhwe.supabase.co wss://kecpjbrlvaoujdnerhwe.supabase.co",
         "frame-ancestors 'none'",
         "base-uri 'self'",
         "form-action 'self'"
