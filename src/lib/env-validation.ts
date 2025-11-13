@@ -3,10 +3,9 @@ import { z } from 'zod';
 /**
  * Environment variable validation schema
  * Ensures all required environment variables are present and valid at runtime
+ * Note: Supabase credentials are hardcoded in client.ts as per architecture decision
  */
 const EnvSchema = z.object({
-  VITE_SUPABASE_URL: z.string().url('Invalid Supabase URL'),
-  VITE_SUPABASE_ANON_KEY: z.string().min(1, 'Supabase anon key is required'),
   MODE: z.enum(['development', 'production', 'test']),
   DEV: z.boolean(),
   PROD: z.boolean()
@@ -28,8 +27,6 @@ export function validateEnv(): Env {
 
   try {
     validatedEnv = EnvSchema.parse({
-      VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
-      VITE_SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY,
       MODE: import.meta.env.MODE,
       DEV: import.meta.env.DEV,
       PROD: import.meta.env.PROD
