@@ -216,35 +216,35 @@ const AppPage = () => {
       )}
 
       {isMobile ? (
-        <div className="md:hidden border-b border-border bg-card flex-shrink-0 px-4 py-3 flex items-center gap-3 z-10">
+        <div className="md:hidden border-b border-border bg-card flex-shrink-0 px-3 sm:px-4 py-2.5 sm:py-3 flex items-center gap-2 sm:gap-3 z-10">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setMobileSidebarOpen(true)}
-            className="h-9 w-9 touch-manipulation"
+            className="h-9 w-9 sm:h-10 sm:w-10 touch-manipulation min-h-[44px] min-w-[44px]"
             aria-label={t('common:labels.openMenu')}
           >
-            <Menu className="h-5 w-5" />
+            <Menu className="h-5 w-5 sm:h-6 sm:w-6" />
           </Button>
-          <div className="flex items-center gap-2">
-            <Hash className="w-5 h-5 text-prompedia-green-400" />
-            <h1 className="text-sm font-semibold font-mono truncate">{activeTagName || t('common:labels.tag')}</h1>
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <Hash className="w-4 h-4 sm:w-5 sm:h-5 text-prompedia-green-400" />
+            <h1 className="text-xs sm:text-sm font-semibold font-mono truncate">{activeTagName || t('common:labels.tag')}</h1>
           </div>
         </div>
       ) : (
-        <div className="border-b border-border bg-card flex-shrink-0 px-4 py-3 flex items-center gap-3 z-10">
+        <div className="hidden md:flex border-b border-border bg-card flex-shrink-0 px-4 lg:px-6 py-3 lg:py-4 items-center gap-3 lg:gap-4 z-10">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => navigate(-1)}
-            className="h-9 w-9 touch-manipulation"
+            className="h-9 w-9 lg:h-10 lg:w-10 touch-manipulation"
             aria-label={t('common:labels.back')}
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-5 w-5 lg:h-6 lg:w-6" />
           </Button>
-          <div className="flex items-center gap-2">
-            <Hash className="w-5 h-5 text-prompedia-green-400" />
-            <h1 className="text-sm sm:text-base font-semibold font-mono truncate">{activeTagName || t('common:labels.tag')}</h1>
+          <div className="flex items-center gap-2 lg:gap-3">
+            <Hash className="w-5 h-5 lg:w-6 lg:h-6 text-prompedia-green-400" />
+            <h1 className="text-sm lg:text-base xl:text-lg font-semibold font-mono truncate">{activeTagName || t('common:labels.tag')}</h1>
           </div>
         </div>
       )}
@@ -252,7 +252,7 @@ const AppPage = () => {
       <div className="flex-1 overflow-y-auto">
         {isTagLoading ? (
           <div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 p-3 sm:p-4 md:p-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 p-3 sm:p-4 md:p-6">
               {Array.from({ length: 6 }).map((_, index) => (
                 <div key={index} className="bg-card border rounded-lg p-4 sm:p-6 space-y-4">
                   <div className="flex justify-between">
@@ -293,7 +293,7 @@ const AppPage = () => {
             <p className="text-sm text-center">{t('library:noPromptsWithTag')}</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 p-3 sm:p-4 md:p-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 p-3 sm:p-4 md:p-6">
             {tagPrompts.map((prompt) => (
               <PromptCard
                 key={prompt.id}
@@ -322,18 +322,18 @@ const AppPage = () => {
   const renderDefaultContent = () => (
     <div key={contentViewKey} className="flex h-full flex-col">
       {isMobile && (
-        <div className="md:hidden border-b border-border bg-card flex-shrink-0 px-4 py-3 flex items-center gap-3 z-10">
+        <div className="md:hidden border-b border-border bg-card flex-shrink-0 px-3 sm:px-4 py-2.5 sm:py-3 flex items-center gap-2 sm:gap-3 z-10">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setMobileSidebarOpen(true)}
-            className="h-9 w-9 touch-manipulation"
+            className="h-9 w-9 sm:h-10 sm:w-10 touch-manipulation min-h-[44px] min-w-[44px]"
             aria-label={t('common:labels.openMenu')}
           >
-            <Menu className="h-5 w-5" />
+            <Menu className="h-5 w-5 sm:h-6 sm:w-6" />
           </Button>
           <div className="flex-1">
-            <h1 className="text-sm font-semibold font-mono">Prompedia AI</h1>
+            <h1 className="text-xs sm:text-sm font-semibold font-mono">Prompedia AI</h1>
           </div>
         </div>
       )}
