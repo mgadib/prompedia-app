@@ -1,67 +1,49 @@
-import React from "react";
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
+import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ThemeProvider } from "@/components/theme-provider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { ErrorBoundary } from "@/components/ErrorBoundary";
-const AppPage = React.lazy(() => import('./pages/App'));
-const NotFound = React.lazy(() => import('./pages/NotFound'));
-const PublicPromptDetail = React.lazy(() => import('./pages/PublicPromptDetail'));
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import PromptNotes from "@/components/PromptNotes";
+import { useTranslation } from "react-i18next";
+import { useEffect } from "react";
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: (failureCount, error) => {
-        // Jangan retry pada error 4xx
-        if (error && typeof error === 'object' && 'status' in error) {
-          const status = (error as any).status;
-          if (status >= 400 && status < 500) {
-            return false;
-          }
-        }
-        return failureCount < 3;
-      },
-      retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
-      staleTime: 5 * 60 * 1000, // 5 menit
-      refetchOnWindowFocus: false,
-      refetchOnMount: true,
-      refetchOnReconnect: true,
-      networkMode: 'online',
-    },
-    mutations: {
       retry: false,
-      networkMode: 'online',
+      staleTime: 5 * 60 * 1000,
+      refetchOnWindowFocus: false,
     },
   },
 });
 
-const App = () => (
-  <ErrorBoundary>
+const App = () => {
+  const { t, i18n } = useTranslation();
+
+  useEffect(() => {
+    document.title = t('app.title');
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) {
+      metaDesc.setAttribute('content', t('app.description'));
+    }
+    document.documentElement.lang = i18n.resolvedLanguage || 'id';
+  }, [t, i18n.resolvedLanguage]);
+
+  return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <React.Suspense
-            fallback={
-              <div className="min-h-screen flex items-center justify-center">
-                <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-              </div>
-            }
-          >
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem storageKey="vite-ui-theme">
+        <TooltipProvider>
+          <Toaster />
+          <BrowserRouter>
             <Routes>
-              <Route path="/" element={<AppPage />} />
-              <Route path="/tags/:name" element={<AppPage />} />
-              <Route path="/p/:id" element={<PublicPromptDetail />} />
-              {/* TAMBAHKAN SEMUA ROUTE CUSTOM DI ATAS ROUTE CATCH-ALL "*" */}
-              <Route path="*" element={<NotFound />} />
+              <Route path="/" element={<PromptNotes />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
-          </React.Suspense>
-        </BrowserRouter>
-      </TooltipProvider>
+          </BrowserRouter>
+        </TooltipProvider>
+      </ThemeProvider>
     </QueryClientProvider>
-  </ErrorBoundary>
-);
+  );
+};
 
 export default App;

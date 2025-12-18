@@ -1,0 +1,74 @@
+{
+    "app": {
+        "title": "Personal Prompt Notes",
+        "description": "Personal Prompt Notes"
+    },
+    "auth": {
+        "email": "Email",
+        "password": "Password",
+        "login": "Masuk",
+        "register": "Daftar",
+        "no_account": "Belum punya akun?",
+        "have_account": "Sudah punya akun?",
+        "switch_to_register": "Buat akun baru",
+        "switch_to_login": "Masuk ke akun",
+        "processing": "Memproses...",
+        "logout": "Keluar",
+        "logout_confirm_title": "Keluar Akun?",
+        "logout_confirm_desc": "Apakah Anda yakin ingin keluar dari akun Anda?",
+        "placeholders": {
+            "email": "email@contoh.com",
+            "password": "••••••••"
+        },
+        "error": {
+            "generic": "Terjadi kesalahan saat masuk"
+        }
+    },
+    "prompt": {
+        "title_placeholder": "Judul prompt...",
+        "content_placeholder": "Paste prompt di sini...",
+        "tags_placeholder": "Tag (opsional, pisahkan dengan koma)",
+        "public": "Publik",
+        "private": "Privat",
+        "save": "Simpan",
+        "saving": "Menyimpan...",
+        "update": "Perbarui",
+        "cancel_edit": "Batal edit",
+        "search_placeholder": "Cari prompt…",
+        "delete_confirm": "Hapus Prompt",
+        "delete_warning": "Tindakan ini tidak dapat dibatalkan. Prompt ini akan dihapus secara permanen.",
+        "created_by": "Dibuat oleh {{author}}",
+        "by": "by {{author}}",
+        "untitled": "Tanpa Judul",
+        "unknown_author": "Tidak Diketahui"
+    },
+    "list": {
+        "title": "Semua Prompt ({{count}})",
+        "all": "Semua",
+        "empty": "Belum ada prompt tersimpan",
+        "no_match": "Tidak ada prompt yang cocok",
+        "showing": "Menampilkan {{start}} - {{end}} dari {{total}} prompt",
+        "show": "Tampilkan:",
+        "previous": "Sebelumnya",
+        "next": "Selanjutnya"
+    },
+    "sidebar": {
+        "title": "Semua Tag ({{count}})",
+        "no_tags": "Belum ada tag",
+        "clear_filter": "Hapus filter"
+    },
+    "actions": {
+        "copy": "Salin",
+        "delete": "Hapus",
+        "cancel": "Batal",
+        "edit": "Edit",
+        "close": "Tutup",
+        "copy_prompt": "Salin Prompt"
+    },
+    "toast": {
+        "saved": "Tersimpan",
+        "save_failed": "Gagal menyimpan",
+        "deleted": "Dihapus",
+        "copied": "Disalin"
+    }
+}

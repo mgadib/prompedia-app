@@ -1,18 +1,12 @@
 import { createRoot } from "react-dom/client";
 import { StrictMode } from "react";
-import { validateEnv } from "@/lib/env-validation";
 import App from "./App.tsx";
+import "@fontsource/inter/400.css";
+import "@fontsource/inter/500.css";
+import "@fontsource/inter/600.css";
+import "@fontsource/jetbrains-mono";
+import "./i18n";
 import "./index.css";
-import "@/lib/i18n"; // Inisialisasi i18n
-
-// Memvalidasi variabel environment saat startup
-try {
-  validateEnv();
-} catch (error) {
-  if (import.meta.env.DEV) {
-    console.error('Failed to start application:', error);
-  }
-}
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

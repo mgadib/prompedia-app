@@ -1,0 +1,74 @@
+{
+    "app": {
+        "title": "Personal Prompt Notes",
+        "description": "Personal Prompt Notes"
+    },
+    "auth": {
+        "email": "Email",
+        "password": "Password",
+        "login": "Sign In",
+        "register": "Sign Up",
+        "no_account": "Don't have an account?",
+        "have_account": "Already have an account?",
+        "switch_to_register": "Create account",
+        "switch_to_login": "Sign in instead",
+        "processing": "Processing...",
+        "logout": "Sign Out",
+        "logout_confirm_title": "Sign Out?",
+        "logout_confirm_desc": "Are you sure you want to sign out from your account?",
+        "placeholders": {
+            "email": "email@example.com",
+            "password": "••••••••"
+        },
+        "error": {
+            "generic": "An error occurred during sign in"
+        }
+    },
+    "prompt": {
+        "title_placeholder": "Prompt title...",
+        "content_placeholder": "Paste prompt here...",
+        "tags_placeholder": "Tags (optional, comma separated)",
+        "public": "Public",
+        "private": "Private",
+        "save": "Save",
+        "saving": "Saving...",
+        "update": "Update",
+        "cancel_edit": "Cancel edit",
+        "search_placeholder": "Search prompts…",
+        "delete_confirm": "Delete Prompt",
+        "delete_warning": "This action cannot be undone. This prompt will be permanently deleted.",
+        "created_by": "Created by {{author}}",
+        "by": "by {{author}}",
+        "untitled": "Untitled",
+        "unknown_author": "Unknown"
+    },
+    "list": {
+        "title": "All Prompts ({{count}})",
+        "all": "All",
+        "empty": "No prompts saved yet",
+        "no_match": "No matching prompts found",
+        "showing": "Showing {{start}} - {{end}} of {{total}} prompts",
+        "show": "Show:",
+        "previous": "Previous",
+        "next": "Next"
+    },
+    "sidebar": {
+        "title": "All Tags ({{count}})",
+        "no_tags": "No tags yet",
+        "clear_filter": "Clear filter"
+    },
+    "actions": {
+        "copy": "Copy",
+        "delete": "Delete",
+        "cancel": "Cancel",
+        "edit": "Edit",
+        "close": "Close",
+        "copy_prompt": "Copy Prompt"
+    },
+    "toast": {
+        "saved": "Saved",
+        "save_failed": "Failed to save",
+        "deleted": "Deleted",
+        "copied": "Copied"
+    }
+}
