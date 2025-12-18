@@ -31,7 +31,7 @@ const App = () => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider attribute="class" defaultTheme="system" enableSystem storageKey="vite-ui-theme">
+      <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} storageKey="vite-ui-theme">
         <TooltipProvider>
           <Toaster />
           <BrowserRouter>

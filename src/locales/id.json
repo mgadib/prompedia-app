@@ -17,9 +17,11 @@
         "logout_confirm_title": "Keluar Akun?",
         "logout_confirm_desc": "Apakah Anda yakin ingin keluar dari akun Anda?",
         "placeholders": {
+            "name": "Nama Lengkap",
             "email": "email@contoh.com",
             "password": "••••••••"
         },
+        "name": "Nama",
         "error": {
             "generic": "Terjadi kesalahan saat masuk"
         }
@@ -69,6 +71,7 @@
         "saved": "Tersimpan",
         "save_failed": "Gagal menyimpan",
         "deleted": "Dihapus",
-        "copied": "Disalin"
+        "copied": "Disalin",
+        "registration_success": "Akun berhasil dibuat! Silakan masuk."
     }
 }

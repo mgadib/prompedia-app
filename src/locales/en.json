@@ -17,9 +17,11 @@
         "logout_confirm_title": "Sign Out?",
         "logout_confirm_desc": "Are you sure you want to sign out from your account?",
         "placeholders": {
+            "name": "Full Name",
             "email": "email@example.com",
             "password": "••••••••"
         },
+        "name": "Name",
         "error": {
             "generic": "An error occurred during sign in"
         }
@@ -69,6 +71,7 @@
         "saved": "Saved",
         "save_failed": "Failed to save",
         "deleted": "Deleted",
-        "copied": "Copied"
+        "copied": "Copied",
+        "registration_success": "Account created successfully! Please sign in."
     }
 }

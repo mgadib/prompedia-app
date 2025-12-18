@@ -49,6 +49,7 @@ const PromptNotes = () => {
     // Auth form
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [displayName, setDisplayName] = useState('');
     const [authError, setAuthError] = useState('');
     const [authSubmitting, setAuthSubmitting] = useState(false);
     const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
@@ -168,10 +169,19 @@ const PromptNotes = () => {
             if (error) setAuthError(error.message);
             else { setEmail(''); setPassword(''); }
         } else {
-            const { error } = await supabase.auth.signUp({ email, password });
+            const { error } = await supabase.auth.signUp({
+                email,
+                password,
+                options: {
+                    data: {
+                        display_name: displayName,
+                        username: email.split('@')[0] // Fallback username
+                    }
+                }
+            });
             if (error) setAuthError(error.message);
             else {
-                showToast(t('toast.success'));
+                showToast(t('toast.registration_success'));
                 setAuthMode('login'); // Switch to login after registration
             }
         }
@@ -375,6 +385,12 @@ const PromptNotes = () => {
                         <p className="text-sm text-muted-foreground mt-2">{t('app.description')}</p>
                     </div>
                     <form onSubmit={handleAuth} className="space-y-4">
+                        {authMode === 'register' && (
+                            <div>
+                                <label className="block text-sm font-medium text-foreground mb-1.5">{t('auth.name')}</label>
+                                <input type="text" value={displayName} onChange={e => setDisplayName(e.target.value)} required placeholder={t('auth.placeholders.name')} disabled={authSubmitting} className="w-full px-3 py-2.5 bg-card border border-border rounded-md text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50" />
+                            </div>
+                        )}
                         <div>
                             <label className="block text-sm font-medium text-foreground mb-1.5">{t('auth.email')}</label>
                             <input type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder={t('auth.placeholders.email')} disabled={authSubmitting} className="w-full px-3 py-2.5 bg-card border border-border rounded-md text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50" />
