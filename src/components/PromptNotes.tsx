@@ -370,8 +370,8 @@ const PromptNotes = () => {
         return (
             <div className="min-h-screen flex items-center justify-center bg-background p-4">
                 <div className="w-full max-w-sm">
-                    <div className="text-center mb-8">
-                        <h1 className="text-2xl font-semibold text-foreground">{t('app.title')}</h1>
+                    <div className="text-center mb-8 flex flex-col items-center">
+                        <img src="/auth-logo.png" alt="Prompedia Logo" className="w-48 mb-2" />
                         <p className="text-sm text-muted-foreground mt-2">{t('app.description')}</p>
                     </div>
                     <form onSubmit={handleAuth} className="space-y-4">
@@ -408,7 +408,10 @@ const PromptNotes = () => {
         <div className="min-h-screen bg-background relative font-sans">
             <header className="border-b border-border bg-card">
                 <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-                    <h1 className="text-base font-semibold text-foreground">{t('app.title')}</h1>
+                    <div className="flex items-center gap-3">
+                        <img src="/logo.png" alt="Logo" className="w-8 h-8" />
+                        <h1 className="text-base font-semibold text-foreground">{t('app.title')}</h1>
+                    </div>
                     <div className="flex items-center gap-6">
                         <button
                             onClick={() => i18n.changeLanguage(i18n.resolvedLanguage === 'id' ? 'en' : 'id')}
