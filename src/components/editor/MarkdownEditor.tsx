@@ -174,12 +174,15 @@ export const MarkdownEditor = ({
     const { t } = useTranslation();
     const [isPreview, setIsPreview] = useState(false);
 
-    // Memoize extensions to prevent recreation
+    // Memoize extensions to prevent recreation and avoid duplicate extension warnings
+    // This ensures extensions are only created once per placeholder change
+    // Critical: Prevents TipTap duplicate extension warnings in React StrictMode
     const extensions = useMemo(
         () => createExtensions({ placeholder }),
         [placeholder]
     );
 
+    // Create editor instance with stable configuration
     const editor = useEditor({
         extensions,
         content: markdownToHtml(value),
@@ -211,10 +214,14 @@ export const MarkdownEditor = ({
         },
     });
 
-    // Sync external value changes
+    // Sync external value changes (only when editor is not focused to avoid conflicts)
     useEffect(() => {
-        if (editor && !editor.isFocused) {
+        if (!editor) return;
+        
+        // Only update if editor is not focused to prevent interrupting user input
+        if (!editor.isFocused) {
             const currentMarkdown = editorToMarkdown(editor);
+            // Prevent unnecessary updates by comparing markdown strings
             if (currentMarkdown !== value) {
                 editor.commands.setContent(markdownToHtml(value));
             }

@@ -35,7 +35,12 @@ const App = () => {
       <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} storageKey="vite-ui-theme">
         <TooltipProvider>
           <Toaster />
-          <BrowserRouter>
+          <BrowserRouter
+            future={{
+              v7_startTransition: true,
+              v7_relativeSplatPath: true,
+            }}
+          >
             <SEO />
             <Routes>
               <Route path="/" element={<PromptNotes />} />
