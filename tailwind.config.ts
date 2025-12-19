@@ -7,7 +7,7 @@ export default {
   theme: {
     container: {
       center: true,
-      padding: "2rem",
+      padding: "1rem",
       screens: {
         "2xl": "1400px",
       },
@@ -110,7 +110,7 @@ export default {
         sm: "var(--radius-sm)",
         md: "var(--radius)",
         lg: "var(--radius-lg)",
-        xl: "calc(var(--radius-lg) + 0.25rem)",
+        xl: "var(--radius-lg)",
       },
       spacing: {
         'xs': '0.25rem',

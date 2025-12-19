@@ -3,19 +3,19 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const promptCardVariants = cva(
-  "relative flex flex-col rounded-lg border bg-card text-card-foreground transition-all duration-200 cursor-pointer",
+  "relative flex flex-col rounded-sm border bg-card text-card-foreground cursor-pointer",
   {
     variants: {
       variant: {
-        default: "border-border hover:border-border/80 hover:shadow-sm",
-        public: "border-border hover:border-border/80 hover:shadow-sm",
-        private: "border-border hover:border-muted-foreground/30 hover:shadow-sm",
-        selected: "border-brand ring-2 ring-brand/20 shadow-md",
+        default: "border-border hover:bg-secondary/50",
+        public: "border-border hover:bg-secondary/50",
+        private: "border-border hover:bg-secondary/50",
+        selected: "border-brand ring-1 ring-brand/30",
       },
       size: {
-        sm: "p-3",
-        default: "p-4",
-        lg: "p-6",
+        sm: "p-2",
+        default: "p-3",
+        lg: "p-4",
       },
     },
     defaultVariants: {
@@ -49,7 +49,7 @@ const PromptCardHeader = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex items-start justify-between gap-3 mb-3", className)}
+    className={cn("flex items-start justify-between gap-2 mb-2", className)}
     {...props}
   />
 ));
@@ -101,7 +101,7 @@ const PromptCardFooter = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "flex items-end justify-between gap-6 mt-auto pt-3",
+      "flex items-end justify-between gap-3 mt-auto pt-2",
       className
     )}
     {...props}

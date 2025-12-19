@@ -3,7 +3,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const statusBadgeVariants = cva(
-  "inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-meta font-medium transition-colors",
+  "inline-flex items-center gap-1 rounded-sm font-medium",
   {
     variants: {
       variant: {
@@ -13,9 +13,9 @@ const statusBadgeVariants = cva(
         default: "bg-secondary text-secondary-foreground border border-transparent",
       },
       size: {
-        sm: "text-caption px-2 py-0.5",
-        default: "text-meta px-2.5 py-1",
-        lg: "text-sm px-3 py-1.5",
+        sm: "text-caption px-1.5 py-0.5",
+        default: "text-meta px-2 py-0.5",
+        lg: "text-sm px-2.5 py-1",
       },
     },
     defaultVariants: {

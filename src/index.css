@@ -50,9 +50,21 @@
     --input: 220 13% 91%;
     --ring: 24 95% 53%;
 
-    --radius: 0.5rem;
-    --radius-sm: 0.375rem;
-    --radius-lg: 0.75rem;
+    /* ========================================
+       RADIUS TOKENS - Dense/Flat UI (max 2px)
+       ======================================== */
+    --radius: 0.125rem;
+    --radius-sm: 0;
+    --radius-lg: 0.125rem;
+
+    /* ========================================
+       SPACING TOKENS - Dense Scale
+       ======================================== */
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-5: 1.25rem;
 
     /* ========================================
        BRAND TOKENS
@@ -205,6 +217,11 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
+  /* Pre tag default - use Inter instead of monospace */
+  pre {
+    font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  }
+
   /* Inputs */
   input,
   select,
@@ -267,24 +284,20 @@
     outline-offset: 2px;
   }
 
-  /* Prompt list item hover */
-  .prompt-item {
-    transition: background-color 0.15s ease;
-  }
-
+  /* Prompt list item hover - minimal transition */
   .prompt-item:hover {
     background-color: hsl(var(--secondary));
   }
 
-  /* Tag styling */
+  /* Tag styling - flat design */
   .tag {
     display: inline-block;
-    padding: 0.125rem 0.5rem;
+    padding: 0.125rem 0.375rem;
     font-size: 0.75rem;
     font-weight: 400;
     color: hsl(var(--muted-foreground));
     background-color: hsl(var(--secondary));
-    border-radius: 9999px;
+    border-radius: var(--radius-sm);
   }
 
   /* Toast animation */
@@ -323,7 +336,7 @@
   /* Rich Text Editor Styles */
   .prose-editor {
     @apply text-foreground leading-relaxed;
-    font-family: var(--font-editor);
+    font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
   }
 
   .prose-editor:focus {
@@ -331,23 +344,23 @@
   }
 
   .prose-editor p {
-    @apply my-2;
+    @apply my-1;
   }
 
   .prose-editor h1 {
-    @apply text-2xl font-bold mt-6 mb-4;
+    @apply text-xl font-bold mt-4 mb-2;
   }
 
   .prose-editor h2 {
-    @apply text-xl font-bold mt-5 mb-3;
+    @apply text-lg font-bold mt-3 mb-2;
   }
 
   .prose-editor h3 {
-    @apply text-lg font-semibold mt-4 mb-2;
+    @apply text-base font-semibold mt-3 mb-1;
   }
 
   .prose-editor h4 {
-    @apply text-base font-semibold mt-3 mb-2;
+    @apply text-sm font-semibold mt-2 mb-1;
   }
 
   .prose-editor h5 {
@@ -359,15 +372,15 @@
   }
 
   .prose-editor ul {
-    @apply list-disc list-inside my-2 space-y-1;
+    @apply list-disc list-inside my-1.5 space-y-0.5;
   }
 
   .prose-editor ol {
-    @apply list-decimal list-inside my-2 space-y-1;
+    @apply list-decimal list-inside my-1.5 space-y-0.5;
   }
 
   .prose-editor li {
-    @apply leading-relaxed;
+    @apply leading-normal;
   }
 
   .prose-editor li p {
@@ -375,11 +388,11 @@
   }
 
   .prose-editor blockquote {
-    @apply border-l-4 border-primary/30 pl-4 my-4 italic text-muted-foreground;
+    @apply border-l-2 border-primary/30 pl-3 my-2 italic text-muted-foreground;
   }
 
   .prose-editor hr {
-    @apply my-6 border-border;
+    @apply my-4 border-border;
   }
 
   .prose-editor a {
@@ -396,21 +409,21 @@
 
   /* Inline code */
   .prose-editor code {
-    @apply px-1.5 py-0.5 rounded font-mono text-sm;
+    @apply px-1 py-0.5 rounded-sm font-mono text-sm;
     background-color: hsl(var(--code));
     color: hsl(var(--code-foreground));
   }
 
   /* Code block */
   .prose-editor pre {
-    @apply my-4 rounded-md overflow-x-auto;
+    @apply my-2 rounded-sm overflow-x-auto;
     background-color: hsl(var(--code));
     border: 1px solid hsl(var(--code-border));
   }
 
   .prose-editor pre code {
-    @apply block p-4 bg-transparent text-sm leading-relaxed;
-    font-family: var(--font-editor);
+    @apply block p-3 bg-transparent text-sm leading-normal;
+    font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
   }
 
   /* Code block language label */
@@ -434,14 +447,14 @@
   /* Preview styles */
   .prose-preview {
     @apply text-foreground leading-relaxed;
-    font-family: var(--font-editor);
+    font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
   }
 
   /* Code block utility class */
   .code-block {
     background-color: hsl(var(--code));
     border-color: hsl(var(--code-border));
-    font-family: var(--font-editor);
+    font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
   }
 
   /* Background utility for code */

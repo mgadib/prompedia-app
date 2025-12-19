@@ -474,19 +474,19 @@ const PromptNotes = () => {
 
 
     const promptDetailModal = selectedPrompt && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm" onClick={() => setSelectedPrompt(null)}>
-            <div className="w-full max-w-[42rem] bg-card border border-border rounded-lg shadow-lg flex flex-col max-h-[85vh]" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-background/80 backdrop-blur-sm" onClick={() => setSelectedPrompt(null)}>
+            <div className="w-full max-w-[42rem] bg-card border border-border rounded-sm shadow-lg flex flex-col max-h-[85vh]" onClick={e => e.stopPropagation()}>
                 {/* Header */}
-                <div className="p-5 border-b border-border bg-card">
+                <div className="p-3 border-b border-border bg-card">
                     {/* Title Row */}
-                    <div className="flex items-start justify-between gap-4 mb-3">
+                    <div className="flex items-start justify-between gap-3 mb-2">
                         <h3 className="text-card-title text-muted-foreground flex-1 font-medium">{selectedPrompt.title}</h3>
                         <Button variant="ghost" size="sm" className="flex-shrink-0" onClick={() => setSelectedPrompt(null)}>
                             {t('actions.close')}
                         </Button>
                     </div>
                     {/* Meta Row - Tag, Status, User, Tanggal sejajar */}
-                    <div className="flex items-center gap-2 flex-wrap">
+                    <div className="flex items-center gap-1.5 flex-wrap">
                         {selectedPrompt.tags.length > 0 && (
                             <>
                                 {selectedPrompt.tags.map(tag => (
@@ -509,12 +509,12 @@ const PromptNotes = () => {
                 </div>
 
                 {/* Content - Fokus utama */}
-                <div className="flex-1 overflow-y-auto p-8 bg-background">
-                    <pre className="whitespace-pre-wrap text-body-lg text-foreground leading-relaxed font-mono">{selectedPrompt.content}</pre>
+                <div className="flex-1 overflow-y-auto p-4 bg-background">
+                    <pre className="whitespace-pre-wrap text-body text-foreground leading-relaxed font-sans">{selectedPrompt.content}</pre>
                 </div>
 
                 {/* Footer */}
-                <div className="px-6 py-4 border-t border-border flex justify-end gap-3 bg-card rounded-b-lg">
+                <div className="px-4 py-3 border-t border-border flex justify-end gap-2 bg-card rounded-b-sm">
                     {user && user.id === selectedPrompt.user_id && (
                         <Button variant="outline" size="sm" onClick={() => handleEdit(selectedPrompt)}>
                             {t('actions.edit')}
@@ -564,14 +564,14 @@ const PromptNotes = () => {
                     </div>
                 </header>
 
-                <div className="max-w-6xl mx-auto px-4 py-6">
-                    <div className="flex flex-col lg:flex-row gap-6 items-start">
+                <div className="max-w-6xl mx-auto px-4 py-4">
+                    <div className="flex flex-col lg:flex-row gap-4 items-start">
                         <div className="flex-1 w-full min-w-0">
                             {/* Hero Section */}
-                            <div className="mb-8">
-                                <div className="bg-card border border-border rounded-lg p-8 text-left shadow-sm">
-                                    <h2 className="text-2xl font-bold font-mono tracking-tight sm:text-3xl mb-3 text-foreground">{t('app.tagline')}</h2>
-                                    <p className="text-base text-muted-foreground max-w-xl">{t('app.description')}</p>
+                            <div className="mb-6">
+                                <div className="bg-card border border-border rounded-sm p-5 text-left">
+                                    <h2 className="text-xl font-bold font-mono tracking-tight sm:text-2xl mb-2 text-foreground">{t('app.tagline')}</h2>
+                                    <p className="text-sm text-muted-foreground max-w-xl">{t('app.description')}</p>
                                     <div className="geo-content opacity-0 h-0 overflow-hidden" aria-hidden="true">
                                         {t('geo.semantic_description')}
                                     </div>
@@ -668,30 +668,30 @@ const PromptNotes = () => {
                         </div>
 
                         {/* Compact Auth Form */}
-                        <aside className="w-full lg:w-80 flex-shrink-0 sticky top-20">
-                            <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
-                                <form onSubmit={handleAuth} className="space-y-4">
+                        <aside className="w-full lg:w-72 flex-shrink-0 sticky top-16">
+                            <div className="bg-card border border-border rounded-sm p-4">
+                                <form onSubmit={handleAuth} className="space-y-3">
                                     {authMode === 'register' && (
                                         <div>
-                                            <label className="block text-meta font-medium text-foreground mb-1.5">{t('auth.name')}</label>
-                                            <input type="text" value={displayName} onChange={e => setDisplayName(e.target.value)} required placeholder={t('auth.placeholders.name')} disabled={authSubmitting} className="w-full px-4 py-2.5 bg-background border border-border rounded-lg text-body text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent disabled:opacity-50" />
+                                            <label className="block text-caption font-medium text-foreground mb-1">{t('auth.name')}</label>
+                                            <input type="text" value={displayName} onChange={e => setDisplayName(e.target.value)} required placeholder={t('auth.placeholders.name')} disabled={authSubmitting} className="w-full px-2 py-1.5 bg-background border border-border rounded-sm text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50" />
                                         </div>
                                     )}
                                     <div>
-                                        <label className="block text-meta font-medium text-foreground mb-1.5">{t('auth.email')}</label>
-                                        <input type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder={t('auth.placeholders.email')} disabled={authSubmitting} className="w-full px-4 py-2.5 bg-background border border-border rounded-lg text-body text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent disabled:opacity-50" />
+                                        <label className="block text-caption font-medium text-foreground mb-1">{t('auth.email')}</label>
+                                        <input type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder={t('auth.placeholders.email')} disabled={authSubmitting} className="w-full px-2 py-1.5 bg-background border border-border rounded-sm text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50" />
                                     </div>
                                     <div>
-                                        <label className="block text-meta font-medium text-foreground mb-1.5">{t('auth.password')}</label>
-                                        <input type="password" value={password} onChange={e => setPassword(e.target.value)} required placeholder={t('auth.placeholders.password')} disabled={authSubmitting} className="w-full px-4 py-2.5 bg-background border border-border rounded-lg text-body text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent disabled:opacity-50" />
+                                        <label className="block text-caption font-medium text-foreground mb-1">{t('auth.password')}</label>
+                                        <input type="password" value={password} onChange={e => setPassword(e.target.value)} required placeholder={t('auth.placeholders.password')} disabled={authSubmitting} className="w-full px-2 py-1.5 bg-background border border-border rounded-sm text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50" />
                                     </div>
-                                    {authError && <p className="text-meta text-destructive">{authError}</p>}
+                                    {authError && <p className="text-caption text-destructive">{authError}</p>}
                                     <Button type="submit" variant="brand" className="w-full" disabled={authSubmitting}>
                                         {authSubmitting ? t('auth.processing') : (authMode === 'login' ? t('auth.login') : t('auth.register'))}
                                     </Button>
                                 </form>
-                                <div className="mt-4 text-center">
-                                    <p className="text-meta text-muted-foreground">
+                                <div className="mt-3 text-center">
+                                    <p className="text-caption text-muted-foreground">
                                         {authMode === 'login' ? t('auth.no_account') : t('auth.have_account')}{' '}
                                         <button
                                             onClick={() => { setAuthMode(authMode === 'login' ? 'register' : 'login'); setAuthError(''); }}
@@ -704,8 +704,8 @@ const PromptNotes = () => {
                             </div>
 
                             {/* Public Tags Section */}
-                            <div className="bg-card border border-border rounded-lg p-6 shadow-sm mt-6">
-                                <h2 className="text-section-title text-foreground mb-4 pb-3 border-b border-border">{t('landing.public_tags_title')}</h2>
+                            <div className="bg-card border border-border rounded-sm p-4 mt-4">
+                                <h2 className="text-sm font-semibold text-foreground mb-3 pb-2 border-b border-border">{t('landing.public_tags_title')}</h2>
                                 {publicTags.length > 0 ? (
                                     <div className="flex flex-wrap gap-2">
                                         <TagChip
@@ -775,23 +775,23 @@ const PromptNotes = () => {
                 </div>
             </header>
 
-            <div className="max-w-6xl mx-auto px-4 py-6 flex gap-6">
+            <div className="max-w-6xl mx-auto px-4 py-4 flex gap-4">
                 <main className="flex-1 min-w-0">
-                    <div className="mb-6">
-                        <input type="text" value={filter} onChange={e => setFilter(e.target.value)} placeholder={t('prompt.search_placeholder')} className="w-full px-4 py-2.5 bg-card border border-border rounded-lg text-body text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent" />
+                    <div className="mb-4">
+                        <input type="text" value={filter} onChange={e => setFilter(e.target.value)} placeholder={t('prompt.search_placeholder')} className="w-full px-2 py-1.5 bg-card border border-border rounded-sm text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring" />
                     </div>
 
                     {/* Editor Section */}
-                    <div className="mb-8 bg-card border border-border rounded-lg p-6">
-                        <div className="flex items-center gap-3 mb-4">
+                    <div className="mb-6 bg-card border border-border rounded-sm p-4">
+                        <div className="flex items-center gap-2 mb-3">
                             <input 
                                 type="text" 
                                 value={title} 
                                 onChange={e => setTitle(e.target.value)} 
                                 placeholder={t('prompt.title_placeholder')} 
-                                className="flex-1 py-2 bg-transparent text-body-lg font-semibold text-foreground placeholder:text-muted-foreground focus:outline-none" 
+                                className="flex-1 py-1 bg-transparent text-base font-semibold text-foreground placeholder:text-muted-foreground focus:outline-none" 
                             />
-                            <StatusBadge variant={isPublic ? 'public' : 'private'}>
+                            <StatusBadge variant={isPublic ? 'public' : 'private'} size="sm">
                                 {isPublic ? t('prompt.public') : t('prompt.private')}
                             </StatusBadge>
                         </div>
@@ -800,18 +800,18 @@ const PromptNotes = () => {
                             value={content}
                             onChange={setContent}
                             placeholder={t('prompt.content_placeholder')}
-                            minHeight="240px"
+                            minHeight="200px"
                         />
 
-                        <div className="mt-6 space-y-4">
-                            <div className="flex flex-col sm:flex-row gap-4 sm:items-center">
+                        <div className="mt-4 space-y-3">
+                            <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
                                 <div className="flex-1">
                                     <input 
                                         type="text" 
                                         value={tagsInput} 
                                         onChange={e => setTagsInput(e.target.value)} 
                                         placeholder={t('prompt.tags_placeholder')} 
-                                        className="w-full px-4 py-2.5 bg-background border border-border rounded-lg text-body text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent" 
+                                        className="w-full px-2 py-1.5 bg-background border border-border rounded-sm text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring" 
                                     />
                                 </div>
                                 <div className="flex items-center gap-4 flex-shrink-0">
@@ -913,6 +913,7 @@ const PromptNotes = () => {
                                                     <Button
                                                         variant="action"
                                                         size="inline"
+                                                        className="opacity-40 hover:opacity-100"
                                                         onClick={() => {
                                                             const url = `${window.location.origin}/share/${prompt.id}`;
                                                             navigator.clipboard.writeText(url);
@@ -920,25 +921,26 @@ const PromptNotes = () => {
                                                         }}
                                                         title={t('actions.share', 'Share')}
                                                     >
-                                                        <Share2 className="w-4 h-4" />
+                                                        <Share2 className="w-3.5 h-3.5" />
                                                     </Button>
                                                 )}
                                                 <Button
                                                     variant="action"
                                                     size="inline"
+                                                    className="opacity-40 hover:opacity-100"
                                                     onClick={() => handleCopy(prompt.content)}
                                                     title={t('actions.copy')}
                                                 >
-                                                    <Copy className="w-4 h-4" />
+                                                    <Copy className="w-3.5 h-3.5" />
                                                 </Button>
                                                 <Button
                                                     variant="action"
                                                     size="inline"
-                                                    className="hover:text-destructive"
+                                                    className="opacity-40 hover:opacity-100 hover:text-destructive"
                                                     onClick={() => handleDeleteClick(prompt.id)}
                                                     title={t('actions.delete')}
                                                 >
-                                                    <Trash2 className="w-4 h-4" />
+                                                    <Trash2 className="w-3.5 h-3.5" />
                                                 </Button>
                                             </PromptCardActions>
                                         </PromptCardFooter>
@@ -987,9 +989,9 @@ const PromptNotes = () => {
                     </div>
                 </main>
 
-                <aside className="hidden lg:block w-64 flex-shrink-0">
-                    <div className="sticky top-20 bg-card border border-border rounded-lg p-5">
-                        <h2 className="text-section-title text-foreground mb-4 pb-3 border-b border-border">{t('sidebar.title', { count: allUserTags.length })}</h2>
+                <aside className="hidden lg:block w-56 flex-shrink-0">
+                    <div className="sticky top-16 bg-card border border-border rounded-sm p-3">
+                        <h2 className="text-sm font-semibold text-foreground mb-3 pb-2 border-b border-border">{t('sidebar.title', { count: allUserTags.length })}</h2>
                         {allUserTags.length === 0 ? (
                             <p className="text-body text-muted-foreground">{t('sidebar.no_tags')}</p>
                         ) : (
@@ -1031,11 +1033,11 @@ const PromptNotes = () => {
 
             {/* Logout Confirmation Modal */}
             {showLogoutConfirm && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm" onClick={() => setShowLogoutConfirm(false)}>
-                    <div className="w-full max-w-sm bg-card border border-border rounded-lg shadow-lg p-6" onClick={e => e.stopPropagation()}>
-                        <h3 className="text-section-title text-foreground mb-2">{t('auth.logout_confirm_title')}</h3>
-                        <p className="text-body text-muted-foreground mb-6">{t('auth.logout_confirm_desc')}</p>
-                        <div className="flex justify-end gap-3">
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-3 bg-background/80 backdrop-blur-sm" onClick={() => setShowLogoutConfirm(false)}>
+                    <div className="w-full max-w-sm bg-card border border-border rounded-sm shadow-lg p-4" onClick={e => e.stopPropagation()}>
+                        <h3 className="text-base font-semibold text-foreground mb-1">{t('auth.logout_confirm_title')}</h3>
+                        <p className="text-sm text-muted-foreground mb-4">{t('auth.logout_confirm_desc')}</p>
+                        <div className="flex justify-end gap-2">
                             <Button variant="ghost" size="sm" onClick={() => setShowLogoutConfirm(false)}>
                                 {t('actions.cancel')}
                             </Button>
@@ -1049,11 +1051,11 @@ const PromptNotes = () => {
 
             {/* Delete Confirmation Modal */}
             {confirmDeleteId && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm" onClick={() => setConfirmDeleteId(null)}>
-                    <div className="w-full max-w-sm bg-card border border-border rounded-lg shadow-lg p-6" onClick={e => e.stopPropagation()}>
-                        <h3 className="text-section-title text-foreground mb-2">{t('prompt.delete_confirm')}</h3>
-                        <p className="text-body text-muted-foreground mb-6">{t('prompt.delete_warning')}</p>
-                        <div className="flex justify-end gap-3">
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-3 bg-background/80 backdrop-blur-sm" onClick={() => setConfirmDeleteId(null)}>
+                    <div className="w-full max-w-sm bg-card border border-border rounded-sm shadow-lg p-4" onClick={e => e.stopPropagation()}>
+                        <h3 className="text-base font-semibold text-foreground mb-1">{t('prompt.delete_confirm')}</h3>
+                        <p className="text-sm text-muted-foreground mb-4">{t('prompt.delete_warning')}</p>
+                        <div className="flex justify-end gap-2">
                             <Button variant="ghost" size="sm" onClick={() => setConfirmDeleteId(null)}>
                                 {t('actions.cancel')}
                             </Button>

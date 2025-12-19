@@ -34,7 +34,7 @@ const ToolbarButton = ({ onClick, isActive, disabled, title, children }: Toolbar
         onClick={onClick}
         disabled={disabled}
         title={title}
-        className={`p-2 rounded-md transition-colors ${isActive
+        className={`p-1.5 rounded-sm ${isActive
                 ? 'bg-action-secondary text-brand'
                 : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
             } disabled:opacity-50 disabled:cursor-not-allowed`}
@@ -44,7 +44,7 @@ const ToolbarButton = ({ onClick, isActive, disabled, title, children }: Toolbar
 );
 
 const ToolbarDivider = () => (
-    <div className="w-px h-6 bg-border mx-1.5" />
+    <div className="w-px h-5 bg-border mx-1" />
 );
 
 export const EditorToolbar = ({ editor }: EditorToolbarProps) => {
@@ -53,42 +53,42 @@ export const EditorToolbar = ({ editor }: EditorToolbarProps) => {
     if (!editor) return null;
 
     return (
-        <div className="flex items-center gap-0.5 px-2 py-1.5 bg-surface-subtle flex-wrap">
+        <div className="flex items-center gap-0 px-1.5 py-1 bg-surface-subtle flex-wrap">
             {/* Text formatting */}
             <ToolbarButton
                 onClick={() => editor.chain().focus().toggleBold().run()}
                 isActive={editor.isActive('bold')}
                 title={`${t('editor.toolbar.bold', 'Bold')} (Ctrl+B)`}
             >
-                <Bold className="w-[18px] h-[18px]" />
+                <Bold className="w-4 h-4" />
             </ToolbarButton>
             <ToolbarButton
                 onClick={() => editor.chain().focus().toggleItalic().run()}
                 isActive={editor.isActive('italic')}
                 title={`${t('editor.toolbar.italic', 'Italic')} (Ctrl+I)`}
             >
-                <Italic className="w-[18px] h-[18px]" />
+                <Italic className="w-4 h-4" />
             </ToolbarButton>
             <ToolbarButton
                 onClick={() => editor.chain().focus().toggleUnderline().run()}
                 isActive={editor.isActive('underline')}
                 title={`${t('editor.toolbar.underline', 'Underline')} (Ctrl+U)`}
             >
-                <UnderlineIcon className="w-[18px] h-[18px]" />
+                <UnderlineIcon className="w-4 h-4" />
             </ToolbarButton>
             <ToolbarButton
                 onClick={() => editor.chain().focus().toggleStrike().run()}
                 isActive={editor.isActive('strike')}
                 title={t('editor.toolbar.strikethrough', 'Strikethrough')}
             >
-                <Strikethrough className="w-[18px] h-[18px]" />
+                <Strikethrough className="w-4 h-4" />
             </ToolbarButton>
             <ToolbarButton
                 onClick={() => editor.chain().focus().toggleCode().run()}
                 isActive={editor.isActive('code')}
                 title={`${t('editor.toolbar.code', 'Inline Code')} (Ctrl+\`)`}
             >
-                <Code className="w-[18px] h-[18px]" />
+                <Code className="w-4 h-4" />
             </ToolbarButton>
 
             <ToolbarDivider />
@@ -99,21 +99,21 @@ export const EditorToolbar = ({ editor }: EditorToolbarProps) => {
                 isActive={editor.isActive('heading', { level: 1 })}
                 title={t('editor.toolbar.heading1', 'Heading 1')}
             >
-                <Heading1 className="w-[18px] h-[18px]" />
+                <Heading1 className="w-4 h-4" />
             </ToolbarButton>
             <ToolbarButton
                 onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
                 isActive={editor.isActive('heading', { level: 2 })}
                 title={t('editor.toolbar.heading2', 'Heading 2')}
             >
-                <Heading2 className="w-[18px] h-[18px]" />
+                <Heading2 className="w-4 h-4" />
             </ToolbarButton>
             <ToolbarButton
                 onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
                 isActive={editor.isActive('heading', { level: 3 })}
                 title={t('editor.toolbar.heading3', 'Heading 3')}
             >
-                <Heading3 className="w-[18px] h-[18px]" />
+                <Heading3 className="w-4 h-4" />
             </ToolbarButton>
 
             <ToolbarDivider />
@@ -124,14 +124,14 @@ export const EditorToolbar = ({ editor }: EditorToolbarProps) => {
                 isActive={editor.isActive('bulletList')}
                 title={t('editor.toolbar.list_bullet', 'Bullet List')}
             >
-                <List className="w-[18px] h-[18px]" />
+                <List className="w-4 h-4" />
             </ToolbarButton>
             <ToolbarButton
                 onClick={() => editor.chain().focus().toggleOrderedList().run()}
                 isActive={editor.isActive('orderedList')}
                 title={t('editor.toolbar.list_ordered', 'Numbered List')}
             >
-                <ListOrdered className="w-[18px] h-[18px]" />
+                <ListOrdered className="w-4 h-4" />
             </ToolbarButton>
 
             <ToolbarDivider />
@@ -142,20 +142,20 @@ export const EditorToolbar = ({ editor }: EditorToolbarProps) => {
                 isActive={editor.isActive('blockquote')}
                 title={t('editor.toolbar.quote', 'Blockquote')}
             >
-                <Quote className="w-[18px] h-[18px]" />
+                <Quote className="w-4 h-4" />
             </ToolbarButton>
             <ToolbarButton
                 onClick={() => editor.chain().focus().toggleCodeBlock().run()}
                 isActive={editor.isActive('codeBlock')}
                 title={t('editor.toolbar.code_block', 'Code Block')}
             >
-                <Code2 className="w-[18px] h-[18px]" />
+                <Code2 className="w-4 h-4" />
             </ToolbarButton>
             <ToolbarButton
                 onClick={() => editor.chain().focus().setHorizontalRule().run()}
                 title={t('editor.toolbar.horizontal_rule', 'Horizontal Rule')}
             >
-                <Minus className="w-[18px] h-[18px]" />
+                <Minus className="w-4 h-4" />
             </ToolbarButton>
         </div>
     );

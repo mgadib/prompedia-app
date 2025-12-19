@@ -233,14 +233,14 @@ export const MarkdownEditor = ({
     }, []);
 
     return (
-        <div className={`border border-border rounded-lg overflow-hidden bg-card ${className}`}>
+        <div className={`border border-border rounded-sm overflow-hidden bg-card ${className}`}>
             {/* Toolbar */}
             <div className="flex items-center justify-between border-b border-border">
                 <EditorToolbar editor={editor} />
                 <button
                     type="button"
                     onClick={handleTogglePreview}
-                    className={`flex items-center gap-2 px-4 py-2 text-body font-medium transition-colors ${
+                    className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium ${
                         isPreview 
                             ? 'text-brand bg-action-secondary' 
                             : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
@@ -249,12 +249,12 @@ export const MarkdownEditor = ({
                 >
                     {isPreview ? (
                         <>
-                            <Edit3 className="w-[18px] h-[18px]" />
+                            <Edit3 className="w-4 h-4" />
                             <span className="hidden sm:inline">{t('editor.toggle_edit', 'Edit')}</span>
                         </>
                     ) : (
                         <>
-                            <Eye className="w-[18px] h-[18px]" />
+                            <Eye className="w-4 h-4" />
                             <span className="hidden sm:inline">{t('editor.toggle_preview', 'Preview')}</span>
                         </>
                     )}
@@ -263,7 +263,7 @@ export const MarkdownEditor = ({
 
             {/* Content */}
             <div 
-                className={`p-6 ${isPreview ? 'bg-surface-subtle border-l-4 border-l-brand/20' : 'bg-card'}`} 
+                className={`p-3 ${isPreview ? 'bg-surface-subtle border-l-2 border-l-brand/20' : 'bg-card'}`} 
                 style={{ minHeight }}
             >
                 {isPreview ? (
