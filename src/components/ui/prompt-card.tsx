@@ -8,7 +8,7 @@ const promptCardVariants = cva(
     variants: {
       variant: {
         default: "border-border hover:border-border/80 hover:shadow-sm",
-        public: "border-l-4 border-l-brand border-t-border border-r-border border-b-border hover:shadow-md hover:shadow-brand/5",
+        public: "border-border hover:border-border/80 hover:shadow-sm",
         private: "border-border hover:border-muted-foreground/30 hover:shadow-sm",
         selected: "border-brand ring-2 ring-brand/20 shadow-md",
       },
@@ -49,7 +49,7 @@ const PromptCardHeader = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex items-start justify-between gap-3 mb-2", className)}
+    className={cn("flex items-start justify-between gap-3 mb-3", className)}
     {...props}
   />
 ));
@@ -62,7 +62,7 @@ const PromptCardTitle = React.forwardRef<
   <h3
     ref={ref}
     className={cn(
-      "text-card-title font-medium text-foreground truncate transition-colors group-hover:text-primary",
+      "text-section-title font-semibold text-foreground truncate leading-tight",
       className
     )}
     {...props}
@@ -101,7 +101,7 @@ const PromptCardFooter = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "flex items-end justify-between gap-4 mt-auto pt-3",
+      "flex items-end justify-between gap-6 mt-auto pt-3",
       className
     )}
     {...props}

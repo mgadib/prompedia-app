@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from "next-themes";
-import { Moon, Sun, Globe } from "lucide-react";
+import { Moon, Sun, Globe, Share2, Copy, Trash2 } from "lucide-react";
 import { User } from '@supabase/supabase-js';
 
 import { Tables } from '@/integrations/supabase/types';
@@ -475,48 +475,53 @@ const PromptNotes = () => {
 
     const promptDetailModal = selectedPrompt && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm" onClick={() => setSelectedPrompt(null)}>
-            <div className="w-full max-w-xl bg-card border border-border rounded-lg shadow-lg flex flex-col max-h-[85vh]" onClick={e => e.stopPropagation()}>
+            <div className="w-full max-w-[42rem] bg-card border border-border rounded-lg shadow-lg flex flex-col max-h-[85vh]" onClick={e => e.stopPropagation()}>
                 {/* Header */}
-                <div className="p-6 border-b border-border flex items-start justify-between gap-4">
-                    <div className="space-y-2 flex-1 min-w-0">
-                        <div className="flex items-center gap-3 flex-wrap">
-                            <h3 className="text-page-title text-foreground truncate">{selectedPrompt.title}</h3>
-                            <StatusBadge variant={selectedPrompt.is_public ? 'public' : 'private'}>
-                                {selectedPrompt.is_public ? t('prompt.public') : t('prompt.private')}
-                            </StatusBadge>
-                        </div>
-                        <div className="flex items-center gap-2 flex-wrap text-meta text-muted-foreground">
-                            <span>{t('prompt.by', { author: selectedPrompt.author })}</span>
-                            <span>•</span>
-                            <span>{formatDate(selectedPrompt.created_at, i18n.language)}</span>
-                        </div>
-                        <div className="flex items-center gap-2 flex-wrap mt-2">
-                            {selectedPrompt.tags.map(tag => (
-                                <TagChipStatic key={tag.id} variant="default" size="sm">
-                                    {tag.name}
-                                </TagChipStatic>
-                            ))}
-                        </div>
+                <div className="p-5 border-b border-border bg-card">
+                    {/* Title Row */}
+                    <div className="flex items-start justify-between gap-4 mb-3">
+                        <h3 className="text-card-title text-muted-foreground flex-1 font-medium">{selectedPrompt.title}</h3>
+                        <Button variant="ghost" size="sm" className="flex-shrink-0" onClick={() => setSelectedPrompt(null)}>
+                            {t('actions.close')}
+                        </Button>
                     </div>
-                    <Button variant="ghost" size="sm" onClick={() => setSelectedPrompt(null)}>
-                        {t('actions.close')}
-                    </Button>
+                    {/* Meta Row - Tag, Status, User, Tanggal sejajar */}
+                    <div className="flex items-center gap-2 flex-wrap">
+                        {selectedPrompt.tags.length > 0 && (
+                            <>
+                                {selectedPrompt.tags.map(tag => (
+                                    <TagChipStatic key={tag.id} variant="default" size="sm">
+                                        {tag.name}
+                                    </TagChipStatic>
+                                ))}
+                            </>
+                        )}
+                        <StatusBadge variant={selectedPrompt.is_public ? 'public' : 'private'} size="sm">
+                            {selectedPrompt.is_public ? t('prompt.public') : t('prompt.private')}
+                        </StatusBadge>
+                        <StatusBadge variant="date" size="sm">
+                            @{selectedPrompt.author}
+                        </StatusBadge>
+                        <StatusBadge variant="date" size="sm">
+                            {formatDate(selectedPrompt.created_at, i18n.language)}
+                        </StatusBadge>
+                    </div>
                 </div>
 
-                {/* Content */}
-                <div className="flex-1 overflow-y-auto p-6 bg-surface-subtle border-l-4 border-l-brand/20">
-                    <pre className="whitespace-pre-wrap text-body text-foreground leading-relaxed font-mono">{selectedPrompt.content}</pre>
+                {/* Content - Fokus utama */}
+                <div className="flex-1 overflow-y-auto p-8 bg-background">
+                    <pre className="whitespace-pre-wrap text-body-lg text-foreground leading-relaxed font-mono">{selectedPrompt.content}</pre>
                 </div>
 
                 {/* Footer */}
-                <div className="p-4 border-t border-border flex justify-end gap-3 bg-card rounded-b-lg">
+                <div className="px-6 py-4 border-t border-border flex justify-end gap-3 bg-card rounded-b-lg">
                     {user && user.id === selectedPrompt.user_id && (
                         <Button variant="outline" size="sm" onClick={() => handleEdit(selectedPrompt)}>
                             {t('actions.edit')}
                         </Button>
                     )}
-                    <Button variant="brand" size="sm" onClick={() => handleCopy(selectedPrompt.content)}>
-                        {t('actions.copy')}
+                    <Button variant="brand" size="sm" onClick={() => handleCopy(selectedPrompt.content)} title={t('actions.copy')}>
+                        <Copy className="w-4 h-4" />
                     </Button>
                 </div>
             </div>
@@ -602,7 +607,7 @@ const PromptNotes = () => {
                                                     <PromptCardTitle>{prompt.title}</PromptCardTitle>
                                                 </PromptCardHeader>
                                                 {prompt.description && (
-                                                    <p className="text-meta text-muted-foreground mb-3 line-clamp-2">{prompt.description}</p>
+                                                    <p className="text-meta text-muted-foreground mb-3 line-clamp-2 -mt-1">{prompt.description}</p>
                                                 )}
                                                 <PromptCardFooter>
                                                     <div className="flex items-center gap-2 flex-wrap">
@@ -611,11 +616,9 @@ const PromptNotes = () => {
                                                                 {tag}
                                                             </TagChipStatic>
                                                         ))}
-                                                    </div>
-                                                    <PromptCardMeta>
                                                         <StatusBadge variant="date" size="sm">@{prompt.author}</StatusBadge>
                                                         <StatusBadge variant="date" size="sm">{formatDate(prompt.created_at, i18n.language)}</StatusBadge>
-                                                    </PromptCardMeta>
+                                                    </div>
                                                 </PromptCardFooter>
                                             </PromptCard>
                                         ))}
@@ -671,16 +674,16 @@ const PromptNotes = () => {
                                     {authMode === 'register' && (
                                         <div>
                                             <label className="block text-meta font-medium text-foreground mb-1.5">{t('auth.name')}</label>
-                                            <input type="text" value={displayName} onChange={e => setDisplayName(e.target.value)} required placeholder={t('auth.placeholders.name')} disabled={authSubmitting} className="w-full px-4 py-2.5 bg-background border border-border rounded-md text-body text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50" />
+                                            <input type="text" value={displayName} onChange={e => setDisplayName(e.target.value)} required placeholder={t('auth.placeholders.name')} disabled={authSubmitting} className="w-full px-4 py-2.5 bg-background border border-border rounded-lg text-body text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent disabled:opacity-50" />
                                         </div>
                                     )}
                                     <div>
                                         <label className="block text-meta font-medium text-foreground mb-1.5">{t('auth.email')}</label>
-                                        <input type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder={t('auth.placeholders.email')} disabled={authSubmitting} className="w-full px-4 py-2.5 bg-background border border-border rounded-md text-body text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50" />
+                                        <input type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder={t('auth.placeholders.email')} disabled={authSubmitting} className="w-full px-4 py-2.5 bg-background border border-border rounded-lg text-body text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent disabled:opacity-50" />
                                     </div>
                                     <div>
                                         <label className="block text-meta font-medium text-foreground mb-1.5">{t('auth.password')}</label>
-                                        <input type="password" value={password} onChange={e => setPassword(e.target.value)} required placeholder={t('auth.placeholders.password')} disabled={authSubmitting} className="w-full px-4 py-2.5 bg-background border border-border rounded-md text-body text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50" />
+                                        <input type="password" value={password} onChange={e => setPassword(e.target.value)} required placeholder={t('auth.placeholders.password')} disabled={authSubmitting} className="w-full px-4 py-2.5 bg-background border border-border rounded-lg text-body text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent disabled:opacity-50" />
                                     </div>
                                     {authError && <p className="text-meta text-destructive">{authError}</p>}
                                     <Button type="submit" variant="brand" className="w-full" disabled={authSubmitting}>
@@ -702,7 +705,7 @@ const PromptNotes = () => {
 
                             {/* Public Tags Section */}
                             <div className="bg-card border border-border rounded-lg p-6 shadow-sm mt-6">
-                                <h2 className="text-section-title text-foreground mb-4">{t('landing.public_tags_title')}</h2>
+                                <h2 className="text-section-title text-foreground mb-4 pb-3 border-b border-border">{t('landing.public_tags_title')}</h2>
                                 {publicTags.length > 0 ? (
                                     <div className="flex flex-wrap gap-2">
                                         <TagChip
@@ -775,7 +778,7 @@ const PromptNotes = () => {
             <div className="max-w-6xl mx-auto px-4 py-6 flex gap-6">
                 <main className="flex-1 min-w-0">
                     <div className="mb-6">
-                        <input type="text" value={filter} onChange={e => setFilter(e.target.value)} placeholder={t('prompt.search_placeholder')} className="w-full px-3 py-2.5 bg-card border border-border rounded-md text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+                        <input type="text" value={filter} onChange={e => setFilter(e.target.value)} placeholder={t('prompt.search_placeholder')} className="w-full px-4 py-2.5 bg-card border border-border rounded-lg text-body text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent" />
                     </div>
 
                     {/* Editor Section */}
@@ -808,7 +811,7 @@ const PromptNotes = () => {
                                         value={tagsInput} 
                                         onChange={e => setTagsInput(e.target.value)} 
                                         placeholder={t('prompt.tags_placeholder')} 
-                                        className="w-full px-4 py-2.5 bg-background border border-border rounded-md text-body text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" 
+                                        className="w-full px-4 py-2.5 bg-background border border-border rounded-lg text-body text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent" 
                                     />
                                 </div>
                                 <div className="flex items-center gap-4 flex-shrink-0">
@@ -887,24 +890,22 @@ const PromptNotes = () => {
                                         onClick={() => setSelectedPrompt(prompt)}
                                     >
                                         <PromptCardHeader>
-                                            <PromptCardTitle>{prompt.title}</PromptCardTitle>
-                                            <PromptCardMeta>
-                                                <StatusBadge variant="date" size="sm">
-                                                    {formatDate(prompt.created_at, i18n.language)}
-                                                </StatusBadge>
-                                                <StatusBadge variant={prompt.is_public ? 'public' : 'private'} size="sm">
-                                                    {prompt.is_public ? t('prompt.public') : t('prompt.private')}
-                                                </StatusBadge>
-                                            </PromptCardMeta>
+                                            <PromptCardTitle className="flex-1">{prompt.title}</PromptCardTitle>
+                                            <StatusBadge variant={prompt.is_public ? 'public' : 'private'} size="sm" className="flex-shrink-0 opacity-70">
+                                                {prompt.is_public ? t('prompt.public') : t('prompt.private')}
+                                            </StatusBadge>
                                         </PromptCardHeader>
 
                                         <PromptCardFooter>
-                                            <div className="flex items-center gap-2 flex-wrap">
+                                            <div className="flex items-center gap-2 flex-wrap opacity-60">
                                                 {prompt.tags.map((tag, i) => (
                                                     <TagChipStatic key={i} variant="muted" size="sm">
                                                         {tag.name}
                                                     </TagChipStatic>
                                                 ))}
+                                                <StatusBadge variant="date" size="sm">
+                                                    {formatDate(prompt.created_at, i18n.language)}
+                                                </StatusBadge>
                                             </div>
 
                                             <PromptCardActions onClick={e => e.stopPropagation()}>
@@ -917,24 +918,27 @@ const PromptNotes = () => {
                                                             navigator.clipboard.writeText(url);
                                                             showToast(t('toast.link_copied', 'Link copied to clipboard'));
                                                         }}
+                                                        title={t('actions.share', 'Share')}
                                                     >
-                                                        {t('actions.share', 'Share')}
+                                                        <Share2 className="w-4 h-4" />
                                                     </Button>
                                                 )}
                                                 <Button
                                                     variant="action"
                                                     size="inline"
                                                     onClick={() => handleCopy(prompt.content)}
+                                                    title={t('actions.copy')}
                                                 >
-                                                    {t('actions.copy')}
+                                                    <Copy className="w-4 h-4" />
                                                 </Button>
                                                 <Button
                                                     variant="action"
                                                     size="inline"
                                                     className="hover:text-destructive"
                                                     onClick={() => handleDeleteClick(prompt.id)}
+                                                    title={t('actions.delete')}
                                                 >
-                                                    {t('actions.delete')}
+                                                    <Trash2 className="w-4 h-4" />
                                                 </Button>
                                             </PromptCardActions>
                                         </PromptCardFooter>
@@ -984,8 +988,8 @@ const PromptNotes = () => {
                 </main>
 
                 <aside className="hidden lg:block w-64 flex-shrink-0">
-                    <div className="sticky top-20 bg-card border border-border rounded-lg p-4">
-                        <h2 className="text-section-title text-foreground mb-4">{t('sidebar.title', { count: allUserTags.length })}</h2>
+                    <div className="sticky top-20 bg-card border border-border rounded-lg p-5">
+                        <h2 className="text-section-title text-foreground mb-4 pb-3 border-b border-border">{t('sidebar.title', { count: allUserTags.length })}</h2>
                         {allUserTags.length === 0 ? (
                             <p className="text-body text-muted-foreground">{t('sidebar.no_tags')}</p>
                         ) : (
@@ -1017,7 +1021,7 @@ const PromptNotes = () => {
             </div>
 
             {toast.visible && (
-                <div className={`fixed z-50 bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 bg-foreground text-background text-sm font-medium rounded-md shadow-lg ${toast.exiting ? 'toast-exit' : 'toast-enter'}`}>
+                <div className={`fixed z-[60] bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 bg-foreground text-background text-sm font-medium rounded-md shadow-lg transition-all duration-200 ${toast.exiting ? 'opacity-0 translate-y-2' : 'opacity-100 translate-y-0'}`}>
                     {toast.message}
                 </div>
             )}

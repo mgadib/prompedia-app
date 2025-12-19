@@ -19,7 +19,7 @@ const buttonVariants = cva(
         ghost: "hover:bg-secondary hover:text-foreground",
         link: "text-primary underline-offset-4 hover:underline",
         // Subtle action link style
-        action: "text-muted-foreground hover:text-foreground hover:underline underline-offset-4",
+        action: "text-muted-foreground hover:text-foreground",
       },
       size: {
         default: "h-10 px-4 py-2 sm:h-10",
@@ -27,7 +27,7 @@ const buttonVariants = cva(
         lg: "h-11 rounded-md px-8 sm:h-11",
         icon: "h-10 w-10 sm:h-10 sm:w-10 min-w-[44px] sm:min-w-0",
         // Inline text button
-        inline: "h-auto p-0 text-meta",
+        inline: "h-auto p-0 text-caption",
       },
     },
     defaultVariants: {
