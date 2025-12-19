@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import PromptNotes from "@/components/PromptNotes";
+import PublicPromptView from "@/components/PublicPromptView";
 import { useTranslation } from "react-i18next";
 import { useEffect } from "react";
 
@@ -37,6 +38,7 @@ const App = () => {
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<PromptNotes />} />
+              <Route path="/share/:id" element={<PublicPromptView />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </BrowserRouter>

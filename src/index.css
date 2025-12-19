@@ -46,6 +46,13 @@
     --ring: 220 13% 26%;
 
     --radius: 0.375rem;
+
+    /* Code: Light theme */
+    --code: 220 14% 96%;
+    --code-foreground: 220 13% 26%;
+    --code-border: 220 13% 88%;
+    /* Editor Font Token */
+    --font-editor: "JetBrains Mono", Menlo, Monaco, Consolas, "Courier New", monospace;
   }
 
   .dark {
@@ -76,6 +83,13 @@
     --border: 217 33% 17%;
     --input: 217 33% 17%;
     --ring: 213 27% 84%;
+
+    /* Code: Dark theme */
+    --code: 217 33% 15%;
+    --code-foreground: 210 40% 90%;
+    --code-border: 217 33% 22%;
+    /* Editor Font Token */
+    --font-editor: "JetBrains Mono", Menlo, Monaco, Consolas, "Courier New", monospace;
   }
 }
 
@@ -211,5 +225,220 @@
 
   .toast-exit {
     animation: toast-out 0.15s ease-in forwards;
+  }
+
+  /* Rich Text Editor Styles */
+  .prose-editor {
+    @apply text-foreground leading-relaxed;
+    font-family: var(--font-editor);
+  }
+
+  .prose-editor:focus {
+    @apply outline-none;
+  }
+
+  .prose-editor p {
+    @apply my-2;
+  }
+
+  .prose-editor h1 {
+    @apply text-2xl font-bold mt-6 mb-4;
+  }
+
+  .prose-editor h2 {
+    @apply text-xl font-bold mt-5 mb-3;
+  }
+
+  .prose-editor h3 {
+    @apply text-lg font-semibold mt-4 mb-2;
+  }
+
+  .prose-editor h4 {
+    @apply text-base font-semibold mt-3 mb-2;
+  }
+
+  .prose-editor h5 {
+    @apply text-sm font-semibold mt-2 mb-1;
+  }
+
+  .prose-editor h6 {
+    @apply text-sm font-medium mt-2 mb-1 text-muted-foreground;
+  }
+
+  .prose-editor ul {
+    @apply list-disc list-inside my-2 space-y-1;
+  }
+
+  .prose-editor ol {
+    @apply list-decimal list-inside my-2 space-y-1;
+  }
+
+  .prose-editor li {
+    @apply leading-relaxed;
+  }
+
+  .prose-editor li p {
+    @apply inline;
+  }
+
+  .prose-editor blockquote {
+    @apply border-l-4 border-primary/30 pl-4 my-4 italic text-muted-foreground;
+  }
+
+  .prose-editor hr {
+    @apply my-6 border-border;
+  }
+
+  .prose-editor a {
+    @apply text-primary underline underline-offset-2;
+  }
+
+  .prose-editor strong {
+    @apply font-semibold;
+  }
+
+  .prose-editor em {
+    @apply italic;
+  }
+
+  /* Inline code */
+  .prose-editor code {
+    @apply px-1.5 py-0.5 rounded font-mono text-[0.875em];
+    background-color: hsl(var(--code));
+    color: hsl(var(--code-foreground));
+  }
+
+  /* Code block */
+  .prose-editor pre {
+    @apply my-4 rounded-md overflow-x-auto;
+    background-color: hsl(var(--code));
+    border: 1px solid hsl(var(--code-border));
+  }
+
+  .prose-editor pre code {
+    @apply block p-4 bg-transparent text-sm leading-relaxed;
+    font-family: var(--font-editor);
+  }
+
+  /* Code block language label */
+  .prose-editor pre code::before {
+    content: attr(data-language);
+    @apply block text-xs text-muted-foreground mb-2 uppercase tracking-wide;
+  }
+
+  /* TipTap placeholder */
+  .prose-editor p.is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    @apply float-left h-0 pointer-events-none text-muted-foreground;
+  }
+
+  /* TipTap empty editor class */
+  .is-editor-empty::before {
+    content: attr(data-placeholder);
+    @apply float-left h-0 pointer-events-none text-muted-foreground;
+  }
+
+  /* Preview styles */
+  .prose-preview {
+    @apply text-foreground leading-relaxed;
+    font-family: var(--font-editor);
+  }
+
+  /* Code block utility class */
+  .code-block {
+    background-color: hsl(var(--code));
+    border-color: hsl(var(--code-border));
+    font-family: var(--font-editor);
+  }
+
+  /* Background utility for code */
+  .bg-code {
+    background-color: hsl(var(--code));
+  }
+
+  .text-code-foreground {
+    color: hsl(var(--code-foreground));
+  }
+
+  .border-code-border {
+    border-color: hsl(var(--code-border));
+  }
+
+  /* Lowlight syntax highlighting integration */
+  .hljs-comment,
+  .hljs-quote {
+    @apply text-muted-foreground italic;
+  }
+
+  .hljs-keyword,
+  .hljs-selector-tag,
+  .hljs-addition {
+    color: hsl(262 80% 60%);
+  }
+
+  .dark .hljs-keyword,
+  .dark .hljs-selector-tag,
+  .dark .hljs-addition {
+    color: hsl(262 80% 75%);
+  }
+
+  .hljs-string,
+  .hljs-meta .hljs-string,
+  .hljs-regexp,
+  .hljs-link {
+    color: hsl(142 71% 35%);
+  }
+
+  .dark .hljs-string,
+  .dark .hljs-meta .hljs-string,
+  .dark .hljs-regexp,
+  .dark .hljs-link {
+    color: hsl(142 71% 55%);
+  }
+
+  .hljs-number,
+  .hljs-literal,
+  .hljs-variable,
+  .hljs-template-variable,
+  .hljs-tag .hljs-attr {
+    color: hsl(27 96% 45%);
+  }
+
+  .dark .hljs-number,
+  .dark .hljs-literal,
+  .dark .hljs-variable,
+  .dark .hljs-template-variable,
+  .dark .hljs-tag .hljs-attr {
+    color: hsl(27 96% 65%);
+  }
+
+  .hljs-title,
+  .hljs-section,
+  .hljs-name,
+  .hljs-selector-id,
+  .hljs-selector-class {
+    color: hsl(207 90% 45%);
+  }
+
+  .dark .hljs-title,
+  .dark .hljs-section,
+  .dark .hljs-name,
+  .dark .hljs-selector-id,
+  .dark .hljs-selector-class {
+    color: hsl(207 90% 65%);
+  }
+
+  .hljs-built_in,
+  .hljs-builtin-name,
+  .hljs-type,
+  .hljs-params {
+    color: hsl(199 89% 38%);
+  }
+
+  .dark .hljs-built_in,
+  .dark .hljs-builtin-name,
+  .dark .hljs-type,
+  .dark .hljs-params {
+    color: hsl(199 89% 58%);
   }
 }

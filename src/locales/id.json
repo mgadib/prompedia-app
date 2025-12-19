@@ -72,6 +72,34 @@
         "save_failed": "Gagal menyimpan",
         "deleted": "Dihapus",
         "copied": "Disalin",
+        "link_copied": "Tautan disalin ke papan klip",
         "registration_success": "Akun berhasil dibuat! Silakan masuk."
+    },
+    "public_view": {
+        "back_to_app": "Kembali ke aplikasi",
+        "open_app": "Buka Aplikasi",
+        "private_error": "Prompt ini bersifat pribadi.",
+        "not_found_title": "Prompt tidak ditemukan",
+        "not_found_desc": "Prompt yang Anda cari mungkin bersifat pribadi atau telah dihapus.",
+        "go_home": "Ke Beranda"
+    },
+    "editor": {
+        "toggle_preview": "Pratinjau",
+        "toggle_edit": "Edit",
+        "toolbar": {
+            "bold": "Tebal",
+            "italic": "Miring",
+            "underline": "Garis Bawah",
+            "strikethrough": "Coret",
+            "code": "Kode Inline",
+            "heading1": "Heading 1",
+            "heading2": "Heading 2",
+            "heading3": "Heading 3",
+            "list_bullet": "Daftar Bullet",
+            "list_ordered": "Daftar Nomor",
+            "quote": "Kutipan",
+            "code_block": "Blok Kode",
+            "horizontal_rule": "Garis Horizontal"
+        }
     }
 }

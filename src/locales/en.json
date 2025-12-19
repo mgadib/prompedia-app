@@ -72,6 +72,34 @@
         "save_failed": "Failed to save",
         "deleted": "Deleted",
         "copied": "Copied",
+        "link_copied": "Link copied to clipboard",
         "registration_success": "Account created successfully! Please sign in."
+    },
+    "public_view": {
+        "back_to_app": "Back to app",
+        "open_app": "Open App",
+        "private_error": "This prompt is private.",
+        "not_found_title": "Prompt not found",
+        "not_found_desc": "The prompt you are looking for might be private or deleted.",
+        "go_home": "Go to Home"
+    },
+    "editor": {
+        "toggle_preview": "Preview",
+        "toggle_edit": "Edit",
+        "toolbar": {
+            "bold": "Bold",
+            "italic": "Italic",
+            "underline": "Underline",
+            "strikethrough": "Strikethrough",
+            "code": "Inline Code",
+            "heading1": "Heading 1",
+            "heading2": "Heading 2",
+            "heading3": "Heading 3",
+            "list_bullet": "Bullet List",
+            "list_ordered": "Numbered List",
+            "quote": "Blockquote",
+            "code_block": "Code Block",
+            "horizontal_rule": "Horizontal Rule"
+        }
     }
 }

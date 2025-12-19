@@ -1,33 +1,27 @@
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from "next-themes";
 import { Moon, Sun, Globe } from "lucide-react";
 import { User } from '@supabase/supabase-js';
 
-// Interfaces based on Supabase schema
-interface Tag {
-    id: string;
-    name: string;
-}
+import { Tables } from '@/integrations/supabase/types';
+import { MarkdownEditor } from '@/components/editor';
 
-interface Prompt {
-    id: string;
-    user_id: string;
-    title: string;
-    content: string;
-    is_public: boolean;
-    tags?: { tags: Tag }[];
-    users?: {
-        username: string | null;
+interface Tag extends Tables<'tags'> { }
+
+interface Prompt extends Tables<'prompts'> {
+    prompt_contents: { body: string } | null;
+    prompt_tags: { tags: Pick<Tag, 'id' | 'name'> | null }[]; // Adjusted to handle null possibility in join
+    users: {
+        username: string;
         display_name: string | null;
     } | null;
-    created_at: string;
-    updated_at: string;
 }
 
-interface PromptUI extends Omit<Prompt, 'tags' | 'users'> {
-    tags: Tag[]; // Flattened tags
+interface PromptUI extends Omit<Prompt, 'prompt_tags' | 'users' | 'prompt_contents'> {
+    content: string;
+    tags: Pick<Tag, 'id' | 'name'>[]; // Flattened tags
     author: string;
 }
 
@@ -79,16 +73,6 @@ const PromptNotes = () => {
     const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
     const [toast, setToast] = useState<ToastState>({ visible: false, message: '', exiting: false });
-    const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-    // Auto-expand textarea
-    const autoExpand = useCallback(() => {
-        const textarea = textareaRef.current;
-        if (textarea) {
-            textarea.style.height = 'auto';
-            textarea.style.height = `${Math.max(200, textarea.scrollHeight)}px`;
-        }
-    }, []);
 
     const showToast = useCallback((message: string) => {
         setToast({ visible: true, message, exiting: false });
@@ -124,20 +108,27 @@ const PromptNotes = () => {
 
         const { data: promptsData, error: promptsError } = await supabase
             .from('prompts')
-            .select('*, prompt_tags(tags(id, name)), users(username, display_name)')
+            .select('*, prompt_contents(body), prompt_tags(tags(id, name)), users(username, display_name)')
             .eq('user_id', user.id)
             .order('created_at', { ascending: false });
 
         if (!promptsError && promptsData) {
-            const formattedPrompts: PromptUI[] = promptsData.map((p: any) => ({
+            // Safe cast because we know the query structure
+            const data = promptsData as unknown as Prompt[];
+
+            const formattedPrompts: PromptUI[] = data.map(p => ({
                 id: p.id,
-                user_id: p.user_id,
+                user_id: p.user_id || '', // Handle potential null from type definition even if schema is restricted
                 title: p.title || t('prompt.untitled'),
-                content: p.content,
-                is_public: p.is_public || false,
+                content: p.prompt_contents?.body || '',
+                is_public: Boolean(p.is_public),
                 created_at: p.created_at,
-                updated_at: p.updated_at,
-                tags: p.prompt_tags ? p.prompt_tags.map((pt: any) => pt.tags).filter(Boolean) : [],
+                updated_at: p.updated_at || p.created_at,
+                tags: p.prompt_tags
+                    ? p.prompt_tags
+                        .map(pt => pt.tags)
+                        .filter((t): t is Pick<Tag, 'id' | 'name'> => t !== null)
+                    : [],
                 author: p.users?.display_name || p.users?.username || t('prompt.unknown_author')
             }));
             setPrompts(formattedPrompts);
@@ -204,30 +195,50 @@ const PromptNotes = () => {
             const now = new Date().toISOString();
 
             if (promptId) {
-                const { error } = await supabase
+                // Update Metadata
+                const { error: promptError } = await supabase
                     .from('prompts')
                     .update({
                         title: promptTitle,
-                        content: content.trim(),
                         is_public: isPublic,
                         updated_at: now
                     })
                     .eq('id', promptId)
                     .eq('user_id', user.id);
 
-                if (error) throw error;
+                if (promptError) throw promptError;
+
+                // Update Content (Upsert to be safe)
+                const { error: contentError } = await supabase
+                    .from('prompt_contents')
+                    .upsert({
+                        prompt_id: promptId,
+                        body: content.trim()
+                    });
+
+                if (contentError) throw contentError;
+
             } else {
                 const newId = crypto.randomUUID();
-                const { error } = await supabase.from('prompts').insert({
+
+                // Insert Metadata
+                const { error: promptError } = await supabase.from('prompts').insert({
                     id: newId,
                     user_id: user.id,
                     title: promptTitle,
-                    content: content.trim(),
-                    is_public: isPublic,
-                    is_featured: false
+                    is_public: isPublic
                 });
 
-                if (error) throw error;
+                if (promptError) throw promptError;
+
+                // Insert Content
+                const { error: contentError } = await supabase.from('prompt_contents').insert({
+                    prompt_id: newId,
+                    body: content.trim()
+                });
+
+                if (contentError) throw contentError;
+
                 promptId = newId;
             }
 
@@ -275,7 +286,6 @@ const PromptNotes = () => {
             setTagsInput('');
             setIsPublic(false);
             setEditingId(null);
-            textareaRef.current?.focus();
 
         } catch (err) {
             console.error('Save error:', err);
@@ -312,9 +322,8 @@ const PromptNotes = () => {
         setTitle(prompt.title);
         setContent(prompt.content);
         setTagsInput(prompt.tags.map(t => t.name).join(', '));
-        setIsPublic(prompt.is_public);
+        setIsPublic(Boolean(prompt.is_public));
         setEditingId(prompt.id);
-        textareaRef.current?.focus();
         setSelectedPrompt(null); // Close modal if open
     };
 
@@ -366,13 +375,7 @@ const PromptNotes = () => {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [handleSave, selectedPrompt]);
 
-    useEffect(() => {
-        if (user && textareaRef.current) textareaRef.current.focus();
-    }, [user]);
 
-    useEffect(() => {
-        autoExpand();
-    }, [content, autoExpand]);
 
     if (authLoading) return <div className="min-h-screen flex items-center justify-center bg-background"><div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>;
 
@@ -463,15 +466,20 @@ const PromptNotes = () => {
                     </div>
 
                     <div className="mb-8 bg-card border border-border rounded-lg p-4">
-                        <div className="flex items-center gap-3 border-b border-border mb-4">
+                        <div className="flex items-center gap-3 mb-4">
                             <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder={t('prompt.title_placeholder')} className="flex-1 py-2 bg-transparent text-sm font-bold font-mono text-foreground placeholder:text-muted-foreground focus:outline-none" />
                             <span className="text-[10px] font-medium px-1.5 py-0.5 rounded border border-border text-muted-foreground bg-secondary/30 flex-shrink-0">
                                 {isPublic ? t('prompt.public') : t('prompt.private')}
                             </span>
                         </div>
-                        <textarea ref={textareaRef} value={content} onChange={e => setContent(e.target.value)} placeholder={t('prompt.content_placeholder')} className="w-full min-h-[200px] bg-transparent text-sm leading-[1.7] text-foreground placeholder:text-muted-foreground focus:outline-none resize-none textarea-auto-expand font-mono" />
+                        <MarkdownEditor
+                            value={content}
+                            onChange={setContent}
+                            placeholder={t('prompt.content_placeholder')}
+                            minHeight="200px"
+                        />
 
-                        <div className="mt-4 pt-4 border-t border-border">
+                        <div className="mt-4">
                             <div className="flex flex-col sm:flex-row gap-4 sm:items-center">
                                 <div className="flex-1">
                                     <input type="text" value={tagsInput} onChange={e => setTagsInput(e.target.value)} placeholder={t('prompt.tags_placeholder')} className="w-full px-3 py-2 bg-background border border-border rounded-md text-[13px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
@@ -527,6 +535,18 @@ const PromptNotes = () => {
                                             </div>
 
                                             <div className="flex items-center gap-3 flex-shrink-0" onClick={e => e.stopPropagation()}>
+                                                {prompt.is_public && (
+                                                    <button
+                                                        onClick={() => {
+                                                            const url = `${window.location.origin}/share/${prompt.id}`;
+                                                            navigator.clipboard.writeText(url);
+                                                            showToast(t('toast.link_copied', 'Link copied to clipboard'));
+                                                        }}
+                                                        className="text-xs font-medium text-muted-foreground hover:text-foreground hover:underline transition-colors"
+                                                    >
+                                                        {t('actions.share', 'Share')}
+                                                    </button>
+                                                )}
                                                 <button
                                                     onClick={() => handleCopy(prompt.content)}
                                                     className="text-xs font-medium text-muted-foreground hover:text-foreground hover:underline transition-colors"
