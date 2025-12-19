@@ -17,7 +17,7 @@ const components: Components = {
         if (isInline) {
             return (
                 <code
-                    className="px-1.5 py-0.5 rounded bg-code text-code-foreground font-mono text-[0.875em]"
+                    className="px-1.5 py-0.5 rounded bg-code text-code-foreground font-mono text-sm"
                     {...props}
                 >
                     {children}

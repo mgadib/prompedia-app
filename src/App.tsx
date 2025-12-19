@@ -5,6 +5,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import PromptNotes from "@/components/PromptNotes";
 import PublicPromptView from "@/components/PublicPromptView";
+import AboutPage from "@/components/pages/AboutPage";
+import FAQPage from "@/components/pages/FAQPage";
+import UseCasesPage from "@/components/pages/UseCasesPage";
+import PublicPromptsPage from "@/components/pages/PublicPromptsPage";
+import { SEO } from "@/components/SEO";
 import { useTranslation } from "react-i18next";
 import { useEffect } from "react";
 
@@ -19,16 +24,11 @@ const queryClient = new QueryClient({
 });
 
 const App = () => {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
 
   useEffect(() => {
-    document.title = t('app.title');
-    const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) {
-      metaDesc.setAttribute('content', t('app.description'));
-    }
     document.documentElement.lang = i18n.resolvedLanguage || 'id';
-  }, [t, i18n.resolvedLanguage]);
+  }, [i18n.resolvedLanguage]);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -36,8 +36,13 @@ const App = () => {
         <TooltipProvider>
           <Toaster />
           <BrowserRouter>
+            <SEO />
             <Routes>
               <Route path="/" element={<PromptNotes />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/faq" element={<FAQPage />} />
+              <Route path="/use-cases" element={<UseCasesPage />} />
+              <Route path="/public-prompts" element={<PublicPromptsPage />} />
               <Route path="/share/:id" element={<PublicPromptView />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

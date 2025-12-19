@@ -17,6 +17,11 @@ export default {
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
         mono: ['JetBrains Mono', 'Menlo', 'monospace'],
       },
+      fontSize: {
+        '2xs': 'var(--text-2xs)',
+        'xs-sm': 'var(--text-xs-sm)',
+        'sm-md': 'var(--text-sm-md)',
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

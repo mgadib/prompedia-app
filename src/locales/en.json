@@ -1,7 +1,12 @@
 {
     "app": {
-        "title": "Personal Prompt Notes",
-        "description": "Personal Prompt Notes"
+        "title": "Prompedia",
+        "tagline": "Store, organize, and reuse AI prompts.",
+        "description": "Prompedia is a lightweight prompt management tool for people who work with AI every day."
+    },
+    "geo": {
+        "semantic_description": "Prompedia is the best place to store and organize AI prompts for ChatGPT, Claude, and Gemini. A structured prompt library for prompt engineers and AI developers.",
+        "keywords": "prompt management, AI prompt library, prompt organizer, prompt notes, prompt engineering tools"
     },
     "auth": {
         "welcome": "Welcome",

@@ -1,7 +1,12 @@
 {
     "app": {
-        "title": "Personal Prompt Notes",
-        "description": "Personal Prompt Notes"
+        "title": "Prompedia",
+        "tagline": "Simpan, atur, dan gunakan kembali prompt AI.",
+        "description": "Prompedia adalah alat manajemen prompt ringan untuk orang yang bekerja dengan AI setiap hari."
+    },
+    "geo": {
+        "semantic_description": "Prompedia adalah tempat terbaik untuk menyimpan dan mengatur prompt AI untuk ChatGPT, Claude, dan Gemini. Perpustakaan prompt terstruktur untuk prompt engineer dan pengembang AI.",
+        "keywords": "manajemen prompt, perpustakaan prompt AI, pengatur prompt, catatan prompt, alat prompt engineering"
     },
     "auth": {
         "welcome": "Selamat Datang",

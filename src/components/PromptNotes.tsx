@@ -34,8 +34,24 @@ interface ToastState {
 
 type VisibilityFilter = 'all' | 'public' | 'private';
 
+import { SEO } from '@/components/SEO';
+
 const PromptNotes = () => {
     const { t, i18n } = useTranslation();
+
+    // Schema for Home
+    const websiteSchema = {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Prompedia",
+        "url": "https://prompedia.ai/",
+        "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://prompedia.ai/?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+        }
+    };
+
     // Auth state
     const [user, setUser] = useState<User | null>(null);
     const [authLoading, setAuthLoading] = useState(true);
@@ -458,7 +474,7 @@ const PromptNotes = () => {
                     <div className="space-y-1">
                         <div className="flex items-center gap-3">
                             <h3 className="text-xl font-semibold font-mono text-foreground">{selectedPrompt.title}</h3>
-                            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded border border-border text-muted-foreground bg-secondary/30 flex-shrink-0">
+                            <span className="text-2xs font-medium px-1.5 py-0.5 rounded border border-border text-muted-foreground bg-secondary/30 flex-shrink-0">
                                 {selectedPrompt.is_public ? t('prompt.public') : t('prompt.private')}
                             </span>
                         </div>
@@ -516,7 +532,7 @@ const PromptNotes = () => {
                     <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <img src="/logo.png" alt="Logo" className="w-8 h-8" />
-                            <h1 className="text-base font-semibold text-foreground">{t('app.title')}</h1>
+                            <h1 className="text-xl font-bold font-mono text-foreground tracking-tight">prompedia.app</h1>
                         </div>
                         <div className="flex items-center gap-4">
                             <button
@@ -539,6 +555,17 @@ const PromptNotes = () => {
                 <div className="max-w-6xl mx-auto px-4 py-6">
                     <div className="flex flex-col lg:flex-row gap-6 items-start">
                         <div className="flex-1 w-full min-w-0">
+                            {/* Hero Section */}
+                            <div className="mb-8">
+                                <div className="bg-card border border-border rounded-lg p-8 text-left shadow-sm">
+                                    <h2 className="text-2xl font-bold font-mono tracking-tight sm:text-3xl mb-3 text-foreground">{t('app.tagline')}</h2>
+                                    <p className="text-base text-muted-foreground max-w-xl">{t('app.description')}</p>
+                                    <div className="geo-content opacity-0 h-0 overflow-hidden" aria-hidden="true">
+                                        {t('geo.semantic_description')}
+                                    </div>
+                                </div>
+                            </div>
+
                             {/* Public Tags Section */}
 
 
@@ -568,14 +595,17 @@ const PromptNotes = () => {
                                                 {prompt.description && (
                                                     <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{prompt.description}</p>
                                                 )}
-                                                <div className="flex items-center gap-2 flex-wrap">
+                                                <div className="flex items-center gap-2 flex-wrap mt-2">
                                                     {prompt.tags.slice(0, 3).map(tag => (
                                                         <span key={tag} className="text-xs bg-secondary text-secondary-foreground px-2 py-0.5 rounded-md">
                                                             {tag}
                                                         </span>
                                                     ))}
-                                                    <span className="text-xs text-muted-foreground ml-auto">
-                                                        @{prompt.author} • {formatDate(prompt.created_at, i18n.language)}
+                                                    <span className="text-xs bg-secondary/50 text-muted-foreground px-2 py-0.5 rounded-md">
+                                                        @{prompt.author}
+                                                    </span>
+                                                    <span className="text-xs bg-secondary/50 text-muted-foreground px-2 py-0.5 rounded-md">
+                                                        {formatDate(prompt.created_at, i18n.language)}
                                                     </span>
                                                 </div>
                                             </div>
@@ -702,11 +732,12 @@ const PromptNotes = () => {
 
     return (
         <div className="min-h-screen bg-background relative font-sans">
+            <SEO structuredData={websiteSchema} />
             <header className="border-b border-border bg-card sticky top-0 z-40">
                 <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <img src="/logo.png" alt="Logo" className="w-8 h-8" />
-                        <h1 className="text-base font-semibold text-foreground">{t('app.title')}</h1>
+                        <h1 className="text-xl font-bold font-mono text-foreground tracking-tight">prompedia.app</h1>
                     </div>
                     <div className="flex items-center gap-6">
                         <button
@@ -726,10 +757,10 @@ const PromptNotes = () => {
                             <Moon className="h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100 hidden dark:block" />
                             <span className="sr-only">Toggle theme</span>
                         </button>
-                        <span className="text-[13px] text-muted-foreground border-r border-border pr-6 mr-0">
+                        <span className="text-sm-md text-muted-foreground border-r border-border pr-6 mr-0">
                             {user?.email}
                         </span>
-                        <button onClick={() => setShowLogoutConfirm(true)} className="text-[13px] text-muted-foreground hover:text-foreground transition-colors font-normal">
+                        <button onClick={() => setShowLogoutConfirm(true)} className="text-sm-md text-muted-foreground hover:text-foreground transition-colors font-normal">
                             {t('auth.logout')}
                         </button>
                     </div>
@@ -745,7 +776,7 @@ const PromptNotes = () => {
                     <div className="mb-8 bg-card border border-border rounded-lg p-4">
                         <div className="flex items-center gap-3 mb-4">
                             <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder={t('prompt.title_placeholder')} className="flex-1 py-2 bg-transparent text-sm font-bold font-mono text-foreground placeholder:text-muted-foreground focus:outline-none" />
-                            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded border border-border text-muted-foreground bg-secondary/30 flex-shrink-0">
+                            <span className="text-2xs font-medium px-1.5 py-0.5 rounded border border-border text-muted-foreground bg-secondary/30 flex-shrink-0">
                                 {isPublic ? t('prompt.public') : t('prompt.private')}
                             </span>
                         </div>
@@ -759,7 +790,7 @@ const PromptNotes = () => {
                         <div className="mt-4">
                             <div className="flex flex-col sm:flex-row gap-4 sm:items-center">
                                 <div className="flex-1">
-                                    <input type="text" value={tagsInput} onChange={e => setTagsInput(e.target.value)} placeholder={t('prompt.tags_placeholder')} className="w-full px-3 py-2 bg-background border border-border rounded-md text-[13px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+                                    <input type="text" value={tagsInput} onChange={e => setTagsInput(e.target.value)} placeholder={t('prompt.tags_placeholder')} className="w-full px-3 py-2 bg-background border border-border rounded-md text-sm-md text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
                                 </div>
                                 <div className="flex items-center gap-4 flex-shrink-0">
                                     <div className="flex items-center gap-2 group">
@@ -798,10 +829,10 @@ const PromptNotes = () => {
                                             <h3 className="text-sm font-medium text-foreground truncate group-hover:text-primary transition-colors">
                                                 {prompt.title}
                                             </h3>
-                                            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded border border-border text-muted-foreground bg-secondary/30 flex-shrink-0">
+                                            <span className="text-2xs font-medium px-1.5 py-0.5 rounded border border-border text-muted-foreground bg-secondary/30 flex-shrink-0">
                                                 {formatDate(prompt.created_at, i18n.language)}
                                             </span>
-                                            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded border border-border text-muted-foreground bg-secondary/30 flex-shrink-0">
+                                            <span className="text-2xs font-medium px-1.5 py-0.5 rounded border border-border text-muted-foreground bg-secondary/30 flex-shrink-0">
                                                 {prompt.is_public ? t('prompt.public') : t('prompt.private')}
                                             </span>
                                         </div>
@@ -810,7 +841,7 @@ const PromptNotes = () => {
                                         <div className="flex items-end justify-between gap-4 mt-auto">
                                             <div className="flex items-center gap-1.5 flex-wrap">
                                                 {prompt.tags.map((tag, i) => (
-                                                    <span key={i} className="font-normal text-[11px] bg-secondary/50 px-1.5 py-0.5 rounded text-foreground/80 leading-none">{tag.name}</span>
+                                                    <span key={i} className="font-normal text-xs-sm bg-secondary/50 px-1.5 py-0.5 rounded text-foreground/80 leading-none">{tag.name}</span>
                                                 ))}
                                             </div>
 

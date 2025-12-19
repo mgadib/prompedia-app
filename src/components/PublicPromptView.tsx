@@ -8,6 +8,7 @@ import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import { MarkdownPreview } from '@/components/editor';
 import { formatDate } from '@/lib/date-utils';
+import { SEO } from './SEO';
 
 interface Tag extends Tables<'tags'> { }
 
@@ -92,6 +93,26 @@ const PublicPromptView = () => {
         toast.success(t('toast.copied'));
     };
 
+    // Structured Data
+    const promptSchema = prompt ? {
+        "@context": "https://schema.org",
+        "@type": "CreativeWork",
+        "name": prompt.title,
+        "headline": prompt.title,
+        "author": {
+            "@type": "Person",
+            "name": prompt.author
+        },
+        "dateCreated": prompt.created_at,
+        "text": prompt.content,
+        "keywords": prompt.tags?.map(tag => tag.name).join(", "),
+        "interactionStatistic": {
+            "@type": "InteractionCounter",
+            "interactionType": "https://schema.org/ShareAction",
+            "userInteractionCount": 0 // Placeholder
+        }
+    } : null;
+
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-background">
@@ -103,6 +124,7 @@ const PublicPromptView = () => {
     if (error || !prompt) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4 text-center">
+                <SEO title={t('public_view.not_found_title')} noIndex={true} />
                 <h2 className="text-xl font-semibold mb-2 text-foreground">
                     {error || t('public_view.not_found_title')}
                 </h2>
@@ -121,13 +143,19 @@ const PublicPromptView = () => {
 
     return (
         <div className="min-h-screen bg-background font-sans">
+            <SEO
+                title={prompt.title}
+                description={prompt.content?.substring(0, 160)}
+                structuredData={promptSchema || undefined}
+                type="article"
+            />
             <header className="border-b border-border bg-card sticky top-0 z-10">
                 <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <Link to="/">
                             <img src="/logo.png" alt="Logo" className="w-8 h-8" />
                         </Link>
-                        <h1 className="text-base font-semibold text-foreground hidden sm:block">{t('app.title')}</h1>
+                        <h1 className="text-xl font-bold font-mono text-foreground tracking-tight hidden sm:block">prompedia.app</h1>
                     </div>
                     <div className="flex items-center gap-4">
                         <button
@@ -162,9 +190,8 @@ const PublicPromptView = () => {
                             <div>
                                 <h1 className="text-2xl font-bold text-foreground mb-2 font-mono tracking-tight">{prompt.title}</h1>
                                 <div className="flex items-center gap-2 text-sm text-muted-foreground flex-wrap">
-                                    <span className="font-medium text-foreground">@{prompt.author}</span>
-                                    <span>•</span>
-                                    <span>{formattedDate}</span>
+                                    <span className="bg-secondary/50 text-muted-foreground px-2 py-0.5 rounded-md font-mono text-xs">@{prompt.author}</span>
+                                    <span className="bg-secondary/50 text-muted-foreground px-2 py-0.5 rounded-md text-xs">{formattedDate}</span>
                                 </div>
                             </div>
                             <button
