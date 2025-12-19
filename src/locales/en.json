@@ -4,6 +4,7 @@
         "description": "Personal Prompt Notes"
     },
     "auth": {
+        "welcome": "Welcome",
         "email": "Email",
         "password": "Password",
         "login": "Sign In",
@@ -65,7 +66,8 @@
         "cancel": "Cancel",
         "edit": "Edit",
         "close": "Close",
-        "copy_prompt": "Copy Prompt"
+        "copy_prompt": "Copy Prompt",
+        "share": "Share"
     },
     "toast": {
         "saved": "Saved",
@@ -101,5 +103,12 @@
             "code_block": "Code Block",
             "horizontal_rule": "Horizontal Rule"
         }
+    },
+    "landing": {
+        "public_tags_title": "Explore Tags",
+        "recent_prompts_title": "Recent Public Prompts",
+        "no_public_prompts": "No public prompts yet.",
+        "no_public_tags": "No tags available.",
+        "view_prompt": "View"
     }
 }

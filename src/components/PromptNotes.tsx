@@ -7,6 +7,7 @@ import { User } from '@supabase/supabase-js';
 
 import { Tables } from '@/integrations/supabase/types';
 import { MarkdownEditor } from '@/components/editor';
+import { formatDate } from '@/lib/date-utils';
 
 interface Tag extends Tables<'tags'> { }
 
@@ -51,6 +52,13 @@ const PromptNotes = () => {
     // Data state
     const [prompts, setPrompts] = useState<PromptUI[]>([]);
     const [allUserTags, setAllUserTags] = useState<Tag[]>([]);
+
+    // Public landing data (for unauthenticated users)
+    const [publicTags, setPublicTags] = useState<{ name: string; count: number }[]>([]);
+    const [publicPrompts, setPublicPrompts] = useState<{ id: string; title: string; content: string; description: string; tags: string[]; author: string; created_at: string; user_id: string }[]>([]);
+    const [selectedPublicTag, setSelectedPublicTag] = useState<string | null>(null);
+    const [publicCurrentPage, setPublicCurrentPage] = useState(1);
+    const [publicItemsPerPage, setPublicItemsPerPage] = useState(10);
 
     // Form state
     const [title, setTitle] = useState('');
@@ -102,6 +110,68 @@ const PromptNotes = () => {
         return () => subscription.unsubscribe();
     }, []);
 
+    // Fetch public data for landing page (unauthenticated users)
+    const fetchPublicData = useCallback(async () => {
+        // Fetch public prompts with tags and content (for description)
+        const { data: promptsData, error } = await supabase
+            .from('prompts')
+            .select(`
+                id,
+                title,
+                created_at,
+                is_public,
+                user_id,
+                prompt_tags(tags(name)),
+                users(username, display_name),
+                prompt_contents(body)
+            `)
+            .eq('is_public', true)
+            .order('created_at', { ascending: false })
+            .limit(10);
+
+        if (error) {
+            console.error('Error fetching public prompts:', error);
+            return;
+        }
+
+        if (promptsData) {
+            const formatted = promptsData.map((p: any) => {
+                const bodyText = p.prompt_contents?.body || '';
+                const description = bodyText.length > 150 ? bodyText.substring(0, 150) + '...' : bodyText;
+
+                return {
+                    id: p.id,
+                    title: p.title || t('prompt.untitled'),
+                    content: bodyText,
+                    description: description,
+                    tags: p.prompt_tags?.map((pt: any) => pt.tags?.name).filter(Boolean) || [],
+                    author: p.users?.display_name || p.users?.username || t('prompt.unknown_author'),
+                    created_at: p.created_at,
+                    user_id: p.user_id || ''
+                };
+            });
+            setPublicPrompts(formatted);
+
+            // Extract unique tags with counts
+            const tagCounts: Record<string, number> = {};
+            formatted.forEach(p => {
+                p.tags.forEach((tag: string) => {
+                    tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+                });
+            });
+            const tagsArray = Object.entries(tagCounts)
+                .map(([name, count]) => ({ name, count }))
+                .sort((a, b) => b.count - a.count);
+            setPublicTags(tagsArray);
+        }
+    }, [t]);
+
+    useEffect(() => {
+        if (!user && showAuth) {
+            fetchPublicData();
+        }
+    }, [user, showAuth, fetchPublicData]);
+
     // Load Data
     const loadData = useCallback(async () => {
         if (!user) return;
@@ -116,21 +186,25 @@ const PromptNotes = () => {
             // Safe cast because we know the query structure
             const data = promptsData as unknown as Prompt[];
 
-            const formattedPrompts: PromptUI[] = data.map(p => ({
-                id: p.id,
-                user_id: p.user_id || '', // Handle potential null from type definition even if schema is restricted
-                title: p.title || t('prompt.untitled'),
-                content: p.prompt_contents?.body || '',
-                is_public: Boolean(p.is_public),
-                created_at: p.created_at,
-                updated_at: p.updated_at || p.created_at,
-                tags: p.prompt_tags
-                    ? p.prompt_tags
-                        .map(pt => pt.tags)
-                        .filter((t): t is Pick<Tag, 'id' | 'name'> => t !== null)
-                    : [],
-                author: p.users?.display_name || p.users?.username || t('prompt.unknown_author')
-            }));
+            const formattedPrompts: PromptUI[] = data.map(p => {
+                const content = p.prompt_contents?.body || '';
+                return {
+                    id: p.id,
+                    user_id: p.user_id || '', // Handle potential null from type definition even if schema is restricted
+                    title: p.title || t('prompt.untitled'),
+                    content: content,
+                    description: content.length > 150 ? content.substring(0, 150) + '...' : content,
+                    is_public: Boolean(p.is_public),
+                    created_at: p.created_at,
+                    updated_at: p.updated_at || p.created_at,
+                    tags: p.prompt_tags
+                        ? p.prompt_tags
+                            .map(pt => pt.tags)
+                            .filter((t): t is Pick<Tag, 'id' | 'name'> => t !== null)
+                        : [],
+                    author: p.users?.display_name || p.users?.username || t('prompt.unknown_author')
+                };
+            });
             setPrompts(formattedPrompts);
         }
 
@@ -377,55 +451,258 @@ const PromptNotes = () => {
 
 
 
+    const promptDetailModal = selectedPrompt && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm" onClick={() => setSelectedPrompt(null)}>
+            <div className="w-full max-w-2xl bg-card border border-border rounded-lg shadow-md flex flex-col max-h-[85vh]" onClick={e => e.stopPropagation()}>
+                <div className="p-6 border-b border-border flex items-start justify-between gap-4">
+                    <div className="space-y-1">
+                        <div className="flex items-center gap-3">
+                            <h3 className="text-xl font-semibold font-mono text-foreground">{selectedPrompt.title}</h3>
+                            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded border border-border text-muted-foreground bg-secondary/30 flex-shrink-0">
+                                {selectedPrompt.is_public ? t('prompt.public') : t('prompt.private')}
+                            </span>
+                        </div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-xs text-muted-foreground">{t('prompt.by', { author: selectedPrompt.author })}</span>
+                            <span className="text-xs text-muted-foreground">•</span>
+                            <span className="text-xs text-muted-foreground">{formatDate(selectedPrompt.created_at, i18n.language)}</span>
+                            {selectedPrompt.tags.map(t => (
+                                <span key={t.id} className="font-normal text-xs text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">{t.name}</span>
+                            ))}
+                        </div>
+                    </div>
+                    <button onClick={() => setSelectedPrompt(null)} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+                        {t('actions.close')}
+                    </button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto p-6 bg-secondary/20">
+                    <pre className="whitespace-pre-wrap text-sm text-foreground leading-relaxed font-mono">{selectedPrompt.content}</pre>
+                </div>
+
+                <div className="p-4 border-t border-border flex justify-end gap-6 bg-card rounded-b-lg">
+                    {user && user.id === selectedPrompt.user_id && (
+                        <button
+                            onClick={() => handleEdit(selectedPrompt)}
+                            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                            {t('actions.edit')}
+                        </button>
+                    )}
+                    <button
+                        onClick={() => handleCopy(selectedPrompt.content)}
+                        className="text-sm font-medium text-foreground hover:text-primary transition-colors"
+                    >
+                        {t('actions.copy')}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+
     if (authLoading) return <div className="min-h-screen flex items-center justify-center bg-background"><div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>;
 
     if (showAuth || !user) {
+        const filteredPublicPrompts = selectedPublicTag
+            ? publicPrompts.filter(p => p.tags.includes(selectedPublicTag))
+            : publicPrompts;
+
+        const paginatedPublicPrompts = filteredPublicPrompts.slice((publicCurrentPage - 1) * publicItemsPerPage, publicCurrentPage * publicItemsPerPage);
+
         return (
-            <div className="min-h-screen flex items-center justify-center bg-background p-4">
-                <div className="w-full max-w-sm">
-                    <div className="text-center mb-8 flex flex-col items-center">
-                        <img src="/auth-logo.png" alt="Prompedia Logo" className="w-48 mb-2" />
-                        <p className="text-sm text-muted-foreground mt-2">{t('app.description')}</p>
-                    </div>
-                    <form onSubmit={handleAuth} className="space-y-4">
-                        {authMode === 'register' && (
-                            <div>
-                                <label className="block text-sm font-medium text-foreground mb-1.5">{t('auth.name')}</label>
-                                <input type="text" value={displayName} onChange={e => setDisplayName(e.target.value)} required placeholder={t('auth.placeholders.name')} disabled={authSubmitting} className="w-full px-3 py-2.5 bg-card border border-border rounded-md text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50" />
-                            </div>
-                        )}
-                        <div>
-                            <label className="block text-sm font-medium text-foreground mb-1.5">{t('auth.email')}</label>
-                            <input type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder={t('auth.placeholders.email')} disabled={authSubmitting} className="w-full px-3 py-2.5 bg-card border border-border rounded-md text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50" />
+            <div className="min-h-screen bg-background font-sans">
+                {/* Header */}
+                <header className="border-b border-border bg-card sticky top-0 z-40">
+                    <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <img src="/logo.png" alt="Logo" className="w-8 h-8" />
+                            <h1 className="text-base font-semibold text-foreground">{t('app.title')}</h1>
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-foreground mb-1.5">{t('auth.password')}</label>
-                            <input type="password" value={password} onChange={e => setPassword(e.target.value)} required placeholder={t('auth.placeholders.password')} disabled={authSubmitting} className="w-full px-3 py-2.5 bg-card border border-border rounded-md text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50" />
-                        </div>
-                        {authError && <p className="text-sm text-destructive">{authError}</p>}
-                        <button type="submit" disabled={authSubmitting} className="w-full py-2.5 bg-primary text-primary-foreground text-sm font-medium rounded-md hover:bg-primary/90 disabled:opacity-50 transition-colors">
-                            {authSubmitting ? t('auth.processing') : (authMode === 'login' ? t('auth.login') : t('auth.register'))}
-                        </button>
-                    </form>
-                    <div className="mt-6 text-center">
-                        <p className="text-sm text-muted-foreground">
-                            {authMode === 'login' ? t('auth.no_account') : t('have_account')}{' '}
+                        <div className="flex items-center gap-4">
                             <button
-                                onClick={() => { setAuthMode(authMode === 'login' ? 'register' : 'login'); setAuthError(''); }}
-                                className="text-primary hover:underline font-medium"
+                                onClick={() => i18n.changeLanguage(i18n.resolvedLanguage === 'id' ? 'en' : 'id')}
+                                className="text-muted-foreground hover:text-foreground transition-colors p-1"
                             >
-                                {authMode === 'login' ? t('auth.switch_to_register') : t('auth.switch_to_login')}
+                                <Globe className="h-[1.2rem] w-[1.2rem]" />
                             </button>
-                        </p>
+                            <button
+                                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                                className="text-muted-foreground hover:text-foreground transition-colors p-1"
+                            >
+                                <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0 block dark:hidden" />
+                                <Moon className="h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100 hidden dark:block" />
+                            </button>
+                        </div>
+                    </div>
+                </header>
+
+                <div className="max-w-6xl mx-auto px-4 py-6">
+                    <div className="flex flex-col lg:flex-row gap-6 items-start">
+                        <div className="flex-1 w-full min-w-0">
+                            {/* Public Tags Section */}
+
+
+                            {/* Recent Public Prompts */}
+                            <section>
+                                <h2 className="text-sm font-medium text-muted-foreground mb-3">{t('landing.recent_prompts_title')}</h2>
+                                {filteredPublicPrompts.length > 0 ? (
+                                    <div className="space-y-3">
+                                        {paginatedPublicPrompts.map(prompt => (
+                                            <div
+                                                key={prompt.id}
+                                                onClick={() => setSelectedPrompt({
+                                                    id: prompt.id,
+                                                    user_id: prompt.user_id,
+                                                    title: prompt.title,
+                                                    content: prompt.content,
+                                                    description: prompt.description,
+                                                    is_public: true,
+                                                    created_at: prompt.created_at,
+                                                    updated_at: prompt.created_at,
+                                                    tags: prompt.tags.map(t => ({ id: t, name: t })),
+                                                    author: prompt.author
+                                                })}
+                                                className="block bg-card border border-border rounded-md p-4 hover:border-primary/50 transition-colors cursor-pointer text-left shadow-sm"
+                                            >
+                                                <h3 className="text-sm font-semibold text-foreground font-mono mb-1">{prompt.title}</h3>
+                                                {prompt.description && (
+                                                    <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{prompt.description}</p>
+                                                )}
+                                                <div className="flex items-center gap-2 flex-wrap">
+                                                    {prompt.tags.slice(0, 3).map(tag => (
+                                                        <span key={tag} className="text-xs bg-secondary text-secondary-foreground px-2 py-0.5 rounded-md">
+                                                            {tag}
+                                                        </span>
+                                                    ))}
+                                                    <span className="text-xs text-muted-foreground ml-auto">
+                                                        @{prompt.author} • {formatDate(prompt.created_at, i18n.language)}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        ))}
+
+                                        {/* Public Pagination Controls */}
+                                        {filteredPublicPrompts.length > 0 && (
+                                            <div className="flex items-center justify-between mt-6 pt-4 border-t border-border">
+                                                <div className="text-sm text-muted-foreground">
+                                                    {t('list.showing', { start: Math.min(filteredPublicPrompts.length, (publicCurrentPage - 1) * publicItemsPerPage + 1), end: Math.min(filteredPublicPrompts.length, publicCurrentPage * publicItemsPerPage), total: filteredPublicPrompts.length })}
+                                                </div>
+                                                <div className="flex items-center gap-4">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-sm text-muted-foreground">{t('list.show')}</span>
+                                                        <select
+                                                            value={publicItemsPerPage}
+                                                            onChange={(e) => { setPublicItemsPerPage(Number(e.target.value)); setPublicCurrentPage(1); }}
+                                                            className="text-sm bg-transparent border-none p-0 focus:outline-none focus:ring-0 text-foreground font-medium cursor-pointer"
+                                                        >
+                                                            <option value={10}>10</option>
+                                                            <option value={50}>50</option>
+                                                        </select>
+                                                    </div>
+                                                    <div className="flex gap-1">
+                                                        <button
+                                                            onClick={() => setPublicCurrentPage(p => Math.max(1, p - 1))}
+                                                            disabled={publicCurrentPage === 1}
+                                                            className="text-sm font-medium text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                                        >
+                                                            {t('list.previous')}
+                                                        </button>
+                                                        <button
+                                                            onClick={() => setPublicCurrentPage(p => Math.min(Math.ceil(filteredPublicPrompts.length / publicItemsPerPage), p + 1))}
+                                                            disabled={publicCurrentPage >= Math.ceil(filteredPublicPrompts.length / publicItemsPerPage)}
+                                                            className="text-sm font-medium text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                                        >
+                                                            {t('list.next')}
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <p className="text-sm text-muted-foreground">{t('landing.no_public_prompts')}</p>
+                                )}
+                            </section>
+                        </div>
+
+                        {/* Compact Auth Form */}
+                        <aside className="w-full lg:w-80 flex-shrink-0 sticky top-20">
+                            <div className="bg-card border border-border rounded-md p-6 shadow-sm">
+                                <form onSubmit={handleAuth} className="space-y-3">
+                                    {authMode === 'register' && (
+                                        <div>
+                                            <label className="block text-xs font-medium text-foreground mb-1">{t('auth.name')}</label>
+                                            <input type="text" value={displayName} onChange={e => setDisplayName(e.target.value)} required placeholder={t('auth.placeholders.name')} disabled={authSubmitting} className="w-full px-3 py-2 bg-background border border-border rounded-md text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50" />
+                                        </div>
+                                    )}
+                                    <div>
+                                        <label className="block text-xs font-medium text-foreground mb-1">{t('auth.email')}</label>
+                                        <input type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder={t('auth.placeholders.email')} disabled={authSubmitting} className="w-full px-3 py-2 bg-background border border-border rounded-md text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-medium text-foreground mb-1">{t('auth.password')}</label>
+                                        <input type="password" value={password} onChange={e => setPassword(e.target.value)} required placeholder={t('auth.placeholders.password')} disabled={authSubmitting} className="w-full px-3 py-2 bg-background border border-border rounded-md text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50" />
+                                    </div>
+                                    {authError && <p className="text-xs text-destructive">{authError}</p>}
+                                    <button type="submit" disabled={authSubmitting} className="w-full py-2 bg-primary text-primary-foreground text-sm font-medium rounded-md hover:bg-primary/90 disabled:opacity-50 transition-colors shadow-sm">
+                                        {authSubmitting ? t('auth.processing') : (authMode === 'login' ? t('auth.login') : t('auth.register'))}
+                                    </button>
+                                </form>
+                                <div className="mt-4 text-center">
+                                    <p className="text-xs text-muted-foreground">
+                                        {authMode === 'login' ? t('auth.no_account') : t('auth.have_account')}{' '}
+                                        <button
+                                            onClick={() => { setAuthMode(authMode === 'login' ? 'register' : 'login'); setAuthError(''); }}
+                                            className="text-primary hover:underline font-medium"
+                                        >
+                                            {authMode === 'login' ? t('auth.switch_to_register') : t('auth.switch_to_login')}
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Public Tags Section (Moved) */}
+                            <div className="bg-card border border-border rounded-md p-6 shadow-sm mt-6">
+                                <h2 className="text-sm font-medium text-muted-foreground mb-3">{t('landing.public_tags_title')}</h2>
+                                {publicTags.length > 0 ? (
+                                    <div className="flex flex-wrap gap-2">
+                                        <button
+                                            onClick={() => { setSelectedPublicTag(null); setPublicCurrentPage(1); }}
+                                            className={`text-xs px-2.5 py-1 rounded-md font-medium transition-colors ${selectedPublicTag === null
+                                                ? 'bg-primary text-primary-foreground'
+                                                : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                                                }`}
+                                        >
+                                            {t('list.all')}
+                                        </button>
+                                        {publicTags.map(tag => (
+                                            <button
+                                                key={tag.name}
+                                                onClick={() => { setSelectedPublicTag(tag.name); setPublicCurrentPage(1); }}
+                                                className={`text-xs px-2.5 py-1 rounded-md font-medium transition-colors ${selectedPublicTag === tag.name
+                                                    ? 'bg-primary text-primary-foreground'
+                                                    : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                                                    }`}
+                                            >
+                                                {tag.name}
+                                            </button>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className="text-sm text-muted-foreground">{t('landing.no_public_tags')}</p>
+                                )}
+                            </div>
+                        </aside>
                     </div>
                 </div>
+                {promptDetailModal}
             </div>
         );
     }
 
     return (
         <div className="min-h-screen bg-background relative font-sans">
-            <header className="border-b border-border bg-card">
+            <header className="border-b border-border bg-card sticky top-0 z-40">
                 <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <img src="/logo.png" alt="Logo" className="w-8 h-8" />
@@ -522,6 +799,9 @@ const PromptNotes = () => {
                                                 {prompt.title}
                                             </h3>
                                             <span className="text-[10px] font-medium px-1.5 py-0.5 rounded border border-border text-muted-foreground bg-secondary/30 flex-shrink-0">
+                                                {formatDate(prompt.created_at, i18n.language)}
+                                            </span>
+                                            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded border border-border text-muted-foreground bg-secondary/30 flex-shrink-0">
                                                 {prompt.is_public ? t('prompt.public') : t('prompt.private')}
                                             </span>
                                         </div>
@@ -607,7 +887,7 @@ const PromptNotes = () => {
                 </main>
 
                 <aside className="hidden lg:block w-56 flex-shrink-0">
-                    <div className="sticky top-6">
+                    <div className="sticky top-20">
                         <h2 className="text-sm font-semibold text-muted-foreground mb-3">{t('sidebar.title', { count: allUserTags.length })}</h2>
                         {allUserTags.length === 0 ? <p className="text-sm text-muted-foreground">{t('sidebar.no_tags')}</p> : (
                             <div className="flex flex-wrap gap-2">
@@ -628,50 +908,7 @@ const PromptNotes = () => {
             )}
 
             {/* Prompt Detail Modal */}
-            {selectedPrompt && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm" onClick={() => setSelectedPrompt(null)}>
-                    <div className="w-full max-w-2xl bg-card border border-border rounded-lg shadow-md flex flex-col max-h-[85vh]" onClick={e => e.stopPropagation()}>
-                        <div className="p-6 border-b border-border flex items-start justify-between gap-4">
-                            <div className="space-y-1">
-                                <div className="flex items-center gap-3">
-                                    <h3 className="text-xl font-semibold font-mono text-foreground">{selectedPrompt.title}</h3>
-                                    <span className="text-[10px] font-medium px-1.5 py-0.5 rounded border border-border text-muted-foreground bg-secondary/30 flex-shrink-0">
-                                        {selectedPrompt.is_public ? t('prompt.public') : t('prompt.private')}
-                                    </span>
-                                </div>
-                                <div className="flex items-center gap-2 flex-wrap">
-                                    <span className="text-xs text-muted-foreground">{t('prompt.by', { author: selectedPrompt.author })}</span>
-                                    {selectedPrompt.tags.map(t => (
-                                        <span key={t.id} className="font-normal text-xs text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">{t.name}</span>
-                                    ))}
-                                </div>
-                            </div>
-                            <button onClick={() => setSelectedPrompt(null)} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-                                {t('actions.close')}
-                            </button>
-                        </div>
-
-                        <div className="flex-1 overflow-y-auto p-6 bg-secondary/20">
-                            <pre className="whitespace-pre-wrap text-sm text-foreground leading-relaxed font-mono">{selectedPrompt.content}</pre>
-                        </div>
-
-                        <div className="p-4 border-t border-border flex justify-end gap-6 bg-card rounded-b-lg">
-                            <button
-                                onClick={() => handleEdit(selectedPrompt)}
-                                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-                            >
-                                {t('actions.edit')}
-                            </button>
-                            <button
-                                onClick={() => handleCopy(selectedPrompt.content)}
-                                className="text-sm font-medium text-foreground hover:text-primary transition-colors"
-                            >
-                                {t('actions.copy')}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            {promptDetailModal}
 
             {/* Logout Confirmation Modal */}
             {showLogoutConfirm && (

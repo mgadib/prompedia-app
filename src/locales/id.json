@@ -4,6 +4,7 @@
         "description": "Personal Prompt Notes"
     },
     "auth": {
+        "welcome": "Selamat Datang",
         "email": "Email",
         "password": "Password",
         "login": "Masuk",
@@ -40,7 +41,7 @@
         "delete_confirm": "Hapus Prompt",
         "delete_warning": "Tindakan ini tidak dapat dibatalkan. Prompt ini akan dihapus secara permanen.",
         "created_by": "Dibuat oleh {{author}}",
-        "by": "by {{author}}",
+        "by": "oleh {{author}}",
         "untitled": "Tanpa Judul",
         "unknown_author": "Tidak Diketahui"
     },
@@ -65,7 +66,8 @@
         "cancel": "Batal",
         "edit": "Edit",
         "close": "Tutup",
-        "copy_prompt": "Salin Prompt"
+        "copy_prompt": "Salin Prompt",
+        "share": "Bagikan"
     },
     "toast": {
         "saved": "Tersimpan",
@@ -101,5 +103,12 @@
             "code_block": "Blok Kode",
             "horizontal_rule": "Garis Horizontal"
         }
+    },
+    "landing": {
+        "public_tags_title": "Jelajahi Tag",
+        "recent_prompts_title": "Prompt Publik Terbaru",
+        "no_public_prompts": "Belum ada prompt publik.",
+        "no_public_tags": "Belum ada tag.",
+        "view_prompt": "Lihat"
     }
 }

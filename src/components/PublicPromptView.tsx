@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import { MarkdownPreview } from '@/components/editor';
+import { formatDate } from '@/lib/date-utils';
 
 interface Tag extends Tables<'tags'> { }
 
@@ -116,11 +117,7 @@ const PublicPromptView = () => {
     }
 
     // Format date: 15 Januari 2025
-    const formattedDate = prompt ? new Date(prompt.created_at).toLocaleDateString('id-ID', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-    }) : '';
+    const formattedDate = prompt ? formatDate(prompt.created_at, i18n.language) : '';
 
     return (
         <div className="min-h-screen bg-background font-sans">
