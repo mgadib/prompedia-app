@@ -66,13 +66,16 @@
         "clear_filter": "Hapus filter"
     },
     "actions": {
-        "copy": "Salin",
+        "copy": "Salin Prompt",
+        "copy_link": "Salin Tautan",
         "delete": "Hapus",
         "cancel": "Batal",
         "edit": "Edit",
         "close": "Tutup",
         "copy_prompt": "Salin Prompt",
-        "share": "Bagikan"
+        "share": "Bagikan",
+        "save": "Simpan",
+        "confirm": "Konfirmasi"
     },
     "toast": {
         "saved": "Tersimpan",
@@ -83,8 +86,8 @@
         "registration_success": "Akun berhasil dibuat! Silakan masuk."
     },
     "public_view": {
-        "back_to_app": "Kembali ke aplikasi",
-        "open_app": "Buka Aplikasi",
+        "back_to_app": "Kembali",
+        "open_app": "Buka Prompedia",
         "private_error": "Prompt ini bersifat pribadi.",
         "not_found_title": "Prompt tidak ditemukan",
         "not_found_desc": "Prompt yang Anda cari mungkin bersifat pribadi atau telah dihapus.",

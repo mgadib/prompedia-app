@@ -240,17 +240,21 @@ export const MarkdownEditor = ({
                 <button
                     type="button"
                     onClick={handleTogglePreview}
-                    className="flex items-center gap-1.5 px-3 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    className={`flex items-center gap-2 px-4 py-2 text-body font-medium transition-colors ${
+                        isPreview 
+                            ? 'text-brand bg-action-secondary' 
+                            : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                    }`}
                     title={isPreview ? t('editor.toggle_edit', 'Edit') : t('editor.toggle_preview', 'Preview')}
                 >
                     {isPreview ? (
                         <>
-                            <Edit3 className="w-4 h-4" />
+                            <Edit3 className="w-[18px] h-[18px]" />
                             <span className="hidden sm:inline">{t('editor.toggle_edit', 'Edit')}</span>
                         </>
                     ) : (
                         <>
-                            <Eye className="w-4 h-4" />
+                            <Eye className="w-[18px] h-[18px]" />
                             <span className="hidden sm:inline">{t('editor.toggle_preview', 'Preview')}</span>
                         </>
                     )}
@@ -258,7 +262,10 @@ export const MarkdownEditor = ({
             </div>
 
             {/* Content */}
-            <div className="p-4" style={{ minHeight }}>
+            <div 
+                className={`p-6 ${isPreview ? 'bg-surface-subtle border-l-4 border-l-brand/20' : 'bg-card'}`} 
+                style={{ minHeight }}
+            >
                 {isPreview ? (
                     <MarkdownPreview content={value} />
                 ) : (

@@ -9,6 +9,12 @@ import { Tables } from '@/integrations/supabase/types';
 import { MarkdownEditor } from '@/components/editor';
 import { formatDate } from '@/lib/date-utils';
 
+// UI Components
+import { Button } from '@/components/ui/button';
+import { PromptCard, PromptCardHeader, PromptCardTitle, PromptCardFooter, PromptCardActions, PromptCardMeta } from '@/components/ui/prompt-card';
+import { StatusBadge } from '@/components/ui/status-badge';
+import { TagChip, TagChipStatic } from '@/components/ui/tag-chip';
+
 interface Tag extends Tables<'tags'> { }
 
 interface Prompt extends Tables<'prompts'> {
@@ -469,48 +475,49 @@ const PromptNotes = () => {
 
     const promptDetailModal = selectedPrompt && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm" onClick={() => setSelectedPrompt(null)}>
-            <div className="w-full max-w-2xl bg-card border border-border rounded-lg shadow-md flex flex-col max-h-[85vh]" onClick={e => e.stopPropagation()}>
+            <div className="w-full max-w-xl bg-card border border-border rounded-lg shadow-lg flex flex-col max-h-[85vh]" onClick={e => e.stopPropagation()}>
+                {/* Header */}
                 <div className="p-6 border-b border-border flex items-start justify-between gap-4">
-                    <div className="space-y-1">
-                        <div className="flex items-center gap-3">
-                            <h3 className="text-xl font-semibold font-mono text-foreground">{selectedPrompt.title}</h3>
-                            <span className="text-2xs font-medium px-1.5 py-0.5 rounded border border-border text-muted-foreground bg-secondary/30 flex-shrink-0">
+                    <div className="space-y-2 flex-1 min-w-0">
+                        <div className="flex items-center gap-3 flex-wrap">
+                            <h3 className="text-page-title text-foreground truncate">{selectedPrompt.title}</h3>
+                            <StatusBadge variant={selectedPrompt.is_public ? 'public' : 'private'}>
                                 {selectedPrompt.is_public ? t('prompt.public') : t('prompt.private')}
-                            </span>
+                            </StatusBadge>
                         </div>
-                        <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-xs text-muted-foreground">{t('prompt.by', { author: selectedPrompt.author })}</span>
-                            <span className="text-xs text-muted-foreground">•</span>
-                            <span className="text-xs text-muted-foreground">{formatDate(selectedPrompt.created_at, i18n.language)}</span>
-                            {selectedPrompt.tags.map(t => (
-                                <span key={t.id} className="font-normal text-xs text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">{t.name}</span>
+                        <div className="flex items-center gap-2 flex-wrap text-meta text-muted-foreground">
+                            <span>{t('prompt.by', { author: selectedPrompt.author })}</span>
+                            <span>•</span>
+                            <span>{formatDate(selectedPrompt.created_at, i18n.language)}</span>
+                        </div>
+                        <div className="flex items-center gap-2 flex-wrap mt-2">
+                            {selectedPrompt.tags.map(tag => (
+                                <TagChipStatic key={tag.id} variant="default" size="sm">
+                                    {tag.name}
+                                </TagChipStatic>
                             ))}
                         </div>
                     </div>
-                    <button onClick={() => setSelectedPrompt(null)} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+                    <Button variant="ghost" size="sm" onClick={() => setSelectedPrompt(null)}>
                         {t('actions.close')}
-                    </button>
+                    </Button>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-6 bg-secondary/20">
-                    <pre className="whitespace-pre-wrap text-sm text-foreground leading-relaxed font-mono">{selectedPrompt.content}</pre>
+                {/* Content */}
+                <div className="flex-1 overflow-y-auto p-6 bg-surface-subtle border-l-4 border-l-brand/20">
+                    <pre className="whitespace-pre-wrap text-body text-foreground leading-relaxed font-mono">{selectedPrompt.content}</pre>
                 </div>
 
-                <div className="p-4 border-t border-border flex justify-end gap-6 bg-card rounded-b-lg">
+                {/* Footer */}
+                <div className="p-4 border-t border-border flex justify-end gap-3 bg-card rounded-b-lg">
                     {user && user.id === selectedPrompt.user_id && (
-                        <button
-                            onClick={() => handleEdit(selectedPrompt)}
-                            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-                        >
+                        <Button variant="outline" size="sm" onClick={() => handleEdit(selectedPrompt)}>
                             {t('actions.edit')}
-                        </button>
+                        </Button>
                     )}
-                    <button
-                        onClick={() => handleCopy(selectedPrompt.content)}
-                        className="text-sm font-medium text-foreground hover:text-primary transition-colors"
-                    >
+                    <Button variant="brand" size="sm" onClick={() => handleCopy(selectedPrompt.content)}>
                         {t('actions.copy')}
-                    </button>
+                    </Button>
                 </div>
             </div>
         </div>
@@ -571,12 +578,13 @@ const PromptNotes = () => {
 
                             {/* Recent Public Prompts */}
                             <section>
-                                <h2 className="text-sm font-medium text-muted-foreground mb-3">{t('landing.recent_prompts_title')}</h2>
+                                <h2 className="text-section-title text-foreground mb-4">{t('landing.recent_prompts_title')}</h2>
                                 {filteredPublicPrompts.length > 0 ? (
-                                    <div className="space-y-3">
+                                    <div className="space-y-4">
                                         {paginatedPublicPrompts.map(prompt => (
-                                            <div
+                                            <PromptCard
                                                 key={prompt.id}
+                                                variant="public"
                                                 onClick={() => setSelectedPrompt({
                                                     id: prompt.id,
                                                     user_id: prompt.user_id,
@@ -589,26 +597,27 @@ const PromptNotes = () => {
                                                     tags: prompt.tags.map(t => ({ id: t, name: t })),
                                                     author: prompt.author
                                                 })}
-                                                className="block bg-card border border-border rounded-md p-4 hover:border-primary/50 transition-colors cursor-pointer text-left shadow-sm"
                                             >
-                                                <h3 className="text-sm font-semibold text-foreground font-mono mb-1">{prompt.title}</h3>
+                                                <PromptCardHeader>
+                                                    <PromptCardTitle>{prompt.title}</PromptCardTitle>
+                                                </PromptCardHeader>
                                                 {prompt.description && (
-                                                    <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{prompt.description}</p>
+                                                    <p className="text-meta text-muted-foreground mb-3 line-clamp-2">{prompt.description}</p>
                                                 )}
-                                                <div className="flex items-center gap-2 flex-wrap mt-2">
-                                                    {prompt.tags.slice(0, 3).map(tag => (
-                                                        <span key={tag} className="text-xs bg-secondary text-secondary-foreground px-2 py-0.5 rounded-md">
-                                                            {tag}
-                                                        </span>
-                                                    ))}
-                                                    <span className="text-xs bg-secondary/50 text-muted-foreground px-2 py-0.5 rounded-md">
-                                                        @{prompt.author}
-                                                    </span>
-                                                    <span className="text-xs bg-secondary/50 text-muted-foreground px-2 py-0.5 rounded-md">
-                                                        {formatDate(prompt.created_at, i18n.language)}
-                                                    </span>
-                                                </div>
-                                            </div>
+                                                <PromptCardFooter>
+                                                    <div className="flex items-center gap-2 flex-wrap">
+                                                        {prompt.tags.slice(0, 3).map(tag => (
+                                                            <TagChipStatic key={tag} variant="default" size="sm">
+                                                                {tag}
+                                                            </TagChipStatic>
+                                                        ))}
+                                                    </div>
+                                                    <PromptCardMeta>
+                                                        <StatusBadge variant="date" size="sm">@{prompt.author}</StatusBadge>
+                                                        <StatusBadge variant="date" size="sm">{formatDate(prompt.created_at, i18n.language)}</StatusBadge>
+                                                    </PromptCardMeta>
+                                                </PromptCardFooter>
+                                            </PromptCard>
                                         ))}
 
                                         {/* Public Pagination Controls */}
@@ -657,33 +666,33 @@ const PromptNotes = () => {
 
                         {/* Compact Auth Form */}
                         <aside className="w-full lg:w-80 flex-shrink-0 sticky top-20">
-                            <div className="bg-card border border-border rounded-md p-6 shadow-sm">
-                                <form onSubmit={handleAuth} className="space-y-3">
+                            <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
+                                <form onSubmit={handleAuth} className="space-y-4">
                                     {authMode === 'register' && (
                                         <div>
-                                            <label className="block text-xs font-medium text-foreground mb-1">{t('auth.name')}</label>
-                                            <input type="text" value={displayName} onChange={e => setDisplayName(e.target.value)} required placeholder={t('auth.placeholders.name')} disabled={authSubmitting} className="w-full px-3 py-2 bg-background border border-border rounded-md text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50" />
+                                            <label className="block text-meta font-medium text-foreground mb-1.5">{t('auth.name')}</label>
+                                            <input type="text" value={displayName} onChange={e => setDisplayName(e.target.value)} required placeholder={t('auth.placeholders.name')} disabled={authSubmitting} className="w-full px-4 py-2.5 bg-background border border-border rounded-md text-body text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50" />
                                         </div>
                                     )}
                                     <div>
-                                        <label className="block text-xs font-medium text-foreground mb-1">{t('auth.email')}</label>
-                                        <input type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder={t('auth.placeholders.email')} disabled={authSubmitting} className="w-full px-3 py-2 bg-background border border-border rounded-md text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50" />
+                                        <label className="block text-meta font-medium text-foreground mb-1.5">{t('auth.email')}</label>
+                                        <input type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder={t('auth.placeholders.email')} disabled={authSubmitting} className="w-full px-4 py-2.5 bg-background border border-border rounded-md text-body text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50" />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-medium text-foreground mb-1">{t('auth.password')}</label>
-                                        <input type="password" value={password} onChange={e => setPassword(e.target.value)} required placeholder={t('auth.placeholders.password')} disabled={authSubmitting} className="w-full px-3 py-2 bg-background border border-border rounded-md text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50" />
+                                        <label className="block text-meta font-medium text-foreground mb-1.5">{t('auth.password')}</label>
+                                        <input type="password" value={password} onChange={e => setPassword(e.target.value)} required placeholder={t('auth.placeholders.password')} disabled={authSubmitting} className="w-full px-4 py-2.5 bg-background border border-border rounded-md text-body text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50" />
                                     </div>
-                                    {authError && <p className="text-xs text-destructive">{authError}</p>}
-                                    <button type="submit" disabled={authSubmitting} className="w-full py-2 bg-primary text-primary-foreground text-sm font-medium rounded-md hover:bg-primary/90 disabled:opacity-50 transition-colors shadow-sm">
+                                    {authError && <p className="text-meta text-destructive">{authError}</p>}
+                                    <Button type="submit" variant="brand" className="w-full" disabled={authSubmitting}>
                                         {authSubmitting ? t('auth.processing') : (authMode === 'login' ? t('auth.login') : t('auth.register'))}
-                                    </button>
+                                    </Button>
                                 </form>
                                 <div className="mt-4 text-center">
-                                    <p className="text-xs text-muted-foreground">
+                                    <p className="text-meta text-muted-foreground">
                                         {authMode === 'login' ? t('auth.no_account') : t('auth.have_account')}{' '}
                                         <button
                                             onClick={() => { setAuthMode(authMode === 'login' ? 'register' : 'login'); setAuthError(''); }}
-                                            className="text-primary hover:underline font-medium"
+                                            className="text-brand hover:underline font-medium"
                                         >
                                             {authMode === 'login' ? t('auth.switch_to_register') : t('auth.switch_to_login')}
                                         </button>
@@ -691,35 +700,31 @@ const PromptNotes = () => {
                                 </div>
                             </div>
 
-                            {/* Public Tags Section (Moved) */}
-                            <div className="bg-card border border-border rounded-md p-6 shadow-sm mt-6">
-                                <h2 className="text-sm font-medium text-muted-foreground mb-3">{t('landing.public_tags_title')}</h2>
+                            {/* Public Tags Section */}
+                            <div className="bg-card border border-border rounded-lg p-6 shadow-sm mt-6">
+                                <h2 className="text-section-title text-foreground mb-4">{t('landing.public_tags_title')}</h2>
                                 {publicTags.length > 0 ? (
                                     <div className="flex flex-wrap gap-2">
-                                        <button
+                                        <TagChip
+                                            variant={selectedPublicTag === null ? 'active' : 'default'}
+                                            size="default"
                                             onClick={() => { setSelectedPublicTag(null); setPublicCurrentPage(1); }}
-                                            className={`text-xs px-2.5 py-1 rounded-md font-medium transition-colors ${selectedPublicTag === null
-                                                ? 'bg-primary text-primary-foreground'
-                                                : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-                                                }`}
                                         >
                                             {t('list.all')}
-                                        </button>
+                                        </TagChip>
                                         {publicTags.map(tag => (
-                                            <button
+                                            <TagChip
                                                 key={tag.name}
+                                                variant={selectedPublicTag === tag.name ? 'active' : 'default'}
+                                                size="default"
                                                 onClick={() => { setSelectedPublicTag(tag.name); setPublicCurrentPage(1); }}
-                                                className={`text-xs px-2.5 py-1 rounded-md font-medium transition-colors ${selectedPublicTag === tag.name
-                                                    ? 'bg-primary text-primary-foreground'
-                                                    : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-                                                    }`}
                                             >
                                                 {tag.name}
-                                            </button>
+                                            </TagChip>
                                         ))}
                                     </div>
                                 ) : (
-                                    <p className="text-sm text-muted-foreground">{t('landing.no_public_tags')}</p>
+                                    <p className="text-body text-muted-foreground">{t('landing.no_public_tags')}</p>
                                 )}
                             </div>
                         </aside>
@@ -773,106 +778,167 @@ const PromptNotes = () => {
                         <input type="text" value={filter} onChange={e => setFilter(e.target.value)} placeholder={t('prompt.search_placeholder')} className="w-full px-3 py-2.5 bg-card border border-border rounded-md text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
                     </div>
 
-                    <div className="mb-8 bg-card border border-border rounded-lg p-4">
+                    {/* Editor Section */}
+                    <div className="mb-8 bg-card border border-border rounded-lg p-6">
                         <div className="flex items-center gap-3 mb-4">
-                            <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder={t('prompt.title_placeholder')} className="flex-1 py-2 bg-transparent text-sm font-bold font-mono text-foreground placeholder:text-muted-foreground focus:outline-none" />
-                            <span className="text-2xs font-medium px-1.5 py-0.5 rounded border border-border text-muted-foreground bg-secondary/30 flex-shrink-0">
+                            <input 
+                                type="text" 
+                                value={title} 
+                                onChange={e => setTitle(e.target.value)} 
+                                placeholder={t('prompt.title_placeholder')} 
+                                className="flex-1 py-2 bg-transparent text-body-lg font-semibold text-foreground placeholder:text-muted-foreground focus:outline-none" 
+                            />
+                            <StatusBadge variant={isPublic ? 'public' : 'private'}>
                                 {isPublic ? t('prompt.public') : t('prompt.private')}
-                            </span>
+                            </StatusBadge>
                         </div>
+                        
                         <MarkdownEditor
                             value={content}
                             onChange={setContent}
                             placeholder={t('prompt.content_placeholder')}
-                            minHeight="200px"
+                            minHeight="240px"
                         />
 
-                        <div className="mt-4">
+                        <div className="mt-6 space-y-4">
                             <div className="flex flex-col sm:flex-row gap-4 sm:items-center">
                                 <div className="flex-1">
-                                    <input type="text" value={tagsInput} onChange={e => setTagsInput(e.target.value)} placeholder={t('prompt.tags_placeholder')} className="w-full px-3 py-2 bg-background border border-border rounded-md text-sm-md text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+                                    <input 
+                                        type="text" 
+                                        value={tagsInput} 
+                                        onChange={e => setTagsInput(e.target.value)} 
+                                        placeholder={t('prompt.tags_placeholder')} 
+                                        className="w-full px-4 py-2.5 bg-background border border-border rounded-md text-body text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" 
+                                    />
                                 </div>
                                 <div className="flex items-center gap-4 flex-shrink-0">
-                                    <div className="flex items-center gap-2 group">
-                                        <input type="checkbox" id="isPublic" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} className="rounded border-border text-primary focus:ring-primary h-4 w-4 accent-primary cursor-pointer" />
-                                        <label htmlFor="isPublic" className="text-sm text-muted-foreground select-none cursor-pointer whitespace-nowrap group-hover:text-foreground transition-colors">{t('prompt.public')}</label>
-                                    </div>
-                                    <button onClick={handleSave} disabled={!content.trim() || saving} className="text-sm font-medium text-foreground hover:text-primary disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap">{saving ? t('prompt.saving') : editingId ? t('prompt.update') : t('prompt.save')}</button>
+                                    <label className="flex items-center gap-2 cursor-pointer group">
+                                        <input 
+                                            type="checkbox" 
+                                            id="isPublic" 
+                                            checked={isPublic} 
+                                            onChange={(e) => setIsPublic(e.target.checked)} 
+                                            className="rounded border-border text-brand focus:ring-brand h-4 w-4 accent-brand cursor-pointer" 
+                                        />
+                                        <span className="text-body text-muted-foreground select-none whitespace-nowrap group-hover:text-foreground transition-colors">
+                                            {t('prompt.public')}
+                                        </span>
+                                    </label>
+                                    <Button 
+                                        variant="brand" 
+                                        size="sm"
+                                        onClick={handleSave} 
+                                        disabled={!content.trim() || saving}
+                                    >
+                                        {saving ? t('prompt.saving') : editingId ? t('prompt.update') : t('prompt.save')}
+                                    </Button>
                                 </div>
                             </div>
-                            {editingId && <button onClick={() => { setTitle(''); setContent(''); setTagsInput(''); setIsPublic(false); setEditingId(null); }} className="mt-2 text-sm text-muted-foreground hover:text-foreground transition-colors">{t('prompt.cancel_edit')}</button>}
+                            {editingId && (
+                                <Button 
+                                    variant="ghost" 
+                                    size="sm"
+                                    onClick={() => { setTitle(''); setContent(''); setTagsInput(''); setIsPublic(false); setEditingId(null); }}
+                                >
+                                    {t('prompt.cancel_edit')}
+                                </Button>
+                            )}
                         </div>
                     </div>
 
                     <div>
-                        <div className="flex items-center justify-between mb-3">
-                            <h2 className="text-sm font-semibold text-muted-foreground">{t('list.title', { count: filteredPrompts.length })}</h2>
-                            <div className="flex gap-4 items-center">
-                                <button onClick={() => setVisibilityFilter('all')} className={`text-sm transition-colors ${visibilityFilter === 'all' ? 'font-medium text-foreground underline decoration-primary underline-offset-4' : 'text-muted-foreground hover:text-foreground'}`}>{t('list.all')}</button>
-                                <button onClick={() => setVisibilityFilter('public')} className={`text-sm transition-colors ${visibilityFilter === 'public' ? 'font-medium text-foreground underline decoration-primary underline-offset-4' : 'text-muted-foreground hover:text-foreground'}`}>{t('prompt.public')}</button>
-                                <button onClick={() => setVisibilityFilter('private')} className={`text-sm transition-colors ${visibilityFilter === 'private' ? 'font-medium text-foreground underline decoration-primary underline-offset-4' : 'text-muted-foreground hover:text-foreground'}`}>{t('prompt.private')}</button>
+                        <div className="flex items-center justify-between mb-4">
+                            <h2 className="text-section-title text-foreground">{t('list.title', { count: filteredPrompts.length })}</h2>
+                            <div className="flex gap-1 items-center">
+                                <TagChip 
+                                    variant={visibilityFilter === 'all' ? 'active' : 'outline'}
+                                    size="sm"
+                                    onClick={() => setVisibilityFilter('all')}
+                                >
+                                    {t('list.all')}
+                                </TagChip>
+                                <TagChip 
+                                    variant={visibilityFilter === 'public' ? 'active' : 'outline'}
+                                    size="sm"
+                                    onClick={() => setVisibilityFilter('public')}
+                                >
+                                    {t('prompt.public')}
+                                </TagChip>
+                                <TagChip 
+                                    variant={visibilityFilter === 'private' ? 'active' : 'outline'}
+                                    size="sm"
+                                    onClick={() => setVisibilityFilter('private')}
+                                >
+                                    {t('prompt.private')}
+                                </TagChip>
                             </div>
                         </div>
 
                         {filteredPrompts.length === 0 ? (
-                            <div className="text-center py-12 text-muted-foreground">{prompts.length === 0 ? t('list.empty') : t('list.no_match')}</div>
+                            <div className="text-center py-12 text-muted-foreground text-body">
+                                {prompts.length === 0 ? t('list.empty') : t('list.no_match')}
+                            </div>
                         ) : (
-                            <div className="grid gap-3">
+                            <div className="grid gap-4">
                                 {paginatedPrompts.map(prompt => (
-                                    <div
+                                    <PromptCard
                                         key={prompt.id}
+                                        variant={editingId === prompt.id ? 'selected' : prompt.is_public ? 'public' : 'private'}
                                         onClick={() => setSelectedPrompt(prompt)}
-                                        className={`flex flex-col p-3 bg-card border rounded-lg hover:border-primary/50 transition-colors cursor-pointer ${editingId === prompt.id ? 'border-primary' : 'border-border'}`}
                                     >
-                                        {/* Top: Title & Badge */}
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <h3 className="text-sm font-medium text-foreground truncate group-hover:text-primary transition-colors">
-                                                {prompt.title}
-                                            </h3>
-                                            <span className="text-2xs font-medium px-1.5 py-0.5 rounded border border-border text-muted-foreground bg-secondary/30 flex-shrink-0">
-                                                {formatDate(prompt.created_at, i18n.language)}
-                                            </span>
-                                            <span className="text-2xs font-medium px-1.5 py-0.5 rounded border border-border text-muted-foreground bg-secondary/30 flex-shrink-0">
-                                                {prompt.is_public ? t('prompt.public') : t('prompt.private')}
-                                            </span>
-                                        </div>
+                                        <PromptCardHeader>
+                                            <PromptCardTitle>{prompt.title}</PromptCardTitle>
+                                            <PromptCardMeta>
+                                                <StatusBadge variant="date" size="sm">
+                                                    {formatDate(prompt.created_at, i18n.language)}
+                                                </StatusBadge>
+                                                <StatusBadge variant={prompt.is_public ? 'public' : 'private'} size="sm">
+                                                    {prompt.is_public ? t('prompt.public') : t('prompt.private')}
+                                                </StatusBadge>
+                                            </PromptCardMeta>
+                                        </PromptCardHeader>
 
-                                        {/* Bottom: Tags & Actions */}
-                                        <div className="flex items-end justify-between gap-4 mt-auto">
-                                            <div className="flex items-center gap-1.5 flex-wrap">
+                                        <PromptCardFooter>
+                                            <div className="flex items-center gap-2 flex-wrap">
                                                 {prompt.tags.map((tag, i) => (
-                                                    <span key={i} className="font-normal text-xs-sm bg-secondary/50 px-1.5 py-0.5 rounded text-foreground/80 leading-none">{tag.name}</span>
+                                                    <TagChipStatic key={i} variant="muted" size="sm">
+                                                        {tag.name}
+                                                    </TagChipStatic>
                                                 ))}
                                             </div>
 
-                                            <div className="flex items-center gap-3 flex-shrink-0" onClick={e => e.stopPropagation()}>
+                                            <PromptCardActions onClick={e => e.stopPropagation()}>
                                                 {prompt.is_public && (
-                                                    <button
+                                                    <Button
+                                                        variant="action"
+                                                        size="inline"
                                                         onClick={() => {
                                                             const url = `${window.location.origin}/share/${prompt.id}`;
                                                             navigator.clipboard.writeText(url);
                                                             showToast(t('toast.link_copied', 'Link copied to clipboard'));
                                                         }}
-                                                        className="text-xs font-medium text-muted-foreground hover:text-foreground hover:underline transition-colors"
                                                     >
                                                         {t('actions.share', 'Share')}
-                                                    </button>
+                                                    </Button>
                                                 )}
-                                                <button
+                                                <Button
+                                                    variant="action"
+                                                    size="inline"
                                                     onClick={() => handleCopy(prompt.content)}
-                                                    className="text-xs font-medium text-muted-foreground hover:text-foreground hover:underline transition-colors"
                                                 >
                                                     {t('actions.copy')}
-                                                </button>
-                                                <button
+                                                </Button>
+                                                <Button
+                                                    variant="action"
+                                                    size="inline"
+                                                    className="hover:text-destructive"
                                                     onClick={() => handleDeleteClick(prompt.id)}
-                                                    className="text-xs font-medium text-muted-foreground hover:text-destructive hover:underline transition-colors"
                                                 >
                                                     {t('actions.delete')}
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
+                                                </Button>
+                                            </PromptCardActions>
+                                        </PromptCardFooter>
+                                    </PromptCard>
                                 ))}
                             </div>
                         )}
@@ -917,17 +983,35 @@ const PromptNotes = () => {
                     </div>
                 </main>
 
-                <aside className="hidden lg:block w-56 flex-shrink-0">
-                    <div className="sticky top-20">
-                        <h2 className="text-sm font-semibold text-muted-foreground mb-3">{t('sidebar.title', { count: allUserTags.length })}</h2>
-                        {allUserTags.length === 0 ? <p className="text-sm text-muted-foreground">{t('sidebar.no_tags')}</p> : (
+                <aside className="hidden lg:block w-64 flex-shrink-0">
+                    <div className="sticky top-20 bg-card border border-border rounded-lg p-4">
+                        <h2 className="text-section-title text-foreground mb-4">{t('sidebar.title', { count: allUserTags.length })}</h2>
+                        {allUserTags.length === 0 ? (
+                            <p className="text-body text-muted-foreground">{t('sidebar.no_tags')}</p>
+                        ) : (
                             <div className="flex flex-wrap gap-2">
                                 {allUserTags.map(tag => (
-                                    <button key={tag.id} onClick={() => handleTagFilter(tag.name)} className={`tag cursor-pointer hover:text-foreground transition-colors ${filter.toLowerCase() === tag.name.toLowerCase() ? 'text-primary font-medium underline decoration-primary underline-offset-4' : 'text-muted-foreground'}`}>{tag.name}</button>
+                                    <TagChip 
+                                        key={tag.id} 
+                                        variant={filter.toLowerCase() === tag.name.toLowerCase() ? 'active' : 'default'}
+                                        size="default"
+                                        onClick={() => handleTagFilter(tag.name)}
+                                    >
+                                        {tag.name}
+                                    </TagChip>
                                 ))}
                             </div>
                         )}
-                        {filter && <button onClick={() => setFilter('')} className="mt-4 text-xs text-muted-foreground hover:text-foreground transition-colors">{t('sidebar.clear_filter')}</button>}
+                        {filter && (
+                            <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="mt-4 w-full"
+                                onClick={() => setFilter('')}
+                            >
+                                {t('sidebar.clear_filter')}
+                            </Button>
+                        )}
                     </div>
                 </aside>
             </div>
@@ -945,11 +1029,15 @@ const PromptNotes = () => {
             {showLogoutConfirm && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm" onClick={() => setShowLogoutConfirm(false)}>
                     <div className="w-full max-w-sm bg-card border border-border rounded-lg shadow-lg p-6" onClick={e => e.stopPropagation()}>
-                        <h3 className="text-base font-semibold text-foreground mb-2">{t('auth.logout_confirm_title')}</h3>
-                        <p className="text-sm text-muted-foreground mb-6">{t('auth.logout_confirm_desc')}</p>
+                        <h3 className="text-section-title text-foreground mb-2">{t('auth.logout_confirm_title')}</h3>
+                        <p className="text-body text-muted-foreground mb-6">{t('auth.logout_confirm_desc')}</p>
                         <div className="flex justify-end gap-3">
-                            <button onClick={() => setShowLogoutConfirm(false)} className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t('actions.cancel')}</button>
-                            <button onClick={() => { handleLogout(); setShowLogoutConfirm(false); }} className="px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors">{t('auth.logout')}</button>
+                            <Button variant="ghost" size="sm" onClick={() => setShowLogoutConfirm(false)}>
+                                {t('actions.cancel')}
+                            </Button>
+                            <Button variant="brand" size="sm" onClick={() => { handleLogout(); setShowLogoutConfirm(false); }}>
+                                {t('auth.logout')}
+                            </Button>
                         </div>
                     </div>
                 </div>
@@ -959,11 +1047,15 @@ const PromptNotes = () => {
             {confirmDeleteId && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm" onClick={() => setConfirmDeleteId(null)}>
                     <div className="w-full max-w-sm bg-card border border-border rounded-lg shadow-lg p-6" onClick={e => e.stopPropagation()}>
-                        <h3 className="text-base font-semibold text-foreground mb-2">{t('prompt.delete_confirm')}</h3>
-                        <p className="text-sm text-muted-foreground mb-6">{t('prompt.delete_warning')}</p>
+                        <h3 className="text-section-title text-foreground mb-2">{t('prompt.delete_confirm')}</h3>
+                        <p className="text-body text-muted-foreground mb-6">{t('prompt.delete_warning')}</p>
                         <div className="flex justify-end gap-3">
-                            <button onClick={() => setConfirmDeleteId(null)} className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t('actions.cancel')}</button>
-                            <button onClick={() => { performDelete(confirmDeleteId); setConfirmDeleteId(null); }} className="px-4 py-2 text-sm font-medium bg-destructive text-destructive-foreground rounded-md hover:bg-destructive/90 transition-colors">{t('actions.delete')}</button>
+                            <Button variant="ghost" size="sm" onClick={() => setConfirmDeleteId(null)}>
+                                {t('actions.cancel')}
+                            </Button>
+                            <Button variant="destructive" size="sm" onClick={() => { performDelete(confirmDeleteId); setConfirmDeleteId(null); }}>
+                                {t('actions.delete')}
+                            </Button>
                         </div>
                     </div>
                 </div>

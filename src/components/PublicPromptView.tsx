@@ -10,6 +10,11 @@ import { MarkdownPreview } from '@/components/editor';
 import { formatDate } from '@/lib/date-utils';
 import { SEO } from './SEO';
 
+// UI Components
+import { Button } from '@/components/ui/button';
+import { StatusBadge } from '@/components/ui/status-badge';
+import { TagChipStatic } from '@/components/ui/tag-chip';
+
 interface Tag extends Tables<'tags'> { }
 
 interface Prompt extends Tables<'prompts'> {
@@ -171,52 +176,57 @@ const PublicPromptView = () => {
                             <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0 block dark:hidden" />
                             <Moon className="h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100 hidden dark:block" />
                         </button>
-                        <Link to="/" className="text-sm font-medium text-primary hover:underline">
-                            {t('public_view.open_app')}
-                        </Link>
+                        <Button variant="brand" size="sm" asChild>
+                            <Link to="/">
+                                {t('public_view.open_app')}
+                            </Link>
+                        </Button>
                     </div>
                 </div>
             </header>
 
-            <main className="max-w-4xl mx-auto px-4 py-8">
-                <Link to="/" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors">
-                    <ArrowLeft className="w-4 h-4 mr-1" />
+            <main className="max-w-3xl mx-auto px-4 py-8">
+                <Link to="/" className="inline-flex items-center text-body text-muted-foreground hover:text-foreground mb-6 transition-colors group">
+                    <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
                     {t('public_view.back_to_app')}
                 </Link>
 
-                <div className="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
+                <div className="bg-card border-l-4 border-l-brand border-t border-r border-b border-border rounded-lg shadow-sm overflow-hidden">
+                    {/* Header */}
                     <div className="p-6 border-b border-border">
                         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-4">
-                            <div>
-                                <h1 className="text-2xl font-bold text-foreground mb-2 font-mono tracking-tight">{prompt.title}</h1>
-                                <div className="flex items-center gap-2 text-sm text-muted-foreground flex-wrap">
-                                    <span className="bg-secondary/50 text-muted-foreground px-2 py-0.5 rounded-md font-mono text-xs">@{prompt.author}</span>
-                                    <span className="bg-secondary/50 text-muted-foreground px-2 py-0.5 rounded-md text-xs">{formattedDate}</span>
+                            <div className="flex-1 min-w-0">
+                                <h1 className="text-page-title text-foreground mb-3">{prompt.title}</h1>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    <StatusBadge variant="date">@{prompt.author}</StatusBadge>
+                                    <StatusBadge variant="date">{formattedDate}</StatusBadge>
+                                    <StatusBadge variant="public">{t('prompt.public')}</StatusBadge>
                                 </div>
                             </div>
-                            <button
+                            <Button
+                                variant="brand"
+                                size="sm"
                                 onClick={handleCopy}
-                                className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                                title={t('actions.copy')}
                             >
-                                <Copy className="w-4 h-4" />
-                                <span className="underline decoration-dotted underline-offset-4">{t('actions.copy')}</span>
-                            </button>
+                                <Copy className="w-4 h-4 mr-2" />
+                                {t('actions.copy')}
+                            </Button>
                         </div>
 
                         {prompt.tags.length > 0 && (
-                            <div className="flex flex-wrap gap-2">
+                            <div className="flex flex-wrap gap-2 mt-4">
                                 {prompt.tags.map(tag => (
-                                    <span key={tag.id} className="text-xs bg-secondary text-secondary-foreground px-2 py-1 rounded-md font-medium">
+                                    <TagChipStatic key={tag.id} variant="default" size="default">
                                         {tag.name}
-                                    </span>
+                                    </TagChipStatic>
                                 ))}
                             </div>
                         )}
                     </div>
 
-                    <div className="p-6 bg-secondary/5">
-                        <MarkdownPreview content={prompt.content} className="text-sm" />
+                    {/* Content */}
+                    <div className="p-6 bg-surface-subtle">
+                        <MarkdownPreview content={prompt.content} className="text-body" />
                     </div>
                 </div>
             </main>
