@@ -31,7 +31,6 @@ interface PromptUI extends Omit<Prompt, 'prompt_tags' | 'users' | 'prompt_conten
     content: string;
     tags: Pick<Tag, 'id' | 'name'>[];
     author: string;
-    description: string;
 }
 
 const PublicPromptView = () => {
@@ -94,7 +93,6 @@ const PublicPromptView = () => {
                     id: p.id,
                     user_id: p.user_id || '',
                     title: p.title || t('prompt.untitled'),
-                    description: p.description || '',
                     content: p.prompt_contents?.body || '',
                     is_public: p.is_public || false,
                     created_at: p.created_at,
