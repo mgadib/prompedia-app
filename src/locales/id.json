@@ -29,7 +29,10 @@
         },
         "name": "Nama",
         "error": {
-            "generic": "Terjadi kesalahan saat masuk"
+            "generic": "Terjadi kesalahan saat masuk",
+            "password_min_length": "Password minimal 8 karakter",
+            "password_weak": "Password terlalu lemah. Tambahkan angka atau simbol.",
+            "rate_limited": "Terlalu banyak percobaan. Silakan coba lagi nanti."
         }
     },
     "prompt": {

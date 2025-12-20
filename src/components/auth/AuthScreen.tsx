@@ -1,7 +1,22 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { TagChip } from '@/components/ui/tag-chip';
 import { useTranslation } from 'react-i18next';
+
+// Password strength calculation
+const getPasswordStrength = (password: string): { score: number; label: string; color: string } => {
+    let score = 0;
+    if (password.length >= 8) score++;
+    if (password.length >= 12) score++;
+    if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score++;
+    if (/\d/.test(password)) score++;
+    if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) score++;
+
+    if (score <= 1) return { score, label: 'Weak', color: 'bg-destructive' };
+    if (score <= 2) return { score, label: 'Fair', color: 'bg-yellow-500' };
+    if (score <= 3) return { score, label: 'Good', color: 'bg-blue-500' };
+    return { score, label: 'Strong', color: 'bg-green-500' };
+};
 
 interface AuthScreenProps {
     handleAuth: (e: React.FormEvent) => void;
@@ -42,6 +57,11 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
 }) => {
     const { t } = useTranslation();
 
+    // Password validation for registration
+    const passwordStrength = useMemo(() => getPasswordStrength(password), [password]);
+    const isPasswordValid = password.length >= 8;
+    const showPasswordWarning = authMode === 'register' && password.length > 0 && !isPasswordValid;
+
     return (
         <aside className="w-full lg:w-72 flex-shrink-0 lg:sticky lg:top-16">
             <div className="bg-card border border-border rounded-sm p-4">
@@ -56,6 +76,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
                                 required
                                 placeholder={t('auth.placeholders.name')}
                                 disabled={authSubmitting}
+                                autoComplete="name"
                                 className="w-full px-2 py-1.5 bg-background border border-border rounded-sm text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
                             />
                         </div>
@@ -69,6 +90,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
                             required
                             placeholder={t('auth.placeholders.email')}
                             disabled={authSubmitting}
+                            autoComplete="email"
                             className="w-full px-2 py-1.5 bg-background border border-border rounded-sm text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
                         />
                     </div>
@@ -79,13 +101,40 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
                             value={password}
                             onChange={e => setPassword(e.target.value)}
                             required
+                            minLength={8}
                             placeholder={t('auth.placeholders.password')}
                             disabled={authSubmitting}
+                            autoComplete={authMode === 'register' ? 'new-password' : 'current-password'}
                             className="w-full px-2 py-1.5 bg-background border border-border rounded-sm text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
                         />
+                        {/* Password strength indicator for registration */}
+                        {authMode === 'register' && password.length > 0 && (
+                            <div className="mt-2">
+                                <div className="flex gap-1 mb-1">
+                                    {[1, 2, 3, 4].map((level) => (
+                                        <div
+                                            key={level}
+                                            className={`h-1 flex-1 rounded-full transition-colors ${passwordStrength.score >= level ? passwordStrength.color : 'bg-muted'
+                                                }`}
+                                        />
+                                    ))}
+                                </div>
+                                <p className={`text-2xs ${showPasswordWarning ? 'text-destructive' : 'text-muted-foreground'}`}>
+                                    {showPasswordWarning
+                                        ? t('auth.error.password_min_length')
+                                        : `Password strength: ${passwordStrength.label}`
+                                    }
+                                </p>
+                            </div>
+                        )}
                     </div>
                     {authError && <p className="text-caption text-destructive">{authError}</p>}
-                    <Button type="submit" variant="brand" className="w-full" disabled={authSubmitting}>
+                    <Button
+                        type="submit"
+                        variant="brand"
+                        className="w-full"
+                        disabled={authSubmitting || (authMode === 'register' && !isPasswordValid)}
+                    >
                         {authSubmitting ? t('auth.processing') : (authMode === 'login' ? t('auth.login') : t('auth.register'))}
                     </Button>
                 </form>

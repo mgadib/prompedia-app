@@ -13,12 +13,40 @@ import { SEO } from "@/components/SEO";
 import { useTranslation } from "react-i18next";
 import { useEffect } from "react";
 
+// Custom retry function with exponential backoff for rate limiting
+const retryWithBackoff = (failureCount: number, error: unknown): boolean => {
+  // Check if it's a rate limit error (429)
+  if (error && typeof error === 'object' && 'status' in error) {
+    const status = (error as { status: number }).status;
+    if (status === 429) {
+      // Retry up to 3 times with exponential backoff for rate limits
+      return failureCount < 3;
+    }
+    // Don't retry client errors (4xx except 429)
+    if (status >= 400 && status < 500) {
+      return false;
+    }
+  }
+  // Retry server errors (5xx) up to 2 times
+  return failureCount < 2;
+};
+
+// Calculate delay with exponential backoff
+const retryDelay = (attemptIndex: number): number => {
+  return Math.min(1000 * 2 ** attemptIndex, 30000); // Max 30 seconds
+};
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: false,
+      retry: retryWithBackoff,
+      retryDelay: retryDelay,
       staleTime: 5 * 60 * 1000,
       refetchOnWindowFocus: false,
+    },
+    mutations: {
+      retry: retryWithBackoff,
+      retryDelay: retryDelay,
     },
   },
 });

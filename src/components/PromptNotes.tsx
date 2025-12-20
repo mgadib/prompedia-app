@@ -211,21 +211,40 @@ const PromptNotes = () => {
         setAuthError('');
         setAuthSubmitting(true);
 
-        if (authMode === 'login') {
-            const { error } = await supabase.auth.signInWithPassword({ email, password });
-            if (error) setAuthError(error.message);
-            else { setEmail(''); setPassword(''); }
-        } else {
-            const { error } = await supabase.auth.signUp({
-                email,
-                password,
-                options: { data: { display_name: displayName, username: email.split('@')[0] } }
-            });
-            if (error) setAuthError(error.message);
-            else {
-                showToast(t('toast.registration_success'));
-                setAuthMode('login');
+        try {
+            if (authMode === 'login') {
+                const { error } = await supabase.auth.signInWithPassword({ email, password });
+                if (error) {
+                    // Handle rate limit error
+                    if (error.message.toLowerCase().includes('rate limit') || error.status === 429) {
+                        setAuthError(t('auth.error.rate_limited'));
+                    } else {
+                        setAuthError(error.message);
+                    }
+                } else {
+                    setEmail('');
+                    setPassword('');
+                }
+            } else {
+                const { error } = await supabase.auth.signUp({
+                    email,
+                    password,
+                    options: { data: { display_name: displayName, username: email.split('@')[0] } }
+                });
+                if (error) {
+                    // Handle rate limit error
+                    if (error.message.toLowerCase().includes('rate limit') || error.status === 429) {
+                        setAuthError(t('auth.error.rate_limited'));
+                    } else {
+                        setAuthError(error.message);
+                    }
+                } else {
+                    showToast(t('toast.registration_success'));
+                    setAuthMode('login');
+                }
             }
+        } catch {
+            setAuthError(t('auth.error.generic'));
         }
         setAuthSubmitting(false);
     };
