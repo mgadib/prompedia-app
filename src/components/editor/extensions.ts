@@ -4,7 +4,7 @@ import Typography from '@tiptap/extension-typography';
 import Underline from '@tiptap/extension-underline';
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import { common, createLowlight } from 'lowlight';
-import type { Extension } from '@tiptap/core';
+import type { AnyExtension } from '@tiptap/core';
 
 // Create lowlight instance with common languages (singleton pattern)
 const lowlight = createLowlight(common);
@@ -20,8 +20,8 @@ export interface EditorExtensionsOptions {
  * - Use singleton pattern for lowlight instance
  * - Ensure no duplicate extensions
  */
-export const createExtensions = (options: EditorExtensionsOptions = {}): Extension[] => {
-    const extensions: Extension[] = [
+export const createExtensions = (options: EditorExtensionsOptions = {}): AnyExtension[] => {
+    const extensions: AnyExtension[] = [
         StarterKit.configure({
             codeBlock: false, // We use CodeBlockLowlight instead for syntax highlighting
             heading: {
@@ -29,7 +29,6 @@ export const createExtensions = (options: EditorExtensionsOptions = {}): Extensi
             },
             // Disable underline in StarterKit to avoid duplicate extension warning
             // We add Underline extension separately for explicit control
-            underline: false,
         }),
         Placeholder.configure({
             placeholder: options.placeholder || 'Start writing...',

@@ -6,20 +6,3 @@ port = 54321
 schemas = ["public", "storage", "graphql_public"]
 extra_search_path = ["public", "extensions"]
 max_rows = 1000
-
-# [api.headers]
-# X-Content-Type-Options = "nosniff"
-# X-Frame-Options = "DENY"
-# X-XSS-Protection = "1; mode=block"
-# Strict-Transport-Security = "max-age=31536000; includeSubDomains"
-# Referrer-Policy = "strict-origin-when-cross-origin"
-# Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co https://openrouter.ai; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
-
-[functions.ai-processor]
-verify_jwt = false
-
-[functions.prompt-enhancer]
-verify_jwt = false
-
-[functions.reset-daily-usage]
-verify_jwt = false
