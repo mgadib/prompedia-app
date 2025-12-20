@@ -16,7 +16,7 @@ import { SEO } from '@/components/SEO';
 import { AuthScreen } from '@/components/auth/AuthScreen';
 import { PromptList } from '@/components/prompts/PromptList';
 import { PromptEditor } from '@/components/prompts/PromptEditor';
-import { FilterBar } from '@/components/prompts/FilterBar';
+import { FilterBar, MobileFilterButton } from '@/components/prompts/FilterBar';
 import { usePrompts, PromptUI } from '@/hooks/use-prompts';
 import { TagChip } from './ui/tag-chip';
 import { MarkdownPreview } from '@/components/editor/MarkdownPreview';
@@ -397,7 +397,7 @@ const PromptNotes = () => {
                             <div className="mb-6">
                                 <div className="bg-card border border-border rounded-sm p-5 text-left">
                                     <h2 className="text-xl font-semibold tracking-tight sm:text-2xl mb-2 text-foreground">{t('app.tagline')}</h2>
-                                    <p className="text-sm text-muted-foreground whitespace-nowrap">{t('app.description')}</p>
+                                    <p className="text-sm text-muted-foreground">{t('app.description')}</p>
                                 </div>
                             </div>
                             <section className="min-h-[50vh]">
@@ -458,6 +458,13 @@ const PromptNotes = () => {
                         isPublic={isPublic} setIsPublic={setIsPublic}
                         onSave={handleSave} onCancel={() => { setTitle(''); setContent(''); setTagsInput(''); setIsPublic(false); setEditingId(null); }}
                         isEditing={!!editingId} saving={saving}
+                    />
+
+                    {/* Mobile Filter for Tags */}
+                    <MobileFilterButton
+                        tags={allUserTags}
+                        currentFilter={filter}
+                        onFilterChange={setFilter}
                     />
 
                     <div className="min-h-[50vh]">

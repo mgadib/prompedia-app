@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Moon, Sun } from 'lucide-react';
+import { Moon, Sun, LogOut } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
@@ -57,6 +57,15 @@ export const Header = ({ variant = 'default', userEmail, onLogout }: HeaderProps
                     {/* Authenticated User Info */}
                     {variant === 'authenticated' && userEmail && (
                         <>
+                            {/* Mobile: Only logout icon */}
+                            <button
+                                onClick={onLogout}
+                                className="sm:hidden h-8 w-8 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-secondary/80 rounded-sm transition-all duration-normal"
+                                title={t('auth.logout')}
+                            >
+                                <LogOut className="h-4 w-4" />
+                            </button>
+                            {/* Desktop: Full info */}
                             <div className="hidden sm:flex items-center gap-4 pl-2 border-l border-border">
                                 <span className="text-xs text-muted-foreground truncate max-w-[180px]">
                                     {userEmail}

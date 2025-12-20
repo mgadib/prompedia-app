@@ -5,7 +5,7 @@ export const Footer = () => {
     const { t } = useTranslation();
     return (
         <footer className="border-t border-border bg-card/95 backdrop-blur-sm mt-auto py-4 shadow-xs">
-            <div className="max-w-6xl mx-auto px-4 flex flex-wrap items-center gap-x-6 gap-y-3">
+            <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-y-2 sm:gap-x-6 sm:gap-y-3">
                 {/* Brand Section */}
                 <div className="flex items-center gap-3">
                     <div className="flex items-center gap-2">

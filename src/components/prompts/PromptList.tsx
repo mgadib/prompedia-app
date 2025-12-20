@@ -135,7 +135,7 @@ export const PromptList: React.FC<PromptListProps> = memo(({
 
             {/* Pagination Controls */}
             {totalItems > 0 && (
-                <div className="flex items-center justify-between mt-6 pt-4 border-t border-border">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-6 pt-4 border-t border-border">
                     <div className="text-sm text-muted-foreground">
                         {t('list.showing', { start: Math.min(totalItems, (currentPage - 1) * itemsPerPage + 1), end: Math.min(totalItems, currentPage * itemsPerPage), total: totalItems })}
                     </div>

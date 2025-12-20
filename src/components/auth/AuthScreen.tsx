@@ -43,7 +43,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
     const { t } = useTranslation();
 
     return (
-        <aside className="w-full lg:w-72 flex-shrink-0 sticky top-16">
+        <aside className="w-full lg:w-72 flex-shrink-0 lg:sticky lg:top-16">
             <div className="bg-card border border-border rounded-sm p-4">
                 <form onSubmit={handleAuth} className="space-y-3">
                     {authMode === 'register' && (

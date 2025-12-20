@@ -1,6 +1,7 @@
 import { SEO } from "../SEO";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
+import { Header } from '@/components/layout/Header';
+import { Footer } from '@/components/layout/Footer';
 
 const FAQPage = () => {
     const { t } = useTranslation();
@@ -24,22 +25,15 @@ const FAQPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-background font-sans">
+        <div className="min-h-screen bg-background font-sans flex flex-col">
             <SEO
                 title="FAQ"
                 description="Frequently Asked Questions about Prompedia"
                 canonical={window.location.origin + '/faq'}
                 structuredData={faqSchema}
             />
-            <header className="border-b border-border bg-card">
-                <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-                    <Link to="/" className="flex items-center gap-3">
-                        <img src="/logo.png" alt="Logo" className="w-8 h-8 object-contain" />
-                        <h1 className="text-base font-semibold text-foreground">{t('app.title')}</h1>
-                    </Link>
-                </div>
-            </header>
-            <main className="max-w-4xl mx-auto px-4 py-12">
+            <Header variant="public" />
+            <main className="max-w-4xl mx-auto px-4 py-12 flex-1 w-full">
                 <h1 className="text-page-title mb-8">FAQ</h1>
                 <div className="space-y-6">
                     {faqs.map((faq, index) => (
@@ -50,8 +44,10 @@ const FAQPage = () => {
                     ))}
                 </div>
             </main>
+            <Footer />
         </div>
     );
 };
 
 export default FAQPage;
+

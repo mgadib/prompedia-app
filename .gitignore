@@ -201,8 +201,9 @@ $RECYCLE.BIN/
 # ============================================
 # Node Version Managers
 # ============================================
-.nvmrc
-.node-version
+# NOTE: .nvmrc and .node-version are NOT ignored
+# to ensure consistent Node.js version across team
+# Only ignore local npmrc files
 .npmrc.local
 .npmrc.*.local
 
@@ -340,14 +341,9 @@ datasets/
 # Sentry
 .sentryclirc
 
-# Package manager caches
+# Package manager caches (additional)
 .pnpm-store/
-.npm/
-.yarn/
-.yarn/cache
-.yarn/unplugged
-.yarn/build-state.yml
-.yarn/install-state.gz
+# Note: .npm/ and .yarn/ already defined above
 
 # ============================================
 # Additional Vite Patterns
@@ -368,9 +364,7 @@ vite.config.*.tsbuildinfo
 
 # JetBrains additional
 .idea_modules/
-*.iml
-*.iws
-*.ipr
+# Note: *.iml, *.iws, *.ipr already defined above
 
 # ============================================
 # Security & Compliance
@@ -383,3 +377,26 @@ dependency-check-report.json
 # Compliance reports
 compliance-report/
 *.audit.json
+
+# ============================================
+# Project Specific - Prompedia AI
+# ============================================
+# Agent workflows (local only, if not shared)
+# .agent/
+
+# Lovable/GPT Engineer artifacts
+.lovable/
+.gptengineer/
+
+# Gemini local configs (if any)
+# Note: C:\Users\LENOVO\.gemini is system-level, not tracked here
+
+# Local development notes/scratchpad
+*.local.md
+SCRATCHPAD.md
+TODO.local.md
+NOTES.local.md
+
+# Generated TypeScript types from Supabase (regenerate as needed)
+# Uncomment if you want to ignore generated types:
+# src/integrations/supabase/types.ts
