@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from "next-themes";
-import { Moon, Sun, Globe, Copy } from "lucide-react";
+import { Moon, Sun, Globe, Copy, Languages } from "lucide-react";
 import { User } from '@supabase/supabase-js';
 
 import { Tables } from '@/integrations/supabase/types';
@@ -19,7 +19,9 @@ import { PromptEditor } from '@/components/prompts/PromptEditor';
 import { FilterBar } from '@/components/prompts/FilterBar';
 import { usePrompts, PromptUI } from '@/hooks/use-prompts';
 import { TagChip } from './ui/tag-chip';
+import { Component } from 'react';
 import { MarkdownPreview } from '@/components/editor/MarkdownPreview';
+import { Footer } from '@/components/layout/Footer';
 
 // Local Types
 interface Tag extends Tables<'tags'> { }
@@ -391,12 +393,17 @@ const PromptNotes = () => {
             <div className="min-h-screen bg-background font-sans">
                 <header className="border-b border-border bg-card sticky top-0 z-40">
                     <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
+                        <a href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
                             <img src="/logo.png" alt="Logo" className="w-8 h-8 object-contain" />
                             <h1 className="text-xl font-bold text-foreground tracking-tight">prompedia.app</h1>
-                        </div>
+                        </a>
                         <div className="flex items-center gap-4">
-                            <button onClick={() => i18n.changeLanguage(i18n.resolvedLanguage === 'id' ? 'en' : 'id')} className="text-muted-foreground hover:text-foreground p-1"><Globe className="h-[1.2rem] w-[1.2rem]" /></button>
+                            <button
+                                onClick={() => i18n.changeLanguage(i18n.resolvedLanguage === 'id' ? 'en' : 'id')}
+                                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors p-1"
+                            >
+                                {i18n.resolvedLanguage?.toUpperCase()}
+                            </button>
                             <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")} className="text-muted-foreground hover:text-foreground p-1">
                                 <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0 block dark:hidden" />
                                 <Moon className="h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100 hidden dark:block" />
@@ -413,7 +420,7 @@ const PromptNotes = () => {
                                     <p className="text-sm text-muted-foreground whitespace-nowrap">{t('app.description')}</p>
                                 </div>
                             </div>
-                            <section>
+                            <section className="min-h-[50vh]">
                                 <h2 className="text-section-title text-foreground mb-4">{t('landing.recent_prompts_title')}</h2>
                                 <PromptList
                                     prompts={paginatedPublicPrompts}
@@ -448,6 +455,7 @@ const PromptNotes = () => {
                 </div>
                 {promptDetailModal}
                 {toastElement}
+                <Footer />
             </div>
         );
     }
@@ -457,12 +465,17 @@ const PromptNotes = () => {
             <SEO structuredData={websiteSchema} />
             <header className="border-b border-border bg-card sticky top-0 z-40">
                 <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
+                    <a href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
                         <img src="/logo.png" alt="Logo" className="w-8 h-8 object-contain" />
                         <h1 className="text-xl font-bold text-foreground tracking-tight">prompedia.app</h1>
-                    </div>
+                    </a>
                     <div className="flex items-center gap-6">
-                        <button onClick={() => i18n.changeLanguage(i18n.resolvedLanguage === 'id' ? 'en' : 'id')} className="text-muted-foreground hover:text-foreground p-1"><Globe className="h-[1.2rem] w-[1.2rem]" /></button>
+                        <button
+                            onClick={() => i18n.changeLanguage(i18n.resolvedLanguage === 'id' ? 'en' : 'id')}
+                            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors p-1"
+                        >
+                            {i18n.resolvedLanguage?.toUpperCase()}
+                        </button>
                         <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")} className="text-muted-foreground hover:text-foreground p-1">
                             <Sun className="h-[1.2rem] w-[1.2rem] dark:hidden" />
                             <Moon className="h-[1.2rem] w-[1.2rem] hidden dark:block" />
@@ -488,7 +501,7 @@ const PromptNotes = () => {
                         isEditing={!!editingId} saving={saving}
                     />
 
-                    <div>
+                    <div className="min-h-[50vh]">
                         <div className="flex items-center justify-between mb-4">
                             <h2 className="text-section-title text-foreground">{t('list.title', { count: totalItems })}</h2>
                             <div className="flex gap-1 items-center">
@@ -527,6 +540,7 @@ const PromptNotes = () => {
                 />
             </div>
 
+            <Footer />
             {toastElement}
 
             {promptDetailModal}

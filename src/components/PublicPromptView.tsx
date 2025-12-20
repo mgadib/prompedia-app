@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
-import { Moon, Sun, Globe, Copy, ArrowLeft } from "lucide-react";
+import { Moon, Sun, Copy } from "lucide-react";
 import { useTranslation } from 'react-i18next';
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
@@ -14,6 +14,7 @@ import { SEO } from './SEO';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { TagChipStatic } from '@/components/ui/tag-chip';
+import { Footer } from '@/components/layout/Footer';
 
 interface Tag extends Tables<'tags'> { }
 
@@ -38,8 +39,35 @@ const PublicPromptView = () => {
     const { t, i18n } = useTranslation();
     const { theme, setTheme } = useTheme();
     const [prompt, setPrompt] = useState<PromptUI | null>(null);
+    const [recentPrompts, setRecentPrompts] = useState<{ id: string; title: string; author: string }[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchRecentPrompts = async () => {
+            try {
+                const { data, error } = await supabase
+                    .from('prompts')
+                    .select('id, title, users(username, display_name)')
+                    .eq('is_public', true)
+                    .order('created_at', { ascending: false })
+                    .limit(7);
+
+                if (error) throw error;
+                if (data) {
+                    setRecentPrompts(data.map(p => ({
+                        id: p.id,
+                        title: p.title || t('prompt.untitled'),
+                        author: (p.users as any)?.display_name || (p.users as any)?.username || t('prompt.unknown_author')
+                    })));
+                }
+            } catch (err) {
+                console.error('Error fetching recent prompts:', err);
+            }
+        };
+
+        fetchRecentPrompts();
+    }, [t]);
 
     useEffect(() => {
         const fetchPrompt = async () => {
@@ -77,7 +105,7 @@ const PublicPromptView = () => {
                             .map(pt => pt.tags)
                             .filter((t): t is Pick<Tag, 'id' | 'name'> => t !== null)
                         : [],
-                    author: p.users?.username || t('prompt.unknown_author')
+                    author: p.users?.display_name || p.users?.username || t('prompt.unknown_author')
                 };
 
                 setPrompt(formattedPrompt);
@@ -147,7 +175,7 @@ const PublicPromptView = () => {
     const formattedDate = prompt ? formatDate(prompt.created_at, i18n.language) : '';
 
     return (
-        <div className="min-h-screen bg-background font-sans">
+        <div className="min-h-screen bg-background font-sans flex flex-col">
             <SEO
                 title={prompt.title}
                 description={prompt.content?.substring(0, 160)}
@@ -155,19 +183,19 @@ const PublicPromptView = () => {
                 type="article"
             />
             <header className="border-b border-border bg-card sticky top-0 z-10">
-                <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+                <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <Link to="/">
+                        <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
                             <img src="/logo.png" alt="Logo" className="w-8 h-8 object-contain" />
+                            <h1 className="text-xl font-bold text-foreground tracking-tight hidden sm:block">prompedia.app</h1>
                         </Link>
-                        <h1 className="text-xl font-bold text-foreground tracking-tight hidden sm:block">prompedia.app</h1>
                     </div>
                     <div className="flex items-center gap-4">
                         <button
                             onClick={() => i18n.changeLanguage(i18n.resolvedLanguage === 'id' ? 'en' : 'id')}
-                            className="text-muted-foreground hover:text-foreground transition-colors p-1"
+                            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors p-1"
                         >
-                            <Globe className="h-[1.2rem] w-[1.2rem]" />
+                            {i18n.resolvedLanguage?.toUpperCase()}
                         </button>
                         <button
                             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
@@ -185,51 +213,88 @@ const PublicPromptView = () => {
                 </div>
             </header>
 
-            <main className="max-w-3xl mx-auto px-4 py-8">
-                <Link to="/" className="inline-flex items-center text-body text-muted-foreground hover:text-foreground mb-6 transition-colors group">
-                    <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
-                    {t('public_view.back_to_app')}
-                </Link>
+            <main className="max-w-6xl mx-auto px-4 py-8 flex-1 w-full">
+                <div className="flex flex-col lg:flex-row gap-4 items-start">
+                    {/* Left Column: Prompt Detail */}
+                    <div className="flex-1 w-full min-w-0">
+                        <div className="bg-card border border-border rounded-sm shadow-sm overflow-hidden">
+                            {/* Header */}
+                            <div className="p-6 border-b border-border">
+                                <div className="flex justify-between items-start gap-4 mb-4">
+                                    <h1 className="text-2xl font-bold text-foreground">{prompt.title}</h1>
+                                    <Button
+                                        variant="brand"
+                                        size="sm"
+                                        onClick={handleCopy}
+                                        className="flex-shrink-0"
+                                    >
+                                        <Copy className="w-4 h-4 mr-2" />
+                                        {t('actions.copy')}
+                                    </Button>
+                                </div>
 
-                <div className="bg-card border border-border rounded-sm shadow-sm overflow-hidden">
-                    {/* Header */}
-                    <div className="p-6 border-b border-border">
-                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-4">
-                            <div className="flex-1 min-w-0">
-                                <h1 className="text-page-title text-foreground mb-3">{prompt.title}</h1>
-                                <div className="flex items-center gap-2 flex-wrap">
-                                    <StatusBadge variant="date">@{prompt.author}</StatusBadge>
-                                    <StatusBadge variant="date">{formattedDate}</StatusBadge>
+                                <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                                    {prompt.tags.length > 0 && (
+                                        <div className="flex flex-wrap gap-2">
+                                            {prompt.tags.map(tag => (
+                                                <TagChipStatic key={tag.id} variant="outline" size="sm">
+                                                    {tag.name}
+                                                </TagChipStatic>
+                                            ))}
+                                        </div>
+                                    )}
+                                    <span className="font-medium text-foreground">@{prompt.author}</span>
+                                    <span>{formattedDate}</span>
                                     <StatusBadge variant="public">{t('prompt.public')}</StatusBadge>
                                 </div>
                             </div>
-                            <Button
-                                variant="brand"
-                                size="sm"
-                                onClick={handleCopy}
-                            >
-                                <Copy className="w-4 h-4 mr-2" />
-                                {t('actions.copy')}
-                            </Button>
-                        </div>
 
-                        {prompt.tags.length > 0 && (
-                            <div className="flex flex-wrap gap-2 mt-4">
-                                {prompt.tags.map(tag => (
-                                    <TagChipStatic key={tag.id} variant="default" size="default">
-                                        {tag.name}
-                                    </TagChipStatic>
-                                ))}
+                            {/* Content */}
+                            <div className="p-8">
+                                <MarkdownPreview content={prompt.content} className="text-body" />
                             </div>
-                        )}
+                        </div>
                     </div>
 
-                    {/* Content */}
-                    <div className="p-6">
-                        <MarkdownPreview content={prompt.content} className="text-body" />
-                    </div>
+                    {/* Right Column: Recent Public Prompts */}
+                    <aside className="w-full lg:w-72 flex-shrink-0 lg:sticky lg:top-20">
+                        <div className="bg-card border border-border rounded-sm shadow-sm overflow-hidden">
+                            <div className="p-6 border-b border-border bg-muted/30">
+                                <h2 className="text-2xs font-bold text-muted-foreground uppercase tracking-widest leading-none">
+                                    {t('landing.recent_prompts_title', 'Recent Public Prompts')}
+                                </h2>
+                            </div>
+                            <div className="p-2">
+                                <div className="space-y-1">
+                                    {recentPrompts.length > 0 ? (
+                                        recentPrompts.map(rp => (
+                                            <Link
+                                                key={rp.id}
+                                                to={`/share/${rp.id}`}
+                                                className="block p-3 rounded-sm hover:bg-secondary/80 transition-all group"
+                                            >
+                                                <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors block leading-tight">
+                                                    {rp.title}
+                                                </span>
+                                            </Link>
+                                        ))
+                                    ) : (
+                                        <div className="p-4 text-center">
+                                            <p className="text-xs text-muted-foreground italic">{t('landing.no_public_prompts', 'No public prompts yet')}</p>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="p-3 mt-2 border-t border-border/50">
+                                    <Button variant="brand" size="sm" className="w-full text-xs font-semibold py-4" asChild>
+                                        <Link to="/">{t('public_view.open_app', 'Open Prompedia')}</Link>
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
+                    </aside>
                 </div>
             </main>
+            <Footer />
         </div>
     );
 };

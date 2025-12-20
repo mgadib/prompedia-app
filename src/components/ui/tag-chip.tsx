@@ -35,6 +35,7 @@ const TagChip = React.forwardRef<HTMLButtonElement, TagChipProps>(
   ({ className, variant, size, ...props }, ref) => {
     return (
       <button
+        type="button"
         ref={ref}
         className={cn(tagChipVariants({ variant, size }), className)}
         {...props}

@@ -75,11 +75,15 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({
                                 id="isPublic"
                                 checked={isPublic}
                                 onChange={(e) => setIsPublic(e.target.checked)}
-                                className="rounded border-border text-brand focus:ring-brand h-4 w-4 accent-brand cursor-pointer"
+                                className="rounded border-border text-green-600 focus:ring-green-600 h-4 w-4 accent-green-600 cursor-pointer"
                             />
-                            <span className="text-body text-muted-foreground select-none whitespace-nowrap group-hover:text-foreground transition-colors">
-                                {t('prompt.public')}
-                            </span>
+                            {isPublic ? (
+                                <StatusBadge variant="public" size="sm" className="cursor-pointer">{t('prompt.public')}</StatusBadge>
+                            ) : (
+                                <span className="text-body text-muted-foreground select-none whitespace-nowrap group-hover:text-foreground transition-colors">
+                                    {t('prompt.public')}
+                                </span>
+                            )}
                         </label>
                         <Button
                             variant="brand"

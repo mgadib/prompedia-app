@@ -118,5 +118,9 @@
         "no_public_prompts": "No public prompts yet",
         "no_public_tags": "No tags available",
         "view_prompt": "View"
+    },
+    "footer": {
+        "made_with": "Made with",
+        "for_community": "for community"
     }
 }

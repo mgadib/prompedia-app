@@ -118,5 +118,9 @@
         "no_public_prompts": "Belum ada prompt publik",
         "no_public_tags": "Belum ada tag",
         "view_prompt": "Lihat"
+    },
+    "footer": {
+        "made_with": "Dibuat dengan",
+        "for_community": "untuk komunitas"
     }
 }
