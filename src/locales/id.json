@@ -1,6 +1,6 @@
 {
     "app": {
-        "title": "Prompedia",
+        "title": "Prompedia - Personal Prompt Notes",
         "tagline": "Simpan, atur, dan gunakan kembali prompt AI",
         "description": "Prompedia adalah alat manajemen prompt ringan untuk orang yang bekerja dengan AI setiap hari"
     },
@@ -120,6 +120,8 @@
         "view_prompt": "Lihat"
     },
     "footer": {
+        "brand": "Prompedia",
+        "tagline": "catatan prompt sederhana dan pribadi Anda.",
         "made_with": "Dibuat dengan",
         "for_community": "untuk komunitas"
     }

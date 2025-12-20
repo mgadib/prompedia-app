@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
-import { useTheme } from "next-themes";
-import { Moon, Sun, Globe, Copy, Languages } from "lucide-react";
+
+import { Copy } from "lucide-react";
 import { User } from '@supabase/supabase-js';
 
 import { Tables } from '@/integrations/supabase/types';
@@ -19,9 +19,9 @@ import { PromptEditor } from '@/components/prompts/PromptEditor';
 import { FilterBar } from '@/components/prompts/FilterBar';
 import { usePrompts, PromptUI } from '@/hooks/use-prompts';
 import { TagChip } from './ui/tag-chip';
-import { Component } from 'react';
 import { MarkdownPreview } from '@/components/editor/MarkdownPreview';
 import { Footer } from '@/components/layout/Footer';
+import { Header } from '@/components/layout/Header';
 
 // Local Types
 interface Tag extends Tables<'tags'> { }
@@ -36,7 +36,6 @@ type VisibilityFilter = 'all' | 'public' | 'private';
 
 const PromptNotes = () => {
     const { t, i18n } = useTranslation();
-    const { theme, setTheme } = useTheme();
 
     // --- State ---
 
@@ -390,28 +389,9 @@ const PromptNotes = () => {
         const paginatedPublicPrompts = filteredPublicPrompts.slice((publicCurrentPage - 1) * publicItemsPerPage, publicCurrentPage * publicItemsPerPage);
 
         return (
-            <div className="min-h-screen bg-background font-sans">
-                <header className="border-b border-border bg-card sticky top-0 z-40">
-                    <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-                        <a href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-                            <img src="/logo.png" alt="Logo" className="w-8 h-8 object-contain" />
-                            <h1 className="text-xl font-bold text-foreground tracking-tight">prompedia.app</h1>
-                        </a>
-                        <div className="flex items-center gap-4">
-                            <button
-                                onClick={() => i18n.changeLanguage(i18n.resolvedLanguage === 'id' ? 'en' : 'id')}
-                                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors p-1"
-                            >
-                                {i18n.resolvedLanguage?.toUpperCase()}
-                            </button>
-                            <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")} className="text-muted-foreground hover:text-foreground p-1">
-                                <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0 block dark:hidden" />
-                                <Moon className="h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100 hidden dark:block" />
-                            </button>
-                        </div>
-                    </div>
-                </header>
-                <div className="max-w-6xl mx-auto px-4 py-4">
+            <div className="min-h-screen bg-background font-sans flex flex-col">
+                <Header variant="default" />
+                <div className="max-w-6xl mx-auto px-4 py-4 flex-1 w-full">
                     <div className="flex flex-col lg:flex-row gap-4 items-start">
                         <div className="flex-1 w-full min-w-0">
                             <div className="mb-6">
@@ -461,32 +441,11 @@ const PromptNotes = () => {
     }
 
     return (
-        <div className="min-h-screen bg-background relative font-sans">
+        <div className="min-h-screen bg-background flex flex-col relative font-sans">
             <SEO structuredData={websiteSchema} />
-            <header className="border-b border-border bg-card sticky top-0 z-40">
-                <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-                    <a href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-                        <img src="/logo.png" alt="Logo" className="w-8 h-8 object-contain" />
-                        <h1 className="text-xl font-bold text-foreground tracking-tight">prompedia.app</h1>
-                    </a>
-                    <div className="flex items-center gap-6">
-                        <button
-                            onClick={() => i18n.changeLanguage(i18n.resolvedLanguage === 'id' ? 'en' : 'id')}
-                            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors p-1"
-                        >
-                            {i18n.resolvedLanguage?.toUpperCase()}
-                        </button>
-                        <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")} className="text-muted-foreground hover:text-foreground p-1">
-                            <Sun className="h-[1.2rem] w-[1.2rem] dark:hidden" />
-                            <Moon className="h-[1.2rem] w-[1.2rem] hidden dark:block" />
-                        </button>
-                        <span className="text-sm-md text-muted-foreground border-r border-border pr-6 mr-0">{user?.email}</span>
-                        <button onClick={() => setShowLogoutConfirm(true)} className="text-sm-md text-muted-foreground hover:text-foreground font-normal">{t('auth.logout')}</button>
-                    </div>
-                </div>
-            </header>
+            <Header variant="authenticated" userEmail={user?.email} onLogout={() => setShowLogoutConfirm(true)} />
 
-            <div className="max-w-6xl mx-auto px-4 py-4 flex gap-4">
+            <div className="max-w-6xl mx-auto px-4 py-4 flex-1 w-full flex flex-col md:flex-row gap-4">
                 <main className="flex-1 min-w-0">
                     <div className="mb-4">
                         <input type="text" value={filter} onChange={e => setFilter(e.target.value)} placeholder={t('prompt.search_placeholder')} className="w-full px-2 py-1.5 bg-card border border-border rounded-sm text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring" />

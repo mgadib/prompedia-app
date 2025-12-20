@@ -1,6 +1,6 @@
 {
     "app": {
-        "title": "Prompedia",
+        "title": "Prompedia - Personal Prompt Notes",
         "tagline": "Store, organize, and reuse AI prompts",
         "description": "Prompedia is a lightweight prompt management tool for people who work with AI every day"
     },
@@ -120,6 +120,8 @@
         "view_prompt": "View"
     },
     "footer": {
+        "brand": "Prompedia",
+        "tagline": "your simple and personal prompt notes.",
         "made_with": "Made with",
         "for_community": "for community"
     }

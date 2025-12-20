@@ -2,9 +2,8 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
-import { Moon, Sun, Copy } from "lucide-react";
+import { Copy } from "lucide-react";
 import { useTranslation } from 'react-i18next';
-import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import { MarkdownPreview } from '@/components/editor';
 import { formatDate } from '@/lib/date-utils';
@@ -15,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { TagChipStatic } from '@/components/ui/tag-chip';
 import { Footer } from '@/components/layout/Footer';
+import { Header } from '@/components/layout/Header';
 
 interface Tag extends Tables<'tags'> { }
 
@@ -37,7 +37,6 @@ interface PromptUI extends Omit<Prompt, 'prompt_tags' | 'users' | 'prompt_conten
 const PublicPromptView = () => {
     const { id } = useParams<{ id: string }>();
     const { t, i18n } = useTranslation();
-    const { theme, setTheme } = useTheme();
     const [prompt, setPrompt] = useState<PromptUI | null>(null);
     const [recentPrompts, setRecentPrompts] = useState<{ id: string; title: string; author: string }[]>([]);
     const [loading, setLoading] = useState(true);
@@ -182,36 +181,7 @@ const PublicPromptView = () => {
                 structuredData={promptSchema || undefined}
                 type="article"
             />
-            <header className="border-b border-border bg-card sticky top-0 z-10">
-                <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-                            <img src="/logo.png" alt="Logo" className="w-8 h-8 object-contain" />
-                            <h1 className="text-xl font-bold text-foreground tracking-tight hidden sm:block">prompedia.app</h1>
-                        </Link>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        <button
-                            onClick={() => i18n.changeLanguage(i18n.resolvedLanguage === 'id' ? 'en' : 'id')}
-                            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors p-1"
-                        >
-                            {i18n.resolvedLanguage?.toUpperCase()}
-                        </button>
-                        <button
-                            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                            className="text-muted-foreground hover:text-foreground transition-colors p-1"
-                        >
-                            <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0 block dark:hidden" />
-                            <Moon className="h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100 hidden dark:block" />
-                        </button>
-                        <Button variant="brand" size="sm" asChild>
-                            <Link to="/">
-                                {t('public_view.open_app')}
-                            </Link>
-                        </Button>
-                    </div>
-                </div>
-            </header>
+            <Header variant="public" />
 
             <main className="max-w-6xl mx-auto px-4 py-8 flex-1 w-full">
                 <div className="flex flex-col lg:flex-row gap-4 items-start">

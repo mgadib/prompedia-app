@@ -4,14 +4,39 @@ import { useTranslation } from 'react-i18next';
 export const Footer = () => {
     const { t } = useTranslation();
     return (
-        <footer className="border-t border-border bg-card mt-auto py-6">
-            <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 text-sm text-muted-foreground">
-                <div className="flex items-center gap-1.5">
-                    <span>{t('footer.made_with')}</span>
-                    <Heart className="w-3.5 h-3.5 text-red-500 fill-red-500" />
-                    <span>{t('footer.for_community')}</span>
+        <footer className="border-t border-border bg-card/95 backdrop-blur-sm mt-auto py-4 shadow-xs">
+            <div className="max-w-6xl mx-auto px-4 flex flex-wrap items-center gap-x-6 gap-y-3">
+                {/* Brand Section */}
+                <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                        <span className="text-sm font-bold text-foreground">{t('footer.brand')}</span>
+                    </div>
+                    <span className="text-xs text-muted-foreground italic">"{t('footer.tagline')}"</span>
                 </div>
-                <p>&copy; 2026 <a href="https://kerjabaik.ai/" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">Kerjabaik.Ai</a></p>
+
+                {/* Info Section */}
+                <div className="flex items-center gap-4 text-2xs text-muted-foreground/70">
+                    <div className="flex items-center gap-1.5 uppercase tracking-widest font-medium">
+                        <span>{t('footer.made_with')}</span>
+                        <Heart className="w-2.5 h-2.5 text-primary fill-primary" />
+                        <span>{t('footer.for_community')}</span>
+                    </div>
+
+                    <span className="w-1 h-1 rounded-full bg-border hidden sm:block" />
+
+                    <div className="flex items-center gap-1.5">
+                        <span>&copy; 2026</span>
+                        <a
+                            href="https://kerjabaik.ai/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-medium hover:text-primary transition-colors duration-normal"
+                        >
+                            Kerjabaik.Ai
+                        </a>
+                    </div>
+                </div>
             </div>
         </footer>
     );
