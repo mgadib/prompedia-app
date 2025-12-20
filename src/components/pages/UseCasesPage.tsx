@@ -15,13 +15,13 @@ const UseCasesPage = () => {
             <header className="border-b border-border bg-card">
                 <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
                     <Link to="/" className="flex items-center gap-3">
-                        <img src="/logo.png" alt="Logo" className="w-8 h-8" />
+                        <img src="/logo.png" alt="Logo" className="w-8 h-8 object-contain" />
                         <h1 className="text-base font-semibold text-foreground">{t('app.title')}</h1>
                     </Link>
                 </div>
             </header>
             <main className="max-w-4xl mx-auto px-4 py-12">
-                <h1 className="text-2xl sm:text-3xl font-bold mb-6">Use Cases</h1>
+                <h1 className="text-page-title mb-6">Use Cases</h1>
                 <p className="text-lg text-muted-foreground mb-8">
                     Discover how Prompedia helps you organize your AI workflow.
                 </p>

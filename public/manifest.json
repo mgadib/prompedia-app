@@ -10,19 +10,23 @@
   "scope": "/",
   "lang": "en-US",
   "dir": "ltr",
-  "categories": ["developer", "productivity", "education"],
+  "categories": [
+    "developer",
+    "productivity",
+    "education"
+  ],
   "icons": [
     {
-      "src": "/favicon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any"
+      "src": "/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
-      "src": "/favicon.ico",
-      "sizes": "48x48",
-      "type": "image/x-icon",
-      "purpose": "any"
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ],
   "shortcuts": [
@@ -48,4 +52,3 @@
   "related_applications": [],
   "prefer_related_applications": false
 }
-

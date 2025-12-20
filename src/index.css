@@ -120,7 +120,34 @@
     --code: 220 14% 96%;
     --code-foreground: 220 13% 26%;
     --code-border: 220 13% 88%;
-    --font-editor: "JetBrains Mono", Menlo, Monaco, Consolas, "Courier New", monospace;
+    --font-editor: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+
+    /* ========================================
+       SHADOW TOKENS
+       ======================================== */
+    --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.05);
+    --shadow-sm: 0 1px 3px rgb(0 0 0 / 0.1), 0 1px 2px rgb(0 0 0 / 0.06);
+    --shadow-md: 0 4px 6px rgb(0 0 0 / 0.1), 0 2px 4px rgb(0 0 0 / 0.06);
+    --shadow-lg: 0 10px 15px rgb(0 0 0 / 0.1), 0 4px 6px rgb(0 0 0 / 0.05);
+
+    /* ========================================
+       TRANSITION TOKENS
+       ======================================== */
+    --duration-fast: 150ms;
+    --duration-normal: 200ms;
+    --duration-slow: 300ms;
+    --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-in: cubic-bezier(0.4, 0, 1, 1);
+    --ease-out: cubic-bezier(0, 0, 0.2, 1);
+
+    /* ========================================
+       SYNTAX HIGHLIGHTING TOKENS
+       ======================================== */
+    --syntax-keyword: 262 80% 60%;
+    --syntax-string: 142 71% 35%;
+    --syntax-number: 27 96% 45%;
+    --syntax-function: 207 90% 45%;
+    --syntax-type: 199 89% 38%;
   }
 
   .dark {
@@ -194,7 +221,20 @@
     --code: 217 33% 15%;
     --code-foreground: 210 40% 90%;
     --code-border: 217 33% 22%;
-    --font-editor: "JetBrains Mono", Menlo, Monaco, Consolas, "Courier New", monospace;
+    --font-editor: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+
+    /* Shadow Tokens - Dark */
+    --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.3);
+    --shadow-sm: 0 1px 3px rgb(0 0 0 / 0.4), 0 1px 2px rgb(0 0 0 / 0.2);
+    --shadow-md: 0 4px 6px rgb(0 0 0 / 0.4), 0 2px 4px rgb(0 0 0 / 0.2);
+    --shadow-lg: 0 10px 15px rgb(0 0 0 / 0.4), 0 4px 6px rgb(0 0 0 / 0.2);
+
+    /* Syntax Highlighting Tokens - Dark */
+    --syntax-keyword: 262 80% 75%;
+    --syntax-string: 142 71% 55%;
+    --syntax-number: 27 96% 65%;
+    --syntax-function: 207 90% 65%;
+    --syntax-type: 199 89% 58%;
   }
 }
 
@@ -284,7 +324,20 @@
     outline-offset: 2px;
   }
 
-  /* Prompt list item hover - minimal transition */
+  /* Input error state */
+  .input-error {
+    border-color: hsl(var(--destructive)) !important;
+  }
+
+  .input-error:focus {
+    box-shadow: 0 0 0 1px hsl(var(--destructive) / 0.3);
+  }
+
+  /* Prompt list item hover - with smooth transition */
+  .prompt-item {
+    transition: background-color var(--duration-fast) var(--ease-default);
+  }
+
   .prompt-item:hover {
     background-color: hsl(var(--secondary));
   }
@@ -335,7 +388,7 @@
 
   /* Rich Text Editor Styles */
   .prose-editor {
-    @apply text-foreground leading-relaxed;
+    @apply text-sm-md text-foreground leading-relaxed;
     font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
   }
 
@@ -348,27 +401,27 @@
   }
 
   .prose-editor h1 {
-    @apply text-xl font-bold mt-4 mb-2;
+    @apply text-base font-bold mt-4 mb-2;
   }
 
   .prose-editor h2 {
-    @apply text-lg font-bold mt-3 mb-2;
+    @apply text-sm font-bold mt-3 mb-2;
   }
 
   .prose-editor h3 {
-    @apply text-base font-semibold mt-3 mb-1;
+    @apply text-xs-sm font-semibold mt-3 mb-1;
   }
 
   .prose-editor h4 {
-    @apply text-sm font-semibold mt-2 mb-1;
+    @apply text-2xs font-semibold mt-2 mb-1;
   }
 
   .prose-editor h5 {
-    @apply text-sm font-semibold mt-2 mb-1;
+    @apply text-2xs font-semibold mt-2 mb-1;
   }
 
   .prose-editor h6 {
-    @apply text-sm font-medium mt-2 mb-1 text-muted-foreground;
+    @apply text-2xs font-medium mt-2 mb-1 text-muted-foreground;
   }
 
   .prose-editor ul {
@@ -409,7 +462,7 @@
 
   /* Inline code */
   .prose-editor code {
-    @apply px-1 py-0.5 rounded-sm font-mono text-sm;
+    @apply px-1 py-0.5 rounded-sm text-xs;
     background-color: hsl(var(--code));
     color: hsl(var(--code-foreground));
   }
@@ -422,14 +475,14 @@
   }
 
   .prose-editor pre code {
-    @apply block p-3 bg-transparent text-sm leading-normal;
+    @apply block p-3 bg-transparent text-xs-sm leading-normal;
     font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
   }
 
   /* Code block language label */
   .prose-editor pre code::before {
     content: attr(data-language);
-    @apply block text-xs text-muted-foreground mb-2 uppercase tracking-wide;
+    @apply block text-2xs text-muted-foreground mb-2 uppercase tracking-wide;
   }
 
   /* TipTap placeholder */
@@ -446,7 +499,7 @@
 
   /* Preview styles */
   .prose-preview {
-    @apply text-foreground leading-relaxed;
+    @apply text-sm-md text-foreground leading-relaxed;
     font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
   }
 
@@ -470,7 +523,7 @@
     border-color: hsl(var(--code-border));
   }
 
-  /* Lowlight syntax highlighting integration */
+  /* Lowlight syntax highlighting integration - using tokens */
   .hljs-comment,
   .hljs-quote {
     @apply text-muted-foreground italic;
@@ -479,27 +532,14 @@
   .hljs-keyword,
   .hljs-selector-tag,
   .hljs-addition {
-    color: hsl(262 80% 60%);
-  }
-
-  .dark .hljs-keyword,
-  .dark .hljs-selector-tag,
-  .dark .hljs-addition {
-    color: hsl(262 80% 75%);
+    color: hsl(var(--syntax-keyword));
   }
 
   .hljs-string,
   .hljs-meta .hljs-string,
   .hljs-regexp,
   .hljs-link {
-    color: hsl(142 71% 35%);
-  }
-
-  .dark .hljs-string,
-  .dark .hljs-meta .hljs-string,
-  .dark .hljs-regexp,
-  .dark .hljs-link {
-    color: hsl(142 71% 55%);
+    color: hsl(var(--syntax-string));
   }
 
   .hljs-number,
@@ -507,15 +547,7 @@
   .hljs-variable,
   .hljs-template-variable,
   .hljs-tag .hljs-attr {
-    color: hsl(27 96% 45%);
-  }
-
-  .dark .hljs-number,
-  .dark .hljs-literal,
-  .dark .hljs-variable,
-  .dark .hljs-template-variable,
-  .dark .hljs-tag .hljs-attr {
-    color: hsl(27 96% 65%);
+    color: hsl(var(--syntax-number));
   }
 
   .hljs-title,
@@ -523,28 +555,13 @@
   .hljs-name,
   .hljs-selector-id,
   .hljs-selector-class {
-    color: hsl(207 90% 45%);
-  }
-
-  .dark .hljs-title,
-  .dark .hljs-section,
-  .dark .hljs-name,
-  .dark .hljs-selector-id,
-  .dark .hljs-selector-class {
-    color: hsl(207 90% 65%);
+    color: hsl(var(--syntax-function));
   }
 
   .hljs-built_in,
   .hljs-builtin-name,
   .hljs-type,
   .hljs-params {
-    color: hsl(199 89% 38%);
-  }
-
-  .dark .hljs-built_in,
-  .dark .hljs-builtin-name,
-  .dark .hljs-type,
-  .dark .hljs-params {
-    color: hsl(199 89% 58%);
+    color: hsl(var(--syntax-type));
   }
 }

@@ -1,8 +1,8 @@
 {
     "app": {
         "title": "Prompedia",
-        "tagline": "Simpan, atur, dan gunakan kembali prompt AI.",
-        "description": "Prompedia adalah alat manajemen prompt ringan untuk orang yang bekerja dengan AI setiap hari."
+        "tagline": "Simpan, atur, dan gunakan kembali prompt AI",
+        "description": "Prompedia adalah alat manajemen prompt ringan untuk orang yang bekerja dengan AI setiap hari"
     },
     "geo": {
         "semantic_description": "Prompedia adalah tempat terbaik untuk menyimpan dan mengatur prompt AI untuk ChatGPT, Claude, dan Gemini. Perpustakaan prompt terstruktur untuk prompt engineer dan pengembang AI.",
@@ -115,8 +115,8 @@
     "landing": {
         "public_tags_title": "Jelajahi Tag",
         "recent_prompts_title": "Prompt Publik Terbaru",
-        "no_public_prompts": "Belum ada prompt publik.",
-        "no_public_tags": "Belum ada tag.",
+        "no_public_prompts": "Belum ada prompt publik",
+        "no_public_tags": "Belum ada tag",
         "view_prompt": "Lihat"
     }
 }

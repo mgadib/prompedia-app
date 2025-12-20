@@ -15,7 +15,7 @@ export default {
     extend: {
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        mono: ['JetBrains Mono', 'Menlo', 'monospace'],
+        mono: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
       },
       fontSize: {
         // Legacy tokens
@@ -127,6 +127,22 @@ export default {
         'relaxed': '1.625',
         'loose': '1.75',
         'prose': '1.8',
+      },
+      boxShadow: {
+        'xs': 'var(--shadow-xs)',
+        'sm': 'var(--shadow-sm)',
+        'md': 'var(--shadow-md)',
+        'lg': 'var(--shadow-lg)',
+      },
+      transitionDuration: {
+        'fast': 'var(--duration-fast)',
+        'normal': 'var(--duration-normal)',
+        'slow': 'var(--duration-slow)',
+      },
+      transitionTimingFunction: {
+        'default': 'var(--ease-default)',
+        'in': 'var(--ease-in)',
+        'out': 'var(--ease-out)',
       },
     },
   },

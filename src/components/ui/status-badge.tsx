@@ -3,7 +3,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const statusBadgeVariants = cva(
-  "inline-flex items-center gap-1 rounded-sm font-medium",
+  "inline-flex items-center gap-1 rounded-sm font-medium transition-colors duration-fast",
   {
     variants: {
       variant: {
@@ -27,7 +27,7 @@ const statusBadgeVariants = cva(
 
 export interface StatusBadgeProps
   extends React.HTMLAttributes<HTMLSpanElement>,
-    VariantProps<typeof statusBadgeVariants> {}
+  VariantProps<typeof statusBadgeVariants> { }
 
 const StatusBadge = React.forwardRef<HTMLSpanElement, StatusBadgeProps>(
   ({ className, variant, size, ...props }, ref) => {

@@ -2,10 +2,7 @@ import { createRoot } from "react-dom/client";
 import { StrictMode } from "react";
 import App from "./App.tsx";
 import { HelmetProvider } from 'react-helmet-async';
-import "@fontsource/inter/400.css";
-import "@fontsource/inter/500.css";
-import "@fontsource/inter/600.css";
-import "@fontsource/jetbrains-mono";
+// Fonts are loaded via Google Fonts CDN in index.html
 import "./i18n";
 import "./index.css";
 

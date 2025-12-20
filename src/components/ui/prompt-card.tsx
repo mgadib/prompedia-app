@@ -3,7 +3,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const promptCardVariants = cva(
-  "relative flex flex-col rounded-sm border bg-card text-card-foreground cursor-pointer",
+  "relative flex flex-col rounded-sm border bg-card text-card-foreground cursor-pointer transition-colors duration-fast",
   {
     variants: {
       variant: {
@@ -27,7 +27,7 @@ const promptCardVariants = cva(
 
 export interface PromptCardProps
   extends React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof promptCardVariants> {}
+  VariantProps<typeof promptCardVariants> { }
 
 const PromptCard = React.forwardRef<HTMLDivElement, PromptCardProps>(
   ({ className, variant, size, ...props }, ref) => {

@@ -8,7 +8,7 @@ import PublicPromptView from "@/components/PublicPromptView";
 import AboutPage from "@/components/pages/AboutPage";
 import FAQPage from "@/components/pages/FAQPage";
 import UseCasesPage from "@/components/pages/UseCasesPage";
-import PublicPromptsPage from "@/components/pages/PublicPromptsPage";
+
 import { SEO } from "@/components/SEO";
 import { useTranslation } from "react-i18next";
 import { useEffect } from "react";
@@ -47,7 +47,7 @@ const App = () => {
               <Route path="/about" element={<AboutPage />} />
               <Route path="/faq" element={<FAQPage />} />
               <Route path="/use-cases" element={<UseCasesPage />} />
-              <Route path="/public-prompts" element={<PublicPromptsPage />} />
+
               <Route path="/share/:id" element={<PublicPromptView />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

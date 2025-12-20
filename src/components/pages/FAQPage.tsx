@@ -34,16 +34,16 @@ const FAQPage = () => {
             <header className="border-b border-border bg-card">
                 <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
                     <Link to="/" className="flex items-center gap-3">
-                        <img src="/logo.png" alt="Logo" className="w-8 h-8" />
+                        <img src="/logo.png" alt="Logo" className="w-8 h-8 object-contain" />
                         <h1 className="text-base font-semibold text-foreground">{t('app.title')}</h1>
                     </Link>
                 </div>
             </header>
             <main className="max-w-4xl mx-auto px-4 py-12">
-                <h1 className="text-2xl sm:text-3xl font-bold mb-8">FAQ</h1>
+                <h1 className="text-page-title mb-8">FAQ</h1>
                 <div className="space-y-6">
                     {faqs.map((faq, index) => (
-                        <div key={index} className="bg-card border border-border rounded-lg p-6">
+                        <div key={index} className="bg-card border border-border rounded-sm p-6">
                             <h3 className="text-lg font-semibold mb-2">{faq.q}</h3>
                             <p className="text-muted-foreground">{faq.a}</p>
                         </div>

@@ -15,15 +15,15 @@ const AboutPage = () => {
             <header className="border-b border-border bg-card">
                 <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
                     <Link to="/" className="flex items-center gap-3">
-                        <img src="/logo.png" alt="Logo" className="w-8 h-8" />
+                        <img src="/logo.png" alt="Logo" className="w-8 h-8 object-contain" />
                         <h1 className="text-base font-semibold text-foreground">{t('app.title')}</h1>
                     </Link>
                 </div>
             </header>
             <main className="max-w-4xl mx-auto px-4 py-12">
-                <h1 className="text-2xl sm:text-3xl font-bold mb-6">{t('about.title', 'About Prompedia')}</h1>
+                <h1 className="text-page-title mb-6">{t('about.title', 'About Prompedia')}</h1>
                 <div className="prose dark:prose-invert">
-                    <p>{t('app.description')}</p>
+                    <p className="text-sm text-muted-foreground whitespace-nowrap">{t('app.description')}</p>
                     {/* GEO Block - Hidden from humans but visible to bots if needed, or just structured text */}
                     <div className="geo-content opacity-0 h-0 overflow-hidden">
                         {t('geo.semantic_description')}

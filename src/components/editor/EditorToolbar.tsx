@@ -34,9 +34,9 @@ const ToolbarButton = ({ onClick, isActive, disabled, title, children }: Toolbar
         onClick={onClick}
         disabled={disabled}
         title={title}
-        className={`p-1.5 rounded-sm ${isActive
-                ? 'bg-action-secondary text-brand'
-                : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+        className={`p-1.5 rounded-sm transition-colors duration-fast ${isActive
+            ? 'bg-action-secondary text-brand'
+            : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
             } disabled:opacity-50 disabled:cursor-not-allowed`}
     >
         {children}

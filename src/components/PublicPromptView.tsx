@@ -158,9 +158,9 @@ const PublicPromptView = () => {
                 <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <Link to="/">
-                            <img src="/logo.png" alt="Logo" className="w-8 h-8" />
+                            <img src="/logo.png" alt="Logo" className="w-8 h-8 object-contain" />
                         </Link>
-                        <h1 className="text-xl font-bold font-mono text-foreground tracking-tight hidden sm:block">prompedia.app</h1>
+                        <h1 className="text-xl font-bold text-foreground tracking-tight hidden sm:block">prompedia.app</h1>
                     </div>
                     <div className="flex items-center gap-4">
                         <button
@@ -191,7 +191,7 @@ const PublicPromptView = () => {
                     {t('public_view.back_to_app')}
                 </Link>
 
-                <div className="bg-card border-l-4 border-l-brand border-t border-r border-b border-border rounded-lg shadow-sm overflow-hidden">
+                <div className="bg-card border-l-4 border-l-brand border-t border-r border-b border-border rounded-sm shadow-md overflow-hidden">
                     {/* Header */}
                     <div className="p-6 border-b border-border">
                         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-4">
