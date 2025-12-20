@@ -6,20 +6,13 @@ export const Footer = () => {
     return (
         <footer className="border-t border-border bg-card/95 backdrop-blur-sm mt-auto py-4 shadow-xs">
             <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-y-2 sm:gap-x-6 sm:gap-y-3">
-                {/* Brand Section */}
-                <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-2">
-                        <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                        <span className="text-sm font-bold text-foreground">{t('footer.brand')}</span>
-                    </div>
-                    <span className="text-xs text-muted-foreground italic">"{t('footer.tagline')}"</span>
-                </div>
+
 
                 {/* Info Section */}
-                <div className="flex items-center gap-4 text-2xs text-muted-foreground/70">
+                <div className="flex items-center gap-4 text-xs text-muted-foreground/70">
                     <div className="flex items-center gap-1.5 uppercase tracking-widest font-medium">
                         <span>{t('footer.made_with')}</span>
-                        <Heart className="w-2.5 h-2.5 text-primary fill-primary" />
+                        <Heart className="w-3 h-3 text-primary fill-primary" />
                         <span>{t('footer.for_community')}</span>
                     </div>
 

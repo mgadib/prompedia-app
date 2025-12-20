@@ -407,7 +407,11 @@ const PromptNotes = () => {
                                     onSelectPrompt={setSelectedPrompt}
                                     onCopy={handleCopy}
                                     onDeleteClick={() => { }} // No delete on public view
-                                    onShare={() => { }} // No share on landing
+                                    onShare={async (id) => {
+                                        const url = `${window.location.origin}/share/${id}`;
+                                        await navigator.clipboard.writeText(url);
+                                        showToast(t('toast.link_copied', 'Link copied to clipboard'));
+                                    }}
                                     editingId={null}
                                     currentPage={publicCurrentPage}
                                     itemsPerPage={publicItemsPerPage}
