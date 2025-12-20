@@ -10,7 +10,7 @@ const promptCardVariants = cva(
         default: "border-border hover:bg-secondary/50",
         public: "border-border hover:bg-secondary/50",
         private: "border-border hover:bg-secondary/50",
-        selected: "border-brand ring-1 ring-brand/30",
+        selected: "border-primary bg-primary/5",
       },
       size: {
         sm: "p-2",
@@ -62,7 +62,7 @@ const PromptCardTitle = React.forwardRef<
   <h3
     ref={ref}
     className={cn(
-      "text-section-title font-semibold text-foreground truncate leading-tight",
+      "text-sm font-medium text-foreground truncate leading-tight",
       className
     )}
     {...props}

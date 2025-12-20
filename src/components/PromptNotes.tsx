@@ -19,6 +19,7 @@ import { PromptEditor } from '@/components/prompts/PromptEditor';
 import { FilterBar } from '@/components/prompts/FilterBar';
 import { usePrompts, PromptUI } from '@/hooks/use-prompts';
 import { TagChip } from './ui/tag-chip';
+import { MarkdownPreview } from '@/components/editor/MarkdownPreview';
 
 // Local Types
 interface Tag extends Tables<'tags'> { }
@@ -338,7 +339,7 @@ const PromptNotes = () => {
     };
 
     const toastElement = toast.visible && (
-        <div className={`fixed z-[100] bottom-10 left-1/2 -translate-x-1/2 px-4 py-2.5 bg-foreground text-background text-sm font-medium rounded-md shadow-2xl transition-all duration-300 flex items-center gap-2 border border-border/10 ${toast.exiting ? 'opacity-0 translate-y-4 scale-95' : 'opacity-100 translate-y-0 scale-100'}`}>
+        <div className={`fixed z-[100] bottom-10 left-1/2 -translate-x-1/2 px-4 py-2.5 bg-foreground text-background text-sm font-medium rounded-sm shadow-lg transition-all duration-normal flex items-center gap-2 ${toast.exiting ? 'opacity-0 translate-y-4 scale-95' : 'opacity-100 translate-y-0 scale-100'}`}>
             {toast.message}
         </div>
     );
@@ -346,9 +347,9 @@ const PromptNotes = () => {
     const promptDetailModal = selectedPrompt && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-background/80 backdrop-blur-sm" onClick={() => setSelectedPrompt(null)}>
             <div className="w-full max-w-[42rem] bg-card border border-border rounded-sm shadow-lg flex flex-col max-h-[85vh]" onClick={e => e.stopPropagation()}>
-                <div className="p-3 border-b border-border bg-card">
+                <div className="p-4 border-b border-border">
                     <div className="flex items-start justify-between gap-3 mb-2">
-                        <h3 className="text-card-title text-muted-foreground flex-1 font-medium">{selectedPrompt.title}</h3>
+                        <h3 className="text-base font-semibold text-foreground flex-1">{selectedPrompt.title}</h3>
                         <Button variant="ghost" size="sm" className="flex-shrink-0" onClick={() => setSelectedPrompt(null)}>{t('actions.close')}</Button>
                     </div>
                     <div className="flex items-center gap-1.5 flex-wrap">
@@ -362,10 +363,10 @@ const PromptNotes = () => {
                         <StatusBadge variant="date" size="sm">{formatDate(selectedPrompt.created_at, i18n.language)}</StatusBadge>
                     </div>
                 </div>
-                <div className="flex-1 overflow-y-auto p-4 bg-background">
-                    <pre className="whitespace-pre-wrap text-body text-foreground leading-relaxed font-sans">{selectedPrompt.content}</pre>
+                <div className="flex-1 overflow-y-auto p-4">
+                    <MarkdownPreview content={selectedPrompt.content} className="text-sm" />
                 </div>
-                <div className="px-4 py-3 border-t border-border flex justify-end gap-2 bg-card rounded-b-sm">
+                <div className="px-4 py-3 border-t border-border flex justify-end gap-2">
                     {user && user.id === selectedPrompt.user_id && (
                         <Button variant="outline" size="sm" onClick={() => handleEdit(selectedPrompt)}>{t('actions.edit')}</Button>
                     )}
@@ -408,7 +409,7 @@ const PromptNotes = () => {
                         <div className="flex-1 w-full min-w-0">
                             <div className="mb-6">
                                 <div className="bg-card border border-border rounded-sm p-5 text-left">
-                                    <h2 className="text-xl font-bold font-mono tracking-tight sm:text-2xl mb-2 text-foreground">{t('app.tagline')}</h2>
+                                    <h2 className="text-xl font-semibold tracking-tight sm:text-2xl mb-2 text-foreground">{t('app.tagline')}</h2>
                                     <p className="text-sm text-muted-foreground whitespace-nowrap">{t('app.description')}</p>
                                 </div>
                             </div>

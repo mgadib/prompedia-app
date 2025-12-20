@@ -388,7 +388,7 @@
 
   /* Rich Text Editor Styles */
   .prose-editor {
-    @apply text-sm-md text-foreground leading-relaxed;
+    @apply text-sm text-foreground leading-relaxed;
     font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
   }
 
@@ -462,7 +462,7 @@
 
   /* Inline code */
   .prose-editor code {
-    @apply px-1 py-0.5 rounded-sm text-xs;
+    @apply px-1 py-0.5 rounded-sm text-xs font-mono;
     background-color: hsl(var(--code));
     color: hsl(var(--code-foreground));
   }
@@ -475,8 +475,7 @@
   }
 
   .prose-editor pre code {
-    @apply block p-3 bg-transparent text-xs-sm leading-normal;
-    font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    @apply block p-3 bg-transparent text-xs-sm leading-normal font-mono;
   }
 
   /* Code block language label */
@@ -507,7 +506,7 @@
   .code-block {
     background-color: hsl(var(--code));
     border-color: hsl(var(--code-border));
-    font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    font-family: var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
   }
 
   /* Background utility for code */

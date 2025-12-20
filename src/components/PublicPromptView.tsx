@@ -191,7 +191,7 @@ const PublicPromptView = () => {
                     {t('public_view.back_to_app')}
                 </Link>
 
-                <div className="bg-card border-l-4 border-l-brand border-t border-r border-b border-border rounded-sm shadow-md overflow-hidden">
+                <div className="bg-card border border-border rounded-sm shadow-sm overflow-hidden">
                     {/* Header */}
                     <div className="p-6 border-b border-border">
                         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-4">
@@ -225,7 +225,7 @@ const PublicPromptView = () => {
                     </div>
 
                     {/* Content */}
-                    <div className="p-6 bg-surface-subtle">
+                    <div className="p-6">
                         <MarkdownPreview content={prompt.content} className="text-body" />
                     </div>
                 </div>

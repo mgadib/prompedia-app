@@ -65,7 +65,7 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({
                             value={tagsInput}
                             onChange={e => setTagsInput(e.target.value)}
                             placeholder={t('prompt.tags_placeholder')}
-                            className="w-full px-2 py-1.5 bg-background border border-border rounded-sm text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                            className="w-full px-2 py-1.5 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
                         />
                     </div>
                     <div className="flex items-center gap-4 flex-shrink-0">

@@ -44,7 +44,7 @@ const FAQPage = () => {
                 <div className="space-y-6">
                     {faqs.map((faq, index) => (
                         <div key={index} className="bg-card border border-border rounded-sm p-6">
-                            <h3 className="text-lg font-semibold mb-2">{faq.q}</h3>
+                            <h3 className="text-base font-medium mb-2 text-foreground">{faq.q}</h3>
                             <p className="text-muted-foreground">{faq.a}</p>
                         </div>
                     ))}

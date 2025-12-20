@@ -3,19 +3,19 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const statusBadgeVariants = cva(
-  "inline-flex items-center gap-1 rounded-sm font-medium transition-colors duration-fast",
+  "inline-flex items-center gap-1 rounded-sm text-xs font-medium transition-colors duration-fast",
   {
     variants: {
       variant: {
-        public: "bg-status-public-bg text-status-public border border-status-public/20",
-        private: "bg-status-private-bg text-status-private-foreground border border-transparent",
-        date: "bg-secondary text-muted-foreground border border-transparent",
-        default: "bg-secondary text-secondary-foreground border border-transparent",
+        public: "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400",
+        private: "bg-muted text-muted-foreground",
+        date: "text-muted-foreground",
+        default: "bg-secondary text-secondary-foreground",
       },
       size: {
-        sm: "text-caption px-1.5 py-0.5",
-        default: "text-meta px-2 py-0.5",
-        lg: "text-sm px-2.5 py-1",
+        sm: "px-1.5 py-0.5",
+        default: "px-2 py-0.5",
+        lg: "px-2.5 py-1",
       },
     },
     defaultVariants: {
