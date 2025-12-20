@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
+import { useIdleLogout } from '@/hooks/use-idle-logout';
 
 import { Copy } from "lucide-react";
 import { User } from '@supabase/supabase-js';
@@ -131,6 +132,13 @@ const PromptNotes = () => {
         return () => subscription.unsubscribe();
     }, []);
 
+    // Auto-logout setelah 27 menit tidak aktif
+    useIdleLogout({
+        timeoutMs: 27 * 60 * 1000, // 27 minutes
+        onLogout: () => setShowAuth(true),
+        enabled: !!user, // Hanya aktif jika user sudah login
+    });
+
     // Load Tags (Separate from prompts for now)
     const loadTags = useCallback(async () => {
         if (!user) return;
@@ -250,7 +258,8 @@ const PromptNotes = () => {
     };
 
     const handleLogout = async () => {
-        await supabase.auth.signOut();
+        // Use local scope to avoid 403 on global signout when session is invalid
+        await supabase.auth.signOut({ scope: 'local' });
         setShowAuth(true);
     };
 
