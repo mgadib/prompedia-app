@@ -21,7 +21,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({ tags, currentFilter, onFil
 
     return (
         <aside className="hidden lg:block w-56 flex-shrink-0">
-            <div className="sticky top-16 bg-card border border-border rounded-sm p-3">
+            <div className="sticky top-[4.5rem] bg-card border border-border rounded-sm p-3 max-h-[calc(100vh-6rem)] overflow-y-auto custom-scrollbar">
                 <h2 className="text-sm font-semibold text-foreground mb-3 pb-2 border-b border-border">
                     {t('sidebar.title', { count: tags.length })}
                 </h2>
