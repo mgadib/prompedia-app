@@ -34,7 +34,7 @@ const ToolbarButton = ({ onClick, isActive, disabled, title, children }: Toolbar
         onClick={onClick}
         disabled={disabled}
         title={title}
-        className={`p-1.5 rounded-sm transition-colors duration-fast ${isActive
+        className={`p-2 rounded transition-colors duration-fast ease-default hover:transition-duration-normal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 ${isActive
             ? 'bg-action-secondary text-brand'
             : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
             } disabled:opacity-50 disabled:cursor-not-allowed`}
@@ -53,7 +53,7 @@ export const EditorToolbar = ({ editor }: EditorToolbarProps) => {
     if (!editor) return null;
 
     return (
-        <div className="flex items-center gap-0 px-1.5 py-1 bg-surface-subtle flex-wrap">
+        <div className="flex items-center gap-2 px-2 py-1.5 bg-surface-subtle flex-wrap">
             {/* Text formatting */}
             <ToolbarButton
                 onClick={() => editor.chain().focus().toggleBold().run()}

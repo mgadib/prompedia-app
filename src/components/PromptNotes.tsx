@@ -374,12 +374,12 @@ const PromptNotes = () => {
     );
 
     const promptDetailModal = selectedPrompt && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-background/80 backdrop-blur-sm" onClick={() => setSelectedPrompt(null)}>
-            <div className="w-full max-w-[42rem] bg-card border border-border rounded-sm shadow-lg flex flex-col max-h-[85vh]" onClick={e => e.stopPropagation()}>
-                <div className="p-4 border-b border-border">
-                    <div className="flex items-start justify-between gap-3 mb-2">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-background/80 backdrop-blur-sm" onClick={() => setSelectedPrompt(null)}>
+            <div className="w-full max-w-[42rem] bg-card border border-border rounded shadow-lg flex flex-col max-h-[85vh]" onClick={e => e.stopPropagation()}>
+                <div className="p-4 sm:p-5 border-b border-border">
+                    <div className="flex items-start justify-between gap-3 mb-3">
                         <h3 className="text-base font-semibold text-foreground flex-1">{selectedPrompt.title}</h3>
-                        <Button variant="ghost" size="sm" className="flex-shrink-0" onClick={() => setSelectedPrompt(null)}>{t('actions.close')}</Button>
+                        <Button variant="ghost" size="sm" className="flex-shrink-0" onClick={() => setSelectedPrompt(null)} aria-label={t('actions.close')}>{t('actions.close')}</Button>
                     </div>
                     <div className="flex items-center gap-1.5 flex-wrap">
                         {selectedPrompt.tags && selectedPrompt.tags.map(tag => (
@@ -394,16 +394,17 @@ const PromptNotes = () => {
                         <StatusBadge variant="date" size="sm">@{selectedPrompt.author}</StatusBadge>
                     </div>
                 </div>
-                <div className="flex-1 overflow-y-auto p-4">
+                <div className="flex-1 overflow-y-auto p-4 sm:p-5">
                     <MarkdownPreview content={selectedPrompt.content} className="text-sm" />
                 </div>
-                <div className="px-4 py-3 border-t border-border flex justify-end gap-2">
+                <div className="px-4 sm:px-5 py-3 sm:py-4 border-t border-border flex justify-end gap-2">
                     {user && user.id === selectedPrompt.user_id && (
                         <Button 
                             variant="outline" 
                             size="sm" 
                             onClick={() => handleEdit(selectedPrompt)}
                             className="hover:bg-secondary hover:border-primary/20"
+                            aria-label={t('actions.edit')}
                         >
                             {t('actions.edit')}
                         </Button>
@@ -417,9 +418,10 @@ const PromptNotes = () => {
                                 await navigator.clipboard.writeText(url);
                                 showToast(t('toast.link_copied', 'Link copied to clipboard'));
                             }}
-                            className="gap-1.5 hover:bg-accent/10 hover:text-accent hover:border-accent/30"
+                            className="gap-2 hover:bg-accent/10 hover:text-accent hover:border-accent/30"
+                            aria-label={t('actions.share', 'Share')}
                         >
-                            <Share2 className="w-4 h-4" />
+                            <Share2 className="w-4 h-4" aria-hidden="true" />
                             <span>{t('actions.share', 'Share')}</span>
                         </Button>
                     )}
@@ -427,9 +429,10 @@ const PromptNotes = () => {
                         variant="brand" 
                         size="sm" 
                         onClick={() => handleCopy(selectedPrompt.content)}
-                        className="gap-1.5 hover:bg-action-hover"
+                        className="gap-2 hover:bg-action-hover"
+                        aria-label={t('actions.copy')}
                     >
-                        <Copy className="w-4 h-4" />
+                        <Copy className="w-4 h-4" aria-hidden="true" />
                         <span>{t('actions.copy')}</span>
                     </Button>
                     {user && user.id === selectedPrompt.user_id && (
@@ -437,9 +440,10 @@ const PromptNotes = () => {
                             variant="destructive" 
                             size="sm" 
                             onClick={() => handleDeleteClick(selectedPrompt.id)}
-                            className="gap-1.5 hover:bg-destructive/90"
+                            className="gap-2 hover:bg-destructive/90"
+                            aria-label={t('actions.delete')}
                         >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="w-4 h-4" aria-hidden="true" />
                             <span>{t('actions.delete')}</span>
                         </Button>
                     )}
@@ -448,7 +452,16 @@ const PromptNotes = () => {
         </div>
     );
 
-    if (authLoading) return <div className="min-h-screen flex items-center justify-center bg-background"><div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>;
+    if (authLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-background">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
+                    <p className="text-sm text-muted-foreground">{t('auth.processing', 'Loading...')}</p>
+                </div>
+            </div>
+        );
+    }
 
     if (showAuth || !user) {
         // Landing Page Mode
@@ -520,10 +533,17 @@ const PromptNotes = () => {
             <SEO structuredData={websiteSchema} />
             <Header variant="authenticated" userEmail={user?.email} onLogout={() => setShowLogoutConfirm(true)} />
 
-            <div className="max-w-6xl mx-auto px-4 py-4 flex-1 w-full flex flex-col md:flex-row gap-4">
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6 flex-1 w-full flex flex-col md:flex-row gap-4 md:gap-6">
                 <main className="flex-1 min-w-0">
-                    <div className="mb-4">
-                        <input type="text" value={filter} onChange={e => setFilter(e.target.value)} placeholder={t('prompt.search_placeholder')} className="w-full px-2 py-1.5 bg-card border border-border rounded-sm text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring" />
+                    <div className="mb-4 sm:mb-6">
+                        <input 
+                            type="text" 
+                            value={filter} 
+                            onChange={e => setFilter(e.target.value)} 
+                            placeholder={t('prompt.search_placeholder')} 
+                            className="w-full px-3 py-2.5 sm:py-2 bg-card border border-border rounded text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 transition-all duration-fast min-h-[44px] sm:min-h-0"
+                            aria-label={t('prompt.search_placeholder')}
+                        />
                     </div>
 
                     <PromptEditor
@@ -545,10 +565,10 @@ const PromptNotes = () => {
                     <div className="min-h-[50vh]">
                         <div className="flex items-center justify-between mb-4">
                             <h2 className="text-section-title text-foreground">{t('list.title', { count: totalItems })}</h2>
-                            <div className="flex gap-1 items-center">
-                                <TagChip variant={visibilityFilter === 'all' ? 'active' : 'outline'} size="sm" onClick={() => setVisibilityFilter('all')}>{t('list.all')}</TagChip>
-                                <TagChip variant={visibilityFilter === 'public' ? 'active' : 'outline'} size="sm" onClick={() => setVisibilityFilter('public')}>{t('prompt.public')}</TagChip>
-                                <TagChip variant={visibilityFilter === 'private' ? 'active' : 'outline'} size="sm" onClick={() => setVisibilityFilter('private')}>{t('prompt.private')}</TagChip>
+                            <div className="flex gap-2 items-center">
+                                <TagChip variant={visibilityFilter === 'all' ? 'active' : 'outline'} size="default" onClick={() => setVisibilityFilter('all')}>{t('list.all')}</TagChip>
+                                <TagChip variant={visibilityFilter === 'public' ? 'active' : 'outline'} size="default" onClick={() => setVisibilityFilter('public')}>{t('prompt.public')}</TagChip>
+                                <TagChip variant={visibilityFilter === 'private' ? 'active' : 'outline'} size="default" onClick={() => setVisibilityFilter('private')}>{t('prompt.private')}</TagChip>
                             </div>
                         </div>
 
@@ -587,26 +607,26 @@ const PromptNotes = () => {
             {promptDetailModal}
 
             {showLogoutConfirm && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center p-3 bg-background/80 backdrop-blur-sm" onClick={() => setShowLogoutConfirm(false)}>
-                    <div className="w-full max-w-sm bg-card border border-border rounded-sm shadow-lg p-4" onClick={e => e.stopPropagation()}>
-                        <h3 className="text-base font-semibold text-foreground mb-1">{t('auth.logout_confirm_title')}</h3>
-                        <p className="text-sm text-muted-foreground mb-4">{t('auth.logout_confirm_desc')}</p>
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 bg-background/80 backdrop-blur-sm" onClick={() => setShowLogoutConfirm(false)}>
+                    <div className="w-full max-w-sm bg-card border border-border rounded shadow-lg p-4 sm:p-5" onClick={e => e.stopPropagation()}>
+                        <h3 className="text-base font-semibold text-foreground mb-2">{t('auth.logout_confirm_title')}</h3>
+                        <p className="text-sm text-muted-foreground mb-5">{t('auth.logout_confirm_desc')}</p>
                         <div className="flex justify-end gap-2">
-                            <Button variant="ghost" size="sm" onClick={() => setShowLogoutConfirm(false)}>{t('actions.cancel')}</Button>
-                            <Button variant="brand" size="sm" onClick={() => { handleLogout(); setShowLogoutConfirm(false); }}>{t('auth.logout')}</Button>
+                            <Button variant="ghost" size="sm" onClick={() => setShowLogoutConfirm(false)} aria-label={t('actions.cancel')}>{t('actions.cancel')}</Button>
+                            <Button variant="brand" size="sm" onClick={() => { handleLogout(); setShowLogoutConfirm(false); }} aria-label={t('auth.logout')}>{t('auth.logout')}</Button>
                         </div>
                     </div>
                 </div>
             )}
 
             {confirmDeleteId && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center p-3 bg-background/80 backdrop-blur-sm" onClick={() => setConfirmDeleteId(null)}>
-                    <div className="w-full max-w-sm bg-card border border-border rounded-sm shadow-lg p-4" onClick={e => e.stopPropagation()}>
-                        <h3 className="text-base font-semibold text-foreground mb-1">{t('prompt.delete_confirm')}</h3>
-                        <p className="text-sm text-muted-foreground mb-4">{t('prompt.delete_warning')}</p>
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 bg-background/80 backdrop-blur-sm" onClick={() => setConfirmDeleteId(null)}>
+                    <div className="w-full max-w-sm bg-card border border-border rounded shadow-lg p-4 sm:p-5" onClick={e => e.stopPropagation()}>
+                        <h3 className="text-base font-semibold text-foreground mb-2">{t('prompt.delete_confirm')}</h3>
+                        <p className="text-sm text-muted-foreground mb-5">{t('prompt.delete_warning')}</p>
                         <div className="flex justify-end gap-2">
-                            <Button variant="ghost" size="sm" onClick={() => setConfirmDeleteId(null)}>{t('actions.cancel')}</Button>
-                            <Button variant="destructive" size="sm" onClick={() => { performDelete(confirmDeleteId); setConfirmDeleteId(null); }}>{t('actions.delete')}</Button>
+                            <Button variant="ghost" size="sm" onClick={() => setConfirmDeleteId(null)} aria-label={t('actions.cancel')}>{t('actions.cancel')}</Button>
+                            <Button variant="destructive" size="sm" onClick={() => { performDelete(confirmDeleteId); setConfirmDeleteId(null); }} aria-label={t('actions.delete')}>{t('actions.delete')}</Button>
                         </div>
                     </div>
                 </div>

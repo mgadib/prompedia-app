@@ -247,21 +247,22 @@ export const MarkdownEditor = ({
                 <button
                     type="button"
                     onClick={handleTogglePreview}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium ${
+                    className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium transition-colors duration-fast ease-default rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 ${
                         isPreview 
                             ? 'text-brand bg-action-secondary' 
                             : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
                     }`}
                     title={isPreview ? t('editor.toggle_edit', 'Edit') : t('editor.toggle_preview', 'Preview')}
+                    aria-label={isPreview ? t('editor.toggle_edit', 'Edit') : t('editor.toggle_preview', 'Preview')}
                 >
                     {isPreview ? (
                         <>
-                            <Edit3 className="w-4 h-4" />
+                            <Edit3 className="w-4 h-4" aria-hidden="true" />
                             <span className="hidden sm:inline">{t('editor.toggle_edit', 'Edit')}</span>
                         </>
                     ) : (
                         <>
-                            <Eye className="w-4 h-4" />
+                            <Eye className="w-4 h-4" aria-hidden="true" />
                             <span className="hidden sm:inline">{t('editor.toggle_preview', 'Preview')}</span>
                         </>
                     )}

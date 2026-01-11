@@ -3,14 +3,14 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const tagChipVariants = cva(
-  "inline-flex items-center justify-center rounded-sm text-xs font-medium cursor-pointer select-none transition-all duration-fast active:scale-[0.97]",
+  "inline-flex items-center justify-center rounded-sm text-xs font-medium cursor-pointer select-none transition-all duration-fast ease-default hover:transition-duration-normal active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
   {
     variants: {
       variant: {
-        default: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        active: "bg-primary text-primary-foreground",
-        outline: "border border-border bg-transparent text-foreground hover:bg-secondary",
-        muted: "text-muted-foreground hover:text-foreground",
+        default: "bg-secondary text-secondary-foreground hover:bg-secondary/80 hover:shadow-xs",
+        active: "bg-primary text-primary-foreground shadow-xs",
+        outline: "border border-border bg-transparent text-foreground hover:bg-secondary hover:border-primary/20",
+        muted: "text-muted-foreground hover:text-foreground hover:bg-secondary/50",
       },
       size: {
         sm: "px-1.5 py-0.5 min-h-[20px]",

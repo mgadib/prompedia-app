@@ -36,14 +36,14 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({
     const { t } = useTranslation();
 
     return (
-        <div className="mb-6 bg-card border border-border rounded-sm p-4">
-            <div className="flex items-center gap-2 mb-3">
+        <div className="mb-4 sm:mb-6 bg-card border border-border rounded shadow-sm p-4 sm:p-5">
+            <div className="flex items-center gap-3 mb-4">
                 <input
                     type="text"
                     value={title}
                     onChange={e => setTitle(e.target.value)}
                     placeholder={t('prompt.title_placeholder')}
-                    className="flex-1 py-1 bg-transparent text-base font-semibold text-foreground placeholder:text-muted-foreground focus:outline-none"
+                    className="flex-1 py-1.5 bg-transparent text-base font-semibold text-foreground placeholder:text-muted-foreground focus:outline-none"
                 />
                 <StatusBadge variant={isPublic ? 'public' : 'private'} size="sm">
                     {isPublic ? t('prompt.public') : t('prompt.private')}
@@ -57,15 +57,15 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({
                 minHeight="200px"
             />
 
-            <div className="mt-4 space-y-3">
-                <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
+            <div className="mt-5 space-y-4">
+                <div className="flex flex-col sm:flex-row gap-4 sm:items-center">
                     <div className="flex-1">
                         <input
                             type="text"
                             value={tagsInput}
                             onChange={e => setTagsInput(e.target.value)}
                             placeholder={t('prompt.tags_placeholder')}
-                            className="w-full px-2 py-1.5 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+                            className="w-full px-3 py-2 bg-transparent border border-border rounded text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 transition-all duration-fast"
                         />
                     </div>
                     <div className="flex items-center gap-4 flex-shrink-0">
@@ -75,12 +75,12 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({
                                 id="isPublic"
                                 checked={isPublic}
                                 onChange={(e) => setIsPublic(e.target.checked)}
-                                className="rounded border-border text-green-600 focus:ring-green-600 h-4 w-4 accent-green-600 cursor-pointer"
+                                className="rounded border-border text-green-600 focus:ring-2 focus:ring-green-600 focus:ring-offset-1 h-4 w-4 accent-green-600 cursor-pointer transition-all duration-fast"
                             />
                             {isPublic ? (
                                 <StatusBadge variant="public" size="sm" className="cursor-pointer">{t('prompt.public')}</StatusBadge>
                             ) : (
-                                <span className="text-body text-muted-foreground select-none whitespace-nowrap group-hover:text-foreground transition-colors">
+                                <span className="text-body text-muted-foreground select-none whitespace-nowrap group-hover:text-foreground transition-colors duration-fast">
                                     {t('prompt.public')}
                                 </span>
                             )}

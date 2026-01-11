@@ -16,7 +16,7 @@ export const Header = ({ variant = 'default', userEmail, onLogout }: HeaderProps
 
     return (
         <header className="border-b border-border bg-card/95 backdrop-blur-sm sticky top-0 z-40 shadow-xs">
-            <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
                 {/* Brand Section */}
                 <Link to="/" className="flex items-center gap-3 group">
                     <div className="relative">
@@ -38,8 +38,9 @@ export const Header = ({ variant = 'default', userEmail, onLogout }: HeaderProps
                     {/* Language Toggle */}
                     <button
                         onClick={() => i18n.changeLanguage(i18n.resolvedLanguage === 'id' ? 'en' : 'id')}
-                        className="h-8 w-8 flex items-center justify-center text-2xs font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground hover:bg-secondary/80 rounded-sm transition-all duration-normal"
+                        className="h-8 w-8 flex items-center justify-center text-2xs font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground hover:bg-secondary/80 rounded-sm transition-all duration-fast ease-default hover:transition-duration-normal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
                         title={i18n.resolvedLanguage === 'id' ? 'Switch to English' : 'Ganti ke Bahasa Indonesia'}
+                        aria-label={i18n.resolvedLanguage === 'id' ? 'Switch to English' : 'Ganti ke Bahasa Indonesia'}
                     >
                         {i18n.resolvedLanguage?.toUpperCase()}
                     </button>
@@ -47,11 +48,12 @@ export const Header = ({ variant = 'default', userEmail, onLogout }: HeaderProps
                     {/* Theme Toggle */}
                     <button
                         onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                        className="h-8 w-8 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary/80 rounded-sm transition-all duration-normal"
+                        className="h-8 w-8 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary/80 rounded-sm transition-all duration-fast ease-default hover:transition-duration-normal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
                         title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+                        aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
                     >
-                        <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                        <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                        <Sun className="h-4 w-4 rotate-0 scale-100 transition-all duration-fast dark:-rotate-90 dark:scale-0" />
+                        <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all duration-fast dark:rotate-0 dark:scale-100" />
                     </button>
 
                     {/* Authenticated User Info */}
@@ -60,8 +62,9 @@ export const Header = ({ variant = 'default', userEmail, onLogout }: HeaderProps
                             {/* Mobile: Only logout icon */}
                             <button
                                 onClick={onLogout}
-                                className="sm:hidden h-8 w-8 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-secondary/80 rounded-sm transition-all duration-normal"
+                                className="sm:hidden h-8 w-8 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-secondary/80 rounded-sm transition-all duration-fast ease-default hover:transition-duration-normal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
                                 title={t('auth.logout')}
+                                aria-label={t('auth.logout')}
                             >
                                 <LogOut className="h-4 w-4" />
                             </button>
@@ -72,7 +75,8 @@ export const Header = ({ variant = 'default', userEmail, onLogout }: HeaderProps
                                 </span>
                                 <button
                                     onClick={onLogout}
-                                    className="text-xs text-muted-foreground hover:text-primary transition-colors duration-normal font-medium"
+                                    className="text-xs text-muted-foreground hover:text-primary transition-colors duration-fast ease-default hover:transition-duration-normal font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 rounded-sm px-1"
+                                    aria-label={t('auth.logout')}
                                 >
                                     {t('auth.logout')}
                                 </button>

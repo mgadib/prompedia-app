@@ -64,11 +64,11 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
 
     return (
         <aside className="w-full lg:w-72 flex-shrink-0 lg:sticky lg:top-16">
-            <div className="bg-card border border-border rounded-sm p-4">
-                <form onSubmit={handleAuth} className="space-y-3">
+            <div className="bg-card border border-border rounded shadow-sm p-4 sm:p-5">
+                <form onSubmit={handleAuth} className="space-y-4">
                     {authMode === 'register' && (
                         <div>
-                            <label className="block text-caption font-medium text-foreground mb-1">{t('auth.name')}</label>
+                            <label className="block text-caption font-medium text-foreground mb-2">{t('auth.name')}</label>
                             <input
                                 type="text"
                                 value={displayName}
@@ -77,12 +77,13 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
                                 placeholder={t('auth.placeholders.name')}
                                 disabled={authSubmitting}
                                 autoComplete="name"
-                                className="w-full px-2 py-1.5 bg-background border border-border rounded-sm text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
+                                className="w-full px-3 py-2.5 sm:py-2 bg-background border border-border rounded text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 disabled:opacity-50 transition-all duration-fast min-h-[44px] sm:min-h-0"
+                                aria-label={t('auth.name')}
                             />
                         </div>
                     )}
                     <div>
-                        <label className="block text-caption font-medium text-foreground mb-1">{t('auth.email')}</label>
+                        <label className="block text-caption font-medium text-foreground mb-2">{t('auth.email')}</label>
                         <input
                             type="email"
                             value={email}
@@ -91,11 +92,12 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
                             placeholder={t('auth.placeholders.email')}
                             disabled={authSubmitting}
                             autoComplete="email"
-                            className="w-full px-2 py-1.5 bg-background border border-border rounded-sm text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
+                            className="w-full px-3 py-2.5 sm:py-2 bg-background border border-border rounded text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 disabled:opacity-50 transition-all duration-fast min-h-[44px] sm:min-h-0"
+                            aria-label={t('auth.email')}
                         />
                     </div>
                     <div>
-                        <label className="block text-caption font-medium text-foreground mb-1">{t('auth.password')}</label>
+                        <label className="block text-caption font-medium text-foreground mb-2">{t('auth.password')}</label>
                         <input
                             type="password"
                             value={password}
@@ -105,7 +107,8 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
                             placeholder={t('auth.placeholders.password')}
                             disabled={authSubmitting}
                             autoComplete={authMode === 'register' ? 'new-password' : 'current-password'}
-                            className="w-full px-2 py-1.5 bg-background border border-border rounded-sm text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
+                            className="w-full px-3 py-2.5 sm:py-2 bg-background border border-border rounded text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 disabled:opacity-50 transition-all duration-fast min-h-[44px] sm:min-h-0"
+                            aria-label={t('auth.password')}
                         />
                         {/* Password strength indicator for registration */}
                         {authMode === 'register' && password.length > 0 && (
@@ -152,8 +155,8 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
             </div>
 
             {/* Public Tags Section */}
-            <div className="bg-card border border-border rounded-sm p-4 mt-4">
-                <h2 className="text-sm font-semibold text-foreground mb-3 pb-2 border-b border-border">{t('landing.public_tags_title')}</h2>
+            <div className="bg-card border border-border rounded shadow-sm p-4 sm:p-5 mt-4 sm:mt-6">
+                <h2 className="text-sm font-semibold text-foreground mb-4 pb-3 border-b border-border">{t('landing.public_tags_title')}</h2>
                 {publicTags.length > 0 ? (
                     <div className="flex flex-wrap gap-2">
                         <TagChip
@@ -175,7 +178,9 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
                         ))}
                     </div>
                 ) : (
-                    <p className="text-body text-muted-foreground">{t('landing.no_public_tags')}</p>
+                    <div className="py-4 text-center">
+                        <p className="text-sm text-muted-foreground">{t('landing.no_public_tags')}</p>
+                    </div>
                 )}
             </div>
         </aside>

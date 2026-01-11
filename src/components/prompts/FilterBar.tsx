@@ -29,9 +29,11 @@ export const MobileFilterButton: React.FC<FilterBarProps> = ({ tags, currentFilt
             {/* Filter Toggle Button */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center gap-2 px-3 py-2 bg-card border border-border rounded-sm text-sm font-medium text-foreground hover:bg-secondary/50 transition-colors w-full justify-between"
+                className="flex items-center gap-2 px-3 py-2 bg-card border border-border rounded text-sm font-medium text-foreground hover:bg-secondary/50 hover:border-primary/20 transition-all duration-fast ease-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 w-full justify-between"
+                aria-label={t('sidebar.title', { count: tags.length })}
+                aria-expanded={isOpen}
             >
-                <span className="flex items-center gap-2">
+                <span className="flex items-center gap-1.5">
                     <Filter className="w-4 h-4" />
                     {t('sidebar.title', { count: tags.length })}
                     {currentFilter && (
@@ -49,7 +51,7 @@ export const MobileFilterButton: React.FC<FilterBarProps> = ({ tags, currentFilt
 
             {/* Collapsible Tags Section */}
             {isOpen && (
-                <div className="mt-2 p-3 bg-card border border-border rounded-sm animate-in slide-in-from-top-2 duration-200">
+                <div className="mt-2 p-4 bg-card border border-border rounded shadow-sm animate-in slide-in-from-top-2 duration-fast">
                     <div className="flex flex-wrap gap-2">
                         {tags.map(tag => (
                             <TagChip
@@ -75,7 +77,7 @@ export const MobileFilterButton: React.FC<FilterBarProps> = ({ tags, currentFilt
                                 setIsOpen(false);
                             }}
                         >
-                            <X className="w-3 h-3 mr-1" />
+                            <X className="w-3 h-3" />
                             {t('sidebar.clear_filter')}
                         </Button>
                     )}
@@ -91,8 +93,8 @@ export const FilterBar: React.FC<FilterBarProps> = ({ tags, currentFilter, onFil
 
     return (
         <aside className="hidden lg:block w-56 flex-shrink-0">
-            <div className="sticky top-[4.5rem] bg-card border border-border rounded-sm p-3 max-h-[calc(100vh-6rem)] overflow-y-auto custom-scrollbar">
-                <h2 className="text-sm font-semibold text-foreground mb-3 pb-2 border-b border-border">
+            <div className="sticky top-[4.5rem] bg-card border border-border rounded shadow-sm p-4 max-h-[calc(100vh-6rem)] overflow-y-auto custom-scrollbar">
+                <h2 className="text-sm font-semibold text-foreground mb-4 pb-3 border-b border-border">
                     {t('sidebar.title', { count: tags.length })}
                 </h2>
                 {tags.length === 0 ? (

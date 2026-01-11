@@ -3,7 +3,8 @@ import { PromptCard, PromptCardHeader, PromptCardTitle, PromptCardFooter, Prompt
 import { StatusBadge } from '@/components/ui/status-badge';
 import { TagChipStatic } from '@/components/ui/tag-chip';
 import { Button } from '@/components/ui/button';
-import { Share2, Copy, Trash2 } from "lucide-react";
+import { PromptCardSkeleton } from '@/components/ui/skeleton';
+import { Share2, Copy, Trash2, Loader2, FileText, Search } from "lucide-react";
 import { useTranslation } from 'react-i18next';
 import { formatDate } from '@/lib/date-utils';
 
@@ -56,24 +57,49 @@ export const PromptList: React.FC<PromptListProps> = memo(({
     const { t, i18n } = useTranslation();
 
     if (isLoading) {
-        return <div className="text-center py-12"><div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" /></div>;
+        return (
+            <div className="grid gap-5">
+                {[1, 2, 3].map((i) => (
+                    <PromptCardSkeleton key={i} />
+                ))}
+            </div>
+        );
     }
 
     if (prompts.length === 0) {
         return (
-            <div className="text-center py-12 text-muted-foreground text-body">
-                {t('list.no_match')}
+            <div className="text-center py-16 px-4">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center">
+                        <FileText className="w-8 h-8 text-muted-foreground" />
+                    </div>
+                    <div className="space-y-2">
+                        <h3 className="text-base font-semibold text-foreground">{t('list.no_match')}</h3>
+                        <p className="text-sm text-muted-foreground max-w-md">
+                            {t('list.empty', 'No prompts saved yet. Create your first prompt to get started!')}
+                        </p>
+                    </div>
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="grid gap-4">
+        <div className="grid gap-5">
             {prompts.map(prompt => (
                 <PromptCard
                     key={prompt.id}
                     variant={editingId === prompt.id ? 'selected' : prompt.is_public ? 'public' : 'private'}
                     onClick={() => onSelectPrompt(prompt)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            onSelectPrompt(prompt);
+                        }
+                    }}
+                    aria-label={`${prompt.title} - ${prompt.is_public ? t('prompt.public') : t('prompt.private')}`}
                 >
                     <PromptCardHeader>
                         <div className="flex-1 flex items-center gap-3 min-w-0">
@@ -83,7 +109,7 @@ export const PromptList: React.FC<PromptListProps> = memo(({
                             <StatusBadge variant={prompt.is_public ? 'public' : 'private'} size="sm" className="opacity-70">
                                 {prompt.is_public ? t('prompt.public') : t('prompt.private')}
                             </StatusBadge>
-                            <span className="text-2xs text-muted-foreground/50 font-normal whitespace-nowrap">
+                            <span className="text-xs text-muted-foreground/50 font-normal whitespace-nowrap">
                                 {formatDate(prompt.created_at, i18n.language)}
                             </span>
                         </div>
@@ -92,7 +118,7 @@ export const PromptList: React.FC<PromptListProps> = memo(({
                     <PromptCardFooter>
                         <div className="flex items-center gap-2 flex-wrap opacity-60">
                             {prompt.tags.map((tag, i) => (
-                                <TagChipStatic key={i} variant="muted" size="sm">
+                                <TagChipStatic key={i} variant="muted" size="default">
                                     {tag.name}
                                 </TagChipStatic>
                             ))}
@@ -103,33 +129,36 @@ export const PromptList: React.FC<PromptListProps> = memo(({
                                 <Button
                                     variant="action"
                                     size="sm"
-                                    className="opacity-40 hover:opacity-100 hover:bg-accent/10 hover:text-accent gap-1.5"
+                                    className="opacity-40 hover:opacity-100 hover:bg-accent/10 hover:text-accent gap-2"
                                     onClick={() => onShare(prompt.id)}
                                     title={t('actions.share', 'Share')}
+                                    aria-label={t('actions.share', 'Share')}
                                 >
-                                    <Share2 className="w-3.5 h-3.5" />
+                                    <Share2 className="w-3.5 h-3.5" aria-hidden="true" />
                                     <span className="text-xs">{t('actions.share', 'Share')}</span>
                                 </Button>
                             )}
                             <Button
                                 variant="action"
                                 size="sm"
-                                className="opacity-40 hover:opacity-100 hover:bg-primary/10 hover:text-primary gap-1.5"
+                                className="opacity-40 hover:opacity-100 hover:bg-primary/10 hover:text-primary gap-2"
                                 onClick={() => onCopy(prompt.content)}
                                 title={t('actions.copy')}
+                                aria-label={t('actions.copy')}
                             >
-                                <Copy className="w-3.5 h-3.5" />
+                                <Copy className="w-3.5 h-3.5" aria-hidden="true" />
                                 <span className="text-xs">{t('actions.copy')}</span>
                             </Button>
                             {currentUserId === prompt.user_id && (
                                 <Button
                                     variant="action"
                                     size="sm"
-                                    className="opacity-40 hover:opacity-100 hover:bg-destructive/10 hover:text-destructive gap-1.5"
+                                    className="opacity-40 hover:opacity-100 hover:bg-destructive/10 hover:text-destructive gap-2"
                                     onClick={() => onDeleteClick(prompt.id)}
                                     title={t('actions.delete')}
+                                    aria-label={t('actions.delete')}
                                 >
-                                    <Trash2 className="w-3.5 h-3.5" />
+                                    <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
                                     <span className="text-xs">{t('actions.delete')}</span>
                                 </Button>
                             )}
@@ -160,14 +189,16 @@ export const PromptList: React.FC<PromptListProps> = memo(({
                             <button
                                 onClick={() => onPageChange(Math.max(1, currentPage - 1))}
                                 disabled={currentPage === 1}
-                                className="text-sm font-medium text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                className="text-sm font-medium text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors duration-fast ease-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 rounded-sm px-2 py-1"
+                                aria-label={t('list.previous')}
                             >
                                 {t('list.previous')}
                             </button>
                             <button
                                 onClick={() => onPageChange(Math.min(Math.ceil(totalItems / itemsPerPage), currentPage + 1))}
                                 disabled={currentPage >= Math.ceil(totalItems / itemsPerPage)}
-                                className="text-sm font-medium text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                className="text-sm font-medium text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors duration-fast ease-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 rounded-sm px-2 py-1"
+                                aria-label={t('list.next')}
                             >
                                 {t('list.next')}
                             </button>

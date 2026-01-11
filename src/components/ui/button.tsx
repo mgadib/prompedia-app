@@ -5,29 +5,29 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-sm text-sm font-medium ring-offset-background transition-all duration-normal focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 touch-manipulation min-h-[36px] sm:min-h-0 active:scale-[0.98]",
+  "inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-sm text-sm font-medium ring-offset-background transition-all duration-fast ease-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 touch-manipulation min-h-[36px] sm:min-h-0 active:scale-[0.98] hover:transition-duration-normal",
   {
     variants: {
       variant: {
         // Brand variant - Orange primary action
-        brand: "bg-action text-action-foreground hover:bg-action-hover",
+        brand: "bg-action text-action-foreground hover:bg-action-hover hover:shadow-sm",
         // Default - now uses orange primary
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
-        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-        outline: "border border-input bg-background hover:bg-secondary hover:text-foreground",
-        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        default: "bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-sm",
+        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90 hover:shadow-sm",
+        outline: "border border-input bg-background hover:bg-secondary hover:text-foreground hover:border-primary/20",
+        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80 hover:shadow-xs",
         ghost: "hover:bg-secondary hover:text-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
+        link: "text-primary underline-offset-4 hover:underline hover:text-primary/80",
         // Subtle action link style
         action: "text-muted-foreground hover:text-foreground hover:bg-secondary/50",
       },
       size: {
-        default: "h-8 px-3 py-1.5",
-        sm: "h-7 px-2 py-1",
-        lg: "h-9 px-6 py-2",
-        icon: "h-8 w-8 min-w-[36px] sm:min-w-0",
+        default: "h-9 sm:h-8 px-3 py-2 sm:py-1.5 min-h-[44px] sm:min-h-0",
+        sm: "h-8 sm:h-7 px-2.5 sm:px-2 py-2 sm:py-1 min-h-[44px] sm:min-h-0",
+        lg: "h-10 sm:h-9 px-6 py-2.5 sm:py-2 min-h-[44px] sm:min-h-0",
+        icon: "h-9 w-9 sm:h-8 sm:w-8 min-w-[44px] sm:min-w-[36px]",
         // Inline text button
-        inline: "h-auto p-0 text-caption",
+        inline: "h-auto p-0 text-caption min-h-0",
       },
     },
     defaultVariants: {

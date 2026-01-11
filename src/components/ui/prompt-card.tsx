@@ -3,14 +3,14 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const promptCardVariants = cva(
-  "relative flex flex-col rounded-md border bg-card text-card-foreground cursor-pointer transition-colors duration-fast",
+  "relative flex flex-col rounded border bg-card text-card-foreground cursor-pointer transition-all duration-fast ease-default shadow-sm hover:shadow-md hover:-translate-y-0.5",
   {
     variants: {
       variant: {
         default: "border-border hover:bg-secondary/50",
         public: "border-border hover:bg-secondary/50",
         private: "border-border hover:bg-secondary/50",
-        selected: "border-primary bg-primary/5",
+        selected: "border-primary bg-primary/5 shadow-md",
       },
       size: {
         sm: "p-3",
@@ -62,7 +62,7 @@ const PromptCardTitle = React.forwardRef<
   <h3
     ref={ref}
     className={cn(
-      "text-sm font-medium text-foreground truncate leading-normal",
+      "text-base font-medium text-foreground truncate leading-normal",
       className
     )}
     {...props}

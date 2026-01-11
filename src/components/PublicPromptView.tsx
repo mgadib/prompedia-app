@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
-import { Copy } from "lucide-react";
+import { Copy, FileText } from "lucide-react";
 import { useTranslation } from 'react-i18next';
 import { toast } from "sonner";
 import { MarkdownPreview } from '@/components/editor';
@@ -146,7 +146,10 @@ const PublicPromptView = () => {
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-background">
-                <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
+                    <p className="text-sm text-muted-foreground">{t('auth.processing', 'Loading...')}</p>
+                </div>
             </div>
         );
     }
@@ -181,27 +184,28 @@ const PublicPromptView = () => {
             />
             <Header variant="public" />
 
-            <main className="max-w-6xl mx-auto px-4 py-8 flex-1 w-full">
-                <div className="flex flex-col lg:flex-row gap-4 items-start">
+            <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 flex-1 w-full">
+                <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 items-start">
                     {/* Left Column: Prompt Detail */}
                     <div className="flex-1 w-full min-w-0">
-                        <div className="bg-card border border-border rounded-sm shadow-sm overflow-hidden">
+                        <div className="bg-card border border-border rounded shadow-sm overflow-hidden">
                             {/* Header */}
-                            <div className="p-6 border-b border-border">
-                                <div className="flex justify-between items-start gap-4 mb-4">
-                                    <h1 className="text-2xl font-bold text-foreground">{prompt.title}</h1>
+                            <div className="p-4 sm:p-6 border-b border-border">
+                                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 sm:gap-4 mb-4">
+                                    <h1 className="text-xl sm:text-2xl font-bold text-foreground">{prompt.title}</h1>
                                     <Button
                                         variant="brand"
                                         size="sm"
                                         onClick={handleCopy}
-                                        className="flex-shrink-0"
+                                        className="flex-shrink-0 w-full sm:w-auto"
+                                        aria-label={t('actions.copy')}
                                     >
-                                        <Copy className="w-4 h-4 mr-2" />
-                                        {t('actions.copy')}
+                                        <Copy className="w-4 h-4" aria-hidden="true" />
+                                        <span>{t('actions.copy')}</span>
                                     </Button>
                                 </div>
 
-                                <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                                <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-sm text-muted-foreground">
                                     {prompt.tags.length > 0 && (
                                         <div className="flex flex-wrap gap-2">
                                             {prompt.tags.map(tag => (
@@ -218,7 +222,7 @@ const PublicPromptView = () => {
                             </div>
 
                             {/* Content */}
-                            <div className="p-8">
+                            <div className="p-4 sm:p-6 lg:p-8">
                                 <MarkdownPreview content={prompt.content} className="text-body" />
                             </div>
                         </div>
@@ -226,8 +230,8 @@ const PublicPromptView = () => {
 
                     {/* Right Column: Recent Public Prompts */}
                     <aside className="w-full lg:w-72 flex-shrink-0 lg:sticky lg:top-20">
-                        <div className="bg-card border border-border rounded-sm shadow-sm overflow-hidden">
-                            <div className="p-6 border-b border-border bg-muted/30">
+                        <div className="bg-card border border-border rounded shadow-sm overflow-hidden">
+                            <div className="p-4 sm:p-6 border-b border-border bg-muted/30">
                                 <h2 className="text-2xs font-bold text-muted-foreground uppercase tracking-widest leading-none">
                                     {t('landing.recent_prompts_title', 'Recent Public Prompts')}
                                 </h2>
@@ -239,21 +243,26 @@ const PublicPromptView = () => {
                                             <Link
                                                 key={rp.id}
                                                 to={`/share/${rp.id}`}
-                                                className="block p-3 rounded-sm hover:bg-secondary/80 transition-all group"
+                                                className="block p-3 rounded hover:bg-secondary/80 transition-all duration-fast ease-default group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
                                             >
-                                                <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors block leading-tight">
+                                                <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors duration-fast block leading-tight">
                                                     {rp.title}
                                                 </span>
                                             </Link>
                                         ))
                                     ) : (
-                                        <div className="p-4 text-center">
-                                            <p className="text-xs text-muted-foreground italic">{t('landing.no_public_prompts', 'No public prompts yet')}</p>
+                                        <div className="p-6 text-center">
+                                            <div className="flex flex-col items-center gap-3">
+                                                <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center">
+                                                    <FileText className="w-6 h-6 text-muted-foreground" aria-hidden="true" />
+                                                </div>
+                                                <p className="text-sm text-muted-foreground">{t('landing.no_public_prompts', 'No public prompts yet')}</p>
+                                            </div>
                                         </div>
                                     )}
                                 </div>
-                                <div className="p-3 mt-2 border-t border-border/50">
-                                    <Button variant="brand" size="sm" className="w-full text-xs font-semibold py-4" asChild>
+                                <div className="p-3 sm:p-4 mt-2 border-t border-border/50">
+                                    <Button variant="brand" size="sm" className="w-full text-xs font-semibold py-3 sm:py-4" asChild aria-label={t('public_view.open_app', 'Open Prompedia')}>
                                         <Link to="/">{t('public_view.open_app', 'Open Prompedia')}</Link>
                                     </Button>
                                 </div>
