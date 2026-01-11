@@ -115,7 +115,7 @@ const PromptCardActions = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex items-center gap-3 flex-shrink-0", className)}
+    className={cn("flex items-center gap-2 flex-shrink-0", className)}
     {...props}
   />
 ));

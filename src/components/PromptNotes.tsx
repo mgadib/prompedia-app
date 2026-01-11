@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
 import { useIdleLogout } from '@/hooks/use-idle-logout';
 
-import { Copy } from "lucide-react";
+import { Copy, Share2, Trash2 } from "lucide-react";
 import { User } from '@supabase/supabase-js';
 
 import { Tables } from '@/integrations/supabase/types';
@@ -388,8 +388,10 @@ const PromptNotes = () => {
                         <StatusBadge variant={selectedPrompt.is_public ? 'public' : 'private'} size="sm">
                             {selectedPrompt.is_public ? t('prompt.public') : t('prompt.private')}
                         </StatusBadge>
+                        <span className="text-xs text-muted-foreground">
+                            {formatDate(selectedPrompt.created_at, i18n.language)}
+                        </span>
                         <StatusBadge variant="date" size="sm">@{selectedPrompt.author}</StatusBadge>
-                        <StatusBadge variant="date" size="sm">{formatDate(selectedPrompt.created_at, i18n.language)}</StatusBadge>
                     </div>
                 </div>
                 <div className="flex-1 overflow-y-auto p-4">
@@ -397,9 +399,50 @@ const PromptNotes = () => {
                 </div>
                 <div className="px-4 py-3 border-t border-border flex justify-end gap-2">
                     {user && user.id === selectedPrompt.user_id && (
-                        <Button variant="outline" size="sm" onClick={() => handleEdit(selectedPrompt)}>{t('actions.edit')}</Button>
+                        <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => handleEdit(selectedPrompt)}
+                            className="hover:bg-secondary hover:border-primary/20"
+                        >
+                            {t('actions.edit')}
+                        </Button>
                     )}
-                    <Button variant="brand" size="sm" onClick={() => handleCopy(selectedPrompt.content)} title={t('actions.copy')}><Copy className="w-4 h-4" /></Button>
+                    {selectedPrompt.is_public && (
+                        <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={async () => {
+                                const url = `${window.location.origin}/share/${selectedPrompt.id}`;
+                                await navigator.clipboard.writeText(url);
+                                showToast(t('toast.link_copied', 'Link copied to clipboard'));
+                            }}
+                            className="gap-1.5 hover:bg-accent/10 hover:text-accent hover:border-accent/30"
+                        >
+                            <Share2 className="w-4 h-4" />
+                            <span>{t('actions.share', 'Share')}</span>
+                        </Button>
+                    )}
+                    <Button 
+                        variant="brand" 
+                        size="sm" 
+                        onClick={() => handleCopy(selectedPrompt.content)}
+                        className="gap-1.5 hover:bg-action-hover"
+                    >
+                        <Copy className="w-4 h-4" />
+                        <span>{t('actions.copy')}</span>
+                    </Button>
+                    {user && user.id === selectedPrompt.user_id && (
+                        <Button 
+                            variant="destructive" 
+                            size="sm" 
+                            onClick={() => handleDeleteClick(selectedPrompt.id)}
+                            className="gap-1.5 hover:bg-destructive/90"
+                        >
+                            <Trash2 className="w-4 h-4" />
+                            <span>{t('actions.delete')}</span>
+                        </Button>
+                    )}
                 </div>
             </div>
         </div>

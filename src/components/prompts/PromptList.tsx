@@ -78,13 +78,15 @@ export const PromptList: React.FC<PromptListProps> = memo(({
                     <PromptCardHeader>
                         <div className="flex-1 flex items-center gap-3 min-w-0">
                             <PromptCardTitle className="truncate">{prompt.title}</PromptCardTitle>
-                            <span className="text-2xs text-muted-foreground/50 font-normal whitespace-nowrap pt-0.5">
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                            <StatusBadge variant={prompt.is_public ? 'public' : 'private'} size="sm" className="opacity-70">
+                                {prompt.is_public ? t('prompt.public') : t('prompt.private')}
+                            </StatusBadge>
+                            <span className="text-2xs text-muted-foreground/50 font-normal whitespace-nowrap">
                                 {formatDate(prompt.created_at, i18n.language)}
                             </span>
                         </div>
-                        <StatusBadge variant={prompt.is_public ? 'public' : 'private'} size="sm" className="flex-shrink-0 opacity-70">
-                            {prompt.is_public ? t('prompt.public') : t('prompt.private')}
-                        </StatusBadge>
                     </PromptCardHeader>
 
                     <PromptCardFooter>
@@ -100,32 +102,35 @@ export const PromptList: React.FC<PromptListProps> = memo(({
                             {prompt.is_public && (
                                 <Button
                                     variant="action"
-                                    size="inline"
-                                    className="opacity-40 hover:opacity-100"
+                                    size="sm"
+                                    className="opacity-40 hover:opacity-100 hover:bg-accent/10 hover:text-accent gap-1.5"
                                     onClick={() => onShare(prompt.id)}
                                     title={t('actions.share', 'Share')}
                                 >
                                     <Share2 className="w-3.5 h-3.5" />
+                                    <span className="text-xs">{t('actions.share', 'Share')}</span>
                                 </Button>
                             )}
                             <Button
                                 variant="action"
-                                size="inline"
-                                className="opacity-40 hover:opacity-100"
+                                size="sm"
+                                className="opacity-40 hover:opacity-100 hover:bg-primary/10 hover:text-primary gap-1.5"
                                 onClick={() => onCopy(prompt.content)}
                                 title={t('actions.copy')}
                             >
                                 <Copy className="w-3.5 h-3.5" />
+                                <span className="text-xs">{t('actions.copy')}</span>
                             </Button>
                             {currentUserId === prompt.user_id && (
                                 <Button
                                     variant="action"
-                                    size="inline"
-                                    className="opacity-40 hover:opacity-100 hover:text-destructive"
+                                    size="sm"
+                                    className="opacity-40 hover:opacity-100 hover:bg-destructive/10 hover:text-destructive gap-1.5"
                                     onClick={() => onDeleteClick(prompt.id)}
                                     title={t('actions.delete')}
                                 >
                                     <Trash2 className="w-3.5 h-3.5" />
+                                    <span className="text-xs">{t('actions.delete')}</span>
                                 </Button>
                             )}
                         </PromptCardActions>

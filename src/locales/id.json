@@ -69,7 +69,7 @@
         "clear_filter": "Hapus filter"
     },
     "actions": {
-        "copy": "Salin Prompt",
+        "copy": "Salin",
         "copy_link": "Salin Tautan",
         "delete": "Hapus",
         "cancel": "Batal",
