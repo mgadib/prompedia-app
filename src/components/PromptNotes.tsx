@@ -60,7 +60,8 @@ const PromptNotes = () => {
     const [publicItemsPerPage, setPublicItemsPerPage] = useState(10);
 
     // Filter & Pagination State
-    const [filter, setFilter] = useState('');
+    const [searchText, setSearchText] = useState('');
+    const [selectedTag, setSelectedTag] = useState<string | null>(null);
     const [visibilityFilter, setVisibilityFilter] = useState<VisibilityFilter>('all');
     const [itemsPerPage, setItemsPerPage] = useState(10);
     const [currentPage, setCurrentPage] = useState(1);
@@ -102,8 +103,8 @@ const PromptNotes = () => {
         userId: user?.id,
         page: currentPage,
         pageSize: itemsPerPage,
-        filterText: filter,
-        filterTag: filter, // Using same input for simplicity as per UI
+        filterText: searchText,
+        filterTag: selectedTag || '',
         visibility: visibilityFilter,
         enabled: !!user
     });
@@ -538,8 +539,8 @@ const PromptNotes = () => {
                     <div className="mb-4 sm:mb-6">
                         <input 
                             type="text" 
-                            value={filter} 
-                            onChange={e => setFilter(e.target.value)} 
+                            value={searchText} 
+                            onChange={e => setSearchText(e.target.value)} 
                             placeholder={t('prompt.search_placeholder')} 
                             className="w-full px-3 py-2.5 sm:py-2 bg-card border border-border rounded text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 transition-all duration-fast min-h-[44px] sm:min-h-0"
                             aria-label={t('prompt.search_placeholder')}
@@ -558,8 +559,8 @@ const PromptNotes = () => {
                     {/* Mobile Filter for Tags */}
                     <MobileFilterButton
                         tags={allUserTags}
-                        currentFilter={filter}
-                        onFilterChange={setFilter}
+                        currentFilter={selectedTag || ''}
+                        onFilterChange={(tag) => setSelectedTag(tag || null)}
                     />
 
                     <div className="min-h-[50vh]">
@@ -596,8 +597,8 @@ const PromptNotes = () => {
 
                 <FilterBar
                     tags={allUserTags}
-                    currentFilter={filter}
-                    onFilterChange={setFilter}
+                    currentFilter={selectedTag || ''}
+                    onFilterChange={(tag) => setSelectedTag(tag || null)}
                 />
             </div>
 

@@ -54,97 +54,90 @@ export const usePrompts = ({
         queryFn: async () => {
             if (!userId) return { prompts: [], total: 0 };
 
-            // Start building the query
-            let query = supabase
-                .from('prompts')
-                .select('*, prompt_contents(body), prompt_tags(tags(id, name)), users(username, display_name)', { count: 'exact' });
-
-            // Apply User Filter (Own prompts)
-            query = query.eq('user_id', userId);
-
-            // Apply Visibility Filter
-            if (visibility === 'public') {
-                query = query.eq('is_public', true);
-            } else if (visibility === 'private') {
-                query = query.eq('is_public', false);
-            }
-
-            // Apply Tag Filter efficiently
-            if (filterTag) {
-                // This is tricky in Supabase without a join table filter on the main query
-                // We use the simpler approach: filter referencing the join
-                // Note: .not('prompt_tags', 'is', null) isn't quite right for inner join logic in PostgREST
-                // Better approach with PostgREST is usually !inner join but JS client makes it subtle.
-                // For now, to keep it reliable without complex joins, we might have to filter client side OR use a better RPC.
-                // However, let's try the standard approach:
-                // We can't easily filter by tag name on the top level resource in standard PostgREST without embedding modification.
-                // So for standard pagination with tag filtering, we often need an RPC or modifying the query strategies.
-
-                // FALLBACK: If a tag is selected, we might search differently.
-                // But for the sake of "Server Side Pagination", we should try to use text search on tags if possible
-                // or just accept we might need to filter after fetch if we don't write an RPC.
-                // Given the constraints, let's implement RPC-less filtering if possible, or fall back to client side filtering behavior IF complex.
-                // actually, let's use the text search on the prompt body/title as that is straightforward.
-            }
-
-            if (filterText) {
-                // Using the specific search index/column
-                query = query.textSearch('title', filterText, { type: 'websearch', config: 'english' });
-                // OR simpler ilike for now to match behavior
-                // query = query.or(`title.ilike.%${filterText}%,prompt_contents.body.ilike.%${filterText}%`); 
-                // Note: prompt_contents.body is on a joined table, standard filtering won't work easily on it from parent.
-            }
-
-            // Server-side ordering
-            query = query.order('created_at', { ascending: false });
-
-            // Apply Pagination
-            const from = (page - 1) * pageSize;
-            const to = from + pageSize - 1;
-            query = query.range(from, to);
-
-            const { data, error, count } = await query;
+            // Use RPC function for comprehensive search across title, body, and tags
+            const { data, error } = await supabase.rpc('search_prompts', {
+                p_user_id: userId,
+                p_search_text: filterText || null,
+                p_tag_filter: filterTag || null,
+                p_visibility: visibility,
+                p_page: page,
+                p_page_size: pageSize
+            });
 
             if (error) throw error;
 
-            // Transform data
-            const promptsData = data as unknown as Prompt[];
-            const formattedPrompts: PromptUI[] = promptsData.map(p => {
-                const content = p.prompt_contents?.body || '';
+            // Handle empty results
+            if (!data || data.length === 0) {
+                return { prompts: [], total: 0 };
+            }
+
+            // Extract total count from first row (all rows have same total_count)
+            const totalCount = (data[0] as any).total_count || 0;
+
+            // Transform data from RPC function format to PromptUI format
+            // Supabase RPC returns JSONB as objects directly, not strings
+            const formattedPrompts: PromptUI[] = data.map((row: any) => {
+                // Handle prompt_contents - Supabase returns JSONB as object
+                let promptContents: { body: string } | null = null;
+                if (row.prompt_contents) {
+                    if (typeof row.prompt_contents === 'string') {
+                        // Handle edge case where it might be string
+                        try {
+                            promptContents = row.prompt_contents === 'null' ? null : JSON.parse(row.prompt_contents);
+                        } catch {
+                            promptContents = null;
+                        }
+                    } else if (typeof row.prompt_contents === 'object' && row.prompt_contents !== null) {
+                        promptContents = row.prompt_contents;
+                    }
+                }
+
+                // Handle prompt_tags - Supabase returns JSONB array as array directly
+                let promptTags: any[] = [];
+                if (row.prompt_tags) {
+                    if (Array.isArray(row.prompt_tags)) {
+                        promptTags = row.prompt_tags;
+                    } else if (typeof row.prompt_tags === 'string') {
+                        try {
+                            promptTags = JSON.parse(row.prompt_tags);
+                        } catch {
+                            promptTags = [];
+                        }
+                    }
+                }
+
+                // Handle users - Supabase returns JSONB as object
+                let users: { username: string; display_name: string | null } | null = null;
+                if (row.users) {
+                    if (typeof row.users === 'string') {
+                        try {
+                            users = row.users === 'null' ? null : JSON.parse(row.users);
+                        } catch {
+                            users = null;
+                        }
+                    } else if (typeof row.users === 'object' && row.users !== null) {
+                        users = row.users;
+                    }
+                }
+
+                const content = promptContents?.body || '';
                 return {
-                    id: p.id,
-                    user_id: p.user_id || '',
-                    title: p.title || t('prompt.untitled'),
+                    id: row.id,
+                    user_id: row.user_id || '',
+                    title: row.title || t('prompt.untitled'),
                     content: content,
                     description: content.length > 150 ? content.substring(0, 150) + '...' : content,
-                    is_public: Boolean(p.is_public),
-                    created_at: p.created_at,
-                    updated_at: p.updated_at || p.created_at,
-                    tags: p.prompt_tags
-                        ? p.prompt_tags
-                            .map(pt => pt.tags)
-                            .filter((t): t is Pick<Tag, 'id' | 'name'> => t !== null)
-                        : [],
-                    author: p.users?.display_name || p.users?.username || t('prompt.unknown_author')
+                    is_public: Boolean(row.is_public),
+                    created_at: row.created_at,
+                    updated_at: row.updated_at || row.created_at,
+                    tags: promptTags
+                        .map((pt: any) => pt?.tags)
+                        .filter((t: any): t is Pick<Tag, 'id' | 'name'> => t !== null && t !== undefined),
+                    author: users?.display_name || users?.username || t('prompt.unknown_author')
                 };
             });
 
-            // Client-side filtering fallback for things difficult to do server-side without RPC (like tag array filtering or deep join filtering)
-            // IF we did not filter by tag server-side.
-            let result = formattedPrompts;
-            if (filterTag) {
-                result = result.filter(p => p.tags.some(t => t.name === filterTag));
-            }
-            if (filterText && !filterText.includes(':')) { // simple text filter
-                const term = filterText.toLowerCase();
-                result = result.filter(p =>
-                    p.title.toLowerCase().includes(term) ||
-                    p.content.toLowerCase().includes(term) ||
-                    p.tags.some(t => t.name.toLowerCase().includes(term))
-                );
-            }
-
-            return { prompts: result, total: count || 0 };
+            return { prompts: formattedPrompts, total: totalCount };
         },
         enabled: enabled && !!userId,
         staleTime: 60 * 1000, // 1 minute

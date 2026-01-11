@@ -9,6 +9,22 @@ import type { AnyExtension } from '@tiptap/core';
 // Create lowlight instance with common languages (singleton pattern)
 const lowlight = createLowlight(common);
 
+// Create extension instances at module level to prevent duplicates
+// This ensures extensions are only created once, even in React StrictMode
+const starterKitExtension = StarterKit.configure({
+    codeBlock: false, // We use CodeBlockLowlight instead for syntax highlighting
+    heading: {
+        levels: [1, 2, 3, 4, 5, 6],
+    },
+});
+
+const typographyExtension = Typography;
+const underlineExtension = Underline;
+const codeBlockExtension = CodeBlockLowlight.configure({
+    lowlight,
+    defaultLanguage: 'plaintext',
+});
+
 export interface EditorExtensionsOptions {
     placeholder?: string;
 }
@@ -16,31 +32,20 @@ export interface EditorExtensionsOptions {
 /**
  * Creates TipTap editor extensions with proper configuration.
  * Best practices:
- * - Disable underline in StarterKit since we add it separately for better control
+ * - StarterKit does not include Underline by default, so we add it separately
  * - Use singleton pattern for lowlight instance
- * - Ensure no duplicate extensions
+ * - Create extension instances at module level to prevent duplicates in React StrictMode
  */
 export const createExtensions = (options: EditorExtensionsOptions = {}): AnyExtension[] => {
     const extensions: AnyExtension[] = [
-        StarterKit.configure({
-            codeBlock: false, // We use CodeBlockLowlight instead for syntax highlighting
-            heading: {
-                levels: [1, 2, 3, 4, 5, 6],
-            },
-            // Disable underline in StarterKit to avoid duplicate extension warning
-            // We add Underline extension separately for explicit control
-        }),
+        starterKitExtension,
         Placeholder.configure({
             placeholder: options.placeholder || 'Start writing...',
             emptyEditorClass: 'is-editor-empty',
         }),
-        Typography,
-        // Add Underline extension explicitly after disabling it in StarterKit
-        Underline,
-        CodeBlockLowlight.configure({
-            lowlight,
-            defaultLanguage: 'plaintext',
-        }),
+        typographyExtension,
+        underlineExtension,
+        codeBlockExtension,
     ];
 
     return extensions;
