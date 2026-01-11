@@ -1,11 +1,11 @@
 {
     "app": {
         "title": "prompedia.app",
-        "tagline": "Catatan prompt sederhana",
-        "description": "Catatan prompt sederhana. Privat secara default. Dicintai komunitas."
+        "tagline": "Aplikasi catatan prompt yang sederhana",
+        "description": "Aplikasi catatan prompt yang sederhana. Pribadi secara default. Dibuat untuk komunitas."
     },
     "geo": {
-        "semantic_description": "prompedia.app adalah aplikasi catatan pribadi sederhana untuk menyimpan dan berbagi prompt. Privat secara default. Aman. Dicintai komunitas.",
+        "semantic_description": "prompedia.app adalah aplikasi catatan pribadi sederhana untuk menyimpan dan berbagi prompt. Pribadi secara default. Aman. Dibuat untuk komunitas.",
         "keywords": "catatan prompt, penyimpanan prompt, berbagi prompt, sistem tag, manajemen prompt, perpustakaan prompt, prompt engineering, tool prompt AI"
     },
     "auth": {
@@ -40,13 +40,13 @@
         "content_placeholder": "Paste prompt di sini...",
         "tags_placeholder": "Tag (opsional, pisahkan dengan koma)",
         "public": "Publik",
-        "private": "Privat",
+        "private": "Pribadi",
         "save": "Simpan",
         "saving": "Menyimpan...",
         "update": "Perbarui",
         "cancel_edit": "Batal edit",
         "search_placeholder": "Cari prompt…",
-        "delete_confirm": "Hapus Prompt",
+        "delete_confirm": "Hapus prompt",
         "delete_warning": "Tindakan ini tidak dapat dibatalkan. Prompt ini akan dihapus secara permanen.",
         "created_by": "Dibuat oleh {{author}}",
         "by": "oleh {{author}}",
@@ -75,7 +75,7 @@
         "cancel": "Batal",
         "edit": "Edit",
         "close": "Tutup",
-        "copy_prompt": "Salin Prompt",
+        "copy_prompt": "Salin prompt",
         "share": "Bagikan",
         "save": "Simpan",
         "confirm": "Konfirmasi"
@@ -145,15 +145,15 @@
             "storage_desc": "Simpan semua prompt AI Anda di satu tempat yang aman dan mudah diakses.",
             "tags": "Sistem Tag",
             "tags_desc": "Organisir prompt dengan sistem tag yang fleksibel untuk pencarian cepat.",
-            "sharing": "Berbagi Publik/Privat",
-            "sharing_desc": "Pilih apakah prompt Anda bersifat publik untuk dibagikan atau tetap privat.",
+        "sharing": "Berbagi Publik/Pribadi",
+        "sharing_desc": "Pilih apakah prompt Anda bersifat publik untuk dibagikan atau tetap pribadi.",
             "editor": "Editor Markdown",
             "editor_desc": "Editor markdown yang powerful dengan preview mode untuk penulisan prompt yang rapi.",
             "search": "Pencarian Real-time",
             "search_desc": "Cari prompt berdasarkan judul, konten, atau tag dengan pencarian instan."
         },
         "security_title": "Keamanan & Privasi",
-        "security_desc": "prompedia.app memprioritaskan privasi dan keamanan data Anda. Semua prompt secara default bersifat privat, hanya Anda yang dapat mengaksesnya. Data disimpan dengan aman menggunakan enkripsi dan Row Level Security (RLS) di tingkat database. Anda memiliki kontrol penuh atas data Anda.",
+        "security_desc": "prompedia.app memprioritaskan privasi dan keamanan data Anda. Semua prompt secara default bersifat pribadi, hanya Anda yang dapat mengaksesnya. Data disimpan dengan aman menggunakan enkripsi dan Row Level Security (RLS) di tingkat database. Anda memiliki kontrol penuh atas data Anda.",
         "target_title": "Untuk Siapa?",
         "target_desc": "prompedia.app cocok untuk prompt engineers, AI developers, content creators, dan siapa saja yang bekerja dengan AI setiap hari. Aplikasi ini dirancang untuk siapa pun yang ingin mengelola dan mengorganisir prompt AI mereka dengan lebih baik.",
         "related_title": "Pelajari Lebih Lanjut",
@@ -163,11 +163,11 @@
         "title": "Pertanyaan yang Sering Diajukan",
         "description": "Pertanyaan umum tentang prompedia.app dan cara menggunakannya.",
         "q1": "Apa itu prompedia.app?",
-        "a1": "prompedia.app adalah aplikasi catatan pribadi sederhana untuk menyimpan dan berbagi prompt. Aplikasi ini membantu Anda mengelola library prompt AI dengan sistem tag, pencarian real-time, dan kemampuan berbagi publik atau privat.",
+        "a1": "prompedia.app adalah aplikasi catatan pribadi sederhana untuk menyimpan dan berbagi prompt. Aplikasi ini membantu Anda mengelola library prompt AI dengan sistem tag, pencarian real-time, dan kemampuan berbagi publik atau pribadi.",
         "q2": "Apakah data saya aman?",
-        "a2": "Ya, keamanan data adalah prioritas utama. Semua prompt secara default bersifat privat dan hanya dapat diakses oleh Anda. Data disimpan dengan aman menggunakan enkripsi dan Row Level Security (RLS) di tingkat database.",
+        "a2": "Ya, keamanan data adalah prioritas utama. Semua prompt secara default bersifat pribadi dan hanya dapat diakses oleh Anda. Data disimpan dengan aman menggunakan enkripsi dan Row Level Security (RLS) di tingkat database.",
         "q3": "Bagaimana cara berbagi prompt?",
-        "a3": "Anda dapat mengatur prompt menjadi publik saat membuat atau mengedit. Prompt publik akan mendapatkan link unik yang dapat dibagikan. Link ini dapat diakses oleh siapa saja tanpa perlu login.",
+        "a3": "Anda dapat mengatur prompt menjadi publik saat membuat atau mengedit. Prompt publik akan mendapatkan tautan unik yang dapat dibagikan. Tautan ini dapat diakses oleh siapa saja tanpa perlu masuk.",
         "q4": "Apakah ada batasan penggunaan?",
         "a4": "Tidak ada batasan jumlah prompt yang dapat Anda simpan. Aplikasi ini dirancang untuk menampung library prompt Anda tanpa batasan.",
         "q5": "Bagaimana cara mengorganisir prompt?",

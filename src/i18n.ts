@@ -15,8 +15,23 @@ i18n
         },
         fallbackLng: 'en',
         debug: false,
+        // Pluralization configuration
+        pluralSeparator: '_',
+        contextSeparator: '_',
+        // Interpolation configuration
         interpolation: {
-            escapeValue: false
+            escapeValue: false,
+            formatSeparator: ',',
+            format: (value, format) => {
+                if (format === 'number') {
+                    return new Intl.NumberFormat(i18n.language).format(value);
+                }
+                return value;
+            }
+        },
+        // React-specific options
+        react: {
+            useSuspense: false
         }
     });
 

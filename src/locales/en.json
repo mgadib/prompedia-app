@@ -46,7 +46,7 @@
         "update": "Update",
         "cancel_edit": "Cancel edit",
         "search_placeholder": "Search prompts…",
-        "delete_confirm": "Delete Prompt",
+        "delete_confirm": "Delete prompt",
         "delete_warning": "This action cannot be undone. This prompt will be permanently deleted.",
         "created_by": "Created by {{author}}",
         "by": "by {{author}}",
@@ -54,17 +54,20 @@
         "unknown_author": "Unknown"
     },
     "list": {
-        "title": "All Prompts ({{count}})",
+        "title_one": "All Prompt (1)",
+        "title_other": "All Prompts ({{count}})",
         "all": "All",
         "empty": "No prompts saved yet",
         "no_match": "No matching prompts found",
-        "showing": "Showing {{start}} - {{end}} of {{total}} prompts",
+        "showing_one": "Showing {{start}} - {{end}} of 1 prompt",
+        "showing_other": "Showing {{start}} - {{end}} of {{total}} prompts",
         "show": "Show:",
         "previous": "Previous",
         "next": "Next"
     },
     "sidebar": {
-        "title": "All Tags ({{count}})",
+        "title_one": "All Tag (1)",
+        "title_other": "All Tags ({{count}})",
         "no_tags": "No tags yet",
         "clear_filter": "Clear filter"
     },
@@ -75,7 +78,7 @@
         "cancel": "Cancel",
         "edit": "Edit",
         "close": "Close",
-        "copy_prompt": "Copy Prompt",
+        "copy_prompt": "Copy prompt",
         "share": "Share",
         "save": "Save",
         "confirm": "Confirm"
