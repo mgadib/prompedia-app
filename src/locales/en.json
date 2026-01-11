@@ -1,8 +1,8 @@
 {
     "app": {
         "title": "prompedia.app",
-        "tagline": "A simple personal notes to save and share prompts",
-        "description": "prompedia.app - A simple personal notes to save and share prompts. Private by default. Secure. Community-loved."
+        "tagline": "A simple prompt notes",
+        "description": "Simple prompt notes. Private by default. Community-loved."
     },
     "geo": {
         "semantic_description": "prompedia.app is a simple personal notes app to save and share prompts. Private by default. Secure. Community-loved.",
@@ -124,7 +124,7 @@
     },
     "footer": {
         "brand": "prompedia.app",
-        "tagline": "A simple personal notes to save and share prompts",
+        "tagline": "A simple prompt notes",
         "made_with": "Made with",
         "for_community": "for community",
         "links": {

@@ -35,7 +35,7 @@ const components: Components = {
     pre({ children, ...props }) {
         return (
             <pre
-                className="code-block overflow-x-auto p-4 rounded-md bg-code border border-code-border font-mono text-sm leading-relaxed my-4"
+                className="code-block overflow-x-auto p-4 rounded-md bg-code border border-code-border font-mono text-sm leading-relaxed my-4 custom-scrollbar"
                 {...props}
             >
                 {children}
@@ -110,7 +110,7 @@ const components: Components = {
     ),
     // Tables (GFM)
     table: ({ children, ...props }) => (
-        <div className="overflow-x-auto my-4">
+        <div className="overflow-x-auto my-4 custom-scrollbar">
             <table className="min-w-full border-collapse border border-border" {...props}>
                 {children}
             </table>

@@ -1,8 +1,8 @@
 {
     "app": {
         "title": "prompedia.app",
-        "tagline": "Catatan pribadi sederhana untuk menyimpan dan berbagi prompt",
-        "description": "prompedia.app - Catatan pribadi sederhana untuk menyimpan dan berbagi prompt. Privat secara default. Aman. Dicintai komunitas."
+        "tagline": "Catatan prompt sederhana",
+        "description": "Catatan prompt sederhana. Privat secara default. Dicintai komunitas."
     },
     "geo": {
         "semantic_description": "prompedia.app adalah aplikasi catatan pribadi sederhana untuk menyimpan dan berbagi prompt. Privat secara default. Aman. Dicintai komunitas.",
@@ -124,7 +124,7 @@
     },
     "footer": {
         "brand": "prompedia.app",
-        "tagline": "Catatan pribadi sederhana untuk menyimpan dan berbagi prompt",
+        "tagline": "Catatan prompt sederhana",
         "made_with": "Dibuat dengan",
         "for_community": "untuk komunitas",
         "links": {

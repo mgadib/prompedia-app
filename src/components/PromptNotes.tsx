@@ -382,20 +382,27 @@ const PromptNotes = () => {
                         <h3 className="text-base font-semibold text-foreground flex-1">{selectedPrompt.title}</h3>
                         <Button variant="ghost" size="sm" className="flex-shrink-0" onClick={() => setSelectedPrompt(null)} aria-label={t('actions.close')}>{t('actions.close')}</Button>
                     </div>
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                        {selectedPrompt.tags && selectedPrompt.tags.map(tag => (
-                            <TagChipStatic key={tag.id} variant="default" size="sm">{tag.name}</TagChipStatic>
-                        ))}
+                    <div className="flex items-center gap-2 flex-wrap">
+                        {selectedPrompt.tags && selectedPrompt.tags.length > 0 && (
+                            <>
+                                {selectedPrompt.tags.map(tag => (
+                                    <TagChipStatic key={tag.id} variant="default" size="sm">{tag.name}</TagChipStatic>
+                                ))}
+                                <span className="text-xs text-muted-foreground/40">•</span>
+                            </>
+                        )}
                         <StatusBadge variant={selectedPrompt.is_public ? 'public' : 'private'} size="sm">
                             {selectedPrompt.is_public ? t('prompt.public') : t('prompt.private')}
                         </StatusBadge>
+                        <span className="text-xs text-muted-foreground/40">•</span>
                         <span className="text-xs text-muted-foreground">
                             {formatDate(selectedPrompt.created_at, i18n.language)}
                         </span>
+                        <span className="text-xs text-muted-foreground/40">•</span>
                         <StatusBadge variant="date" size="sm">@{selectedPrompt.author}</StatusBadge>
                     </div>
                 </div>
-                <div className="flex-1 overflow-y-auto p-4 sm:p-5">
+                <div className="flex-1 overflow-y-auto p-4 sm:p-5 custom-scrollbar">
                     <MarkdownPreview content={selectedPrompt.content} className="text-sm" />
                 </div>
                 <div className="px-4 sm:px-5 py-3 sm:py-4 border-t border-border flex justify-end gap-2">
@@ -480,10 +487,8 @@ const PromptNotes = () => {
                     <div className="flex flex-col lg:flex-row gap-4 items-start">
                         <div className="flex-1 w-full min-w-0">
                             <div className="mb-6">
-                                <div className="bg-card border border-border rounded-sm p-5 text-left">
-                                    <h1 className="text-2xl font-bold tracking-tight sm:text-3xl mb-2 text-foreground">{t('app.title')}</h1>
-                                    <h2 className="text-xl font-semibold tracking-tight sm:text-2xl mb-2 text-foreground">{t('app.tagline')}</h2>
-                                    <p className="text-sm text-muted-foreground">{t('app.description')}</p>
+                                <div className="bg-card border-2 border-primary/30 dark:border-primary/20 rounded shadow-sm p-4 sm:p-5">
+                                    <p className="text-sm sm:text-base text-foreground leading-relaxed">{t('app.description')}</p>
                                 </div>
                             </div>
                             <section className="min-h-[50vh]">

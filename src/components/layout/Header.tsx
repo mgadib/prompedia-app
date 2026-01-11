@@ -23,12 +23,12 @@ export const Header = ({ variant = 'default', userEmail, onLogout }: HeaderProps
                         <img src="/logo.png" alt="Logo" className="w-8 h-8 object-contain transition-transform duration-normal group-hover:scale-105" />
                         <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-primary opacity-0 group-hover:opacity-100 transition-opacity duration-normal" />
                     </div>
-                    <div className="flex flex-col">
-                        <h1 className="text-sm font-bold text-foreground tracking-tight leading-none hidden sm:block">
-                            {t('app.title')}
+                    <div className="flex flex-col gap-0.5">
+                        <h1 className="text-sm font-bold text-foreground tracking-tight leading-none hidden sm:block uppercase">
+                            PROMPEDIA.APP
                         </h1>
                         <span className="text-2xs text-muted-foreground/60 uppercase tracking-widest font-medium hidden sm:block">
-                            {t('app.tagline')}
+                            A simple prompt notes
                         </span>
                     </div>
                 </Link>

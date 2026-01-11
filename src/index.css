@@ -316,6 +316,7 @@
     font-size: 16px;
     -webkit-overflow-scrolling: touch;
     scroll-behavior: smooth;
+    overflow-x: hidden;
   }
 
   body {
@@ -352,27 +353,79 @@
     -webkit-tap-highlight-color: transparent;
   }
 
-  /* Custom scrollbar - minimal */
+  /* Custom scrollbar - smooth & professional */
   .custom-scrollbar {
     scrollbar-width: thin;
     scrollbar-color: hsl(var(--border)) transparent;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
   }
 
   .custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
+    width: 8px;
+    height: 8px;
   }
 
   .custom-scrollbar::-webkit-scrollbar-track {
     background: transparent;
+    border-radius: 4px;
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb {
     background: hsl(var(--border));
-    border-radius: 3px;
+    border-radius: 4px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    transition: background-color var(--duration-normal) var(--ease-default),
+                border-color var(--duration-normal) var(--ease-default);
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background: hsl(var(--muted-foreground) / 0.3);
+    border-color: transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:active {
+    background: hsl(var(--muted-foreground) / 0.4);
+  }
+
+  /* Global scrollbar styling for body - smooth & professional */
+  body {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  body::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  body::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 5px;
+  }
+
+  body::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 5px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    transition: background-color var(--duration-normal) var(--ease-default),
+                border-color var(--duration-normal) var(--ease-default);
+  }
+
+  body::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.3);
+    border-color: transparent;
+  }
+
+  body::-webkit-scrollbar-thumb:active {
+    background: hsl(var(--muted-foreground) / 0.4);
+  }
+
+  /* Smooth scrolling for all scrollable elements */
+  * {
+    scroll-behavior: smooth;
   }
 
   /* Selection */
