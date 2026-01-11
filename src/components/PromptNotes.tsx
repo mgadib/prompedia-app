@@ -359,11 +359,11 @@ const PromptNotes = () => {
     const websiteSchema = {
         "@context": "https://schema.org",
         "@type": "WebSite",
-        "name": "Prompedia",
-        "url": "https://prompedia.ai/",
+        "name": "prompedia.app",
+        "url": "https://prompedia.app/",
         "potentialAction": {
             "@type": "SearchAction",
-            "target": "https://prompedia.ai/?q={search_term_string}",
+            "target": "https://prompedia.app/?q={search_term_string}",
             "query-input": "required name=search_term_string"
         }
     };
@@ -481,6 +481,7 @@ const PromptNotes = () => {
                         <div className="flex-1 w-full min-w-0">
                             <div className="mb-6">
                                 <div className="bg-card border border-border rounded-sm p-5 text-left">
+                                    <h1 className="text-2xl font-bold tracking-tight sm:text-3xl mb-2 text-foreground">{t('app.title')}</h1>
                                     <h2 className="text-xl font-semibold tracking-tight sm:text-2xl mb-2 text-foreground">{t('app.tagline')}</h2>
                                     <p className="text-sm text-muted-foreground">{t('app.description')}</p>
                                 </div>

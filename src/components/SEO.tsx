@@ -22,6 +22,23 @@ export const SEO = ({ title, description, canonical, type = 'website', image, no
     const currentUrl = canonical || window.location.href;
     const locale = i18n.language;
 
+    // Organization schema - always included
+    const organizationSchema = {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "prompedia.app",
+        "url": "https://prompedia.app",
+        "description": defaultDescription,
+        "sameAs": ["https://kerjabaik.ai"]
+    };
+
+    // Combine organization schema with custom structured data
+    const allStructuredData = structuredData 
+        ? Array.isArray(structuredData) 
+            ? [organizationSchema, ...structuredData]
+            : [organizationSchema, structuredData]
+        : organizationSchema;
+
     return (
         <Helmet>
             <html lang={locale} />
@@ -53,9 +70,15 @@ export const SEO = ({ title, description, canonical, type = 'website', image, no
             {noIndex && <meta name="robots" content="noindex, follow" />}
 
             {/* JSON-LD Structured Data */}
-            {structuredData && (
+            {Array.isArray(allStructuredData) ? (
+                allStructuredData.map((schema, index) => (
+                    <script key={index} type="application/ld+json">
+                        {JSON.stringify(schema)}
+                    </script>
+                ))
+            ) : (
                 <script type="application/ld+json">
-                    {JSON.stringify(structuredData)}
+                    {JSON.stringify(allStructuredData)}
                 </script>
             )}
         </Helmet>

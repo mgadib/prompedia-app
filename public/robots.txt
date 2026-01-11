@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /admin
 Disallow: /private
-Sitemap: https://prompedia.ai/sitemap.xml
+Sitemap: https://prompedia.app/sitemap.xml

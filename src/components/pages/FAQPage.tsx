@@ -6,9 +6,13 @@ import { Footer } from '@/components/layout/Footer';
 const FAQPage = () => {
     const { t } = useTranslation();
 
-    // Placeholder data - ideally this comes from structured data/CMS or locale file
     const faqs = [
-        { q: "What is Prompedia?", a: t('geo.semantic_description') },
+        { q: t('faq.q1'), a: t('faq.a1') },
+        { q: t('faq.q2'), a: t('faq.a2') },
+        { q: t('faq.q3'), a: t('faq.a3') },
+        { q: t('faq.q4'), a: t('faq.a4') },
+        { q: t('faq.q5'), a: t('faq.a5') },
+        { q: t('faq.q6'), a: t('faq.a6') },
     ];
 
     const faqSchema = {
@@ -24,25 +28,54 @@ const FAQPage = () => {
         }))
     };
 
+    const breadcrumbSchema = {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {
+                "@type": "ListItem",
+                "position": 1,
+                "name": t('footer.links.home'),
+                "item": window.location.origin + "/"
+            },
+            {
+                "@type": "ListItem",
+                "position": 2,
+                "name": t('faq.title'),
+                "item": window.location.origin + "/faq"
+            }
+        ]
+    };
+
     return (
         <div className="min-h-screen bg-background font-sans flex flex-col">
             <SEO
-                title="FAQ"
-                description="Frequently Asked Questions about Prompedia"
+                title={t('faq.title')}
+                description={t('faq.description')}
                 canonical={window.location.origin + '/faq'}
-                structuredData={faqSchema}
+                structuredData={[faqSchema, breadcrumbSchema]}
             />
             <Header variant="public" />
             <main className="max-w-4xl mx-auto px-4 py-12 flex-1 w-full">
-                <h1 className="text-page-title mb-8">FAQ</h1>
-                <div className="space-y-6">
+                <h1 className="text-page-title mb-8">{t('faq.title')}</h1>
+                <div className="space-y-6 mb-8">
                     {faqs.map((faq, index) => (
                         <div key={index} className="bg-card border border-border rounded-sm p-6">
-                            <h3 className="text-base font-medium mb-2 text-foreground">{faq.q}</h3>
-                            <p className="text-muted-foreground">{faq.a}</p>
+                            <h3 className="text-lg font-semibold mb-3 text-foreground">{faq.q}</h3>
+                            <p className="text-base text-muted-foreground leading-relaxed">{faq.a}</p>
                         </div>
                     ))}
                 </div>
+                
+                <section className="mt-8 pt-6 border-t border-border">
+                    <h2 className="text-xl font-semibold mb-2 text-foreground">{t('faq.related_title')}</h2>
+                    <p className="text-sm text-muted-foreground mb-4">{t('faq.related_desc')}</p>
+                    <div className="flex flex-wrap gap-3">
+                        <a href="/about" className="text-sm text-primary hover:underline font-medium">{t('footer.links.about')}</a>
+                        <span className="text-muted-foreground">•</span>
+                        <a href="/use-cases" className="text-sm text-primary hover:underline font-medium">{t('footer.links.use_cases')}</a>
+                    </div>
+                </section>
             </main>
             <Footer />
         </div>

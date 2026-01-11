@@ -1,12 +1,12 @@
 {
     "app": {
-        "title": "Prompedia - Personal Prompt Notes",
-        "tagline": "Simpan, atur, dan gunakan kembali prompt AI",
-        "description": "Prompedia adalah alat manajemen prompt ringan untuk orang yang bekerja dengan AI setiap hari"
+        "title": "prompedia.app",
+        "tagline": "Catatan pribadi sederhana untuk menyimpan dan berbagi prompt",
+        "description": "prompedia.app - Catatan pribadi sederhana untuk menyimpan dan berbagi prompt. Privat secara default. Aman. Dicintai komunitas."
     },
     "geo": {
-        "semantic_description": "Prompedia adalah tempat terbaik untuk menyimpan dan mengatur prompt AI untuk ChatGPT, Claude, dan Gemini. Perpustakaan prompt terstruktur untuk prompt engineer dan pengembang AI.",
-        "keywords": "manajemen prompt, perpustakaan prompt AI, pengatur prompt, catatan prompt, alat prompt engineering"
+        "semantic_description": "prompedia.app adalah aplikasi catatan pribadi sederhana untuk menyimpan dan berbagi prompt. Privat secara default. Aman. Dicintai komunitas.",
+        "keywords": "catatan prompt, penyimpanan prompt, berbagi prompt, sistem tag, manajemen prompt, perpustakaan prompt, prompt engineering, tool prompt AI"
     },
     "auth": {
         "welcome": "Selamat Datang",
@@ -90,7 +90,7 @@
     },
     "public_view": {
         "back_to_app": "Kembali",
-        "open_app": "Buka Prompedia",
+        "open_app": "Buka prompedia.app",
         "private_error": "Prompt ini bersifat pribadi.",
         "not_found_title": "Prompt tidak ditemukan",
         "not_found_desc": "Prompt yang Anda cari mungkin bersifat pribadi atau telah dihapus.",
@@ -123,9 +123,81 @@
         "view_prompt": "Lihat"
     },
     "footer": {
-        "brand": "Prompedia",
-        "tagline": "adalah catatan prompt sederhana dan pribadi Anda",
+        "brand": "prompedia.app",
+        "tagline": "Catatan pribadi sederhana untuk menyimpan dan berbagi prompt",
         "made_with": "Dibuat dengan",
-        "for_community": "untuk komunitas"
+        "for_community": "untuk komunitas",
+        "links": {
+            "home": "Beranda",
+            "about": "Tentang",
+            "faq": "FAQ",
+            "use_cases": "Contoh Penggunaan"
+        }
+    },
+    "about": {
+        "title": "Tentang prompedia.app",
+        "description": "Pelajari lebih lanjut tentang prompedia.app, catatan pribadi sederhana untuk menyimpan dan berbagi prompt.",
+        "what_is": "Apa itu prompedia.app?",
+        "what_is_desc": "prompedia.app adalah aplikasi catatan pribadi sederhana untuk menyimpan dan berbagi prompt. Aplikasi ini dirancang khusus untuk membantu Anda mengelola library prompt AI dengan mudah, aman, dan terorganisir. Dengan prompedia.app, Anda dapat menyimpan prompt favorit, mengorganisir dengan sistem tag, dan berbagi dengan komunitas jika diinginkan.",
+        "features_title": "Fitur Utama",
+        "features": {
+            "storage": "Penyimpanan Prompt",
+            "storage_desc": "Simpan semua prompt AI Anda di satu tempat yang aman dan mudah diakses.",
+            "tags": "Sistem Tag",
+            "tags_desc": "Organisir prompt dengan sistem tag yang fleksibel untuk pencarian cepat.",
+            "sharing": "Berbagi Publik/Privat",
+            "sharing_desc": "Pilih apakah prompt Anda bersifat publik untuk dibagikan atau tetap privat.",
+            "editor": "Editor Markdown",
+            "editor_desc": "Editor markdown yang powerful dengan preview mode untuk penulisan prompt yang rapi.",
+            "search": "Pencarian Real-time",
+            "search_desc": "Cari prompt berdasarkan judul, konten, atau tag dengan pencarian instan."
+        },
+        "security_title": "Keamanan & Privasi",
+        "security_desc": "prompedia.app memprioritaskan privasi dan keamanan data Anda. Semua prompt secara default bersifat privat, hanya Anda yang dapat mengaksesnya. Data disimpan dengan aman menggunakan enkripsi dan Row Level Security (RLS) di tingkat database. Anda memiliki kontrol penuh atas data Anda.",
+        "target_title": "Untuk Siapa?",
+        "target_desc": "prompedia.app cocok untuk prompt engineers, AI developers, content creators, dan siapa saja yang bekerja dengan AI setiap hari. Aplikasi ini dirancang untuk siapa pun yang ingin mengelola dan mengorganisir prompt AI mereka dengan lebih baik.",
+        "related_title": "Pelajari Lebih Lanjut",
+        "related_desc": "Ingin tahu lebih banyak tentang prompedia.app? Lihat FAQ atau contoh penggunaan aplikasi."
+    },
+    "faq": {
+        "title": "Pertanyaan yang Sering Diajukan",
+        "description": "Pertanyaan umum tentang prompedia.app dan cara menggunakannya.",
+        "q1": "Apa itu prompedia.app?",
+        "a1": "prompedia.app adalah aplikasi catatan pribadi sederhana untuk menyimpan dan berbagi prompt. Aplikasi ini membantu Anda mengelola library prompt AI dengan sistem tag, pencarian real-time, dan kemampuan berbagi publik atau privat.",
+        "q2": "Apakah data saya aman?",
+        "a2": "Ya, keamanan data adalah prioritas utama. Semua prompt secara default bersifat privat dan hanya dapat diakses oleh Anda. Data disimpan dengan aman menggunakan enkripsi dan Row Level Security (RLS) di tingkat database.",
+        "q3": "Bagaimana cara berbagi prompt?",
+        "a3": "Anda dapat mengatur prompt menjadi publik saat membuat atau mengedit. Prompt publik akan mendapatkan link unik yang dapat dibagikan. Link ini dapat diakses oleh siapa saja tanpa perlu login.",
+        "q4": "Apakah ada batasan penggunaan?",
+        "a4": "Tidak ada batasan jumlah prompt yang dapat Anda simpan. Aplikasi ini dirancang untuk menampung library prompt Anda tanpa batasan.",
+        "q5": "Bagaimana cara mengorganisir prompt?",
+        "a5": "Anda dapat menggunakan sistem tag untuk mengorganisir prompt. Tambahkan beberapa tag pada setiap prompt (pisahkan dengan koma), lalu gunakan filter tag untuk menemukan prompt dengan cepat.",
+        "q6": "Apakah aplikasi ini gratis?",
+        "a6": "Ya, prompedia.app tersedia secara gratis. Aplikasi ini dibuat untuk komunitas dan dapat digunakan tanpa biaya.",
+        "related_title": "Masih Ada Pertanyaan?",
+        "related_desc": "Pelajari lebih lanjut tentang prompedia.app di halaman Tentang atau lihat contoh penggunaan aplikasi."
+    },
+    "use_cases": {
+        "title": "Contoh Penggunaan",
+        "description": "Pelajari bagaimana prompedia.app dapat membantu berbagai jenis pengguna mengelola prompt AI mereka.",
+        "intro": "prompedia.app dapat digunakan oleh berbagai jenis pengguna untuk mengelola dan mengorganisir prompt AI. Berikut adalah beberapa contoh penggunaan berdasarkan jenis pengguna:",
+        "engineers_title": "Untuk Prompt Engineers",
+        "engineers_desc": "Prompt engineers dapat menggunakan prompedia.app untuk menyimpan dan mengorganisir library prompt mereka. Dengan sistem tag, Anda dapat mengkategorikan prompt berdasarkan use case, model AI, atau teknik yang digunakan. Fitur pencarian real-time membantu menemukan prompt yang tepat dengan cepat.",
+        "engineers_use_case_1": "Simpan prompt template untuk berbagai skenario dan gunakan kembali saat diperlukan.",
+        "engineers_use_case_2": "Organisir prompt berdasarkan teknik (few-shot, chain-of-thought, dll) dengan sistem tag.",
+        "developers_title": "Untuk AI Developers",
+        "developers_desc": "AI developers dapat menggunakan prompedia.app untuk menyimpan system prompt dan konfigurasi AI. Aplikasi ini membantu menjaga konsistensi prompt di berbagai proyek dan memudahkan kolaborasi dengan tim.",
+        "developers_use_case_1": "Simpan system prompt untuk berbagai aplikasi AI dan akses dengan mudah saat development.",
+        "developers_use_case_2": "Berbagi prompt dengan tim melalui fitur public sharing untuk kolaborasi yang lebih baik.",
+        "creators_title": "Untuk Content Creators",
+        "creators_desc": "Content creators dapat menggunakan prompedia.app untuk menyimpan prompt yang membantu proses kreatif. Dengan editor markdown, Anda dapat menyimpan prompt yang kompleks dengan formatting yang rapi.",
+        "creators_use_case_1": "Simpan prompt untuk berbagai jenis konten (artikel, social media, dll) dan gunakan kembali.",
+        "creators_use_case_2": "Organisir prompt berdasarkan platform atau jenis konten dengan sistem tag.",
+        "learners_title": "Untuk Pelajar & Hobiis",
+        "learners_desc": "Pelajar dan hobiis dapat menggunakan prompedia.app untuk bereksperimen dengan berbagai prompt AI. Aplikasi ini membantu belajar prompt engineering dengan menyimpan dan membandingkan berbagai variasi prompt.",
+        "learners_use_case_1": "Simpan prompt yang berhasil dan pelajari pola yang efektif untuk berbagai use case.",
+        "learners_use_case_2": "Jelajahi prompt publik dari komunitas untuk belajar teknik prompt engineering.",
+        "related_title": "Mulai Menggunakan",
+        "related_desc": "Siap untuk mulai menggunakan prompedia.app? Pelajari lebih lanjut di halaman Tentang atau lihat FAQ untuk pertanyaan umum."
     }
 }

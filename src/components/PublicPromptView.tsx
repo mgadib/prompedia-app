@@ -123,23 +123,27 @@ const PublicPromptView = () => {
         toast.success(t('toast.copied'));
     };
 
-    // Structured Data
+    // Structured Data - Article Schema
     const promptSchema = prompt ? {
         "@context": "https://schema.org",
-        "@type": "CreativeWork",
-        "name": prompt.title,
+        "@type": "Article",
         "headline": prompt.title,
         "author": {
             "@type": "Person",
             "name": prompt.author
         },
-        "dateCreated": prompt.created_at,
-        "text": prompt.content,
+        "datePublished": prompt.created_at,
+        "dateModified": prompt.updated_at || prompt.created_at,
+        "articleBody": prompt.content,
         "keywords": prompt.tags?.map(tag => tag.name).join(", "),
-        "interactionStatistic": {
-            "@type": "InteractionCounter",
-            "interactionType": "https://schema.org/ShareAction",
-            "userInteractionCount": 0 // Placeholder
+        "publisher": {
+            "@type": "Organization",
+            "name": "prompedia.app",
+            "url": "https://prompedia.app"
+        },
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": window.location.href
         }
     } : null;
 
@@ -262,8 +266,8 @@ const PublicPromptView = () => {
                                     )}
                                 </div>
                                 <div className="p-3 sm:p-4 mt-2 border-t border-border/50">
-                                    <Button variant="brand" size="sm" className="w-full text-xs font-semibold py-3 sm:py-4" asChild aria-label={t('public_view.open_app', 'Open Prompedia')}>
-                                        <Link to="/">{t('public_view.open_app', 'Open Prompedia')}</Link>
+                                    <Button variant="brand" size="sm" className="w-full text-xs font-semibold py-3 sm:py-4" asChild aria-label={t('public_view.open_app', 'Open prompedia.app')}>
+                                        <Link to="/">{t('public_view.open_app', 'Open prompedia.app')}</Link>
                                     </Button>
                                 </div>
                             </div>

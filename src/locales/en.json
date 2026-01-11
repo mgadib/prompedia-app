@@ -1,12 +1,12 @@
 {
     "app": {
-        "title": "Prompedia - Personal Prompt Notes",
-        "tagline": "Store, organize, and reuse AI prompts",
-        "description": "Prompedia is a lightweight prompt management tool for people who work with AI every day"
+        "title": "prompedia.app",
+        "tagline": "A simple personal notes to save and share prompts",
+        "description": "prompedia.app - A simple personal notes to save and share prompts. Private by default. Secure. Community-loved."
     },
     "geo": {
-        "semantic_description": "Prompedia is the best place to store and organize AI prompts for ChatGPT, Claude, and Gemini. A structured prompt library for prompt engineers and AI developers.",
-        "keywords": "prompt management, AI prompt library, prompt organizer, prompt notes, prompt engineering tools"
+        "semantic_description": "prompedia.app is a simple personal notes app to save and share prompts. Private by default. Secure. Community-loved.",
+        "keywords": "prompt notes, prompt storage, prompt sharing, tag system, prompt management, prompt library, prompt engineering, AI prompt tools"
     },
     "auth": {
         "welcome": "Welcome",
@@ -90,7 +90,7 @@
     },
     "public_view": {
         "back_to_app": "Back",
-        "open_app": "Open Prompedia",
+        "open_app": "Open prompedia.app",
         "private_error": "This prompt is private.",
         "not_found_title": "Prompt not found",
         "not_found_desc": "The prompt you are looking for might be private or deleted.",
@@ -123,9 +123,81 @@
         "view_prompt": "View"
     },
     "footer": {
-        "brand": "Prompedia",
-        "tagline": "is your simple and personal prompt notes",
+        "brand": "prompedia.app",
+        "tagline": "A simple personal notes to save and share prompts",
         "made_with": "Made with",
-        "for_community": "for community"
+        "for_community": "for community",
+        "links": {
+            "home": "Home",
+            "about": "About",
+            "faq": "FAQ",
+            "use_cases": "Use Cases"
+        }
+    },
+    "about": {
+        "title": "About prompedia.app",
+        "description": "Learn more about prompedia.app, a simple personal notes to save and share prompts.",
+        "what_is": "What is prompedia.app?",
+        "what_is_desc": "prompedia.app is a simple personal notes app to save and share prompts. This app is designed specifically to help you manage your AI prompt library easily, securely, and in an organized way. With prompedia.app, you can save your favorite prompts, organize them with a tag system, and share with the community if desired.",
+        "features_title": "Main Features",
+        "features": {
+            "storage": "Prompt Storage",
+            "storage_desc": "Save all your AI prompts in one safe and easily accessible place.",
+            "tags": "Tag System",
+            "tags_desc": "Organize prompts with a flexible tag system for quick search.",
+            "sharing": "Public/Private Sharing",
+            "sharing_desc": "Choose whether your prompts are public to share or remain private.",
+            "editor": "Markdown Editor",
+            "editor_desc": "Powerful markdown editor with preview mode for neat prompt writing.",
+            "search": "Real-time Search",
+            "search_desc": "Search prompts by title, content, or tags with instant search."
+        },
+        "security_title": "Security & Privacy",
+        "security_desc": "prompedia.app prioritizes your privacy and data security. All prompts are private by default, only you can access them. Data is stored securely using encryption and Row Level Security (RLS) at the database level. You have full control over your data.",
+        "target_title": "Who is it for?",
+        "target_desc": "prompedia.app is suitable for prompt engineers, AI developers, content creators, and anyone who works with AI every day. This app is designed for anyone who wants to manage and organize their AI prompts better.",
+        "related_title": "Learn More",
+        "related_desc": "Want to know more about prompedia.app? Check out the FAQ or see examples of how to use the app."
+    },
+    "faq": {
+        "title": "Frequently Asked Questions",
+        "description": "Common questions about prompedia.app and how to use it.",
+        "q1": "What is prompedia.app?",
+        "a1": "prompedia.app is a simple personal notes app to save and share prompts. This app helps you manage your AI prompt library with a tag system, real-time search, and public or private sharing capabilities.",
+        "q2": "Is my data safe?",
+        "a2": "Yes, data security is a top priority. All prompts are private by default and can only be accessed by you. Data is stored securely using encryption and Row Level Security (RLS) at the database level.",
+        "q3": "How do I share prompts?",
+        "a3": "You can set prompts to public when creating or editing. Public prompts will get a unique link that can be shared. This link can be accessed by anyone without needing to log in.",
+        "q4": "Are there usage limits?",
+        "a4": "There are no limits on the number of prompts you can save. This app is designed to hold your prompt library without limits.",
+        "q5": "How do I organize prompts?",
+        "a5": "You can use the tag system to organize prompts. Add multiple tags to each prompt (separated by commas), then use tag filters to find prompts quickly.",
+        "q6": "Is this app free?",
+        "a6": "Yes, prompedia.app is available for free. This app is made for the community and can be used at no cost.",
+        "related_title": "Still Have Questions?",
+        "related_desc": "Learn more about prompedia.app on the About page or see examples of how to use the app."
+    },
+    "use_cases": {
+        "title": "Use Cases",
+        "description": "Learn how prompedia.app can help different types of users manage their AI prompts.",
+        "intro": "prompedia.app can be used by various types of users to manage and organize AI prompts. Here are some use case examples based on user types:",
+        "engineers_title": "For Prompt Engineers",
+        "engineers_desc": "Prompt engineers can use prompedia.app to store and organize their prompt library. With the tag system, you can categorize prompts by use case, AI model, or technique used. Real-time search helps find the right prompt quickly.",
+        "engineers_use_case_1": "Save prompt templates for various scenarios and reuse when needed.",
+        "engineers_use_case_2": "Organize prompts by technique (few-shot, chain-of-thought, etc.) with the tag system.",
+        "developers_title": "For AI Developers",
+        "developers_desc": "AI developers can use prompedia.app to store system prompts and AI configurations. This app helps maintain prompt consistency across projects and makes team collaboration easier.",
+        "developers_use_case_1": "Save system prompts for various AI applications and access easily during development.",
+        "developers_use_case_2": "Share prompts with the team through public sharing feature for better collaboration.",
+        "creators_title": "For Content Creators",
+        "creators_desc": "Content creators can use prompedia.app to store prompts that help the creative process. With the markdown editor, you can store complex prompts with neat formatting.",
+        "creators_use_case_1": "Save prompts for various content types (articles, social media, etc.) and reuse.",
+        "creators_use_case_2": "Organize prompts by platform or content type with the tag system.",
+        "learners_title": "For Learners & Hobbyists",
+        "learners_desc": "Learners and hobbyists can use prompedia.app to experiment with various AI prompts. This app helps learn prompt engineering by storing and comparing various prompt variations.",
+        "learners_use_case_1": "Save successful prompts and learn effective patterns for various use cases.",
+        "learners_use_case_2": "Explore public prompts from the community to learn prompt engineering techniques.",
+        "related_title": "Get Started",
+        "related_desc": "Ready to start using prompedia.app? Learn more on the About page or check the FAQ for common questions."
     }
 }

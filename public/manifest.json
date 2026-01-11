@@ -1,7 +1,7 @@
 {
-  "name": "Prompedia AI - Prompt Engineering Laboratory",
-  "short_name": "Prompedia AI",
-  "description": "Advanced prompt engineering platform for building, optimizing, and managing AI prompts with 6 thinking modes and AI model integration",
+  "name": "prompedia.app",
+  "short_name": "prompedia.app",
+  "description": "A simple personal notes to save and share prompts. Private by default. Secure. Community-loved.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0f172a",
