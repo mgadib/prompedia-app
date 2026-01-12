@@ -79,9 +79,9 @@ export const Pagination: React.FC<PaginationProps> = ({
     }
 
     return (
-        <div className={cn('flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4 border-t border-border', className)}>
+        <div className={cn('flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4', className)}>
             {/* Results Info */}
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground/80">
                 {totalItems === 0 ? (
                     <span>{t('pagination.no_results', 'No results')}</span>
                 ) : (
@@ -100,7 +100,7 @@ export const Pagination: React.FC<PaginationProps> = ({
                 {/* Items Per Page Selector */}
                 {showItemsPerPage && onItemsPerPageChange && (
                     <div className="flex items-center gap-2">
-                        <label htmlFor="items-per-page" className="text-sm text-muted-foreground whitespace-nowrap">
+                        <label htmlFor="items-per-page" className="text-sm text-muted-foreground/80 whitespace-nowrap">
                             {t('pagination.items_per_page', 'Items per page')}:
                         </label>
                         <select
@@ -112,7 +112,7 @@ export const Pagination: React.FC<PaginationProps> = ({
                                 // Reset to first page when changing items per page
                                 onPageChange(1);
                             }}
-                            className="text-sm bg-card border border-border rounded-sm px-2 py-1.5 text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 cursor-pointer transition-colors duration-fast hover:border-primary/20"
+                            className="text-sm bg-transparent border border-border/50 rounded-sm px-2.5 py-1.5 text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50 focus:ring-offset-1 cursor-pointer transition-all duration-fast hover:border-primary/30 hover:bg-secondary/30"
                             aria-label={t('pagination.items_per_page', 'Items per page')}
                         >
                             {itemsPerPageOptions.map((option) => (
@@ -125,15 +125,15 @@ export const Pagination: React.FC<PaginationProps> = ({
                 )}
 
                 {/* Page Navigation */}
-                {totalPages > 1 && (
-                    <div className="flex items-center gap-1">
+                {safeTotalPages > 1 && (
+                    <div className="flex items-center gap-0.5">
                         {/* First Page */}
                         <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => onPageChange(1)}
                             disabled={currentPage === 1}
-                            className="h-8 w-8 p-0"
+                            className="h-8 w-8 p-0 opacity-60 hover:opacity-100 transition-opacity duration-fast"
                             aria-label={t('pagination.first_page', 'First page')}
                             title={t('pagination.first_page', 'First page')}
                         >
@@ -146,7 +146,7 @@ export const Pagination: React.FC<PaginationProps> = ({
                             size="sm"
                             onClick={() => onPageChange(currentPage - 1)}
                             disabled={currentPage === 1}
-                            className="h-8 w-8 p-0"
+                            className="h-8 w-8 p-0 opacity-60 hover:opacity-100 transition-opacity duration-fast"
                             aria-label={t('pagination.previous_page', 'Previous page')}
                             title={t('pagination.previous_page', 'Previous page')}
                         >
@@ -196,7 +196,7 @@ export const Pagination: React.FC<PaginationProps> = ({
                             size="sm"
                             onClick={() => onPageChange(currentPage + 1)}
                             disabled={currentPage >= safeTotalPages}
-                            className="h-8 w-8 p-0"
+                            className="h-8 w-8 p-0 opacity-60 hover:opacity-100 transition-opacity duration-fast"
                             aria-label={t('pagination.next_page', 'Next page')}
                             title={t('pagination.next_page', 'Next page')}
                         >
@@ -209,7 +209,7 @@ export const Pagination: React.FC<PaginationProps> = ({
                             size="sm"
                             onClick={() => onPageChange(safeTotalPages)}
                             disabled={currentPage >= safeTotalPages}
-                            className="h-8 w-8 p-0"
+                            className="h-8 w-8 p-0 opacity-60 hover:opacity-100 transition-opacity duration-fast"
                             aria-label={t('pagination.last_page', 'Last page')}
                             title={t('pagination.last_page', 'Last page')}
                         >
@@ -220,7 +220,7 @@ export const Pagination: React.FC<PaginationProps> = ({
 
                 {/* Page Info (for mobile/simple view) */}
                 {safeTotalPages > 1 && (
-                    <div className="text-sm text-muted-foreground sm:hidden text-center">
+                    <div className="text-sm text-muted-foreground/80 sm:hidden text-center">
                         {t('pagination.page_info', {
                             current: currentPage,
                             total: safeTotalPages,
