@@ -65,6 +65,17 @@
         "previous": "Previous",
         "next": "Next"
     },
+    "pagination": {
+        "no_results": "No results",
+        "showing": "Showing {{start}} - {{end}} of {{total}}",
+        "items_per_page": "Items per page",
+        "first_page": "First page",
+        "previous_page": "Previous page",
+        "next_page": "Next page",
+        "last_page": "Last page",
+        "go_to_page": "Go to page {{page}}",
+        "page_info": "Page {{current}} of {{total}}"
+    },
     "sidebar": {
         "title_one": "All Tag (1)",
         "title_other": "All Tags ({{count}})",
@@ -202,5 +213,50 @@
         "learners_use_case_2": "Explore public prompts from the community to learn prompt engineering techniques.",
         "related_title": "Get Started",
         "related_desc": "Ready to start using prompedia.app? Learn more on the About page or check the FAQ for common questions."
+    },
+    "theme": {
+        "toggle": "Toggle theme",
+        "light": "Light",
+        "dark": "Dark",
+        "system": "System",
+        "current": "Current theme: {{theme}}"
+    },
+    "command_palette": {
+        "search": "Search commands...",
+        "no_results": "No results found.",
+        "category": {
+            "actions": "Actions",
+            "navigation": "Navigation",
+            "view": "View",
+            "search": "Search"
+        }
+    },
+    "shortcuts": {
+        "title": "Keyboard Shortcuts",
+        "hint": "Press Escape to close",
+        "global": {
+            "title": "Global Shortcuts",
+            "command_palette": "Open command palette",
+            "new_prompt": "Create new prompt",
+            "focus_search": "Focus search input",
+            "save": "Save prompt (when editing)",
+            "show_shortcuts": "Show keyboard shortcuts",
+            "close_modals": "Close modals and dialogs"
+        },
+        "editor": {
+            "title": "Editor Shortcuts",
+            "bold": "Toggle bold",
+            "italic": "Toggle italic",
+            "underline": "Toggle underline",
+            "inline_code": "Toggle inline code",
+            "strikethrough": "Toggle strikethrough",
+            "heading1": "Heading 1",
+            "heading2": "Heading 2",
+            "heading3": "Heading 3",
+            "bullet_list": "Bullet list",
+            "numbered_list": "Numbered list",
+            "blockquote": "Blockquote",
+            "code_block": "Code block"
+        }
     }
 }

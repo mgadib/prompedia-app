@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Tables } from '@/integrations/supabase/types';
 import { Copy, FileText } from "lucide-react";
 import { useTranslation } from 'react-i18next';
 import { toast } from "sonner";
 import { MarkdownPreview } from '@/components/editor';
 import { formatDate } from '@/lib/date-utils';
 import { SEO } from './SEO';
+import { PromptUI, Prompt } from '@/types/prompts';
+import { transformPromptToUI } from '@/lib/prompt-transformers';
 
 // UI Components
 import { Button } from '@/components/ui/button';
@@ -15,23 +16,6 @@ import { StatusBadge } from '@/components/ui/status-badge';
 import { TagChipStatic } from '@/components/ui/tag-chip';
 import { Footer } from '@/components/layout/Footer';
 import { Header } from '@/components/layout/Header';
-
-interface Tag extends Tables<'tags'> { }
-
-interface Prompt extends Tables<'prompts'> {
-    prompt_contents: { body: string } | null;
-    prompt_tags: { tags: Pick<Tag, 'id' | 'name'> | null }[];
-    users: {
-        username: string;
-        display_name: string | null;
-    } | null;
-}
-
-interface PromptUI extends Omit<Prompt, 'prompt_tags' | 'users' | 'prompt_contents'> {
-    content: string;
-    tags: Pick<Tag, 'id' | 'name'>[];
-    author: string;
-}
 
 const PublicPromptView = () => {
     const { id } = useParams<{ id: string }>();
@@ -86,25 +70,9 @@ const PublicPromptView = () => {
                     throw new Error(t('public_view.private_error'));
                 }
 
-                // Safe cast
+                // Safe cast and transform
                 const p = data as unknown as Prompt;
-
-                const formattedPrompt: PromptUI = {
-                    id: p.id,
-                    user_id: p.user_id || '',
-                    title: p.title || t('prompt.untitled'),
-                    content: p.prompt_contents?.body || '',
-                    is_public: p.is_public || false,
-                    created_at: p.created_at,
-                    updated_at: p.updated_at || p.created_at,
-                    tags: p.prompt_tags
-                        ? p.prompt_tags
-                            .map(pt => pt.tags)
-                            .filter((t): t is Pick<Tag, 'id' | 'name'> => t !== null)
-                        : [],
-                    author: p.users?.display_name || p.users?.username || t('prompt.unknown_author')
-                };
-
+                const formattedPrompt = transformPromptToUI(p, t);
                 setPrompt(formattedPrompt);
             } catch (err: any) {
                 console.error('Error fetching prompt:', err);

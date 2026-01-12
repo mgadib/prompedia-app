@@ -3,13 +3,7 @@ import { TagChip } from '@/components/ui/tag-chip';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from 'react-i18next';
 import { Filter, X, ChevronDown, ChevronUp } from 'lucide-react';
-
-// Define Interface locally or import from shared types
-interface Tag {
-    id: string;
-    name: string;
-    user_id: string | null; // Allow null to match Supabase type if needed
-}
+import { Tag } from '@/types/prompts';
 
 interface FilterBarProps {
     tags: Tag[];

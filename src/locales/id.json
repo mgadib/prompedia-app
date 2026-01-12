@@ -63,6 +63,17 @@
         "previous": "Sebelumnya",
         "next": "Selanjutnya"
     },
+    "pagination": {
+        "no_results": "Tidak ada hasil",
+        "showing": "Menampilkan {{start}} - {{end}} dari {{total}}",
+        "items_per_page": "Item per halaman",
+        "first_page": "Halaman pertama",
+        "previous_page": "Halaman sebelumnya",
+        "next_page": "Halaman berikutnya",
+        "last_page": "Halaman terakhir",
+        "go_to_page": "Ke halaman {{page}}",
+        "page_info": "Halaman {{current}} dari {{total}}"
+    },
     "sidebar": {
         "title": "Semua Tag ({{count}})",
         "no_tags": "Belum ada tag",
@@ -199,5 +210,50 @@
         "learners_use_case_2": "Jelajahi prompt publik dari komunitas untuk belajar teknik prompt engineering.",
         "related_title": "Mulai Menggunakan",
         "related_desc": "Siap untuk mulai menggunakan prompedia.app? Pelajari lebih lanjut di halaman Tentang atau lihat FAQ untuk pertanyaan umum."
+    },
+    "theme": {
+        "toggle": "Ubah tema",
+        "light": "Terang",
+        "dark": "Gelap",
+        "system": "Sistem",
+        "current": "Tema saat ini: {{theme}}"
+    },
+    "command_palette": {
+        "search": "Cari perintah...",
+        "no_results": "Tidak ada hasil ditemukan.",
+        "category": {
+            "actions": "Aksi",
+            "navigation": "Navigasi",
+            "view": "Tampilan",
+            "search": "Pencarian"
+        }
+    },
+    "shortcuts": {
+        "title": "Pintasan Keyboard",
+        "hint": "Tekan Escape untuk menutup",
+        "global": {
+            "title": "Pintasan Global",
+            "command_palette": "Buka command palette",
+            "new_prompt": "Buat prompt baru",
+            "focus_search": "Fokus ke pencarian",
+            "save": "Simpan prompt (saat mengedit)",
+            "show_shortcuts": "Tampilkan pintasan keyboard",
+            "close_modals": "Tutup modal dan dialog"
+        },
+        "editor": {
+            "title": "Pintasan Editor",
+            "bold": "Toggle tebal",
+            "italic": "Toggle miring",
+            "underline": "Toggle garis bawah",
+            "inline_code": "Toggle kode inline",
+            "strikethrough": "Toggle coret",
+            "heading1": "Heading 1",
+            "heading2": "Heading 2",
+            "heading3": "Heading 3",
+            "bullet_list": "Daftar bullet",
+            "numbered_list": "Daftar nomor",
+            "blockquote": "Kutipan",
+            "code_block": "Blok kode"
+        }
     }
 }

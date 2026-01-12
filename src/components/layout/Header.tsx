@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom';
-import { Moon, Sun, LogOut } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 interface HeaderProps {
     variant?: 'default' | 'authenticated' | 'public';
@@ -12,7 +12,6 @@ interface HeaderProps {
 
 export const Header = ({ variant = 'default', userEmail, onLogout }: HeaderProps) => {
     const { t, i18n } = useTranslation();
-    const { theme, setTheme } = useTheme();
 
     return (
         <header className="border-b border-border bg-card/95 backdrop-blur-sm sticky top-0 z-40 shadow-xs">
@@ -46,15 +45,7 @@ export const Header = ({ variant = 'default', userEmail, onLogout }: HeaderProps
                     </button>
 
                     {/* Theme Toggle */}
-                    <button
-                        onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                        className="h-8 w-8 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary/80 rounded-sm transition-all duration-fast ease-default hover:transition-duration-normal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
-                        title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-                        aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-                    >
-                        <Sun className="h-4 w-4 rotate-0 scale-100 transition-all duration-fast dark:-rotate-90 dark:scale-0" />
-                        <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all duration-fast dark:rotate-0 dark:scale-100" />
-                    </button>
+                    <ThemeToggle />
 
                     {/* Authenticated User Info */}
                     {variant === 'authenticated' && userEmail && (

@@ -4,23 +4,11 @@ import { StatusBadge } from '@/components/ui/status-badge';
 import { TagChipStatic } from '@/components/ui/tag-chip';
 import { Button } from '@/components/ui/button';
 import { PromptCardSkeleton } from '@/components/ui/skeleton';
+import { Pagination } from '@/components/ui/pagination';
 import { Share2, Copy, Trash2, Loader2, FileText, Search } from "lucide-react";
 import { useTranslation } from 'react-i18next';
 import { formatDate } from '@/lib/date-utils';
-
-// Reuse interface or import from types if we move it
-interface PromptUI {
-    id: string;
-    title: string;
-    content: string;
-    description: string;
-    is_public: boolean;
-    created_at: string;
-    updated_at: string;
-    tags: { id: string; name: string }[];
-    author: string;
-    user_id: string;
-}
+import { PromptUI } from '@/types/prompts';
 
 interface PromptListProps {
     prompts: PromptUI[];
@@ -169,42 +157,18 @@ export const PromptList: React.FC<PromptListProps> = memo(({
 
             {/* Pagination Controls */}
             {totalItems > 0 && (
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-6 pt-4 border-t border-border">
-                    <div className="text-sm text-muted-foreground">
-                        {t('list.showing', { start: Math.min(totalItems, (currentPage - 1) * itemsPerPage + 1), end: Math.min(totalItems, currentPage * itemsPerPage), total: totalItems })}
-                    </div>
-                    <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2">
-                            <span className="text-sm text-muted-foreground">{t('list.show')}</span>
-                            <select
-                                value={itemsPerPage}
-                                onChange={(e) => { onItemsPerPageChange(Number(e.target.value)); }}
-                                className="text-sm bg-transparent border-none p-0 focus:outline-none focus:ring-0 text-foreground font-medium cursor-pointer"
-                            >
-                                <option value={10}>10</option>
-                                <option value={50}>50</option>
-                            </select>
-                        </div>
-                        <div className="flex gap-1">
-                            <button
-                                onClick={() => onPageChange(Math.max(1, currentPage - 1))}
-                                disabled={currentPage === 1}
-                                className="text-sm font-medium text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors duration-fast ease-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 rounded-sm px-2 py-1"
-                                aria-label={t('list.previous')}
-                            >
-                                {t('list.previous')}
-                            </button>
-                            <button
-                                onClick={() => onPageChange(Math.min(Math.ceil(totalItems / itemsPerPage), currentPage + 1))}
-                                disabled={currentPage >= Math.ceil(totalItems / itemsPerPage)}
-                                className="text-sm font-medium text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors duration-fast ease-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 rounded-sm px-2 py-1"
-                                aria-label={t('list.next')}
-                            >
-                                {t('list.next')}
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                <Pagination
+                    currentPage={currentPage}
+                    totalPages={Math.ceil(totalItems / itemsPerPage)}
+                    totalItems={totalItems}
+                    itemsPerPage={itemsPerPage}
+                    onPageChange={onPageChange}
+                    onItemsPerPageChange={onItemsPerPageChange}
+                    itemsPerPageOptions={[10, 25, 50, 100]}
+                    showItemsPerPage={true}
+                    showPageNumbers={true}
+                    className="mt-6"
+                />
             )}
         </div>
     );
