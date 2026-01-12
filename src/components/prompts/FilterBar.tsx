@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import { TagChip } from '@/components/ui/tag-chip';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from 'react-i18next';
@@ -12,7 +12,7 @@ interface FilterBarProps {
 }
 
 // Mobile Filter Button Component
-export const MobileFilterButton: React.FC<FilterBarProps> = ({ tags, currentFilter, onFilterChange }) => {
+const MobileFilterButtonComponent: React.FC<FilterBarProps> = ({ tags, currentFilter, onFilterChange }) => {
     const { t } = useTranslation();
     const [isOpen, setIsOpen] = useState(false);
 
@@ -81,8 +81,10 @@ export const MobileFilterButton: React.FC<FilterBarProps> = ({ tags, currentFilt
     );
 };
 
+export const MobileFilterButton = memo(MobileFilterButtonComponent);
+
 // Desktop Sidebar Component
-export const FilterBar: React.FC<FilterBarProps> = ({ tags, currentFilter, onFilterChange }) => {
+const FilterBarComponent: React.FC<FilterBarProps> = ({ tags, currentFilter, onFilterChange }) => {
     const { t } = useTranslation();
 
     return (
@@ -122,3 +124,4 @@ export const FilterBar: React.FC<FilterBarProps> = ({ tags, currentFilter, onFil
     );
 };
 
+export const FilterBar = memo(FilterBarComponent);

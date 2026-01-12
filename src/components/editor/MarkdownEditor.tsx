@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import { useTranslation } from 'react-i18next';
 import { Eye, Edit3 } from 'lucide-react';
@@ -182,15 +182,24 @@ export const MarkdownEditor = ({
         [placeholder]
     );
 
+    // Memoize onChange callback to prevent editor recreation
+    const handleUpdate = useCallback(
+        ({ editor }: { editor: ReturnType<typeof useEditor> }) => {
+            const markdown = editorToMarkdown(editor);
+            onChange(markdown);
+        },
+        [onChange]
+    );
+
     // Create editor instance with stable configuration
+    // useEditor handles its own memoization internally based on extensions array reference
+    // Setting immediatelyRender: false helps prevent duplicate extension warnings in React StrictMode
     const editor = useEditor({
         extensions,
         content: markdownToHtml(value),
         editable: !disabled,
-        onUpdate: ({ editor }) => {
-            const markdown = editorToMarkdown(editor);
-            onChange(markdown);
-        },
+        immediatelyRender: false, // Defer rendering to prevent duplicate extensions in StrictMode
+        onUpdate: handleUpdate,
         // Strip external formatting on paste
         editorProps: {
             handlePaste: (view, event) => {
@@ -227,6 +236,15 @@ export const MarkdownEditor = ({
             }
         }
     }, [value, editor]);
+
+    // Cleanup editor on unmount to prevent memory leaks
+    useEffect(() => {
+        return () => {
+            if (editor) {
+                editor.destroy();
+            }
+        };
+    }, [editor]);
 
     // Update editable state
     useEffect(() => {

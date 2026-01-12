@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
 import { PromptUI, UsePromptsOptions } from '@/types/prompts';
 import { transformSupabasePromptToUI } from '@/lib/prompt-transformers';
+import { queryKeys } from '@/lib/query-keys';
 
 // Re-export for backward compatibility
 export type { PromptUI } from '@/types/prompts';
@@ -19,7 +20,7 @@ export const usePrompts = ({
     const { t } = useTranslation();
 
     return useQuery({
-        queryKey: ['prompts', userId, page, pageSize, filterText, filterTag, visibility],
+        queryKey: queryKeys.prompts.list(userId, { page, pageSize, filterText, filterTag, visibility }),
         queryFn: async () => {
             if (!userId) return { prompts: [], total: 0 };
 

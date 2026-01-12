@@ -3,15 +3,19 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Suspense, lazy } from "react";
 import PromptNotes from "@/components/PromptNotes";
-import PublicPromptView from "@/components/PublicPromptView";
-import AboutPage from "@/components/pages/AboutPage";
-import FAQPage from "@/components/pages/FAQPage";
-import UseCasesPage from "@/components/pages/UseCasesPage";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 import { SEO } from "@/components/SEO";
 import { useTranslation } from "react-i18next";
 import { useEffect } from "react";
+
+// Lazy load routes for code splitting
+const AboutPage = lazy(() => import("@/components/pages/AboutPage"));
+const FAQPage = lazy(() => import("@/components/pages/FAQPage"));
+const UseCasesPage = lazy(() => import("@/components/pages/UseCasesPage"));
+const PublicPromptView = lazy(() => import("@/components/PublicPromptView"));
 
 // Custom retry function with exponential backoff for rate limiting
 const retryWithBackoff = (failureCount: number, error: unknown): boolean => {
@@ -71,12 +75,82 @@ const App = () => {
           >
             <SEO />
             <Routes>
-              <Route path="/" element={<PromptNotes />} />
-              <Route path="/about" element={<AboutPage />} />
-              <Route path="/faq" element={<FAQPage />} />
-              <Route path="/use-cases" element={<UseCasesPage />} />
-
-              <Route path="/share/:id" element={<PublicPromptView />} />
+              <Route 
+                path="/" 
+                element={
+                  <ErrorBoundary>
+                    <PromptNotes />
+                  </ErrorBoundary>
+                } 
+              />
+              <Route 
+                path="/about" 
+                element={
+                  <ErrorBoundary>
+                    <Suspense fallback={
+                      <div className="min-h-screen flex items-center justify-center bg-background">
+                        <div className="flex flex-col items-center gap-4">
+                          <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
+                          <p className="text-sm text-muted-foreground">Loading...</p>
+                        </div>
+                      </div>
+                    }>
+                      <AboutPage />
+                    </Suspense>
+                  </ErrorBoundary>
+                } 
+              />
+              <Route 
+                path="/faq" 
+                element={
+                  <ErrorBoundary>
+                    <Suspense fallback={
+                      <div className="min-h-screen flex items-center justify-center bg-background">
+                        <div className="flex flex-col items-center gap-4">
+                          <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
+                          <p className="text-sm text-muted-foreground">Loading...</p>
+                        </div>
+                      </div>
+                    }>
+                      <FAQPage />
+                    </Suspense>
+                  </ErrorBoundary>
+                } 
+              />
+              <Route 
+                path="/use-cases" 
+                element={
+                  <ErrorBoundary>
+                    <Suspense fallback={
+                      <div className="min-h-screen flex items-center justify-center bg-background">
+                        <div className="flex flex-col items-center gap-4">
+                          <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
+                          <p className="text-sm text-muted-foreground">Loading...</p>
+                        </div>
+                      </div>
+                    }>
+                      <UseCasesPage />
+                    </Suspense>
+                  </ErrorBoundary>
+                } 
+              />
+              <Route 
+                path="/share/:id" 
+                element={
+                  <ErrorBoundary>
+                    <Suspense fallback={
+                      <div className="min-h-screen flex items-center justify-center bg-background">
+                        <div className="flex flex-col items-center gap-4">
+                          <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
+                          <p className="text-sm text-muted-foreground">Loading...</p>
+                        </div>
+                      </div>
+                    }>
+                      <PublicPromptView />
+                    </Suspense>
+                  </ErrorBoundary>
+                } 
+              />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </BrowserRouter>

@@ -44,7 +44,13 @@ const PublicPromptView = () => {
                     })));
                 }
             } catch (err) {
-                console.error('Error fetching recent prompts:', err);
+                // Structured error logging
+                if (import.meta.env.DEV) {
+                    console.error('Error fetching recent prompts:', {
+                        error: err,
+                        message: err instanceof Error ? err.message : String(err),
+                    });
+                }
             }
         };
 
@@ -74,9 +80,22 @@ const PublicPromptView = () => {
                 const p = data as unknown as Prompt;
                 const formattedPrompt = transformPromptToUI(p, t);
                 setPrompt(formattedPrompt);
-            } catch (err: any) {
-                console.error('Error fetching prompt:', err);
-                setError(err.message || t('public_view.not_found_title'));
+            } catch (err) {
+                // Structured error logging
+                const errorMessage = err instanceof Error 
+                    ? err.message 
+                    : (err && typeof err === 'object' && 'message' in err)
+                        ? String((err as { message: unknown }).message)
+                        : t('public_view.not_found_title');
+                
+                if (import.meta.env.DEV) {
+                    console.error('Error fetching prompt:', {
+                        error: err,
+                        message: errorMessage,
+                        promptId: id,
+                    });
+                }
+                setError(errorMessage);
             } finally {
                 setLoading(false);
             }

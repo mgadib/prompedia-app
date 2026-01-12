@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { MarkdownEditor } from '@/components/editor';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/ui/status-badge';
@@ -19,7 +19,7 @@ interface PromptEditorProps {
     saving: boolean;
 }
 
-export const PromptEditor: React.FC<PromptEditorProps> = ({
+const PromptEditorComponent: React.FC<PromptEditorProps> = ({
     title,
     setTitle,
     content,
@@ -108,3 +108,5 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({
         </div>
     );
 };
+
+export const PromptEditor = memo(PromptEditorComponent);

@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useIdleLogout } from '@/hooks/use-idle-logout';
+import { useDebounce } from '@/hooks/use-debounce';
 import { toast } from 'sonner';
 import { useTheme } from 'next-themes';
 
@@ -10,25 +11,20 @@ import { useAuth } from '@/hooks/use-auth';
 import { usePublicPrompts } from '@/hooks/use-public-prompts';
 import { usePromptMutations } from '@/hooks/use-prompt-mutations';
 import { usePrompts } from '@/hooks/use-prompts';
+import { useTags } from '@/hooks/use-tags';
 import { useCommandPalette } from '@/hooks/use-command-palette';
 import { useGlobalShortcuts, ShortcutDefinition } from '@/hooks/use-keyboard-shortcuts';
 
 // Types
 import { PromptUI, Tag } from '@/types/prompts';
 
+// Utils
+import { extractErrorMessage } from '@/lib/error-handler';
+
 // Components
-import { AuthScreen } from '@/components/auth/AuthScreen';
-import { PromptList } from '@/components/prompts/PromptList';
-import { PromptEditor } from '@/components/prompts/PromptEditor';
-import { FilterBar, MobileFilterButton } from '@/components/prompts/FilterBar';
-import { PromptDetailModal } from '@/components/prompts/PromptDetailModal';
-import { DeleteConfirmModal, LogoutConfirmModal } from '@/components/prompts/ConfirmModals';
-import { CommandPalette } from '@/components/command-palette/CommandPalette';
-import { ShortcutsHelpDialog } from '@/components/command-palette/ShortcutsHelpDialog';
-import { TagChip } from '@/components/ui/tag-chip';
+import { LandingPage } from '@/components/prompts/LandingPage';
+import { AuthenticatedView } from '@/components/prompts/AuthenticatedView';
 import { SEO } from '@/components/SEO';
-import { Footer } from '@/components/layout/Footer';
-import { Header } from '@/components/layout/Header';
 
 type VisibilityFilter = 'all' | 'public' | 'private';
 
@@ -77,6 +73,7 @@ const PromptNotes = () => {
 
     // Filter & Pagination State
     const [searchText, setSearchText] = useState('');
+    const debouncedSearchText = useDebounce(searchText, 300);
     const [selectedTag, setSelectedTag] = useState<string | null>(null);
     const [visibilityFilter, setVisibilityFilter] = useState<VisibilityFilter>('all');
     const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -91,10 +88,10 @@ const PromptNotes = () => {
     const [selectedPrompt, setSelectedPrompt] = useState<PromptUI | null>(null);
     const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
-    // Tags
-    const [allUserTags, setAllUserTags] = useState<Tag[]>([]);
+    // Tags - use React Query hook for caching
+    const { data: allUserTags = [] } = useTags(user?.id);
 
-    // Queries
+    // Queries - use debounced search text for API calls
     const {
         data: promptsData,
         isLoading: isPromptsLoading,
@@ -102,7 +99,7 @@ const PromptNotes = () => {
         userId: user?.id,
         page: currentPage,
         pageSize: itemsPerPage,
-        filterText: searchText,
+        filterText: debouncedSearchText,
         filterTag: selectedTag || '',
         visibility: visibilityFilter,
         enabled: !!user,
@@ -112,7 +109,7 @@ const PromptNotes = () => {
     const totalItems = promptsData?.total || 0;
 
     // Mutations
-    const { savePrompt, deletePrompt, loadTags } = usePromptMutations();
+    const { savePrompt, deletePrompt } = usePromptMutations();
 
     // Side Effects
     useEffect(() => {
@@ -129,13 +126,6 @@ const PromptNotes = () => {
         onLogout: () => setShowAuth(true),
         enabled: !!user,
     });
-
-    // Load Tags
-    useEffect(() => {
-        if (user) {
-            loadTags(user.id).then(setAllUserTags).catch(console.error);
-        }
-    }, [user, loadTags]);
 
     // ========================================
     // CORE HANDLERS - Defined first to avoid temporal dead zone
@@ -160,15 +150,19 @@ const PromptNotes = () => {
             setTagsInput('');
             setIsPublic(false);
             setEditingId(null);
-            
-            // Reload tags
-            const tags = await loadTags(user.id);
-            setAllUserTags(tags);
         } catch (err) {
-            console.error(err);
+            // Structured error logging
+            if (import.meta.env.DEV) {
+                console.error('Failed to save prompt:', {
+                    error: err,
+                    message: extractErrorMessage(err),
+                    userId: user?.id,
+                    editingId,
+                });
+            }
             toast.error(t('toast.save_failed'));
         }
-    }, [user, title, content, tagsInput, isPublic, editingId, savePrompt, loadTags, t]);
+    }, [user, title, content, tagsInput, isPublic, editingId, savePrompt, t]);
 
     const handleCopy = useCallback(async (text: string) => {
         await navigator.clipboard.writeText(text);
@@ -240,7 +234,7 @@ const PromptNotes = () => {
         onFocusSearch: handleFocusSearch,
         isEditing: !!editingId,
         currentPrompt: selectedPrompt,
-        tags: allUserTags,
+        tags: allUserTags as Tag[],
         recentPrompts: prompts.slice(0, 5),
     });
 
@@ -372,13 +366,21 @@ const PromptNotes = () => {
                 setSelectedPrompt(null);
             }
         } catch (err) {
-            console.error(err);
+            // Structured error logging
+            if (import.meta.env.DEV) {
+                console.error('Failed to delete prompt:', {
+                    error: err,
+                    message: extractErrorMessage(err),
+                    promptId: id,
+                    userId: user?.id,
+                });
+            }
             toast.error(t('toast.delete_failed', 'Failed to delete prompt'));
         }
     };
 
     // Render Helpers
-    const websiteSchema = {
+    const websiteSchema = useMemo(() => ({
         "@context": "https://schema.org",
         "@type": "WebSite",
         "name": "prompedia.app",
@@ -388,7 +390,7 @@ const PromptNotes = () => {
             "target": "https://prompedia.app/?q={search_term_string}",
             "query-input": "required name=search_term_string"
         }
-    };
+    }), []);
 
     if (authLoading) {
         return (
@@ -402,237 +404,98 @@ const PromptNotes = () => {
     }
 
     if (showAuth || !user) {
-        // Landing Page Mode
-        const filteredPublicPrompts = selectedPublicTag
-            ? publicPrompts.filter(p => p.tags.some(t => t.name === selectedPublicTag))
-            : publicPrompts;
-        const paginatedPublicPrompts = filteredPublicPrompts.slice(
-            (publicCurrentPage - 1) * publicItemsPerPage,
-            publicCurrentPage * publicItemsPerPage
-        );
-
         return (
-            <div className="min-h-screen bg-background font-sans flex flex-col">
-                <Header variant="default" />
-                <div className="max-w-6xl mx-auto px-4 py-4 flex-1 w-full">
-                    <div className="flex flex-col lg:flex-row gap-4 items-start">
-                        <div className="flex-1 w-full min-w-0">
-                            <div className="mb-6">
-                                <div className="bg-card border-2 border-primary/30 dark:border-primary/20 rounded shadow-sm p-4 sm:p-5">
-                                    <p className="text-sm sm:text-base text-foreground leading-relaxed">
-                                        {t('app.description')}
-                                    </p>
-                                </div>
-                            </div>
-                            <section className="min-h-[50vh]">
-                                <h2 className="text-section-title text-foreground mb-4">
-                                    {t('landing.recent_prompts_title')}
-                                </h2>
-                                <PromptList
-                                    prompts={paginatedPublicPrompts}
-                                    isLoading={publicLoading}
-                                    onSelectPrompt={setSelectedPrompt}
-                                    onCopy={handleCopy}
-                                    onDeleteClick={() => {}}
-                                    onShare={handleShare}
-                                    editingId={null}
-                                    currentPage={publicCurrentPage}
-                                    itemsPerPage={publicItemsPerPage}
-                                    totalItems={filteredPublicPrompts.length}
-                                    onPageChange={setPublicCurrentPage}
-                                    onItemsPerPageChange={setPublicItemsPerPage}
-                                    currentUserId={user?.id}
-                                />
-                            </section>
-                        </div>
-                        <AuthScreen
-                            handleAuth={handleAuth}
-                            authMode={authMode}
-                            setAuthMode={setAuthMode}
-                            displayName={displayName}
-                            setDisplayName={setDisplayName}
-                            email={email}
-                            setEmail={setEmail}
-                            password={password}
-                            setPassword={setPassword}
-                            authError={authError}
-                            setAuthError={clearAuthError}
-                            authSubmitting={authSubmitting}
-                            publicTags={publicTags}
-                            selectedPublicTag={selectedPublicTag}
-                            setSelectedPublicTag={setSelectedPublicTag}
-                            setPublicCurrentPage={setPublicCurrentPage}
-                        />
-                    </div>
-                </div>
-                {selectedPrompt && (
-                    <PromptDetailModal
-                        prompt={selectedPrompt}
-                        currentUserId={user?.id}
-                        onClose={() => setSelectedPrompt(null)}
-                        onCopy={handleCopy}
-                        onShare={handleShare}
-                    />
-                )}
-                <Footer />
-            </div>
+            <LandingPage
+                publicPrompts={publicPrompts}
+                publicTags={publicTags}
+                publicLoading={publicLoading}
+                selectedPublicTag={selectedPublicTag}
+                publicCurrentPage={publicCurrentPage}
+                publicItemsPerPage={publicItemsPerPage}
+                selectedPrompt={selectedPrompt}
+                onSelectPrompt={setSelectedPrompt}
+                onCopy={handleCopy}
+                onShare={handleShare}
+                onSetPublicTag={setSelectedPublicTag}
+                onSetPublicPage={setPublicCurrentPage}
+                handleAuth={handleAuth}
+                authMode={authMode}
+                setAuthMode={setAuthMode}
+                displayName={displayName}
+                setDisplayName={setDisplayName}
+                email={email}
+                setEmail={setEmail}
+                password={password}
+                setPassword={setPassword}
+                authError={authError}
+                setAuthError={clearAuthError}
+                authSubmitting={authSubmitting}
+                currentUserId={user?.id}
+            />
         );
     }
 
     return (
-        <div className="min-h-screen bg-background flex flex-col relative font-sans">
-            <SEO structuredData={websiteSchema} />
-            <Header 
-                variant="authenticated" 
-                userEmail={user?.email} 
-                onLogout={() => setShowLogoutConfirm(true)} 
-            />
-
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6 flex-1 w-full flex flex-col md:flex-row gap-4 md:gap-6">
-                <main className="flex-1 min-w-0">
-                    <div className="mb-4 sm:mb-6">
-                        <input 
-                            ref={searchInputRef}
-                            type="text" 
-                            value={searchText} 
-                            onChange={e => setSearchText(e.target.value)} 
-                            placeholder={t('prompt.search_placeholder')} 
-                            className="w-full px-3 py-2.5 sm:py-2 bg-card border border-border rounded text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 transition-all duration-fast min-h-[44px] sm:min-h-0"
-                            aria-label={t('prompt.search_placeholder')}
-                        />
-                    </div>
-
-                    <PromptEditor
-                        title={title}
-                        setTitle={setTitle}
-                        content={content}
-                        setContent={setContent}
-                        tagsInput={tagsInput}
-                        setTagsInput={setTagsInput}
-                        isPublic={isPublic}
-                        setIsPublic={setIsPublic}
-                        onSave={handleSave}
-                        onCancel={() => {
-                            setTitle('');
-                            setContent('');
-                            setTagsInput('');
-                            setIsPublic(false);
-                            setEditingId(null);
-                        }}
-                        isEditing={!!editingId}
-                        saving={savePrompt.isPending}
-                    />
-
-                    <MobileFilterButton
-                        tags={allUserTags}
-                        currentFilter={selectedTag || ''}
-                        onFilterChange={(tag) => setSelectedTag(tag || null)}
-                    />
-
-                    <div className="min-h-[50vh]">
-                        <div className="flex items-center justify-between mb-4">
-                            <h2 className="text-section-title text-foreground">
-                                {t('list.title', { count: totalItems })}
-                            </h2>
-                            <div className="flex gap-2 items-center">
-                                <TagChip
-                                    variant={visibilityFilter === 'all' ? 'active' : 'outline'}
-                                    size="default"
-                                    onClick={() => setVisibilityFilter('all')}
-                                >
-                                    {t('list.all')}
-                                </TagChip>
-                                <TagChip
-                                    variant={visibilityFilter === 'public' ? 'active' : 'outline'}
-                                    size="default"
-                                    onClick={() => setVisibilityFilter('public')}
-                                >
-                                    {t('prompt.public')}
-                                </TagChip>
-                                <TagChip
-                                    variant={visibilityFilter === 'private' ? 'active' : 'outline'}
-                                    size="default"
-                                    onClick={() => setVisibilityFilter('private')}
-                                >
-                                    {t('prompt.private')}
-                                </TagChip>
-                            </div>
-                        </div>
-
-                        <PromptList
-                            prompts={prompts}
-                            isLoading={isPromptsLoading}
-                            editingId={editingId}
-                            onSelectPrompt={setSelectedPrompt}
-                            onCopy={handleCopy}
-                            onDeleteClick={handleDeleteClick}
-                            onShare={handleShare}
-                            currentPage={currentPage}
-                            itemsPerPage={itemsPerPage}
-                            totalItems={totalItems}
-                            onPageChange={setCurrentPage}
-                            onItemsPerPageChange={setItemsPerPage}
-                            currentUserId={user?.id}
-                        />
-                    </div>
-                </main>
-
-                <FilterBar
-                    tags={allUserTags}
-                    currentFilter={selectedTag || ''}
-                    onFilterChange={(tag) => setSelectedTag(tag || null)}
-                />
-            </div>
-
-            <Footer />
-
-            {selectedPrompt && (
-                <PromptDetailModal
-                    prompt={selectedPrompt}
-                    currentUserId={user?.id}
-                    onClose={() => setSelectedPrompt(null)}
-                    onEdit={handleEdit}
-                    onCopy={handleCopy}
-                    onShare={handleShare}
-                    onDelete={handleDeleteClick}
-                />
-            )}
-
-            <LogoutConfirmModal
-                isOpen={showLogoutConfirm}
-                onConfirm={() => {
-                    handleLogout();
-                    setShowLogoutConfirm(false);
-                }}
-                onCancel={() => setShowLogoutConfirm(false)}
-            />
-
-            <DeleteConfirmModal
-                isOpen={!!confirmDeleteId}
-                onConfirm={() => {
-                    performDelete(confirmDeleteId);
-                    setConfirmDeleteId(null);
-                }}
-                onCancel={() => setConfirmDeleteId(null)}
-            />
-
-            {/* Command Palette */}
-            {user && (
-                <CommandPalette
-                    isOpen={commandPalette.isOpen}
-                    onClose={commandPalette.close}
-                    commands={commandPalette.commands}
-                />
-            )}
-
-            {/* Shortcuts Help Dialog */}
-            {user && (
-                <ShortcutsHelpDialog
-                    isOpen={showShortcutsHelp}
-                    onClose={() => setShowShortcutsHelp(false)}
-                />
-            )}
-        </div>
+        <AuthenticatedView
+            userEmail={user?.email}
+            searchText={searchText}
+            onSearchChange={setSearchText}
+            searchInputRef={searchInputRef}
+            title={title}
+            setTitle={setTitle}
+            content={content}
+            setContent={setContent}
+            tagsInput={tagsInput}
+            setTagsInput={setTagsInput}
+            isPublic={isPublic}
+            setIsPublic={setIsPublic}
+            onSave={handleSave}
+            onCancel={() => {
+                setTitle('');
+                setContent('');
+                setTagsInput('');
+                setIsPublic(false);
+                setEditingId(null);
+            }}
+            isEditing={!!editingId}
+            saving={savePrompt.isPending}
+            allUserTags={allUserTags as Tag[]}
+            selectedTag={selectedTag}
+            onTagFilterChange={setSelectedTag}
+            visibilityFilter={visibilityFilter}
+            onVisibilityFilterChange={setVisibilityFilter}
+            prompts={prompts}
+            isLoading={isPromptsLoading}
+            totalItems={totalItems}
+            currentPage={currentPage}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+            onItemsPerPageChange={setItemsPerPage}
+            editingId={editingId}
+            onSelectPrompt={setSelectedPrompt}
+            onCopy={handleCopy}
+            onDeleteClick={handleDeleteClick}
+            onShare={handleShare}
+            onEdit={handleEdit}
+            selectedPrompt={selectedPrompt}
+            confirmDeleteId={confirmDeleteId}
+            showLogoutConfirm={showLogoutConfirm}
+            showShortcutsHelp={showShortcutsHelp}
+            onCloseModals={handleCloseModals}
+            onLogoutClick={() => setShowLogoutConfirm(true)}
+            onLogout={() => {
+                handleLogout();
+                setShowLogoutConfirm(false);
+            }}
+            onDeleteConfirm={(id) => {
+                performDelete(id);
+                setConfirmDeleteId(null);
+            }}
+            onCloseShortcutsHelp={() => setShowShortcutsHelp(false)}
+            commandPalette={commandPalette}
+            websiteSchema={websiteSchema}
+            currentUserId={user?.id}
+        />
     );
 };
 

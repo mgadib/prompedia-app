@@ -1,4 +1,5 @@
 import * as React from "react";
+import { memo } from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
@@ -29,7 +30,7 @@ export interface PromptCardProps
   extends React.HTMLAttributes<HTMLDivElement>,
   VariantProps<typeof promptCardVariants> { }
 
-const PromptCard = React.forwardRef<HTMLDivElement, PromptCardProps>(
+const PromptCardComponent = React.forwardRef<HTMLDivElement, PromptCardProps>(
   ({ className, variant, size, ...props }, ref) => {
     return (
       <div
@@ -40,7 +41,9 @@ const PromptCard = React.forwardRef<HTMLDivElement, PromptCardProps>(
     );
   }
 );
-PromptCard.displayName = "PromptCard";
+PromptCardComponent.displayName = "PromptCard";
+
+const PromptCard = memo(PromptCardComponent) as typeof PromptCardComponent;
 
 // Sub-components for consistent structure
 const PromptCardHeader = React.forwardRef<

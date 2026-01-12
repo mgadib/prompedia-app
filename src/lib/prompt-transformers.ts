@@ -137,10 +137,10 @@ export function transformSupabaseSelectToUI(
     t: TFunction
 ): PromptUI {
     const content = data.prompt_contents?.body || '';
-    const tags = data.prompt_tags
+    const tags: Pick<Tag, 'id' | 'name'>[] = data.prompt_tags
         ? data.prompt_tags
-            .map((pt: any) => pt?.tags)
-            .filter((t: any): t is Pick<Tag, 'id' | 'name'> => t !== null && t !== undefined)
+            .map((pt) => pt?.tags)
+            .filter((t): t is Pick<Tag, 'id' | 'name'> => t !== null && t !== undefined)
         : [];
     const author = data.users?.display_name || data.users?.username || t('prompt.unknown_author');
     

@@ -1,7 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
-import { Tables } from '@/integrations/supabase/types';
+import { PromptUI } from '@/types/prompts';
+import { queryKeys, invalidatePromptsQueries, invalidatePublicPromptsQueries, invalidateTagsQueries } from '@/lib/query-keys';
 
 interface SavePromptData {
     id?: string | null;
@@ -27,6 +28,7 @@ export function usePromptMutations() {
 
     /**
      * Save or update a prompt
+     * Uses optimistic updates for better perceived performance
      */
     const savePrompt = useMutation({
         mutationFn: async (data: SavePromptData) => {
@@ -138,18 +140,101 @@ export function usePromptMutations() {
                     .eq('prompt_id', promptId);
             }
 
-            return { id: promptId };
+            return { id: promptId, userId, title: promptTitle, content: content.trim(), tagsInput, isPublic };
         },
-        onSuccess: () => {
-            // Invalidate queries to refetch data
-            queryClient.invalidateQueries({ queryKey: ['prompts'] });
-            queryClient.invalidateQueries({ queryKey: ['tags'] });
-            queryClient.invalidateQueries({ queryKey: ['public-prompts'] });
+        onMutate: async (data) => {
+            // Cancel outgoing refetches to avoid overwriting optimistic update
+            await queryClient.cancelQueries(invalidatePromptsQueries(data.userId));
+
+            // Snapshot previous value for rollback
+            const previousQueries = queryClient.getQueriesData({
+                queryKey: queryKeys.prompts.list(data.userId),
+            });
+
+            // Optimistically update the cache
+            if (data.id) {
+                // Update existing prompt
+                queryClient.setQueriesData<{ prompts: PromptUI[]; total: number }>(
+                    { queryKey: queryKeys.prompts.list(data.userId), exact: false },
+                    (old) => {
+                        if (!old) return old;
+                        return {
+                            ...old,
+                            prompts: old.prompts.map((p) =>
+                                p.id === data.id
+                                    ? {
+                                          ...p,
+                                          title: data.title.trim() || data.content.trim().slice(0, 50),
+                                          content: data.content.trim(),
+                                          is_public: data.isPublic,
+                                          updated_at: new Date().toISOString(),
+                                          tags: data.tagsInput
+                                              .split(',')
+                                              .map((t) => t.trim())
+                                              .filter(Boolean)
+                                              .map((name) => ({ id: '', name })),
+                                      }
+                                    : p
+                            ),
+                        };
+                    }
+                );
+            } else {
+                // Add new prompt optimistically
+                const newPrompt: PromptUI = {
+                    id: crypto.randomUUID(),
+                    user_id: data.userId,
+                    title: data.title.trim() || data.content.trim().slice(0, 50),
+                    content: data.content.trim(),
+                    description: data.content.trim().length > 150 
+                        ? data.content.trim().substring(0, 150) + '...' 
+                        : data.content.trim(),
+                    is_public: data.isPublic,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString(),
+                    tags: data.tagsInput
+                        .split(',')
+                        .map((t) => t.trim())
+                        .filter(Boolean)
+                        .map((name) => ({ id: '', name })),
+                    author: '',
+                };
+
+                queryClient.setQueriesData<{ prompts: PromptUI[]; total: number }>(
+                    { queryKey: queryKeys.prompts.list(data.userId), exact: false },
+                    (old) => {
+                        if (!old) return { prompts: [newPrompt], total: 1 };
+                        return {
+                            prompts: [newPrompt, ...old.prompts],
+                            total: old.total + 1,
+                        };
+                    }
+                );
+            }
+
+            return { previousQueries };
+        },
+        onError: (err, mutationData, context) => {
+            // Rollback on error
+            if (context?.previousQueries) {
+                context.previousQueries.forEach(([queryKey, previousData]) => {
+                    queryClient.setQueryData(queryKey, previousData);
+                });
+            }
+        },
+        onSuccess: (data) => {
+            // Granular invalidation - only invalidate queries for the specific user
+            queryClient.invalidateQueries(invalidatePromptsQueries(data.userId));
+            // Invalidate tags since new tags might have been created
+            queryClient.invalidateQueries(invalidateTagsQueries(data.userId));
+            // Invalidate public prompts if the prompt is public
+            queryClient.invalidateQueries(invalidatePublicPromptsQueries());
         },
     });
 
     /**
      * Delete a prompt
+     * Uses optimistic updates for better perceived performance
      */
     const deletePrompt = useMutation({
         mutationFn: async (data: DeletePromptData) => {
@@ -162,32 +247,49 @@ export function usePromptMutations() {
                 .eq('user_id', userId);
             
             if (error) throw error;
-            return { id };
+            return { id, userId };
         },
-        onSuccess: () => {
-            // Invalidate queries to refetch data
-            queryClient.invalidateQueries({ queryKey: ['prompts'] });
-            queryClient.invalidateQueries({ queryKey: ['public-prompts'] });
+        onMutate: async (data) => {
+            // Cancel outgoing refetches to avoid overwriting optimistic update
+            await queryClient.cancelQueries(invalidatePromptsQueries(data.userId));
+
+            // Snapshot previous value for rollback
+            const previousQueries = queryClient.getQueriesData({
+                queryKey: queryKeys.prompts.list(data.userId),
+            });
+
+            // Optimistically remove the prompt from cache
+            queryClient.setQueriesData<{ prompts: PromptUI[]; total: number }>(
+                { queryKey: queryKeys.prompts.list(data.userId), exact: false },
+                (old) => {
+                    if (!old) return old;
+                    return {
+                        prompts: old.prompts.filter((p) => p.id !== data.id),
+                        total: Math.max(0, old.total - 1),
+                    };
+                }
+            );
+
+            return { previousQueries };
+        },
+        onError: (err, mutationData, context) => {
+            // Rollback on error
+            if (context?.previousQueries) {
+                context.previousQueries.forEach(([queryKey, previousData]) => {
+                    queryClient.setQueryData(queryKey, previousData);
+                });
+            }
+        },
+        onSuccess: (data) => {
+            // Granular invalidation - only invalidate queries for the specific user
+            queryClient.invalidateQueries(invalidatePromptsQueries(data.userId));
+            // Invalidate public prompts in case deleted prompt was public
+            queryClient.invalidateQueries(invalidatePublicPromptsQueries());
         },
     });
-
-    /**
-     * Load user tags
-     */
-    const loadTags = async (userId: string): Promise<Tables<'tags'>[]> => {
-        const { data, error } = await supabase
-            .from('tags')
-            .select('*')
-            .eq('user_id', userId)
-            .order('name');
-
-        if (error) throw error;
-        return data || [];
-    };
 
     return {
         savePrompt,
         deletePrompt,
-        loadTags,
     };
 }

@@ -1,9 +1,10 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { CommandPaletteContext, generateCommands } from '@/lib/commands';
 import { Command } from '@/lib/commands';
 
 /**
  * Hook for managing command palette state and commands.
+ * Commands are memoized to prevent unnecessary regeneration on every render.
  */
 export function useCommandPalette(context: CommandPaletteContext) {
     const [isOpen, setIsOpen] = useState(false);
@@ -20,8 +21,33 @@ export function useCommandPalette(context: CommandPaletteContext) {
         setIsOpen(prev => !prev);
     }, []);
 
-    // Generate commands based on current context
-    const commands = generateCommands(context);
+    // Memoize commands generation - only regenerate when context dependencies change
+    const commands = useMemo(() => {
+        return generateCommands(context);
+    }, [
+        context.navigate,
+        context.onNewPrompt,
+        context.onSavePrompt,
+        context.onDeletePrompt,
+        context.onEditPrompt,
+        context.onCopyPrompt,
+        context.onSharePrompt,
+        context.onToggleTheme,
+        context.onShowShortcuts,
+        context.onFilterByTag,
+        context.onFilterByVisibility,
+        context.onFocusSearch,
+        context.onSearchPrompts,
+        context.isEditing,
+        context.currentPrompt?.id,
+        context.currentPrompt?.is_public,
+        // Memoize tags array reference
+        context.tags?.length,
+        context.tags?.map(t => t.id).join(','),
+        // Memoize recent prompts array reference
+        context.recentPrompts?.length,
+        context.recentPrompts?.map(p => p.id).join(','),
+    ]);
 
     return {
         isOpen,
