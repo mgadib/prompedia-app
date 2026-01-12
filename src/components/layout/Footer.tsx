@@ -9,7 +9,7 @@ export const Footer = () => {
         <footer className="border-t border-border bg-card/95 backdrop-blur-sm mt-auto shadow-xs">
             <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-5">
                 <div className="flex flex-col items-start gap-1">
-                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground/80">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground/80">
                         <span className="font-normal">{t('footer.made_with', 'Made with')}</span>
                         <Heart 
                             className="w-3.5 h-3.5 text-primary fill-primary transition-transform duration-fast hover:scale-110" 
