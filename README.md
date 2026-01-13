@@ -93,6 +93,13 @@ Prompedia AI adalah aplikasi web untuk mengelola library prompt AI secara terpus
 - **react-i18next 16.2** - React bindings
 - **i18next-browser-languagedetector 8.2** - Auto language detection
 
+## Prerequisites
+
+- **Node.js 20.19+ atau 22.12+** (required untuk Vite 7.3.0)
+- **npm 10+** (atau package manager lainnya)
+
+> **Catatan untuk Deployment**: Aplikasi ini menggunakan Nixpacks untuk build di Dokploy. Versi Node.js akan otomatis terdeteksi dari field `engines` di `package.json`.
+
 ## Cara Menjalankan
 
 ### Development
