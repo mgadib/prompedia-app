@@ -3,6 +3,7 @@ import { MarkdownEditor } from '@/components/editor';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { useTranslation } from 'react-i18next';
+import { Loader2 } from 'lucide-react';
 
 interface PromptEditorProps {
     title: string;
@@ -91,7 +92,16 @@ const PromptEditorComponent: React.FC<PromptEditorProps> = ({
                             onClick={onSave}
                             disabled={!content.trim() || saving}
                         >
-                            {saving ? t('prompt.saving') : isEditing ? t('prompt.update') : t('prompt.save')}
+                            {saving ? (
+                                <>
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                    <span>{t('prompt.saving')}</span>
+                                </>
+                            ) : isEditing ? (
+                                t('prompt.update')
+                            ) : (
+                                t('prompt.save')
+                            )}
                         </Button>
                     </div>
                 </div>

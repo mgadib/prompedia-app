@@ -3,12 +3,15 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useIdleLogout } from '@/hooks/use-idle-logout';
 import { useDebounce } from '@/hooks/use-debounce';
+import { usePreventDoubleClick } from '@/hooks/use-prevent-double-click';
+import { useFormPersistence } from '@/hooks/use-form-persistence';
 import { toast } from 'sonner';
 import { useTheme } from 'next-themes';
+import { Check } from 'lucide-react';
 
 // Hooks
 import { useAuth } from '@/hooks/use-auth';
-import { usePublicPrompts } from '@/hooks/use-public-prompts';
+import { usePublicPrompts, usePublicTagCounts } from '@/hooks/use-public-prompts';
 import { usePromptMutations } from '@/hooks/use-prompt-mutations';
 import { usePrompts } from '@/hooks/use-prompts';
 import { useTags } from '@/hooks/use-tags';
@@ -20,6 +23,7 @@ import { PromptUI, Tag } from '@/types/prompts';
 
 // Utils
 import { extractErrorMessage } from '@/lib/error-handler';
+import { logError } from '@/lib/logger';
 
 // Components
 import { LandingPage } from '@/components/prompts/LandingPage';
@@ -61,7 +65,6 @@ const PromptNotes = () => {
 
     const {
         prompts: publicPrompts,
-        tags: publicTags,
         total: publicTotal,
         isLoading: publicLoading,
     } = usePublicPrompts({
@@ -70,6 +73,9 @@ const PromptNotes = () => {
         pageSize: publicItemsPerPage,
         enabled: !user && showAuth,
     });
+
+    // Fetch accurate tag counts across all public prompts (separate query)
+    const { tagCounts: publicTags } = usePublicTagCounts();
 
     // Filter & Pagination State
     const [searchText, setSearchText] = useState('');
@@ -85,8 +91,27 @@ const PromptNotes = () => {
     const [tagsInput, setTagsInput] = useState('');
     const [isPublic, setIsPublic] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
+
+    // Form persistence - only when not editing existing prompt
+    const { clearDraft } = useFormPersistence(
+        title,
+        content,
+        tagsInput,
+        isPublic,
+        (draft) => {
+            if (!editingId) {
+                setTitle(draft.title);
+                setContent(draft.content);
+                setTagsInput(draft.tagsInput);
+                setIsPublic(draft.isPublic);
+            }
+        },
+        !editingId && !!user
+    );
     const [selectedPrompt, setSelectedPrompt] = useState<PromptUI | null>(null);
     const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+    const [copiedId, setCopiedId] = useState<string | null>(null);
+    const [sharedId, setSharedId] = useState<string | null>(null);
 
     // Tags - use React Query hook for caching
     const { data: allUserTags = [] } = useTags(user?.id);
@@ -131,49 +156,62 @@ const PromptNotes = () => {
     // CORE HANDLERS - Defined first to avoid temporal dead zone
     // ========================================
     
-    const handleSave = useCallback(async () => {
-        if (!user || !content.trim()) return;
+    const handleSave = usePreventDoubleClick(
+        useCallback(async () => {
+            if (!user || !content.trim()) return;
 
-        try {
-            await savePrompt.mutateAsync({
-                id: editingId,
-                title,
-                content,
-                tagsInput,
-                isPublic,
-                userId: user.id,
-            });
+            try {
+                await savePrompt.mutateAsync({
+                    id: editingId,
+                    title,
+                    content,
+                    tagsInput,
+                    isPublic,
+                    userId: user.id,
+                });
 
             toast.success(t('toast.saved'));
+            clearDraft(); // Clear draft after successful save
             setTitle('');
             setContent('');
             setTagsInput('');
             setIsPublic(false);
             setEditingId(null);
-        } catch (err) {
-            // Structured error logging
-            if (import.meta.env.DEV) {
-                console.error('Failed to save prompt:', {
-                    error: err,
-                    message: extractErrorMessage(err),
+            } catch (err) {
+                // Structured error logging
+                logError(err instanceof Error ? err : new Error(extractErrorMessage(err)), {
+                    context: 'savePrompt',
                     userId: user?.id,
                     editingId,
                 });
+                toast.error(t('toast.save_failed'));
             }
-            toast.error(t('toast.save_failed'));
-        }
-    }, [user, title, content, tagsInput, isPublic, editingId, savePrompt, t]);
+        }, [user, title, content, tagsInput, isPublic, editingId, savePrompt, t]),
+        1000
+    );
 
-    const handleCopy = useCallback(async (text: string) => {
-        await navigator.clipboard.writeText(text);
-        toast.success(t('toast.copied'));
-    }, [t]);
+    const handleCopy = usePreventDoubleClick(
+        useCallback(async (text: string, id?: string) => {
+            await navigator.clipboard.writeText(text);
+            toast.success(t('toast.copied'));
+            if (id) {
+                setCopiedId(id);
+                setTimeout(() => setCopiedId(null), 2000);
+            }
+        }, [t]),
+        500
+    );
 
-    const handleShare = useCallback(async (id: string) => {
-        const url = `${window.location.origin}/share/${id}`;
-        await navigator.clipboard.writeText(url);
-        toast.success(t('toast.link_copied', 'Link copied to clipboard'));
-    }, [t]);
+    const handleShare = usePreventDoubleClick(
+        useCallback(async (id: string) => {
+            const url = `${window.location.origin}/share/${id}`;
+            await navigator.clipboard.writeText(url);
+            toast.success(t('toast.link_copied', 'Link copied to clipboard'));
+            setSharedId(id);
+            setTimeout(() => setSharedId(null), 2000);
+        }, [t]),
+        500
+    );
 
     const handleEdit = useCallback((prompt: PromptUI) => {
         setTitle(prompt.title);
@@ -206,7 +244,10 @@ const PromptNotes = () => {
     }, []);
 
     const handleFilterByTag = useCallback((tag: string) => {
-        setSelectedTag(tag === selectedTag ? null : tag);
+        // Case-insensitive comparison for tag filtering
+        const normalizedTag = tag.toLowerCase();
+        const normalizedSelectedTag = selectedTag?.toLowerCase();
+        setSelectedTag(normalizedTag === normalizedSelectedTag ? null : tag);
     }, [selectedTag]);
 
     const handleFilterByVisibility = useCallback((visibility: 'all' | 'public' | 'private') => {
@@ -367,14 +408,11 @@ const PromptNotes = () => {
             }
         } catch (err) {
             // Structured error logging
-            if (import.meta.env.DEV) {
-                console.error('Failed to delete prompt:', {
-                    error: err,
-                    message: extractErrorMessage(err),
-                    promptId: id,
-                    userId: user?.id,
-                });
-            }
+            logError(err instanceof Error ? err : new Error(extractErrorMessage(err)), {
+                context: 'deletePrompt',
+                promptId: id,
+                userId: user?.id,
+            });
             toast.error(t('toast.delete_failed', 'Failed to delete prompt'));
         }
     };
@@ -451,6 +489,9 @@ const PromptNotes = () => {
             setIsPublic={setIsPublic}
             onSave={handleSave}
             onCancel={() => {
+                if (!editingId) {
+                    clearDraft(); // Clear draft when canceling new prompt
+                }
                 setTitle('');
                 setContent('');
                 setTagsInput('');
@@ -473,10 +514,12 @@ const PromptNotes = () => {
             onItemsPerPageChange={setItemsPerPage}
             editingId={editingId}
             onSelectPrompt={setSelectedPrompt}
-            onCopy={handleCopy}
+            onCopy={(text: string, id?: string) => handleCopy(text, id)}
             onDeleteClick={handleDeleteClick}
             onShare={handleShare}
             onEdit={handleEdit}
+            copiedId={copiedId}
+            sharedId={sharedId}
             selectedPrompt={selectedPrompt}
             confirmDeleteId={confirmDeleteId}
             showLogoutConfirm={showLogoutConfirm}

@@ -1,13 +1,19 @@
 // File ini dihasilkan secara otomatis. Jangan edit langsung.
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
+import { config } from '@/lib/config';
 
-// Konfigurasi Supabase dari environment variables dengan fallback untuk production
+// Konfigurasi Supabase dari config module
 // Anon key adalah public key yang aman diekspos - keamanan dijaga oleh RLS
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
-  || 'https://kecpjbrlvaoujdnerhwe.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
-  || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtlY3BqYnJsdmFvdWpkbmVyaHdlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA5ODQ4MDIsImV4cCI6MjA3NjU2MDgwMn0.CFBQJhZDMmfKGdg5GVeB2ns3uiojyCVQqXNvHZXpGyI';
+const SUPABASE_URL = config.supabase.url;
+const SUPABASE_PUBLISHABLE_KEY = config.supabase.anonKey;
+
+// Enforce environment variables - no hardcoded fallbacks
+if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
+  throw new Error(
+    'Missing Supabase configuration. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables.'
+  );
+}
 
 // Import supabase client seperti ini:
 // import { supabase } from "@/integrations/supabase/client";

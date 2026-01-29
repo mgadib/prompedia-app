@@ -2,6 +2,9 @@ import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { Home, RefreshCw, AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { config } from '@/lib/config';
+import { logError } from '@/lib/logger';
+import * as Sentry from '@sentry/react';
 
 interface Props {
     children: ReactNode;
@@ -17,6 +20,7 @@ interface State {
 /**
  * Error Boundary component to catch React errors and display a user-friendly error message.
  * Provides recovery actions like retry and navigation to home.
+ * Integrates with Sentry for error tracking.
  */
 export class ErrorBoundary extends Component<Props, State> {
     constructor(props: Props) {
@@ -35,16 +39,25 @@ export class ErrorBoundary extends Component<Props, State> {
     }
 
     componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-        // Log error to console in development
-        if (import.meta.env.DEV) {
-            console.error('ErrorBoundary caught an error:', error, errorInfo);
+        // Log error using centralized logger
+        logError(error, {
+            componentStack: errorInfo.componentStack,
+            errorBoundary: true,
+        });
+
+        // Report to Sentry if in production
+        if (config.env.isProd) {
+            Sentry.captureException(error, {
+                contexts: {
+                    react: {
+                        componentStack: errorInfo.componentStack,
+                    },
+                },
+            });
         }
 
         // Call optional error handler
         this.props.onError?.(error, errorInfo);
-
-        // In production, you might want to send this to an error tracking service
-        // Example: Sentry.captureException(error, { contexts: { react: errorInfo } });
     }
 
     handleReset = () => {
@@ -90,7 +103,7 @@ function ErrorFallback({ error, onReset }: { error: Error | null; onReset: () =>
                     </div>
                 </div>
 
-                {error && import.meta.env.DEV && (
+                {error && config.features.showErrorDetails && (
                     <div className="mt-4 p-3 bg-muted rounded text-xs font-mono text-muted-foreground overflow-auto max-h-32">
                         {error.message}
                     </div>

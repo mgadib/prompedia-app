@@ -17,10 +17,11 @@ export const SEO = ({ title, description, canonical, type = 'website', image, no
     const defaultDescription = t('app.description');
 
     // Construct full title
-    const fullTitle = title ? `${title} | ${siteTitle}` : siteTitle;
+    const fullTitle = title ? `${title} | ${siteTitle}` : `${siteTitle} - Catatan Prompt AI Pribadi`;
     const metaDescription = description || defaultDescription;
     const currentUrl = canonical || window.location.href;
     const locale = i18n.language;
+    const defaultImage = 'https://prompedia.app/logo.png';
 
     // Organization schema - always included
     const organizationSchema = {
@@ -54,14 +55,14 @@ export const SEO = ({ title, description, canonical, type = 'website', image, no
             <meta property="og:description" content={metaDescription} />
             <meta property="og:site_name" content={siteTitle} />
             <meta property="og:locale" content={locale === 'id' ? 'id_ID' : 'en_US'} />
-            {image && <meta property="og:image" content={image} />}
+            <meta property="og:image" content={image || defaultImage} />
 
             {/* Twitter */}
             <meta property="twitter:card" content="summary_large_image" />
             <meta property="twitter:url" content={currentUrl} />
             <meta property="twitter:title" content={fullTitle} />
             <meta property="twitter:description" content={metaDescription} />
-            {image && <meta property="twitter:image" content={image} />}
+            <meta property="twitter:image" content={image || defaultImage} />
 
             {/* Geo / Special Tags for LLMs */}
             <meta name="keywords" content={t('geo.keywords')} />

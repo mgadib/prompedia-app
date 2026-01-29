@@ -21,6 +21,18 @@ export default tseslint.config(
       ...reactHooks.configs.recommended.rules,
       "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
       "@typescript-eslint/no-unused-vars": "off",
+      // Prevent console statements in production code
+      "no-console": ["warn", { 
+        allow: [] // No console methods allowed - use logger utility instead
+      }],
+      "no-debugger": "error", // Prevent debugger statements
+    },
+  },
+  // Allow console in logger.ts (it's the only place where console should exist)
+  {
+    files: ["src/lib/logger.ts"],
+    rules: {
+      "no-console": "off",
     },
   },
 );

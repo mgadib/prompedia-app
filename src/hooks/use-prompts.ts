@@ -1,9 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
 import { PromptUI, UsePromptsOptions } from '@/types/prompts';
-import { transformSupabasePromptToUI } from '@/lib/prompt-transformers';
 import { queryKeys } from '@/lib/query-keys';
+import { usePromptRepository } from './use-prompt-repository';
 
 // Re-export for backward compatibility
 export type { PromptUI } from '@/types/prompts';
@@ -18,43 +17,27 @@ export const usePrompts = ({
     enabled = true
 }: UsePromptsOptions) => {
     const { t } = useTranslation();
+    const repository = usePromptRepository();
+
+    // Normalize filterTag to lowercase for case-insensitive matching and consistent cache keys
+    const normalizedFilterTag = filterTag ? filterTag.toLowerCase() : '';
 
     return useQuery({
-        queryKey: queryKeys.prompts.list(userId, { page, pageSize, filterText, filterTag, visibility }),
+        queryKey: queryKeys.prompts.list(userId, { page, pageSize, filterText, filterTag: normalizedFilterTag, visibility }),
         queryFn: async () => {
             if (!userId) return { prompts: [], total: 0 };
 
-            // Use RPC function for comprehensive search across title, body, and tags
-            const { data, error } = await supabase.rpc('search_prompts', {
-                p_user_id: userId,
-                p_search_text: filterText || null,
-                p_tag_filter: filterTag || null,
-                p_visibility: visibility,
-                p_page: page,
-                p_page_size: pageSize
-            });
-
-            if (error) throw error;
-
-            // Handle empty results
-            if (!data || data.length === 0) {
-                return { prompts: [], total: 0 };
-            }
-
-            // Extract total count from first row (all rows have same total_count)
-            interface RPCRowWithCount {
-                total_count?: number;
-            }
-            const totalCount = (data[0] as RPCRowWithCount)?.total_count || 0;
-
-            // Transform data from RPC function format to PromptUI format
-            const formattedPrompts: PromptUI[] = data.map((row) => 
-                transformSupabasePromptToUI(row, t)
-            );
-
-            return { prompts: formattedPrompts, total: totalCount };
+            return repository.searchPrompts({
+                userId,
+                page,
+                pageSize,
+                filterText,
+                filterTag: normalizedFilterTag,
+                visibility,
+            }, t);
         },
         enabled: enabled && !!userId,
         staleTime: 60 * 1000, // 1 minute
+        gcTime: 5 * 60 * 1000, // Clean up after 5 minutes of inactivity
     });
 };

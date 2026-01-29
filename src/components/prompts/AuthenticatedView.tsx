@@ -13,6 +13,7 @@ import { CommandPalette } from '@/components/command-palette/CommandPalette';
 import { ShortcutsHelpDialog } from '@/components/command-palette/ShortcutsHelpDialog';
 import { TagChip } from '@/components/ui/tag-chip';
 import { SEO } from '@/components/SEO';
+import { Loader2 } from 'lucide-react';
 
 interface AuthenticatedViewProps {
     userEmail?: string;
@@ -48,9 +49,11 @@ interface AuthenticatedViewProps {
     onItemsPerPageChange: (items: number) => void;
     editingId: string | null;
     onSelectPrompt: (prompt: PromptUI | null) => void;
-    onCopy: (text: string) => void;
+    onCopy: (text: string, id?: string) => void;
     onDeleteClick: (id: string) => void;
     onShare: (id: string) => void;
+    copiedId?: string | null;
+    sharedId?: string | null;
     onEdit: (prompt: PromptUI) => void;
     // Modals
     selectedPrompt: PromptUI | null;
@@ -120,6 +123,8 @@ export const AuthenticatedView: React.FC<AuthenticatedViewProps> = ({
     commandPalette,
     websiteSchema,
     currentUserId,
+    copiedId,
+    sharedId,
 }) => {
     const { t } = useTranslation();
 
@@ -134,16 +139,21 @@ export const AuthenticatedView: React.FC<AuthenticatedViewProps> = ({
 
             <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6 flex-1 w-full flex flex-col md:flex-row gap-4 md:gap-6">
                 <main className="flex-1 min-w-0">
-                    <div className="mb-4 sm:mb-6">
+                    <div className="mb-4 sm:mb-6 relative">
                         <input 
                             ref={searchInputRef}
                             type="text" 
                             value={searchText} 
                             onChange={e => onSearchChange(e.target.value)} 
                             placeholder={t('prompt.search_placeholder')} 
-                            className="w-full px-3 py-2.5 sm:py-2 bg-card border border-border rounded text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 transition-all duration-fast min-h-[44px] sm:min-h-0"
+                            className="w-full px-3 py-2.5 sm:py-2 bg-card border border-border rounded text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 transition-all duration-fast min-h-[44px] sm:min-h-0 pr-10"
                             aria-label={t('prompt.search_placeholder')}
                         />
+                        {isLoading && (
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                            </div>
+                        )}
                     </div>
 
                     <PromptEditor
@@ -211,6 +221,8 @@ export const AuthenticatedView: React.FC<AuthenticatedViewProps> = ({
                             onPageChange={onPageChange}
                             onItemsPerPageChange={onItemsPerPageChange}
                             currentUserId={currentUserId}
+                            copiedId={copiedId}
+                            sharedId={sharedId}
                         />
                     </div>
                 </main>

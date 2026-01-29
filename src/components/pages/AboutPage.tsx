@@ -1,5 +1,6 @@
 import { SEO } from "../SEO";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 
@@ -82,9 +83,9 @@ const AboutPage = () => {
                     <h2 className="text-xl font-semibold mb-2 text-foreground">{t('about.related_title')}</h2>
                     <p className="text-sm text-muted-foreground mb-4">{t('about.related_desc')}</p>
                     <div className="flex flex-wrap gap-3">
-                        <a href="/faq" className="text-sm text-primary hover:underline font-medium">{t('footer.links.faq')}</a>
+                        <Link to="/faq" className="text-sm text-primary hover:underline font-medium">{t('footer.links.faq')}</Link>
                         <span className="text-muted-foreground">•</span>
-                        <a href="/use-cases" className="text-sm text-primary hover:underline font-medium">{t('footer.links.use_cases')}</a>
+                        <Link to="/use-cases" className="text-sm text-primary hover:underline font-medium">{t('footer.links.use_cases')}</Link>
                     </div>
                 </section>
             </main>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Copy, Share2, Trash2 } from 'lucide-react';
 import { PromptUI } from '@/types/prompts';
@@ -29,6 +29,37 @@ export const PromptDetailModal: React.FC<PromptDetailModalProps> = ({
 }) => {
     const { t, i18n } = useTranslation();
     const isOwner = currentUserId === prompt.user_id;
+    const modalRef = useRef<HTMLDivElement>(null);
+    const previousFocusRef = useRef<HTMLElement | null>(null);
+
+    // Focus management
+    useEffect(() => {
+        // Store the previously focused element
+        previousFocusRef.current = document.activeElement as HTMLElement;
+        
+        // Focus the modal content
+        if (modalRef.current) {
+            const firstFocusable = modalRef.current.querySelector(
+                'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+            ) as HTMLElement;
+            firstFocusable?.focus();
+        }
+
+        // Handle Escape key
+        const handleEscape = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                onClose();
+            }
+        };
+
+        document.addEventListener('keydown', handleEscape);
+
+        return () => {
+            document.removeEventListener('keydown', handleEscape);
+            // Restore focus to previously focused element
+            previousFocusRef.current?.focus();
+        };
+    }, [onClose]);
 
     const handleShare = async () => {
         if (onShare) {
@@ -42,17 +73,21 @@ export const PromptDetailModal: React.FC<PromptDetailModalProps> = ({
 
     return (
         <div 
-            className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-background/80 backdrop-blur-sm" 
+            className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-background/80 backdrop-blur-sm modal-backdrop" 
             onClick={onClose}
         >
             <div 
-                className="w-full max-w-[42rem] bg-card border border-border rounded shadow-lg flex flex-col max-h-[85vh]" 
+                ref={modalRef}
+                className="w-full max-w-[42rem] bg-card border border-border rounded shadow-lg flex flex-col max-h-[85vh] modal-content" 
                 onClick={e => e.stopPropagation()}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="modal-title"
             >
                 {/* Header */}
                 <div className="p-4 sm:p-5 border-b border-border">
                     <div className="flex items-start justify-between gap-3 mb-3">
-                        <h3 className="text-base font-semibold text-foreground flex-1">{prompt.title}</h3>
+                        <h3 id="modal-title" className="text-base font-semibold text-foreground flex-1">{prompt.title}</h3>
                         <Button 
                             variant="ghost" 
                             size="sm" 

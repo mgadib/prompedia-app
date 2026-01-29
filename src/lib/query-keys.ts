@@ -21,13 +21,15 @@ export const queryKeys = {
       visibility?: 'all' | 'public' | 'private';
     }) => {
       if (!userId) return [...queryKeys.prompts.lists(), 'all'] as const;
+      // Normalize filterTag to lowercase for consistent cache keys
+      const normalizedFilterTag = filters?.filterTag ? filters.filterTag.toLowerCase() : '';
       return [
         ...queryKeys.prompts.lists(),
         userId,
         filters?.page || 1,
         filters?.pageSize || 10,
         filters?.filterText || '',
-        filters?.filterTag || '',
+        normalizedFilterTag,
         filters?.visibility || 'all',
       ] as const;
     },
@@ -45,12 +47,16 @@ export const queryKeys = {
       tag?: string | null;
       page?: number;
       pageSize?: number;
-    }) => [
-      ...queryKeys.publicPrompts.lists(),
-      filters?.tag || null,
-      filters?.page || 1,
-      filters?.pageSize || 10,
-    ] as const,
+    }) => {
+      // Normalize tag to lowercase for consistent cache keys
+      const normalizedTag = filters?.tag ? filters.tag.toLowerCase() : null;
+      return [
+        ...queryKeys.publicPrompts.lists(),
+        normalizedTag,
+        filters?.page || 1,
+        filters?.pageSize || 10,
+      ] as const;
+    },
     recent: (limit?: number) => [
       ...queryKeys.publicPrompts.all,
       'recent',

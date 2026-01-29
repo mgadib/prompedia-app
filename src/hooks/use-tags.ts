@@ -24,5 +24,6 @@ export function useTags(userId: string | undefined) {
         },
         enabled: !!userId,
         staleTime: 5 * 60 * 1000, // 5 minutes - tags don't change frequently
+        gcTime: 10 * 60 * 1000, // Clean up after 10 minutes of inactivity (tags are relatively stable)
     });
 }

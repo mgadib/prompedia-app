@@ -1,6 +1,7 @@
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { Components } from 'react-markdown';
+import DOMPurify from 'isomorphic-dompurify';
 
 interface MarkdownPreviewProps {
     content: string;
@@ -135,6 +136,22 @@ const components: Components = {
     ),
 };
 
+/**
+ * Sanitize markdown content to prevent XSS attacks.
+ * Removes potentially dangerous HTML while preserving markdown syntax.
+ */
+function sanitizeMarkdownContent(content: string): string {
+    // Remove script tags and event handlers that might be embedded in markdown
+    // This is a defense-in-depth measure - react-markdown already sanitizes by default
+    const sanitized = DOMPurify.sanitize(content, {
+        ALLOWED_TAGS: [], // Don't allow any HTML tags in markdown content
+        KEEP_CONTENT: true, // Keep text content
+        ALLOW_DATA_ATTR: false,
+    });
+    
+    return sanitized;
+}
+
 export const MarkdownPreview = ({ content, className = '' }: MarkdownPreviewProps) => {
     // Handle empty content
     if (!content || !content.trim()) {
@@ -145,10 +162,13 @@ export const MarkdownPreview = ({ content, className = '' }: MarkdownPreviewProp
         );
     }
 
+    // Sanitize content before rendering to prevent XSS attacks
+    const sanitizedContent = sanitizeMarkdownContent(content);
+
     return (
         <div className={`prose-preview ${className}`}>
             <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
-                {content}
+                {sanitizedContent}
             </ReactMarkdown>
         </div>
     );

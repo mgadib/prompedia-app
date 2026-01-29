@@ -131,8 +131,6 @@ export function getAllKeys(obj: any, prefix = ''): string[] {
  * 
  * // Test list.title with various counts
  * const results = testPluralization('list.title', [0, 1, 2, 100]);
- * console.log('Pluralization test results:', results);
- * 
  * // Expected output for English:
  * // {
  * //   0: "All Prompts (0)",
@@ -146,10 +144,9 @@ export function getAllKeys(obj: any, prefix = ''): string[] {
  *   { start: 1, end: 10, total: 50 },
  *   { start: 1, end: 1, total: 1 }
  * ]);
- * console.log('Interpolation test results:', interpolationResults);
  * 
  * // Validate key exists
  * if (keyExists('list.title')) {
- *   console.log('Key exists!');
+ *   // Key exists
  * }
  */

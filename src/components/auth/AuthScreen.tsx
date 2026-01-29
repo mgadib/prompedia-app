@@ -169,7 +169,11 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
                         {publicTags.map(tag => (
                             <TagChip
                                 key={tag.name}
-                                variant={selectedPublicTag === tag.name ? 'active' : 'default'}
+                                variant={
+                                    selectedPublicTag?.toLowerCase() === tag.name.toLowerCase() 
+                                        ? 'active' 
+                                        : 'default'
+                                }
                                 size="default"
                                 onClick={() => { setSelectedPublicTag(tag.name); setPublicCurrentPage(1); }}
                             >

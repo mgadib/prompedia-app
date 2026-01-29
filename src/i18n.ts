@@ -13,7 +13,7 @@ i18n
             id: { translation: id },
             en: { translation: en }
         },
-        fallbackLng: 'en',
+        fallbackLng: 'id',
         debug: false,
         // Pluralization configuration
         pluralSeparator: '_',

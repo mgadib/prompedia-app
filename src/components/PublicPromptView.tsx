@@ -9,6 +9,7 @@ import { formatDate } from '@/lib/date-utils';
 import { SEO } from './SEO';
 import { PromptUI, Prompt } from '@/types/prompts';
 import { transformPromptToUI } from '@/lib/prompt-transformers';
+import { logError } from '@/lib/logger';
 
 // UI Components
 import { Button } from '@/components/ui/button';
@@ -45,12 +46,9 @@ const PublicPromptView = () => {
                 }
             } catch (err) {
                 // Structured error logging
-                if (import.meta.env.DEV) {
-                    console.error('Error fetching recent prompts:', {
-                        error: err,
-                        message: err instanceof Error ? err.message : String(err),
-                    });
-                }
+                logError(err instanceof Error ? err : new Error(String(err)), {
+                    context: 'fetchRecentPrompts',
+                });
             }
         };
 
@@ -88,13 +86,11 @@ const PublicPromptView = () => {
                         ? String((err as { message: unknown }).message)
                         : t('public_view.not_found_title');
                 
-                if (import.meta.env.DEV) {
-                    console.error('Error fetching prompt:', {
-                        error: err,
-                        message: errorMessage,
-                        promptId: id,
-                    });
-                }
+                logError(err instanceof Error ? err : new Error(String(err)), {
+                    context: 'fetchPrompt',
+                    promptId: id,
+                    errorMessage,
+                });
                 setError(errorMessage);
             } finally {
                 setLoading(false);
@@ -149,9 +145,9 @@ const PublicPromptView = () => {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4 text-center">
                 <SEO title={t('public_view.not_found_title')} noIndex={true} />
-                <h2 className="text-xl font-semibold mb-2 text-foreground">
+                <h1 className="text-xl font-semibold mb-2 text-foreground">
                     {error || t('public_view.not_found_title')}
-                </h2>
+                </h1>
                 <p className="text-muted-foreground mb-6">
                     {t('public_view.not_found_desc')}
                 </p>

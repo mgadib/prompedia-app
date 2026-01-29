@@ -66,8 +66,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 }) => {
     const { t } = useTranslation();
 
+    // Case-insensitive tag filtering
     const filteredPublicPrompts = selectedPublicTag
-        ? publicPrompts.filter(p => p.tags.some(t => t.name === selectedPublicTag))
+        ? publicPrompts.filter(p => 
+            p.tags.some(t => t.name.toLowerCase() === selectedPublicTag.toLowerCase())
+          )
         : publicPrompts;
     const paginatedPublicPrompts = filteredPublicPrompts.slice(
         (publicCurrentPage - 1) * publicItemsPerPage,
@@ -80,6 +83,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <div className="max-w-6xl mx-auto px-4 py-4 flex-1 w-full">
                 <div className="flex flex-col lg:flex-row gap-4 items-start">
                     <div className="flex-1 w-full min-w-0">
+                        <h1 className="sr-only">{t('app.title')} - {t('app.tagline')}</h1>
                         <div className="mb-6">
                             <div className="bg-card border-2 border-primary/30 dark:border-primary/20 rounded shadow-sm p-4 sm:p-5">
                                 <p className="text-sm sm:text-base text-foreground leading-relaxed">

@@ -1,9 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
 import { PromptUI, TagWithCount } from '@/types/prompts';
-import { transformSupabasePromptToUI, calculateTagCounts } from '@/lib/prompt-transformers';
 import { queryKeys } from '@/lib/query-keys';
+import { usePromptRepository } from './use-prompt-repository';
 
 interface UsePublicPromptsOptions {
     tag?: string | null;
@@ -23,6 +22,10 @@ export function usePublicPrompts({
     enabled = true,
 }: UsePublicPromptsOptions = {}) {
     const { t } = useTranslation();
+    const repository = usePromptRepository();
+
+    // Normalize tag to lowercase for case-insensitive matching and consistent cache keys
+    const normalizedTag = tag ? tag.toLowerCase() : null;
 
     const {
         data,
@@ -30,46 +33,24 @@ export function usePublicPrompts({
         error,
         refetch,
     } = useQuery({
-        queryKey: queryKeys.publicPrompts.list({ tag, page, pageSize }),
+        queryKey: queryKeys.publicPrompts.list({ tag: normalizedTag, page, pageSize }),
         queryFn: async () => {
-            // Use RPC function for server-side filtering and pagination
-            const { data: rpcData, error: rpcError } = await supabase.rpc('search_public_prompts', {
-                p_tag_filter: tag || null,
-                p_page: page,
-                p_page_size: pageSize
-            });
+            const result = await repository.searchPublicPrompts({
+                tag: normalizedTag,
+                page,
+                pageSize,
+            }, t);
 
-            if (rpcError) throw rpcError;
-
-            // Handle empty results
-            if (!rpcData || rpcData.length === 0) {
-                return { prompts: [], tags: [], total: 0 };
-            }
-
-            // Extract total count from first row (all rows have same total_count)
-            interface RPCRowWithCount {
-                total_count?: number;
-            }
-            const totalCount = (rpcData[0] as RPCRowWithCount)?.total_count || 0;
-
-            // Transform data from RPC function format to PromptUI format
-            const formattedPrompts: PromptUI[] = rpcData.map((row) => 
-                transformSupabasePromptToUI(row, t)
-            );
-
-            // Calculate tag counts from current page prompts
-            // Note: For accurate tag counts across all prompts, we'd need a separate query
-            // For now, we calculate from the current page which is acceptable for most use cases
-            const tagCounts = calculateTagCounts(formattedPrompts);
-
+            // Note: Tag counts are now fetched separately via usePublicTagCounts hook
+            // for accurate counts across all prompts, not just current page
             return {
-                prompts: formattedPrompts,
-                tags: tagCounts,
-                total: totalCount,
+                ...result,
+                tags: [], // Deprecated - use usePublicTagCounts instead
             };
         },
         enabled,
         staleTime: 60 * 1000, // 1 minute
+        gcTime: 5 * 60 * 1000, // Clean up after 5 minutes of inactivity
     });
 
     return {
@@ -83,31 +64,38 @@ export function usePublicPrompts({
 }
 
 /**
+ * Hook for fetching accurate tag counts across all public prompts
+ * This is separate from the paginated prompts query to ensure accuracy
+ */
+export function usePublicTagCounts() {
+    const repository = usePromptRepository();
+
+    const { data, isLoading, error } = useQuery({
+        queryKey: [...queryKeys.publicPrompts.all, 'tag-counts'],
+        queryFn: () => repository.getPublicTagCounts(),
+        staleTime: 5 * 60 * 1000, // 5 minutes - tag counts don't change frequently
+        gcTime: 10 * 60 * 1000, // Clean up after 10 minutes
+    });
+
+    return {
+        tagCounts: data || [],
+        isLoading,
+        error,
+    };
+}
+
+/**
  * Hook for fetching recent public prompts (for sidebars, etc.)
  */
 export function useRecentPublicPrompts(limit: number = 7) {
     const { t } = useTranslation();
+    const repository = usePromptRepository();
 
     const { data, isLoading, error } = useQuery({
         queryKey: queryKeys.publicPrompts.recent(limit),
-        queryFn: async () => {
-            const { data: promptsData, error: queryError } = await supabase
-                .from('prompts')
-                .select('id, title, users(username, display_name)')
-                .eq('is_public', true)
-                .order('created_at', { ascending: false })
-                .limit(limit);
-
-            if (queryError) throw queryError;
-            if (!promptsData) return [];
-
-            return promptsData.map(p => ({
-                id: p.id,
-                title: p.title || t('prompt.untitled'),
-                author: p.users?.display_name || p.users?.username || t('prompt.unknown_author'),
-            }));
-        },
+        queryFn: () => repository.getRecentPublicPrompts(limit, t),
         staleTime: 60 * 1000, // 1 minute
+        gcTime: 5 * 60 * 1000, // Clean up after 5 minutes of inactivity
     });
 
     return {

@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import PromptNotes from "@/components/PromptNotes";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { PageTransition } from "@/components/PageTransition";
 
 import { SEO } from "@/components/SEO";
 import { useTranslation } from "react-i18next";
@@ -46,6 +47,7 @@ const queryClient = new QueryClient({
       retry: retryWithBackoff,
       retryDelay: retryDelay,
       staleTime: 5 * 60 * 1000,
+      gcTime: 5 * 60 * 1000, // Clean up cache after 5 minutes of inactivity
       refetchOnWindowFocus: false,
     },
     mutations: {
@@ -74,85 +76,87 @@ const App = () => {
             }}
           >
             <SEO />
-            <Routes>
-              <Route 
-                path="/" 
-                element={
-                  <ErrorBoundary>
-                    <PromptNotes />
-                  </ErrorBoundary>
-                } 
-              />
-              <Route 
-                path="/about" 
-                element={
-                  <ErrorBoundary>
-                    <Suspense fallback={
-                      <div className="min-h-screen flex items-center justify-center bg-background">
-                        <div className="flex flex-col items-center gap-4">
-                          <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
-                          <p className="text-sm text-muted-foreground">Loading...</p>
+            <PageTransition>
+              <Routes>
+                <Route 
+                  path="/" 
+                  element={
+                    <ErrorBoundary>
+                      <PromptNotes />
+                    </ErrorBoundary>
+                  } 
+                />
+                <Route 
+                  path="/about" 
+                  element={
+                    <ErrorBoundary>
+                      <Suspense fallback={
+                        <div className="min-h-screen flex items-center justify-center bg-background">
+                          <div className="flex flex-col items-center gap-4">
+                            <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
+                            <p className="text-sm text-muted-foreground">Loading...</p>
+                          </div>
                         </div>
-                      </div>
-                    }>
-                      <AboutPage />
-                    </Suspense>
-                  </ErrorBoundary>
-                } 
-              />
-              <Route 
-                path="/faq" 
-                element={
-                  <ErrorBoundary>
-                    <Suspense fallback={
-                      <div className="min-h-screen flex items-center justify-center bg-background">
-                        <div className="flex flex-col items-center gap-4">
-                          <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
-                          <p className="text-sm text-muted-foreground">Loading...</p>
+                      }>
+                        <AboutPage />
+                      </Suspense>
+                    </ErrorBoundary>
+                  } 
+                />
+                <Route 
+                  path="/faq" 
+                  element={
+                    <ErrorBoundary>
+                      <Suspense fallback={
+                        <div className="min-h-screen flex items-center justify-center bg-background">
+                          <div className="flex flex-col items-center gap-4">
+                            <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
+                            <p className="text-sm text-muted-foreground">Loading...</p>
+                          </div>
                         </div>
-                      </div>
-                    }>
-                      <FAQPage />
-                    </Suspense>
-                  </ErrorBoundary>
-                } 
-              />
-              <Route 
-                path="/use-cases" 
-                element={
-                  <ErrorBoundary>
-                    <Suspense fallback={
-                      <div className="min-h-screen flex items-center justify-center bg-background">
-                        <div className="flex flex-col items-center gap-4">
-                          <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
-                          <p className="text-sm text-muted-foreground">Loading...</p>
+                      }>
+                        <FAQPage />
+                      </Suspense>
+                    </ErrorBoundary>
+                  } 
+                />
+                <Route 
+                  path="/use-cases" 
+                  element={
+                    <ErrorBoundary>
+                      <Suspense fallback={
+                        <div className="min-h-screen flex items-center justify-center bg-background">
+                          <div className="flex flex-col items-center gap-4">
+                            <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
+                            <p className="text-sm text-muted-foreground">Loading...</p>
+                          </div>
                         </div>
-                      </div>
-                    }>
-                      <UseCasesPage />
-                    </Suspense>
-                  </ErrorBoundary>
-                } 
-              />
-              <Route 
-                path="/share/:id" 
-                element={
-                  <ErrorBoundary>
-                    <Suspense fallback={
-                      <div className="min-h-screen flex items-center justify-center bg-background">
-                        <div className="flex flex-col items-center gap-4">
-                          <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
-                          <p className="text-sm text-muted-foreground">Loading...</p>
+                      }>
+                        <UseCasesPage />
+                      </Suspense>
+                    </ErrorBoundary>
+                  } 
+                />
+                <Route 
+                  path="/share/:id" 
+                  element={
+                    <ErrorBoundary>
+                      <Suspense fallback={
+                        <div className="min-h-screen flex items-center justify-center bg-background">
+                          <div className="flex flex-col items-center gap-4">
+                            <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
+                            <p className="text-sm text-muted-foreground">Loading...</p>
+                          </div>
                         </div>
-                      </div>
-                    }>
-                      <PublicPromptView />
-                    </Suspense>
-                  </ErrorBoundary>
-                } 
-              />
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
+                      }>
+                        <PublicPromptView />
+                      </Suspense>
+                    </ErrorBoundary>
+                  } 
+                />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </PageTransition>
           </BrowserRouter>
         </TooltipProvider>
       </ThemeProvider>

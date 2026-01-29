@@ -5,7 +5,7 @@ import { TagChipStatic } from '@/components/ui/tag-chip';
 import { Button } from '@/components/ui/button';
 import { PromptCardSkeleton } from '@/components/ui/skeleton';
 import { Pagination } from '@/components/ui/pagination';
-import { Share2, Copy, Trash2, Loader2, FileText, Search } from "lucide-react";
+import { Share2, Copy, Trash2, Loader2, FileText, Search, Check } from "lucide-react";
 import { useTranslation } from 'react-i18next';
 import { formatDate } from '@/lib/date-utils';
 import { PromptUI } from '@/types/prompts';
@@ -15,7 +15,7 @@ interface PromptListProps {
     isLoading?: boolean;
     editingId: string | null;
     onSelectPrompt: (prompt: PromptUI) => void;
-    onCopy: (text: string) => void;
+    onCopy: (text: string, id?: string) => void;
     onDeleteClick: (id: string) => void;
     onShare: (id: string) => void;
     // Pagination
@@ -25,6 +25,8 @@ interface PromptListProps {
     onPageChange: (page: number) => void;
     onItemsPerPageChange: (items: number) => void;
     currentUserId?: string;
+    copiedId?: string | null;
+    sharedId?: string | null;
 }
 
 export const PromptList: React.FC<PromptListProps> = memo(({
@@ -41,6 +43,8 @@ export const PromptList: React.FC<PromptListProps> = memo(({
     onPageChange,
     onItemsPerPageChange,
     currentUserId,
+    copiedId,
+    sharedId,
 }) => {
     const { t, i18n } = useTranslation();
 
@@ -74,7 +78,7 @@ export const PromptList: React.FC<PromptListProps> = memo(({
 
     return (
         <div className="grid gap-5">
-            {prompts.map(prompt => (
+            {prompts.map((prompt, index) => (
                 <PromptCard
                     key={prompt.id}
                     variant={editingId === prompt.id ? 'selected' : prompt.is_public ? 'public' : 'private'}
@@ -88,6 +92,8 @@ export const PromptList: React.FC<PromptListProps> = memo(({
                         }
                     }}
                     aria-label={`${prompt.title} - ${prompt.is_public ? t('prompt.public') : t('prompt.private')}`}
+                    className="list-item-enter"
+                    style={{ animationDelay: `${index * 20}ms` }}
                 >
                     <PromptCardHeader>
                         <div className="flex-1 flex items-center gap-3 min-w-0">
@@ -117,24 +123,40 @@ export const PromptList: React.FC<PromptListProps> = memo(({
                                 <Button
                                     variant="action"
                                     size="sm"
-                                    className="opacity-40 hover:opacity-100 hover:bg-accent/10 hover:text-accent gap-2"
+                                    className={`gap-2 transition-all duration-fast ${
+                                        sharedId === prompt.id
+                                            ? 'opacity-100 bg-accent/20 text-accent'
+                                            : 'opacity-40 hover:opacity-100 hover:bg-accent/10 hover:text-accent'
+                                    }`}
                                     onClick={() => onShare(prompt.id)}
                                     title={t('actions.share', 'Share')}
                                     aria-label={t('actions.share', 'Share')}
                                 >
-                                    <Share2 className="w-3.5 h-3.5" aria-hidden="true" />
+                                    {sharedId === prompt.id ? (
+                                        <Check className="w-3.5 h-3.5" aria-hidden="true" />
+                                    ) : (
+                                        <Share2 className="w-3.5 h-3.5" aria-hidden="true" />
+                                    )}
                                     <span className="text-xs">{t('actions.share', 'Share')}</span>
                                 </Button>
                             )}
                             <Button
                                 variant="action"
                                 size="sm"
-                                className="opacity-40 hover:opacity-100 hover:bg-primary/10 hover:text-primary gap-2"
-                                onClick={() => onCopy(prompt.content)}
+                                className={`gap-2 transition-all duration-fast ${
+                                    copiedId === prompt.id
+                                        ? 'opacity-100 bg-primary/20 text-primary'
+                                        : 'opacity-40 hover:opacity-100 hover:bg-primary/10 hover:text-primary'
+                                }`}
+                                onClick={() => onCopy(prompt.content, prompt.id)}
                                 title={t('actions.copy')}
                                 aria-label={t('actions.copy')}
                             >
-                                <Copy className="w-3.5 h-3.5" aria-hidden="true" />
+                                {copiedId === prompt.id ? (
+                                    <Check className="w-3.5 h-3.5" aria-hidden="true" />
+                                ) : (
+                                    <Copy className="w-3.5 h-3.5" aria-hidden="true" />
+                                )}
                                 <span className="text-xs">{t('actions.copy')}</span>
                             </Button>
                             {currentUserId === prompt.user_id && (

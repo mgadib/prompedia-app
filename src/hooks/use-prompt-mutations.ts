@@ -19,6 +19,139 @@ interface DeletePromptData {
 }
 
 /**
+ * Upsert prompt metadata (create or update)
+ */
+async function upsertPrompt(
+    promptId: string | null | undefined,
+    userId: string,
+    title: string,
+    isPublic: boolean
+): Promise<string> {
+    const promptTitle = title.trim();
+    const now = new Date().toISOString();
+
+    if (promptId) {
+        // Update existing prompt
+        const { error } = await supabase
+            .from('prompts')
+            .update({ 
+                title: promptTitle, 
+                is_public: isPublic, 
+                updated_at: now 
+            })
+            .eq('id', promptId)
+            .eq('user_id', userId);
+        
+        if (error) throw error;
+        return promptId;
+    } else {
+        // Create new prompt
+        const newId = crypto.randomUUID();
+        const { error } = await supabase
+            .from('prompts')
+            .insert({ 
+                id: newId, 
+                user_id: userId, 
+                title: promptTitle, 
+                is_public: isPublic 
+            });
+        
+        if (error) throw error;
+        return newId;
+    }
+}
+
+/**
+ * Sync prompt content (body)
+ */
+async function syncPromptContent(promptId: string, content: string): Promise<void> {
+    const { error } = await supabase
+        .from('prompt_contents')
+        .upsert({ 
+            prompt_id: promptId, 
+            body: content.trim() 
+        });
+    
+    if (error) throw error;
+}
+
+/**
+ * Sync prompt tags (create missing tags and link to prompt)
+ * Tags are normalized to lowercase for case-insensitive matching
+ */
+async function syncPromptTags(
+    promptId: string,
+    tagsInput: string,
+    userId: string
+): Promise<void> {
+    // Normalize tag names to lowercase for case-insensitive matching
+    const tagNames = tagsInput
+        .split(',')
+        .map(t => t.trim().toLowerCase())
+        .filter(Boolean);
+    const uniqueTagNames = [...new Set(tagNames)];
+
+    // Remove all existing tags for this prompt
+    await supabase
+        .from('prompt_tags')
+        .delete()
+        .eq('prompt_id', promptId);
+
+    if (uniqueTagNames.length === 0) {
+        return; // No tags to add
+    }
+
+    // Get all user tags and create a case-insensitive lookup map
+    const { data: allUserTags } = await supabase
+        .from('tags')
+        .select('id, name')
+        .eq('user_id', userId);
+
+    // Create case-insensitive map: lowercase name -> tag id
+    const existingTagMap = new Map<string, string>();
+    allUserTags?.forEach(tag => {
+        const lowerName = tag.name.toLowerCase();
+        if (!existingTagMap.has(lowerName)) {
+            existingTagMap.set(lowerName, tag.id);
+        }
+    });
+
+    // Find missing tags (case-insensitive)
+    const missingTags = uniqueTagNames.filter(name => !existingTagMap.has(name));
+    const tagIdsToLink: string[] = [];
+
+    // Create missing tags (store in lowercase)
+    if (missingTags.length > 0) {
+        const { data: created } = await supabase
+            .from('tags')
+            .insert(missingTags.map(name => ({ name, user_id: userId })))
+            .select('id, name');
+        
+        created?.forEach(t => tagIdsToLink.push(t.id));
+    }
+
+    // Add existing tag IDs (from case-insensitive lookup)
+    uniqueTagNames.forEach(lowerName => {
+        const tagId = existingTagMap.get(lowerName);
+        if (tagId) {
+            tagIdsToLink.push(tagId);
+        }
+    });
+
+    // Link tags to prompt
+    if (tagIdsToLink.length > 0) {
+        const { error } = await supabase
+            .from('prompt_tags')
+            .insert(tagIdsToLink.map(tag_id => ({ 
+                prompt_id: promptId, 
+                tag_id 
+            })));
+        
+        if (error) throw error;
+    }
+}
+
+/**
  * Hook for prompt CRUD mutations using React Query.
  * Extracted from PromptNotes to provide reusable mutation logic.
  */
@@ -38,109 +171,26 @@ export function usePromptMutations() {
                 throw new Error('Content is required');
             }
 
+            // Generate title from content if not provided
             const promptTitle = title.trim() || content.trim().slice(0, 50);
-            const now = new Date().toISOString();
-            let promptId = id;
 
-            // Update existing prompt or create new one
-            if (promptId) {
-                const { error } = await supabase
-                    .from('prompts')
-                    .update({ 
-                        title: promptTitle, 
-                        is_public: isPublic, 
-                        updated_at: now 
-                    })
-                    .eq('id', promptId)
-                    .eq('user_id', userId);
-                
-                if (error) throw error;
+            // Upsert prompt metadata (create or update)
+            const promptId = await upsertPrompt(id, userId, promptTitle, isPublic);
 
-                const { error: contentError } = await supabase
-                    .from('prompt_contents')
-                    .upsert({ 
-                        prompt_id: promptId, 
-                        body: content.trim() 
-                    });
-                
-                if (contentError) throw contentError;
-            } else {
-                const newId = crypto.randomUUID();
-                const { error } = await supabase
-                    .from('prompts')
-                    .insert({ 
-                        id: newId, 
-                        user_id: userId, 
-                        title: promptTitle, 
-                        is_public: isPublic 
-                    });
-                
-                if (error) throw error;
+            // Sync prompt content
+            await syncPromptContent(promptId, content);
 
-                const { error: contentError } = await supabase
-                    .from('prompt_contents')
-                    .insert({ 
-                        prompt_id: newId, 
-                        body: content.trim() 
-                    });
-                
-                if (contentError) throw contentError;
-                promptId = newId;
-            }
+            // Sync tags
+            await syncPromptTags(promptId, tagsInput, userId);
 
-            // Handle tags
-            const tagNames = tagsInput.split(',').map(t => t.trim()).filter(Boolean);
-            const uniqueTagNames = [...new Set(tagNames)];
-
-            if (uniqueTagNames.length > 0 && promptId) {
-                // Get or create tags
-                const { data: existingTags } = await supabase
-                    .from('tags')
-                    .select('id, name')
-                    .eq('user_id', userId)
-                    .in('name', uniqueTagNames);
-
-                const existingTagMap = new Map(existingTags?.map(t => [t.name, t.id]) || []);
-                const missingTags = uniqueTagNames.filter(name => !existingTagMap.has(name));
-
-                const tagIdsToLink: string[] = [];
-
-                // Create missing tags
-                if (missingTags.length > 0) {
-                    const { data: created } = await supabase
-                        .from('tags')
-                        .insert(missingTags.map(name => ({ name, user_id: userId })))
-                        .select('id, name');
-                    
-                    created?.forEach(t => tagIdsToLink.push(t.id));
-                }
-
-                // Add existing tag IDs
-                existingTagMap.forEach(id => tagIdsToLink.push(id));
-
-                // Update prompt_tags
-                await supabase
-                    .from('prompt_tags')
-                    .delete()
-                    .eq('prompt_id', promptId);
-
-                if (tagIdsToLink.length > 0) {
-                    await supabase
-                        .from('prompt_tags')
-                        .insert(tagIdsToLink.map(tag_id => ({ 
-                            prompt_id: promptId, 
-                            tag_id 
-                        })));
-                }
-            } else if (promptId) {
-                // Remove all tags if tagsInput is empty
-                await supabase
-                    .from('prompt_tags')
-                    .delete()
-                    .eq('prompt_id', promptId);
-            }
-
-            return { id: promptId, userId, title: promptTitle, content: content.trim(), tagsInput, isPublic };
+            return { 
+                id: promptId, 
+                userId, 
+                title: promptTitle, 
+                content: content.trim(), 
+                tagsInput, 
+                isPublic 
+            };
         },
         onMutate: async (data) => {
             // Cancel outgoing refetches to avoid overwriting optimistic update

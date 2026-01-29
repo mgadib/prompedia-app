@@ -606,6 +606,117 @@
     animation: toast-out 0.15s ease-in forwards;
   }
 
+  /* Modal animations */
+  @keyframes modal-backdrop-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes modal-content-in {
+    from {
+      opacity: 0;
+      transform: scale(0.95) translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+
+  @keyframes modal-content-out {
+    from {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: scale(0.95) translateY(-10px);
+    }
+  }
+
+  .modal-backdrop {
+    animation: modal-backdrop-in var(--duration-normal) var(--ease-out);
+  }
+
+  .modal-content {
+    animation: modal-content-in var(--duration-normal) var(--ease-out);
+  }
+
+  .modal-content-exit {
+    animation: modal-content-out var(--duration-fast) var(--ease-in) forwards;
+  }
+
+  /* Loading spinner fade-in */
+  @keyframes spinner-fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .loading-spinner {
+    animation: spinner-fade-in var(--duration-fast) var(--ease-out);
+  }
+
+  /* List item transitions */
+  @keyframes list-item-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes list-item-out {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+  }
+
+  .list-item-enter {
+    animation: list-item-in var(--duration-normal) var(--ease-out);
+  }
+
+  .list-item-exit {
+    animation: list-item-out var(--duration-fast) var(--ease-in) forwards;
+  }
+
+  /* Page transitions */
+  @keyframes page-fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .page-transition {
+    animation: page-fade-in var(--duration-normal) var(--ease-out);
+  }
+
+  .page-transition-entering {
+    opacity: 0;
+  }
+
+  .page-transition-entered {
+    opacity: 1;
+  }
+
   /* Rich Text Editor Styles */
   .prose-editor {
     @apply text-sm text-foreground leading-relaxed;

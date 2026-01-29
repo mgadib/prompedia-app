@@ -1,12 +1,12 @@
 {
     "app": {
         "title": "prompedia.app",
-        "tagline": "Aplikasi catatan prompt yang sederhana",
-        "description": "Aplikasi catatan prompt yang sederhana. Pribadi secara default. Dibuat untuk komunitas."
+        "tagline": "Catatan prompt sederhana",
+        "description": "Catatan prompt sederhana. Pribadi secara default. Dibuat untuk komunitas."
     },
     "geo": {
-        "semantic_description": "prompedia.app adalah aplikasi catatan pribadi sederhana untuk menyimpan dan berbagi prompt. Pribadi secara default. Aman. Dibuat untuk komunitas.",
-        "keywords": "catatan prompt, penyimpanan prompt, berbagi prompt, sistem tag, manajemen prompt, perpustakaan prompt, prompt engineering, tool prompt AI"
+        "semantic_description": "prompedia.app adalah aplikasi catatan pribadi sederhana untuk menyimpan dan berbagi prompt AI. Pribadi secara default. Aman. Dibuat untuk komunitas.",
+        "keywords": "catatan prompt, catatan prompt AI, penyimpanan prompt, berbagi prompt, sistem tag, manajemen prompt, perpustakaan prompt, prompt engineering, tool prompt AI"
     },
     "auth": {
         "welcome": "Selamat Datang",

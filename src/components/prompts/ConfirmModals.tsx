@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 
@@ -28,22 +28,58 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
 }) => {
     const { t } = useTranslation();
     const finalCancelLabel = cancelLabel || t('actions.cancel');
+    const modalRef = useRef<HTMLDivElement>(null);
+    const cancelButtonRef = useRef<HTMLButtonElement>(null);
+    const previousFocusRef = useRef<HTMLElement | null>(null);
+
+    // Focus management
+    useEffect(() => {
+        if (!isOpen) return;
+
+        // Store the previously focused element
+        previousFocusRef.current = document.activeElement as HTMLElement;
+        
+        // Focus the cancel button (safer default)
+        if (cancelButtonRef.current) {
+            cancelButtonRef.current.focus();
+        }
+
+        // Handle Escape key
+        const handleEscape = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                onCancel();
+            }
+        };
+
+        document.addEventListener('keydown', handleEscape);
+
+        return () => {
+            document.removeEventListener('keydown', handleEscape);
+            // Restore focus to previously focused element
+            previousFocusRef.current?.focus();
+        };
+    }, [isOpen, onCancel]);
 
     if (!isOpen) return null;
 
     return (
         <div 
-            className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 bg-background/80 backdrop-blur-sm" 
+            className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 bg-background/80 backdrop-blur-sm modal-backdrop" 
             onClick={onCancel}
         >
             <div 
-                className="w-full max-w-sm bg-card border border-border rounded shadow-lg p-4 sm:p-5" 
+                ref={modalRef}
+                className="w-full max-w-sm bg-card border border-border rounded shadow-lg p-4 sm:p-5 modal-content" 
                 onClick={e => e.stopPropagation()}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="confirm-modal-title"
             >
-                <h3 className="text-base font-semibold text-foreground mb-2">{title}</h3>
+                <h3 id="confirm-modal-title" className="text-base font-semibold text-foreground mb-2">{title}</h3>
                 <p className="text-sm text-muted-foreground mb-5">{description}</p>
                 <div className="flex justify-end gap-2">
                     <Button 
+                        ref={cancelButtonRef}
                         variant="ghost" 
                         size="sm" 
                         onClick={onCancel}
