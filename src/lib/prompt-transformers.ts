@@ -1,5 +1,6 @@
 import { TFunction } from 'i18next';
 import { PromptUI, Tag, Prompt } from '@/types/prompts';
+import { truncateDescription } from '@/lib/text-utils';
 
 /**
  * Data transformation utilities for converting Supabase responses to UI-friendly formats.
@@ -101,7 +102,7 @@ export function transformSupabasePromptToUI(
         user_id: row.user_id || '',
         title: row.title || t('prompt.untitled'),
         content: content,
-        description: content.length > 150 ? content.substring(0, 150) + '...' : content,
+        description: truncateDescription(content),
         is_public: Boolean(row.is_public),
         created_at: row.created_at,
         updated_at: row.updated_at || row.created_at,
@@ -149,7 +150,7 @@ export function transformSupabaseSelectToUI(
         user_id: data.user_id || '',
         title: data.title || t('prompt.untitled'),
         content: content,
-        description: content.length > 150 ? content.substring(0, 150) + '...' : content,
+        description: truncateDescription(content),
         is_public: Boolean(data.is_public),
         created_at: data.created_at,
         updated_at: data.updated_at || data.created_at,
@@ -179,7 +180,7 @@ export function transformPromptToUI(
         user_id: prompt.user_id,
         title: prompt.title || t('prompt.untitled'),
         content: content,
-        description: content.length > 150 ? content.substring(0, 150) + '...' : content,
+        description: truncateDescription(content),
         is_public: prompt.is_public,
         created_at: prompt.created_at,
         updated_at: prompt.updated_at || prompt.created_at,

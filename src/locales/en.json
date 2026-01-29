@@ -1,11 +1,12 @@
 {
     "app": {
         "title": "prompedia.app",
-        "tagline": "A simple prompt notes",
-        "description": "Simple prompt notes. Private by default. Community-loved."
+        "tagline": "AI prompt notes",
+        "description": "AI prompt notes. Private by default. Community-loved.",
+        "loading": "Loading..."
     },
     "geo": {
-        "semantic_description": "prompedia.app is a simple personal notes app to save and share prompts. Private by default. Secure. Community-loved.",
+        "semantic_description": "prompedia.app is an AI prompt notes app to save, organize, and share prompts. Private by default. Secure. Community-loved.",
         "keywords": "prompt notes, prompt storage, prompt sharing, tag system, prompt management, prompt library, prompt engineering, AI prompt tools"
     },
     "auth": {
@@ -30,6 +31,10 @@
         "name": "Name",
         "error": {
             "generic": "An error occurred during sign in",
+            "generic_try_again": "An error occurred. Please try again.",
+            "invalid_credentials": "Invalid email or password",
+            "user_exists": "An account with this email already exists",
+            "email_not_confirmed": "Please confirm your email address",
             "password_min_length": "Password must be at least 8 characters",
             "password_weak": "Password is too weak. Add numbers or symbols.",
             "rate_limited": "Too many attempts. Please try again later."
@@ -51,13 +56,17 @@
         "created_by": "Created by {{author}}",
         "by": "by {{author}}",
         "untitled": "Untitled",
-        "unknown_author": "Unknown"
+        "unknown_author": "Unknown",
+        "error": {
+            "content_required": "Please add some content before saving.",
+            "validation_failed": "Invalid input. Please check your data and try again."
+        }
     },
     "list": {
         "title_one": "All Prompt (1)",
         "title_other": "All Prompts ({{count}})",
         "all": "All",
-        "empty": "No prompts saved yet",
+        "empty": "No prompts yet. Create your first prompt to get started.",
         "no_match": "No matching prompts found",
         "showing_one": "Showing {{start}} - {{end}} of 1 prompt",
         "showing_other": "Showing {{start}} - {{end}} of {{total}} prompts",
@@ -96,7 +105,8 @@
     },
     "toast": {
         "saved": "Saved",
-        "save_failed": "Failed to save",
+        "save_failed": "Couldn't save. Check your connection and try again.",
+        "delete_failed": "Couldn't delete prompt. Check your connection and try again.",
         "deleted": "Deleted",
         "copied": "Copied",
         "link_copied": "Link copied to clipboard",
@@ -138,7 +148,7 @@
     },
     "footer": {
         "brand": "prompedia.app",
-        "tagline": "A simple prompt notes",
+        "tagline": "AI prompt notes",
         "made_with": "Made with",
         "for_community": "for community",
         "navigation_title": "Navigation",
@@ -151,9 +161,9 @@
     },
     "about": {
         "title": "About prompedia.app",
-        "description": "Learn more about prompedia.app, a simple personal notes to save and share prompts.",
+        "description": "Learn more about prompedia.app, an AI prompt notes app to save and share prompts.",
         "what_is": "What is prompedia.app?",
-        "what_is_desc": "prompedia.app is a simple personal notes app to save and share prompts. This app is designed specifically to help you manage your AI prompt library easily, securely, and in an organized way. With prompedia.app, you can save your favorite prompts, organize them with a tag system, and share with the community if desired.",
+        "what_is_desc": "prompedia.app is an AI prompt notes app to save and share prompts. This app is designed specifically to help you manage your AI prompt library easily, securely, and in an organized way. With prompedia.app, you can save your favorite prompts, organize them with a tag system, and share with the community if desired.",
         "features_title": "Main Features",
         "features": {
             "storage": "Prompt Storage",
@@ -168,7 +178,7 @@
             "search_desc": "Search prompts by title, content, or tags with instant search."
         },
         "security_title": "Security & Privacy",
-        "security_desc": "prompedia.app prioritizes your privacy and data security. All prompts are private by default, only you can access them. Data is stored securely using encryption and Row Level Security (RLS) at the database level. You have full control over your data.",
+        "security_desc": "prompedia.app prioritizes your privacy and data security. All prompts are private by default, only you can access them. Data is stored securely with encryption and access controls at the database level. You have full control over your data.",
         "target_title": "Who is it for?",
         "target_desc": "prompedia.app is suitable for prompt engineers, AI developers, content creators, and anyone who works with AI every day. This app is designed for anyone who wants to manage and organize their AI prompts better.",
         "related_title": "Learn More",
@@ -178,9 +188,9 @@
         "title": "Frequently Asked Questions",
         "description": "Common questions about prompedia.app and how to use it.",
         "q1": "What is prompedia.app?",
-        "a1": "prompedia.app is a simple personal notes app to save and share prompts. This app helps you manage your AI prompt library with a tag system, real-time search, and public or private sharing capabilities.",
+        "a1": "prompedia.app is an AI prompt notes app to save and share prompts. This app helps you manage your AI prompt library with a tag system, real-time search, and public or private sharing capabilities.",
         "q2": "Is my data safe?",
-        "a2": "Yes, data security is a top priority. All prompts are private by default and can only be accessed by you. Data is stored securely using encryption and Row Level Security (RLS) at the database level.",
+        "a2": "Yes, data security is a top priority. All prompts are private by default and can only be accessed by you. Data is stored securely with encryption and access controls at the database level.",
         "q3": "How do I share prompts?",
         "a3": "You can set prompts to public when creating or editing. Public prompts will get a unique link that can be shared. This link can be accessed by anyone without needing to log in.",
         "q4": "Are there usage limits?",
@@ -215,6 +225,21 @@
         "related_title": "Get Started",
         "related_desc": "Ready to start using prompedia.app? Learn more on the About page or check the FAQ for common questions."
     },
+    "error": {
+        "boundary": {
+            "title": "Something went wrong",
+            "description": "An unexpected error occurred. Please try again.",
+            "retry": "Try Again",
+            "home": "Go Home"
+        }
+    },
+    "language": {
+        "switch_to_en": "Switch to English",
+        "switch_to_id": "Switch to Bahasa Indonesia"
+    },
+    "seo": {
+        "default_title_suffix": "AI prompt notes"
+    },
     "theme": {
         "toggle": "Toggle theme",
         "light": "Light",
@@ -230,6 +255,39 @@
             "navigation": "Navigation",
             "view": "View",
             "search": "Search"
+        },
+        "commands": {
+            "new_prompt_label": "New Prompt",
+            "new_prompt_description": "Create a new prompt",
+            "save_prompt_label": "Save Prompt",
+            "save_prompt_description": "Save the current prompt",
+            "copy_prompt_label": "Copy Prompt",
+            "copy_prompt_description": "Copy prompt content to clipboard",
+            "share_prompt_label": "Share Prompt",
+            "share_prompt_description": "Copy sharing link",
+            "go_home_label": "Go to Home",
+            "go_home_description": "Navigate to home page",
+            "go_about_label": "Go to About",
+            "go_about_description": "View about page",
+            "go_faq_label": "Go to FAQ",
+            "go_faq_description": "View frequently asked questions",
+            "go_use_cases_label": "Go to Use Cases",
+            "go_use_cases_description": "View use cases",
+            "toggle_theme_label": "Toggle Theme",
+            "toggle_theme_description": "Switch between light and dark mode",
+            "show_shortcuts_label": "Show Keyboard Shortcuts",
+            "show_shortcuts_description": "View all available keyboard shortcuts",
+            "filter_by_tag_label": "Filter by {{tag}}",
+            "filter_by_tag_description": "Show prompts with tag: {{tag}}",
+            "filter_all_label": "Show All Prompts",
+            "filter_all_description": "Show all prompts",
+            "filter_public_label": "Show Public Prompts",
+            "filter_public_description": "Show only public prompts",
+            "filter_private_label": "Show Private Prompts",
+            "filter_private_description": "Show only private prompts",
+            "focus_search_label": "Focus Search",
+            "focus_search_description": "Focus the search input",
+            "open_prompt_description": "Open: {{title}}"
         }
     },
     "shortcuts": {

@@ -44,40 +44,44 @@ const devLogger: Logger = {
 };
 
 /**
- * Get the appropriate logger based on environment
+ * Get the appropriate logger based on environment (used by logError/logWarning only).
+ * In production build this branch is dead when enableDebugLogging is false.
  */
 function getLogger(): Logger {
   return config.features.enableDebugLogging ? devLogger : noopLogger;
 }
 
 /**
- * Application logger instance
- * 
+ * Application logger instance.
+ * Build-time constant so production bundle only includes noopLogger (devLogger tree-shaken).
+ *
  * Usage:
  * ```ts
  * import { logger } from '@/lib/logger';
- * 
  * logger.error('Something went wrong', error);
  * logger.debug('Debug info', data);
  * ```
  */
-export const logger = getLogger();
+export const logger = import.meta.env.PROD ? noopLogger : devLogger;
 
 /**
- * Structured error logging for production error tracking
- * Sends errors to Sentry in production
+ * Structured error logging for production error tracking.
+ * Sends errors to Sentry in production. Supports requestId for traceability.
  */
 export function logError(
   error: Error | unknown,
   context?: Record<string, unknown>
 ): void {
+  const requestId =
+    (context?.requestId as string) || (typeof crypto !== 'undefined' && crypto.randomUUID?.());
+  const ctx = { ...context, requestId };
+
   if (config.features.enableDebugLogging) {
-    console.error('Error:', error, context);
+    getLogger().error('Error:', error, ctx);
   }
-  
-  // Send to Sentry in production
+
   if (config.env.isProd) {
-    captureException(error, context);
+    captureException(error, ctx);
   }
 }
 
@@ -90,7 +94,7 @@ export function logWarning(
   context?: Record<string, unknown>
 ): void {
   if (config.features.enableDebugLogging) {
-    console.warn('Warning:', message, context);
+    getLogger().warn('Warning:', message, context);
   }
   
   // Send to Sentry in production

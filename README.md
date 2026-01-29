@@ -4,6 +4,8 @@
 
 <div align="center">
 
+![Prompedia AI](public/logo.png)
+
 ![React](https://img.shields.io/badge/React-18.3-61DAFB?style=for-the-badge&logo=react&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-7.3-646CFF?style=for-the-badge&logo=vite&logoColor=white)
@@ -80,8 +82,7 @@ Prompedia AI adalah aplikasi web untuk mengelola library prompt AI secara terpus
 
 ### State Management
 - **React Query 5.83** - Server state management dengan caching
-- **React Hook Form 7.61** - Form management
-- **Zod 3.25** - Schema validation
+- **Zod 4.x** - Schema validation at boundaries (prompt save/delete payloads)
 
 ### Backend
 - **Supabase 2.76** - Backend as a Service
@@ -111,19 +112,21 @@ npm install
 
 2. **Setup environment variables**
 
-Buat file `.env` di root project:
-```env
-VITE_SUPABASE_URL=your_supabase_project_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-```
+   Copy `.env.example` to `.env` and set values. Required in production:
+
+   - `VITE_SUPABASE_URL` – Supabase project URL  
+   - `VITE_SUPABASE_ANON_KEY` – Supabase anon (public) key  
+
+   Optional: `VITE_SENTRY_DSN`, `VITE_APP_VERSION`, `VITE_BUILD_TIME`, `VITE_ANALYTICS_SCRIPT_URL`, `VITE_ANALYTICS_WEBSITE_ID`. See `.env.example` for all variables.
 
 3. **Setup database**
 
-Jalankan migrations di Supabase SQL Editor:
-- `supabase/migrations/20251219120000_baseline.sql`
-- `supabase/migrations/20251219132432_add_search_indexes_to_prompts.sql`
-- `supabase/migrations/20251219140000_add_search_prompts_function.sql`
-- `supabase/migrations/20251220000000_add_search_public_prompts_function.sql`
+   Apply versioned migrations so the schema and RPCs exist:
+
+   - **Local**: Install [Supabase CLI](https://supabase.com/docs/guides/cli), then run `supabase start` from the project root (applies migrations automatically).
+   - **Hosted project**: In Supabase Dashboard → SQL Editor, run each file in `supabase/migrations/` in order; or use CLI: `supabase link --project-ref <ref>` then `supabase db push`.
+
+   See [supabase/README.md](supabase/README.md) for migration list and rollback notes.
 
 4. **Run development server**
 ```bash
@@ -149,8 +152,9 @@ Build output berada di folder `dist/`.
 
 **Build Configuration:**
 - Code splitting dengan manual chunks (vendor-react, vendor-ui, vendor-supabase, vendor-utils)
-- Chunk size warning limit: 1000KB
-- Source maps untuk debugging
+- Production build strips `console.*` and `debugger`; logger dev path is tree-shaken. Config uses `import.meta.env` (Vite); `NODE_ENV` is set automatically for production builds.
+- Bundle size and cleanliness: run `npm run build && npm run build:check-size` to enforce 250KB gzip and ensure no `console.*`/debugger in output (see `scripts/check-bundle-size.mjs`).
+- Source maps only in development build (`npm run build:dev`).
 
 ## Prinsip Desain
 
@@ -162,7 +166,7 @@ Build output berada di folder `dist/`.
 
 ### Security
 - **Row Level Security (RLS)**: Database-level access control pada semua tabel
-- **Input Validation**: Client-side (Zod) dan database constraints
+- **Input Validation**: Zod schemas at boundaries; database constraints; DOMPurify for markdown output
 - **XSS Protection**: React's built-in escaping dan sanitization
 - **CSP Headers**: Content Security Policy di production build
 
@@ -215,19 +219,20 @@ Fitur berikut **tidak terimplementasi** dalam versi saat ini:
 
 ### Code Style
 - TypeScript strict mode
-- ESLint rules (auto-run)
+- ESLint + Prettier (run `npm run lint` and `npm run format:check` or `npm run format`)
 - Absolute imports dengan alias `@/`
 - Functional components dengan hooks
 
 ### Database Changes
-- **Semua perubahan database HARUS melalui Supabase MCP**
-- Migration files di `supabase/migrations/`
-- Naming: `YYYYMMDDHHMMSS_description.sql`
+- Versioned migrations in `supabase/migrations/` (see [supabase/README.md](supabase/README.md))
+- Naming: `YYYYMMDD_description.sql`
+- Apply locally: `supabase start`; for hosted: Dashboard SQL Editor or `supabase db push`
 
 ### Internationalization
 - Semua teks user-facing harus di-i18n
 - Translation files: `src/locales/en.json` dan `src/locales/id.json`
 - Format: `t('namespace.key', 'fallback')`
+- Konvensi i18n dan terminology EN/ID: lihat [docs/I18N_CONVENTIONS.md](docs/I18N_CONVENTIONS.md)
 
 ## License
 

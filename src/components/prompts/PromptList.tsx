@@ -68,7 +68,7 @@ export const PromptList: React.FC<PromptListProps> = memo(({
                     <div className="space-y-2">
                         <h3 className="text-base font-semibold text-foreground">{t('list.no_match')}</h3>
                         <p className="text-sm text-muted-foreground max-w-md">
-                            {t('list.empty', 'No prompts saved yet. Create your first prompt to get started!')}
+                            {t('list.empty')}
                         </p>
                     </div>
                 </div>

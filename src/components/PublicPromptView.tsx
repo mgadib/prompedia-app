@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from "sonner";
 import { MarkdownPreview } from '@/components/editor';
 import { formatDate } from '@/lib/date-utils';
+import { stripMarkdownToPlainText, truncateForMeta } from '@/lib/utils';
 import { SEO } from './SEO';
 import { PromptUI, Prompt } from '@/types/prompts';
 import { transformPromptToUI } from '@/lib/prompt-transformers';
@@ -41,7 +42,9 @@ const PublicPromptView = () => {
                     setRecentPrompts(data.map(p => ({
                         id: p.id,
                         title: p.title || t('prompt.untitled'),
-                        author: (p.users as any)?.display_name || (p.users as any)?.username || t('prompt.unknown_author')
+                        author: (p.users as { display_name?: string | null; username?: string })?.display_name
+                            || (p.users as { display_name?: string | null; username?: string })?.username
+                            || t('prompt.unknown_author')
                     })));
                 }
             } catch (err) {
@@ -135,7 +138,7 @@ const PublicPromptView = () => {
             <div className="min-h-screen flex items-center justify-center bg-background">
                 <div className="flex flex-col items-center gap-4">
                     <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
-                    <p className="text-sm text-muted-foreground">{t('auth.processing', 'Loading...')}</p>
+                    <p className="text-sm text-muted-foreground">{t('app.loading')}</p>
                 </div>
             </div>
         );
@@ -165,7 +168,7 @@ const PublicPromptView = () => {
         <div className="min-h-screen bg-background font-sans flex flex-col">
             <SEO
                 title={prompt.title}
-                description={prompt.content?.substring(0, 160)}
+                description={prompt.content ? truncateForMeta(stripMarkdownToPlainText(prompt.content)) : undefined}
                 structuredData={promptSchema || undefined}
                 type="article"
             />

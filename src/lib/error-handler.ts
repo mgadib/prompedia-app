@@ -5,6 +5,12 @@ import { TFunction } from 'i18next';
  * Provides consistent error detection and user-friendly error messages.
  */
 
+/** Error codes for UI to map to i18n messages (do not show raw to user) */
+export const ERROR_CODES = {
+    CONTENT_REQUIRED: 'CONTENT_REQUIRED',
+    VALIDATION_FAILED: 'VALIDATION_FAILED',
+} as const;
+
 /**
  * Check if an error is a rate limit error (HTTP 429)
  */
@@ -33,18 +39,18 @@ export function isRateLimitError(error: unknown): boolean {
  */
 export function handleSupabaseError(error: unknown, t: TFunction): string {
     if (!error) {
-        return t('auth.error.generic', 'An error occurred');
+        return t('auth.error.generic_try_again', 'An error occurred. Please try again.');
     }
 
     // Handle rate limit errors
     if (isRateLimitError(error)) {
-        return t('auth.error.rate_limited', 'Too many requests. Please try again later.');
+        return t('auth.error.rate_limited', 'Too many attempts. Please try again later.');
     }
 
     // Handle Supabase Auth errors
     if (error && typeof error === 'object' && 'message' in error) {
         const message = (error as { message: string }).message;
-        
+
         // Map common Supabase errors to user-friendly messages
         if (message.includes('Invalid login credentials')) {
             return t('auth.error.invalid_credentials', 'Invalid email or password');
@@ -55,13 +61,20 @@ export function handleSupabaseError(error: unknown, t: TFunction): string {
         if (message.includes('Email not confirmed')) {
             return t('auth.error.email_not_confirmed', 'Please confirm your email address');
         }
-        
+
         // Return the error message as-is if no specific mapping
         return message;
     }
 
     // Fallback for unknown errors
-    return t('auth.error.generic', 'An error occurred. Please try again.');
+    return t('auth.error.generic_try_again', 'An error occurred. Please try again.');
+}
+
+/**
+ * Check if error is a known app error code (e.g. validation)
+ */
+export function isErrorCode(error: unknown, code: string): boolean {
+    return extractErrorMessage(error) === code;
 }
 
 /**

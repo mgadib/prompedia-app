@@ -38,13 +38,6 @@ const categoryIcons: Record<string, React.ComponentType<{ className?: string }>>
     search: Search,
 };
 
-const categoryLabels: Record<string, string> = {
-    actions: 'Actions',
-    navigation: 'Navigation',
-    view: 'View',
-    search: 'Search',
-};
-
 export const CommandPalette: React.FC<CommandPaletteProps> = ({
     isOpen,
     onClose,
@@ -133,7 +126,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                             if (categoryCommands.length === 0) return null;
 
                             const CategoryIcon = categoryIcons[category] || FileText;
-                            const categoryLabel = t(`command_palette.category.${category}`, categoryLabels[category]);
+                            const categoryLabel = t(`command_palette.category.${category}`);
 
                             return (
                                 <CmdkCommand.Group

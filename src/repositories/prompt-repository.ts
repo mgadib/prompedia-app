@@ -6,10 +6,12 @@
  */
 
 import { supabase } from '@/integrations/supabase/client';
-import { PromptUI, UsePromptsOptions } from '@/types/prompts';
+import { PromptUI, Prompt, UsePromptsOptions } from '@/types/prompts';
 import { transformSupabasePromptToUI } from '@/lib/prompt-transformers';
 import { TFunction } from 'i18next';
 import { trackApiResponseTime } from '@/lib/performance-monitor';
+import { logError } from '@/lib/logger';
+import { sanitizeSearchInput, sanitizeTagInput } from '@/lib/text-utils';
 
 export interface SearchPromptsFilters {
     userId: string;
@@ -24,6 +26,14 @@ export interface SearchPublicPromptsFilters {
     tag?: string | null;
     page?: number;
     pageSize?: number;
+}
+
+export interface RPCRowWithCount {
+    total_count?: number;
+}
+
+function isRPCRowWithCount(row: unknown): row is RPCRowWithCount {
+    return row !== null && typeof row === 'object' && 'total_count' in row;
 }
 
 export interface PromptRepository {
@@ -45,10 +55,12 @@ export class SupabasePromptRepository implements PromptRepository {
         const { userId, page = 1, pageSize = 10, filterText = '', filterTag = '', visibility = 'all' } = filters;
 
         const startTime = performance.now();
+        const sanitizedSearch = sanitizeSearchInput(filterText);
+        const sanitizedTag = sanitizeTagInput(filterTag);
         const { data, error } = await supabase.rpc('search_prompts', {
             p_user_id: userId,
-            p_search_text: filterText || null,
-            p_tag_filter: filterTag || null,
+            p_search_text: sanitizedSearch || null,
+            p_tag_filter: sanitizedTag || null,
             p_visibility: visibility,
             p_page: page,
             p_page_size: pageSize
@@ -82,8 +94,9 @@ export class SupabasePromptRepository implements PromptRepository {
         const { tag = null, page = 1, pageSize = 10 } = filters;
 
         const startTime = performance.now();
+        const sanitizedTag = sanitizeTagInput(tag);
         const { data: rpcData, error: rpcError } = await supabase.rpc('search_public_prompts', {
-            p_tag_filter: tag || null,
+            p_tag_filter: sanitizedTag || null,
             p_page: page,
             p_page_size: pageSize
         });
@@ -97,10 +110,7 @@ export class SupabasePromptRepository implements PromptRepository {
             return { prompts: [], total: 0 };
         }
 
-        interface RPCRowWithCount {
-            total_count?: number;
-        }
-        const totalCount = (rpcData[0] as RPCRowWithCount)?.total_count || 0;
+        const totalCount = isRPCRowWithCount(rpcData[0]) ? (rpcData[0].total_count ?? 0) : 0;
 
         const formattedPrompts: PromptUI[] = rpcData.map((row) => 
             transformSupabasePromptToUI(row, t)
@@ -110,36 +120,23 @@ export class SupabasePromptRepository implements PromptRepository {
     }
 
     async getPublicTagCounts(): Promise<Array<{ name: string; count: number }>> {
-        const { data: promptsData, error: queryError } = await supabase
-            .from('prompts')
-            .select('id, prompt_tags(tags(id, name))')
-            .eq('is_public', true);
+        const startTime = performance.now();
+        const { data, error } = await supabase.rpc('get_public_tag_counts');
+        const duration = performance.now() - startTime;
 
-        if (queryError) throw queryError;
-        if (!promptsData) return [];
+        trackApiResponseTime('get_public_tag_counts', 'RPC', duration, error ? undefined : 200);
 
-        // Use lowercase names as keys for case-insensitive counting
-        const tagCounts: Record<string, { name: string; count: number }> = {};
-        
-        promptsData.forEach((prompt) => {
-            const promptTags = prompt.prompt_tags as Array<{ tags: { id: string; name: string } | null }> | null;
-            if (promptTags) {
-                promptTags.forEach((pt) => {
-                    const tag = pt?.tags;
-                    if (tag?.name) {
-                        const lowerName = tag.name.toLowerCase();
-                        if (!tagCounts[lowerName]) {
-                            // Store the first encountered case variant as the display name
-                            tagCounts[lowerName] = { name: tag.name, count: 0 };
-                        }
-                        tagCounts[lowerName].count += 1;
-                    }
-                });
-            }
-        });
+        if (error) {
+            logError(error, { context: 'getPublicTagCounts' });
+            throw error;
+        }
 
-        return Object.values(tagCounts)
-            .sort((a, b) => b.count - a.count);
+        if (!data || !Array.isArray(data)) return [];
+
+        return data.map((row: { name: string; count: number | string }) => ({
+            name: row.name,
+            count: typeof row.count === 'number' ? row.count : Number(row.count),
+        }));
     }
 
     async getRecentPublicPrompts(
@@ -173,10 +170,30 @@ export class SupabasePromptRepository implements PromptRepository {
         if (error) throw error;
         if (!data) return null;
 
-        // Import here to avoid circular dependency
+        if (!isPromptShape(data)) {
+            logError(new Error('Invalid prompt shape from getPromptById'), {
+                context: 'getPromptById',
+                id,
+            });
+            return null;
+        }
+
         const { transformPromptToUI } = await import('@/lib/prompt-transformers');
-        return transformPromptToUI(data as any, t);
+        return transformPromptToUI(data, t);
     }
+}
+
+function isPromptShape(row: unknown): row is Prompt {
+    if (!row || typeof row !== 'object') return false;
+    const o = row as Record<string, unknown>;
+    return (
+        typeof o.id === 'string' &&
+        typeof o.user_id === 'string' &&
+        typeof o.title === 'string' &&
+        typeof o.is_public === 'boolean' &&
+        typeof o.created_at === 'string' &&
+        typeof o.updated_at === 'string'
+    );
 }
 
 /**

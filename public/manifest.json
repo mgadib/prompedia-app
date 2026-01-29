@@ -1,7 +1,7 @@
 {
   "name": "prompedia.app",
   "short_name": "prompedia.app",
-  "description": "A simple personal notes to save and share prompts. Private by default. Secure. Community-loved.",
+  "description": "AI prompt notes. Private by default. Secure. Community-loved.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0f172a",
@@ -31,22 +31,22 @@
   ],
   "shortcuts": [
     {
-      "name": "New Prompt",
-      "short_name": "New",
-      "description": "Create a new prompt",
-      "url": "/?action=new"
+      "name": "Open App",
+      "short_name": "App",
+      "description": "Open prompedia.app",
+      "url": "/"
     },
     {
-      "name": "My Library",
-      "short_name": "Library",
-      "description": "View your prompt library",
-      "url": "/?view=my-library"
+      "name": "About",
+      "short_name": "About",
+      "description": "About prompedia.app",
+      "url": "/about"
     },
     {
-      "name": "Public Library",
-      "short_name": "Public",
-      "description": "Browse public prompts",
-      "url": "/?view=public-library"
+      "name": "FAQ",
+      "short_name": "FAQ",
+      "description": "Frequently asked questions",
+      "url": "/faq"
     }
   ],
   "related_applications": [],

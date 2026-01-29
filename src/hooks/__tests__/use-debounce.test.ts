@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import { useDebounce } from '../use-debounce';
 
 describe('useDebounce', () => {
@@ -12,7 +12,7 @@ describe('useDebounce', () => {
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    vi.useRealTimers();
   });
 
   it('should return initial value immediately', () => {
@@ -20,7 +20,7 @@ describe('useDebounce', () => {
     expect(result.current).toBe('test');
   });
 
-  it('should debounce value changes', async () => {
+  it('should debounce value changes', () => {
     const { result, rerender } = renderHook(
       ({ value, delay }) => useDebounce(value, delay),
       {
@@ -30,18 +30,18 @@ describe('useDebounce', () => {
 
     expect(result.current).toBe('initial');
 
-    // Change value
-    rerender({ value: 'updated', delay: 300 });
-    expect(result.current).toBe('initial'); // Still initial
-
-    // Fast forward time
-    vi.advanceTimersByTime(300);
-    await waitFor(() => {
-      expect(result.current).toBe('updated');
+    act(() => {
+      rerender({ value: 'updated', delay: 300 });
     });
+    expect(result.current).toBe('initial');
+
+    act(() => {
+      vi.advanceTimersByTime(300);
+    });
+    expect(result.current).toBe('updated');
   });
 
-  it('should cancel previous debounce on rapid changes', async () => {
+  it('should cancel previous debounce on rapid changes', () => {
     const { result, rerender } = renderHook(
       ({ value, delay }) => useDebounce(value, delay),
       {
@@ -49,15 +49,23 @@ describe('useDebounce', () => {
       }
     );
 
-    rerender({ value: 'second', delay: 300 });
-    vi.advanceTimersByTime(150); // Halfway through delay
-
-    rerender({ value: 'third', delay: 300 });
-    vi.advanceTimersByTime(150); // Still not enough
-
-    vi.advanceTimersByTime(150); // Complete delay from last change
-    await waitFor(() => {
-      expect(result.current).toBe('third'); // Should be last value, not first or second
+    act(() => {
+      rerender({ value: 'second', delay: 300 });
     });
+    act(() => {
+      vi.advanceTimersByTime(150);
+    });
+
+    act(() => {
+      rerender({ value: 'third', delay: 300 });
+    });
+    act(() => {
+      vi.advanceTimersByTime(150);
+    });
+    act(() => {
+      vi.advanceTimersByTime(150);
+    });
+
+    expect(result.current).toBe('third');
   });
 });

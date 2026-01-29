@@ -5,6 +5,7 @@
  */
 
 import { config } from './config';
+import { logger, logWarning } from './logger';
 import { captureMessage } from './sentry';
 
 /**
@@ -27,9 +28,8 @@ export function trackWebVitals(metric: WebVitals): void {
     return;
   }
 
-  // Log to console in development
   if (config.features.enableDebugLogging) {
-    console.log('Web Vital:', metric.name, metric.value, metric.rating);
+    logger.log('Web Vital:', metric.name, metric.value, metric.rating);
   }
 
   // Send to Sentry as performance data
@@ -93,9 +93,10 @@ export function initWebVitalsTracking(): void {
     onTTFB(trackWebVitals);
     onINP(trackWebVitals);
   }).catch(() => {
-    // web-vitals not installed, skip tracking
     if (config.features.enableDebugLogging) {
-      console.warn('web-vitals not installed. Performance tracking disabled.');
+      logWarning('web-vitals not installed. Performance tracking disabled.', {
+        context: 'initWebVitalsTracking',
+      });
     }
   });
 }

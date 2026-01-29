@@ -7,6 +7,7 @@
 
 import * as Sentry from '@sentry/react';
 import { config } from './config';
+import { logWarning } from './logger';
 
 /**
  * Initialize Sentry for error tracking
@@ -17,10 +18,12 @@ export function initSentry(): void {
     return; // Skip Sentry in development
   }
 
-  const dsn = import.meta.env.VITE_SENTRY_DSN;
+  const dsn = config.sentry.dsn;
 
   if (!dsn) {
-    console.warn('Sentry DSN not configured. Error tracking disabled.');
+    logWarning('Sentry DSN not configured. Error tracking disabled.', {
+      context: 'initSentry',
+    });
     return;
   }
 
@@ -45,7 +48,7 @@ export function initSentry(): void {
 }
 
 /**
- * Capture exception with context
+ * Capture exception with context. Sets request_id tag when present for traceability.
  */
 export function captureException(
   error: Error | unknown,
@@ -55,6 +58,10 @@ export function captureException(
     return;
   }
 
+  const requestId = context?.requestId as string | undefined;
+  if (requestId) {
+    Sentry.setTag('request_id', requestId);
+  }
   Sentry.captureException(error, {
     extra: context,
   });

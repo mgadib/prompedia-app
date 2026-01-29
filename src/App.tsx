@@ -4,61 +4,40 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Suspense, lazy } from "react";
-import PromptNotes from "@/components/PromptNotes";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { PageTransition } from "@/components/PageTransition";
 
 import { SEO } from "@/components/SEO";
+import { Analytics } from "@/components/Analytics";
 import { useTranslation } from "react-i18next";
 import { useEffect } from "react";
+import { shouldRetryQuery, queryRetryDelay } from "@/lib/query-retry";
 
-// Lazy load routes for code splitting
+// Lazy load routes and main app for code splitting
+const PromptNotes = lazy(() => import("@/components/PromptNotes"));
 const AboutPage = lazy(() => import("@/components/pages/AboutPage"));
 const FAQPage = lazy(() => import("@/components/pages/FAQPage"));
 const UseCasesPage = lazy(() => import("@/components/pages/UseCasesPage"));
 const PublicPromptView = lazy(() => import("@/components/PublicPromptView"));
 
-// Custom retry function with exponential backoff for rate limiting
-const retryWithBackoff = (failureCount: number, error: unknown): boolean => {
-  // Check if it's a rate limit error (429)
-  if (error && typeof error === 'object' && 'status' in error) {
-    const status = (error as { status: number }).status;
-    if (status === 429) {
-      // Retry up to 3 times with exponential backoff for rate limits
-      return failureCount < 3;
-    }
-    // Don't retry client errors (4xx except 429)
-    if (status >= 400 && status < 500) {
-      return false;
-    }
-  }
-  // Retry server errors (5xx) up to 2 times
-  return failureCount < 2;
-};
-
-// Calculate delay with exponential backoff
-const retryDelay = (attemptIndex: number): number => {
-  return Math.min(1000 * 2 ** attemptIndex, 30000); // Max 30 seconds
-};
-
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: retryWithBackoff,
-      retryDelay: retryDelay,
+      retry: shouldRetryQuery,
+      retryDelay: queryRetryDelay,
       staleTime: 5 * 60 * 1000,
       gcTime: 5 * 60 * 1000, // Clean up cache after 5 minutes of inactivity
       refetchOnWindowFocus: false,
     },
     mutations: {
-      retry: retryWithBackoff,
-      retryDelay: retryDelay,
+      retry: shouldRetryQuery,
+      retryDelay: queryRetryDelay,
     },
   },
 });
 
 const App = () => {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   useEffect(() => {
     document.documentElement.lang = i18n.resolvedLanguage || 'id';
@@ -76,13 +55,23 @@ const App = () => {
             }}
           >
             <SEO />
+            <Analytics />
             <PageTransition>
               <Routes>
                 <Route 
                   path="/" 
                   element={
                     <ErrorBoundary>
-                      <PromptNotes />
+                      <Suspense fallback={
+                        <div className="min-h-screen flex items-center justify-center bg-background">
+                          <div className="flex flex-col items-center gap-4">
+                            <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
+                            <p className="text-sm text-muted-foreground">{t('app.loading')}</p>
+                          </div>
+                        </div>
+                      }>
+                        <PromptNotes />
+                      </Suspense>
                     </ErrorBoundary>
                   } 
                 />
@@ -94,7 +83,7 @@ const App = () => {
                         <div className="min-h-screen flex items-center justify-center bg-background">
                           <div className="flex flex-col items-center gap-4">
                             <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
-                            <p className="text-sm text-muted-foreground">Loading...</p>
+                            <p className="text-sm text-muted-foreground">{t('app.loading')}</p>
                           </div>
                         </div>
                       }>
@@ -111,7 +100,7 @@ const App = () => {
                         <div className="min-h-screen flex items-center justify-center bg-background">
                           <div className="flex flex-col items-center gap-4">
                             <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
-                            <p className="text-sm text-muted-foreground">Loading...</p>
+                            <p className="text-sm text-muted-foreground">{t('app.loading')}</p>
                           </div>
                         </div>
                       }>
@@ -128,7 +117,7 @@ const App = () => {
                         <div className="min-h-screen flex items-center justify-center bg-background">
                           <div className="flex flex-col items-center gap-4">
                             <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
-                            <p className="text-sm text-muted-foreground">Loading...</p>
+                            <p className="text-sm text-muted-foreground">{t('app.loading')}</p>
                           </div>
                         </div>
                       }>
@@ -145,7 +134,7 @@ const App = () => {
                         <div className="min-h-screen flex items-center justify-center bg-background">
                           <div className="flex flex-col items-center gap-4">
                             <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
-                            <p className="text-sm text-muted-foreground">Loading...</p>
+                            <p className="text-sm text-muted-foreground">{t('app.loading')}</p>
                           </div>
                         </div>
                       }>

@@ -113,11 +113,11 @@ export function invalidatePublicPromptsQueries() {
 }
 
 /**
- * Helper function to invalidate all tag queries for a user
+ * Helper function to invalidate all tag queries (tags are global)
  */
-export function invalidateTagsQueries(userId: string) {
+export function invalidateTagsQueries(_userId?: string) {
   return {
-    queryKey: queryKeys.tags.list(userId),
+    queryKey: queryKeys.tags.all,
     exact: false,
   };
 }

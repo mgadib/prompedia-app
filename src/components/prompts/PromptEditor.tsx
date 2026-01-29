@@ -1,6 +1,9 @@
-import React, { memo } from 'react';
-import { MarkdownEditor } from '@/components/editor';
+import React, { memo, lazy, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
+
+const MarkdownEditor = lazy(() =>
+  import('@/components/editor').then((m) => ({ default: m.MarkdownEditor }))
+);
 import { StatusBadge } from '@/components/ui/status-badge';
 import { useTranslation } from 'react-i18next';
 import { Loader2 } from 'lucide-react';
@@ -51,12 +54,18 @@ const PromptEditorComponent: React.FC<PromptEditorProps> = ({
                 </StatusBadge>
             </div>
 
-            <MarkdownEditor
-                value={content}
-                onChange={setContent}
-                placeholder={t('prompt.content_placeholder')}
-                minHeight="200px"
-            />
+            <Suspense fallback={
+                <div className="min-h-[200px] flex items-center justify-center border border-border rounded bg-muted/30">
+                    <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                </div>
+            }>
+                <MarkdownEditor
+                    value={content}
+                    onChange={setContent}
+                    placeholder={t('prompt.content_placeholder')}
+                    minHeight="200px"
+                />
+            </Suspense>
 
             <div className="mt-5 space-y-4">
                 <div className="flex flex-col sm:flex-row gap-4 sm:items-center">

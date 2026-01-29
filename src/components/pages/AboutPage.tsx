@@ -30,7 +30,7 @@ const AboutPage = () => {
         <div className="min-h-screen bg-background font-sans flex flex-col">
             <SEO
                 title={t('about.title')}
-                description={t('about.description')}
+                description={t('geo.semantic_description')}
                 canonical={window.location.origin + '/about'}
                 structuredData={breadcrumbSchema}
             />

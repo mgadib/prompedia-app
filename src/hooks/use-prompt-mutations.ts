@@ -1,8 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useTranslation } from 'react-i18next';
 import { PromptUI } from '@/types/prompts';
 import { queryKeys, invalidatePromptsQueries, invalidatePublicPromptsQueries, invalidateTagsQueries } from '@/lib/query-keys';
+import { ERROR_CODES } from '@/lib/error-handler';
+import { savePromptSchema, deletePromptSchema } from '@/lib/schemas/prompt';
+import { truncateDescription } from '@/lib/text-utils';
 
 interface SavePromptData {
     id?: string | null;
@@ -76,79 +78,90 @@ async function syncPromptContent(promptId: string, content: string): Promise<voi
 }
 
 /**
+ * Normalize tag names from comma-separated input to unique lowercase array
+ */
+function normalizeTags(tagsInput: string): string[] {
+    const tagNames = tagsInput
+        .split(',')
+        .map(t => t.trim().toLowerCase())
+        .filter(Boolean);
+    return [...new Set(tagNames)];
+}
+
+/**
+ * Get existing tags as a case-insensitive map (lowercase name -> tag id)
+ */
+async function getExistingTagMap(): Promise<Map<string, string>> {
+    const { data: allTags } = await supabase
+        .from('tags')
+        .select('id, name');
+    const map = new Map<string, string>();
+    allTags?.forEach(tag => {
+        const lowerName = tag.name.toLowerCase();
+        if (!map.has(lowerName)) {
+            map.set(lowerName, tag.id);
+        }
+    });
+    return map;
+}
+
+/**
+ * Create missing tags and return all tag IDs for the given names (case-insensitive)
+ */
+async function findOrCreateTags(
+    uniqueTagNames: string[],
+    existingMap: Map<string, string>
+): Promise<string[]> {
+    const missingTags = uniqueTagNames.filter(name => !existingMap.has(name));
+
+    for (const name of missingTags) {
+        const { data: created } = await supabase
+            .from('tags')
+            .insert({ name: name.toLowerCase() })
+            .select('id, name')
+            .single();
+        if (created) {
+            existingMap.set(name, created.id);
+        }
+    }
+
+    return uniqueTagNames
+        .map(lowerName => existingMap.get(lowerName))
+        .filter((id): id is string => id !== undefined);
+}
+
+/**
+ * Link tag IDs to a prompt (replaces any existing links; call after deleting old links)
+ */
+async function linkTagsToPrompt(promptId: string, tagIds: string[]): Promise<void> {
+    if (tagIds.length === 0) return;
+    const { error } = await supabase
+        .from('prompt_tags')
+        .insert(tagIds.map(tag_id => ({ prompt_id: promptId, tag_id })));
+    if (error) throw error;
+}
+
+/**
  * Sync prompt tags (create missing tags and link to prompt)
  * Tags are normalized to lowercase for case-insensitive matching
  */
 async function syncPromptTags(
     promptId: string,
     tagsInput: string,
-    userId: string
+    _userId: string
 ): Promise<void> {
-    // Normalize tag names to lowercase for case-insensitive matching
-    const tagNames = tagsInput
-        .split(',')
-        .map(t => t.trim().toLowerCase())
-        .filter(Boolean);
-    const uniqueTagNames = [...new Set(tagNames)];
+    const uniqueTagNames = normalizeTags(tagsInput);
 
-    // Remove all existing tags for this prompt
     await supabase
         .from('prompt_tags')
         .delete()
         .eq('prompt_id', promptId);
 
-    if (uniqueTagNames.length === 0) {
-        return; // No tags to add
-    }
+    if (uniqueTagNames.length === 0) return;
 
-    // Get all user tags and create a case-insensitive lookup map
-    const { data: allUserTags } = await supabase
-        .from('tags')
-        .select('id, name')
-        .eq('user_id', userId);
-
-    // Create case-insensitive map: lowercase name -> tag id
-    const existingTagMap = new Map<string, string>();
-    allUserTags?.forEach(tag => {
-        const lowerName = tag.name.toLowerCase();
-        if (!existingTagMap.has(lowerName)) {
-            existingTagMap.set(lowerName, tag.id);
-        }
-    });
-
-    // Find missing tags (case-insensitive)
-    const missingTags = uniqueTagNames.filter(name => !existingTagMap.has(name));
-    const tagIdsToLink: string[] = [];
-
-    // Create missing tags (store in lowercase)
-    if (missingTags.length > 0) {
-        const { data: created } = await supabase
-            .from('tags')
-            .insert(missingTags.map(name => ({ name, user_id: userId })))
-            .select('id, name');
-        
-        created?.forEach(t => tagIdsToLink.push(t.id));
-    }
-
-    // Add existing tag IDs (from case-insensitive lookup)
-    uniqueTagNames.forEach(lowerName => {
-        const tagId = existingTagMap.get(lowerName);
-        if (tagId) {
-            tagIdsToLink.push(tagId);
-        }
-    });
-
-    // Link tags to prompt
-    if (tagIdsToLink.length > 0) {
-        const { error } = await supabase
-            .from('prompt_tags')
-            .insert(tagIdsToLink.map(tag_id => ({ 
-                prompt_id: promptId, 
-                tag_id 
-            })));
-        
-        if (error) throw error;
-    }
+    const existingMap = await getExistingTagMap();
+    const tagIds = await findOrCreateTags(uniqueTagNames, existingMap);
+    await linkTagsToPrompt(promptId, tagIds);
 }
 
 /**
@@ -156,7 +169,6 @@ async function syncPromptTags(
  * Extracted from PromptNotes to provide reusable mutation logic.
  */
 export function usePromptMutations() {
-    const { t } = useTranslation();
     const queryClient = useQueryClient();
 
     /**
@@ -165,11 +177,18 @@ export function usePromptMutations() {
      */
     const savePrompt = useMutation({
         mutationFn: async (data: SavePromptData) => {
-            const { id, title, content, tagsInput, isPublic, userId } = data;
-            
-            if (!content.trim()) {
-                throw new Error('Content is required');
+            const parsed = savePromptSchema.safeParse(data);
+            if (!parsed.success) {
+                const first = parsed.error.issues[0];
+                const isContentRequired =
+                    first?.path[0] === 'content' &&
+                    first?.message?.toLowerCase().includes('content');
+                if (isContentRequired) {
+                    throw new Error(ERROR_CODES.CONTENT_REQUIRED);
+                }
+                throw new Error(ERROR_CODES.VALIDATION_FAILED);
             }
+            const { id, title, content, tagsInput, isPublic, userId } = parsed.data;
 
             // Generate title from content if not provided
             const promptTitle = title.trim() || content.trim().slice(0, 50);
@@ -236,9 +255,7 @@ export function usePromptMutations() {
                     user_id: data.userId,
                     title: data.title.trim() || data.content.trim().slice(0, 50),
                     content: data.content.trim(),
-                    description: data.content.trim().length > 150 
-                        ? data.content.trim().substring(0, 150) + '...' 
-                        : data.content.trim(),
+                    description: truncateDescription(data.content.trim()),
                     is_public: data.isPublic,
                     created_at: new Date().toISOString(),
                     updated_at: new Date().toISOString(),
@@ -288,8 +305,12 @@ export function usePromptMutations() {
      */
     const deletePrompt = useMutation({
         mutationFn: async (data: DeletePromptData) => {
-            const { id, userId } = data;
-            
+            const parsed = deletePromptSchema.safeParse(data);
+            if (!parsed.success) {
+                throw new Error(ERROR_CODES.VALIDATION_FAILED);
+            }
+            const { id, userId } = parsed.data;
+
             const { error } = await supabase
                 .from('prompts')
                 .delete()

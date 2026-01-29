@@ -17,7 +17,8 @@ export const SEO = ({ title, description, canonical, type = 'website', image, no
     const defaultDescription = t('app.description');
 
     // Construct full title
-    const fullTitle = title ? `${title} | ${siteTitle}` : `${siteTitle} - Catatan Prompt AI Pribadi`;
+    const defaultSuffix = t('seo.default_title_suffix');
+    const fullTitle = title ? `${title} | ${siteTitle}` : `${siteTitle} - ${defaultSuffix}`;
     const metaDescription = description || defaultDescription;
     const currentUrl = canonical || window.location.href;
     const locale = i18n.language;
@@ -30,7 +31,7 @@ export const SEO = ({ title, description, canonical, type = 'website', image, no
         "name": "prompedia.app",
         "url": "https://prompedia.app",
         "description": defaultDescription,
-        "sameAs": ["https://kerjabaik.ai"]
+        "sameAs": ["https://prompedia.app"]
     };
 
     // Combine organization schema with custom structured data

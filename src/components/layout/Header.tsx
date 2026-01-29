@@ -27,7 +27,7 @@ export const Header = ({ variant = 'default', userEmail, onLogout }: HeaderProps
                             PROMPEDIA.APP
                         </h1>
                         <span className="text-2xs text-muted-foreground/60 uppercase tracking-widest font-medium hidden sm:block">
-                            A simple prompt notes
+                            {t('app.tagline')}
                         </span>
                     </div>
                 </Link>
@@ -38,8 +38,8 @@ export const Header = ({ variant = 'default', userEmail, onLogout }: HeaderProps
                     <button
                         onClick={() => i18n.changeLanguage(i18n.resolvedLanguage === 'id' ? 'en' : 'id')}
                         className="h-8 w-8 flex items-center justify-center text-2xs font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground hover:bg-secondary/80 rounded-sm transition-all duration-fast ease-default hover:transition-duration-normal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
-                        title={i18n.resolvedLanguage === 'id' ? 'Switch to English' : 'Ganti ke Bahasa Indonesia'}
-                        aria-label={i18n.resolvedLanguage === 'id' ? 'Switch to English' : 'Ganti ke Bahasa Indonesia'}
+                        title={i18n.resolvedLanguage === 'id' ? t('language.switch_to_en') : t('language.switch_to_id')}
+                        aria-label={i18n.resolvedLanguage === 'id' ? t('language.switch_to_en') : t('language.switch_to_id')}
                     >
                         {i18n.resolvedLanguage?.toUpperCase()}
                     </button>

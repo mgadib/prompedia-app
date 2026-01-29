@@ -113,7 +113,7 @@ const markdownToHtml = (markdown: string): string => {
 
     // Simple conversion for initial content
     // TipTap's paste handler will do more sophisticated parsing
-    let html = markdown
+    const html = markdown
         // Code blocks (must be before other patterns)
         .replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) =>
             `<pre><code class="language-${lang || 'plaintext'}">${escapeHtml(code.trim())}</code></pre>`

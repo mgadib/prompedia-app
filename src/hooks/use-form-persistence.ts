@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { logError } from '@/lib/logger';
 
 const DRAFT_KEY = 'prompedia-draft';
 
@@ -39,7 +40,9 @@ export function useFormPersistence(
                 }
             }
         } catch (error) {
-            console.error('Failed to restore draft:', error);
+            logError(error instanceof Error ? error : new Error(String(error)), {
+                context: 'formPersistence.restore',
+            });
         }
     }, [enabled, onRestore]);
 
@@ -64,7 +67,9 @@ export function useFormPersistence(
                     };
                     localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
                 } catch (error) {
-                    console.error('Failed to save draft:', error);
+                    logError(error instanceof Error ? error : new Error(String(error)), {
+                        context: 'formPersistence.save',
+                    });
                 }
             }, 1000); // Debounce 1 second
         } else {
@@ -72,7 +77,9 @@ export function useFormPersistence(
             try {
                 localStorage.removeItem(DRAFT_KEY);
             } catch (error) {
-                console.error('Failed to clear draft:', error);
+                logError(error instanceof Error ? error : new Error(String(error)), {
+                    context: 'formPersistence.clear',
+                });
             }
         }
 
@@ -89,7 +96,9 @@ export function useFormPersistence(
             localStorage.removeItem(DRAFT_KEY);
             isRestoredRef.current = false;
         } catch (error) {
-            console.error('Failed to clear draft:', error);
+            logError(error instanceof Error ? error : new Error(String(error)), {
+                context: 'formPersistence.clearDraft',
+            });
         }
     };
 

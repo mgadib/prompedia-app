@@ -1,9 +1,9 @@
 # Product Requirements Document (PRD): Prompedia AI
 
-**Versi Dokumen:** 2.0  
-**Tanggal:** 20 Desember 2025  
+**Versi Dokumen:** 2.1  
+**Tanggal:** Januari 2026  
 **Status:** Active Development  
-**Last Updated:** 20 Desember 2025
+**Last Updated:** Januari 2026
 
 ---
 
@@ -13,7 +13,7 @@
 Dalam era *Generative AI*, prompt engineering menjadi skill krusial. Namun, para engineer dan developer sering kesulitan menyimpan, mengelola, dan menggunakan kembali prompt yang telah mereka buat. Seringkali prompt tersebar di berbagai catatan, chat history, atau dokumen yang tidak terorganisir.
 
 ### 1.2 Tujuan Produk
-**Prompedia AI** bertujuan menjadi "Laboratorium Prompt Engineering" terpusat. Platform ini menyediakan alat untuk menyimpan, mengedit, mengorganisir (dengan tag), dan membagikan prompt AI dalam antarmuka yang modern, cepat, dan intuitif.
+**Prompedia AI** adalah aplikasi catatan prompt AI (AI prompt notes) terpusat. Platform ini menyediakan alat untuk menyimpan, mengedit, mengorganisir (dengan tag), dan membagikan prompt AI dalam antarmuka yang modern, cepat, dan intuitif. Positioning: **AI prompt notes** / **aplikasi catatan prompt AI**.
 
 ### 1.3 Scope Dokumen
 Dokumen ini mencakup:
@@ -273,6 +273,23 @@ Prompedia AI adalah aplikasi web berbasis React yang memungkinkan pengguna menge
 
 ---
 
+### 4.8 Command Palette & Keyboard Shortcuts ✅
+
+#### 4.8.1 Command Palette
+- **Status**: ✅ Implemented
+- `Ctrl+K` untuk membuka command palette (quick actions)
+- Integrasi dengan cmdk
+
+#### 4.8.2 Keyboard Shortcuts
+- **Status**: ✅ Implemented
+- `Ctrl+N` - New prompt
+- `Ctrl+S` - Save prompt
+- `Ctrl+F` - Focus search
+- `Ctrl+/` - Shortcuts help dialog
+- `Escape` - Close modals
+
+---
+
 ## 5. Spesifikasi Non-Fungsional
 
 ### 5.1 Performa ✅
@@ -428,8 +445,8 @@ Prompedia AI adalah aplikasi web berbasis React yang memungkinkan pengguna menge
 
 #### 7.1.3 State Management
 - **React Query 5.83** - Server state management
-- **React Hook Form 7.61** - Form management
-- **Zod 3.25** - Schema validation
+- **Zod 4.x** - Schema validation at boundaries (prompt save/delete payloads)
+- Form state: controlled components dan local state
 
 #### 7.1.4 Backend (BaaS)
 - **Supabase 2.76** - Backend as a Service
@@ -443,21 +460,28 @@ Prompedia AI adalah aplikasi web berbasis React yang memungkinkan pengguna menge
 
 ### 7.2 Struktur Database (Schema) ✅
 
-Lihat `supabase/migrations/20251219120000_baseline.sql` untuk detail teknis. Entitas utama:
+Detail teknis: migrasi di `supabase/migrations/` — **20250129000000_baseline.sql** (tabel, indeks, RLS, trigger), **20250129000001_search_functions.sql** (RPC search), **20250129000002_get_public_tag_counts.sql** (RPC tag counts). Entitas utama:
 
 #### 7.2.1 Core Tables
-- `users`: Data profil pengguna
+- `users`: Data profil pengguna (synced dari auth.users via trigger)
 - `prompts`: Metadata prompt (judul, visibility, owner)
 - `prompt_contents`: Isi prompt (dipisah untuk optimasi list view)
-- `tags`: Definisi tag user-specific
+- `tags`: Definisi tag (global, case-insensitive)
 - `prompt_tags`: Many-to-many relation antara prompt dan tag
 
-#### 7.2.2 Indexes
+#### 7.2.2 Database Functions & Trigger
+- `search_prompts`: Server-side search untuk authenticated users (paginated)
+- `search_public_prompts`: Server-side search untuk public prompts
+- `get_public_tag_counts`: Tag aggregation untuk public prompts (landing page)
+- `increment_ai_usage`, `increment_user_usage`: Analytics tracking
+- `handle_new_user`: Trigger sync auth.users → public.users
+
+#### 7.2.3 Indexes
 - Indexes untuk performa query yang optimal
 - Text search index untuk full-text search
 - Composite indexes untuk complex queries
 
-#### 7.2.3 Row Level Security
+#### 7.2.4 Row Level Security
 - RLS enabled untuk semua tabel
 - Policies untuk public read dan owner write
 - Secure by default
@@ -475,9 +499,20 @@ Lihat `supabase/migrations/20251219120000_baseline.sql` untuk detail teknis. Ent
 - Separation of concerns
 
 #### 7.3.3 Error Handling
-- Retry logic dengan exponential backoff
+- Retry logic dengan exponential backoff (query retry, rate limiting)
 - User-friendly error messages
 - Toast notifications untuk feedback
+
+#### 7.3.4 Testing & E2E
+- **Vitest** - Unit dan integration tests (`npm run test`)
+- **Playwright** - E2E tests untuk critical path (`npm run test:e2e`), config di `playwright.config.ts`, specs di `e2e/`
+- **Testing Library** - React component testing
+
+#### 7.3.5 Observability & Build Quality
+- **Sentry** - Error tracking (opsional via `VITE_SENTRY_DSN`)
+- **Logger** - Structured logging untuk debugging
+- **Bundle size check** - Script `scripts/check-bundle-size.mjs`, target ≤ 250KB gzip per chunk (`npm run build && npm run build:check-size`)
+- **ESLint & Prettier** - Lint dan format
 
 ---
 
@@ -604,11 +639,11 @@ Fitur berikut direncanakan untuk pengembangan selanjutnya:
 - Bulk operations
 - Backup/restore
 
-#### 8.7.3 Keyboard Shortcuts
-- **Status**: 📋 Planned
-- Keyboard shortcuts untuk common actions
-- Command palette
-- Power user features
+#### 8.7.3 Keyboard Shortcuts & Command Palette ✅
+- **Status**: ✅ Implemented
+- Command palette: `Ctrl+K` untuk quick actions
+- Shortcuts: `Ctrl+N` (new prompt), `Ctrl+S` (save), `Ctrl+F` (focus search), `Ctrl+/` (shortcuts help), `Escape` (close modals)
+- Power user features tersedia
 
 #### 8.7.4 Advanced Search
 - **Status**: 📋 Planned
@@ -655,8 +690,18 @@ Fitur berikut direncanakan untuk pengembangan selanjutnya:
 - [TipTap Documentation](https://tiptap.dev)
 - [React Query Documentation](https://tanstack.com/query)
 - [Tailwind CSS Documentation](https://tailwindcss.com/docs)
+- [Playwright Documentation](https://playwright.dev)
+- [Vitest Documentation](https://vitest.dev)
+- [Sentry for React](https://docs.sentry.io/platforms/javascript/guides/react/)
 
 ### 10.3 Change Log
+
+**v2.1 (Januari 2026)**
+- Perbaikan referensi migrasi: `20251219120000_baseline.sql` → `20250129000000_baseline.sql`, tambah `20250129000001_search_functions.sql`, `20250129000002_get_public_tag_counts.sql`
+- Pembaruan tech stack: Zod 4.x, penghapusan React Hook Form (form state via controlled components)
+- Koreksi status: Command Palette & Keyboard Shortcuts → ✅ Implemented
+- Penambahan: E2E (Playwright), Observability (Sentry, logger, query retry), bundle size check, daftar lengkap database functions & trigger
+- Appendix: daftar RPC/trigger, referensi Playwright/Vitest/Sentry
 
 **v2.0 (20 Desember 2025)**
 - Updated PRD untuk mencerminkan implementasi saat ini

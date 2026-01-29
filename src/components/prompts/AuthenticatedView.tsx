@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PromptUI, Tag } from '@/types/prompts';
 import { Command } from '@/lib/commands';
@@ -76,7 +76,7 @@ interface AuthenticatedViewProps {
     currentUserId?: string;
 }
 
-export const AuthenticatedView: React.FC<AuthenticatedViewProps> = ({
+const AuthenticatedViewComponent: React.FC<AuthenticatedViewProps> = ({
     userEmail,
     searchText,
     onSearchChange,
@@ -275,3 +275,5 @@ export const AuthenticatedView: React.FC<AuthenticatedViewProps> = ({
         </div>
     );
 };
+
+export const AuthenticatedView = memo(AuthenticatedViewComponent);

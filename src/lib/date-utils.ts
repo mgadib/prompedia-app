@@ -1,5 +1,6 @@
 import { format } from 'date-fns';
 import { enUS, id } from 'date-fns/locale';
+import type { Locale } from 'date-fns/locale';
 
 /**
  * Formats a date string or object according to the specified locale code.
@@ -22,7 +23,7 @@ export const formatDate = (
     // Invalid date check
     if (isNaN(dateObj.getTime())) return '';
 
-    const localeMap: Record<string, any> = {
+    const localeMap: Record<string, Locale> = {
         'en': enUS,
         'id': id,
         // Add other locales here if needed

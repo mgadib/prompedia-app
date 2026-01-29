@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { PromptEditor } from '../prompts/PromptEditor';
 import { useTranslation } from 'react-i18next';
 
@@ -30,17 +30,23 @@ describe('PromptEditor', () => {
     saving: false,
   };
 
-  it('should render editor with all inputs', () => {
+  it('should render editor with all inputs', async () => {
     render(<PromptEditor {...defaultProps} />);
 
     expect(screen.getByPlaceholderText('prompt.title_placeholder')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('prompt.content_placeholder')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('prompt.tags_placeholder')).toBeInTheDocument();
+    // MarkdownEditor is lazy-loaded; wait for TipTap toolbar to appear
+    await waitFor(
+      () => {
+        expect(screen.getByTitle(/editor\.toolbar\.bold/i)).toBeInTheDocument();
+      },
+      { timeout: 3000 }
+    );
   });
 
   it('should display public badge when isPublic is true', () => {
     render(<PromptEditor {...defaultProps} isPublic={true} />);
-    expect(screen.getByText('prompt.public')).toBeInTheDocument();
+    expect(screen.getAllByText('prompt.public').length).toBeGreaterThan(0);
   });
 
   it('should display private badge when isPublic is false', () => {

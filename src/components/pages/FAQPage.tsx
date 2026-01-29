@@ -62,7 +62,7 @@ const FAQPage = () => {
                 <div className="space-y-6 mb-8">
                     {faqs.map((faq, index) => (
                         <div key={index} className="bg-card border border-border rounded-sm p-6">
-                            <h3 className="text-lg font-semibold mb-3 text-foreground">{faq.q}</h3>
+                            <h2 className="text-lg font-semibold mb-3 text-foreground">{faq.q}</h2>
                             <p className="text-base text-muted-foreground leading-relaxed">{faq.a}</p>
                         </div>
                     ))}

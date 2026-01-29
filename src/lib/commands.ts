@@ -1,3 +1,4 @@
+import type { TFunction } from 'i18next';
 import { PromptUI } from '@/types/prompts';
 
 /**
@@ -48,17 +49,17 @@ export interface CommandPaletteContext {
 }
 
 /**
- * Generate commands based on context.
+ * Generate commands based on context. Uses t() for i18n labels and descriptions.
  */
-export function generateCommands(context: CommandPaletteContext): Command[] {
+export function generateCommands(context: CommandPaletteContext, t: TFunction): Command[] {
     const commands: Command[] = [];
 
     // Actions
     if (context.onNewPrompt) {
         commands.push({
             id: 'new-prompt',
-            label: 'New Prompt',
-            description: 'Create a new prompt',
+            label: t('command_palette.commands.new_prompt_label', 'New Prompt'),
+            description: t('command_palette.commands.new_prompt_description', 'Create a new prompt'),
             shortcut: ['Ctrl', 'N'],
             category: 'actions',
             action: context.onNewPrompt,
@@ -69,8 +70,8 @@ export function generateCommands(context: CommandPaletteContext): Command[] {
     if (context.onSavePrompt && context.isEditing) {
         commands.push({
             id: 'save-prompt',
-            label: 'Save Prompt',
-            description: 'Save the current prompt',
+            label: t('command_palette.commands.save_prompt_label', 'Save Prompt'),
+            description: t('command_palette.commands.save_prompt_description', 'Save the current prompt'),
             shortcut: ['Ctrl', 'S'],
             category: 'actions',
             action: context.onSavePrompt,
@@ -81,8 +82,8 @@ export function generateCommands(context: CommandPaletteContext): Command[] {
     if (context.onCopyPrompt && context.currentPrompt) {
         commands.push({
             id: 'copy-prompt',
-            label: 'Copy Prompt',
-            description: 'Copy prompt content to clipboard',
+            label: t('command_palette.commands.copy_prompt_label', 'Copy Prompt'),
+            description: t('command_palette.commands.copy_prompt_description', 'Copy prompt content to clipboard'),
             category: 'actions',
             action: () => context.onCopyPrompt?.(context.currentPrompt!.content),
             keywords: ['copy', 'clipboard'],
@@ -92,8 +93,8 @@ export function generateCommands(context: CommandPaletteContext): Command[] {
     if (context.onSharePrompt && context.currentPrompt?.is_public) {
         commands.push({
             id: 'share-prompt',
-            label: 'Share Prompt',
-            description: 'Copy sharing link',
+            label: t('command_palette.commands.share_prompt_label', 'Share Prompt'),
+            description: t('command_palette.commands.share_prompt_description', 'Copy sharing link'),
             category: 'actions',
             action: () => context.onSharePrompt?.(context.currentPrompt!.id),
             keywords: ['share', 'link'],
@@ -105,8 +106,8 @@ export function generateCommands(context: CommandPaletteContext): Command[] {
         commands.push(
             {
                 id: 'go-home',
-                label: 'Go to Home',
-                description: 'Navigate to home page',
+                label: t('command_palette.commands.go_home_label', 'Go to Home'),
+                description: t('command_palette.commands.go_home_description', 'Navigate to home page'),
                 shortcut: ['Ctrl', 'H'],
                 category: 'navigation',
                 action: () => context.navigate?.('/'),
@@ -114,24 +115,24 @@ export function generateCommands(context: CommandPaletteContext): Command[] {
             },
             {
                 id: 'go-about',
-                label: 'Go to About',
-                description: 'View about page',
+                label: t('command_palette.commands.go_about_label', 'Go to About'),
+                description: t('command_palette.commands.go_about_description', 'View about page'),
                 category: 'navigation',
                 action: () => context.navigate?.('/about'),
                 keywords: ['about', 'info'],
             },
             {
                 id: 'go-faq',
-                label: 'Go to FAQ',
-                description: 'View frequently asked questions',
+                label: t('command_palette.commands.go_faq_label', 'Go to FAQ'),
+                description: t('command_palette.commands.go_faq_description', 'View frequently asked questions'),
                 category: 'navigation',
                 action: () => context.navigate?.('/faq'),
                 keywords: ['faq', 'help', 'questions'],
             },
             {
                 id: 'go-use-cases',
-                label: 'Go to Use Cases',
-                description: 'View use cases',
+                label: t('command_palette.commands.go_use_cases_label', 'Go to Use Cases'),
+                description: t('command_palette.commands.go_use_cases_description', 'View use cases'),
                 category: 'navigation',
                 action: () => context.navigate?.('/use-cases'),
                 keywords: ['use', 'cases', 'examples'],
@@ -143,8 +144,8 @@ export function generateCommands(context: CommandPaletteContext): Command[] {
     if (context.onToggleTheme) {
         commands.push({
             id: 'toggle-theme',
-            label: 'Toggle Theme',
-            description: 'Switch between light and dark mode',
+            label: t('command_palette.commands.toggle_theme_label', 'Toggle Theme'),
+            description: t('command_palette.commands.toggle_theme_description', 'Switch between light and dark mode'),
             shortcut: ['Ctrl', 'Shift', 'T'],
             category: 'view',
             action: context.onToggleTheme,
@@ -155,8 +156,8 @@ export function generateCommands(context: CommandPaletteContext): Command[] {
     if (context.onShowShortcuts) {
         commands.push({
             id: 'show-shortcuts',
-            label: 'Show Keyboard Shortcuts',
-            description: 'View all available keyboard shortcuts',
+            label: t('command_palette.commands.show_shortcuts_label', 'Show Keyboard Shortcuts'),
+            description: t('command_palette.commands.show_shortcuts_description', 'View all available keyboard shortcuts'),
             shortcut: ['Ctrl', '/'],
             category: 'view',
             action: context.onShowShortcuts,
@@ -169,8 +170,8 @@ export function generateCommands(context: CommandPaletteContext): Command[] {
         context.tags.forEach(tag => {
             commands.push({
                 id: `filter-tag-${tag.id}`,
-                label: `Filter by ${tag.name}`,
-                description: `Show prompts with tag: ${tag.name}`,
+                label: t('command_palette.commands.filter_by_tag_label', { tag: tag.name, defaultValue: `Filter by ${tag.name}` }),
+                description: t('command_palette.commands.filter_by_tag_description', { tag: tag.name, defaultValue: `Show prompts with tag: ${tag.name}` }),
                 category: 'view',
                 action: () => context.onFilterByTag?.(tag.name),
                 keywords: ['filter', 'tag', tag.name.toLowerCase()],
@@ -183,24 +184,24 @@ export function generateCommands(context: CommandPaletteContext): Command[] {
         commands.push(
             {
                 id: 'filter-all',
-                label: 'Show All Prompts',
-                description: 'Show all prompts',
+                label: t('command_palette.commands.filter_all_label', 'Show All Prompts'),
+                description: t('command_palette.commands.filter_all_description', 'Show all prompts'),
                 category: 'view',
                 action: () => context.onFilterByVisibility?.('all'),
                 keywords: ['filter', 'all'],
             },
             {
                 id: 'filter-public',
-                label: 'Show Public Prompts',
-                description: 'Show only public prompts',
+                label: t('command_palette.commands.filter_public_label', 'Show Public Prompts'),
+                description: t('command_palette.commands.filter_public_description', 'Show only public prompts'),
                 category: 'view',
                 action: () => context.onFilterByVisibility?.('public'),
                 keywords: ['filter', 'public'],
             },
             {
                 id: 'filter-private',
-                label: 'Show Private Prompts',
-                description: 'Show only private prompts',
+                label: t('command_palette.commands.filter_private_label', 'Show Private Prompts'),
+                description: t('command_palette.commands.filter_private_description', 'Show only private prompts'),
                 category: 'view',
                 action: () => context.onFilterByVisibility?.('private'),
                 keywords: ['filter', 'private'],
@@ -212,8 +213,8 @@ export function generateCommands(context: CommandPaletteContext): Command[] {
     if (context.onFocusSearch) {
         commands.push({
             id: 'focus-search',
-            label: 'Focus Search',
-            description: 'Focus the search input',
+            label: t('command_palette.commands.focus_search_label', 'Focus Search'),
+            description: t('command_palette.commands.focus_search_description', 'Focus the search input'),
             shortcut: ['Ctrl', 'F'],
             category: 'search',
             action: context.onFocusSearch,
@@ -227,7 +228,7 @@ export function generateCommands(context: CommandPaletteContext): Command[] {
             commands.push({
                 id: `open-prompt-${prompt.id}`,
                 label: prompt.title,
-                description: `Open: ${prompt.title}`,
+                description: t('command_palette.commands.open_prompt_description', { title: prompt.title, defaultValue: `Open: ${prompt.title}` }),
                 category: 'search',
                 action: () => context.onEditPrompt?.(prompt),
                 keywords: ['open', 'recent', prompt.title.toLowerCase()],

@@ -1,5 +1,7 @@
 # Product Requirements Document (PRD): Prompedia AI
 
+Ringkasan PRD; dokumen lengkap dan terbaru ada di [PRD.md](../PRD.md) (root).
+
 **Versi Dokumen:** 1.0  
 **Tanggal:** 20 Desember 2025  
 **Status:** Production  
@@ -9,7 +11,7 @@
 
 ## 1. Ringkasan Produk
 
-Prompedia AI adalah aplikasi web berbasis React untuk manajemen prompt AI. Aplikasi ini memungkinkan pengguna menyimpan, mengorganisir, dan berbagi prompt AI melalui antarmuka yang modern dan intuitif. Aplikasi dibangun dengan React 18.3, TypeScript 5.8, dan menggunakan Supabase sebagai Backend as a Service.
+Prompedia AI adalah aplikasi catatan prompt AI (AI prompt notes) berbasis React untuk manajemen prompt AI. Aplikasi ini memungkinkan pengguna menyimpan, mengorganisir, dan berbagi prompt AI melalui antarmuka yang modern dan intuitif. Aplikasi dibangun dengan React 18.3, TypeScript 5.8, dan menggunakan Supabase sebagai Backend as a Service. Positioning produk: **AI prompt notes** / **aplikasi catatan prompt AI**.
 
 ### 1.1 Value Proposition
 
@@ -474,7 +476,7 @@ Prompedia AI menyelesaikan masalah ini dengan menyediakan platform terpusat untu
 
 ### 10.3 Database Schema
 
-Lihat `supabase/migrations/20251219120000_baseline.sql` untuk detail lengkap schema.
+Lihat `supabase/migrations/20250129000000_baseline.sql` untuk schema dasar; `20250129000001_search_functions.sql` dan `20250129000002_get_public_tag_counts.sql` untuk RPC. Detail lengkap di [supabase/README.md](../supabase/README.md).
 
 **Core Tables:**
 - `users`: User profiles

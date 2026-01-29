@@ -41,6 +41,21 @@ export const config = {
   },
 
   /**
+   * Sentry error tracking (optional)
+   */
+  sentry: {
+    dsn: import.meta.env.VITE_SENTRY_DSN || '',
+  },
+
+  /**
+   * Analytics (optional; script URL and website ID for Umami-style analytics)
+   */
+  analytics: {
+    scriptUrl: import.meta.env.VITE_ANALYTICS_SCRIPT_URL || '',
+    websiteId: import.meta.env.VITE_ANALYTICS_WEBSITE_ID || '',
+  },
+
+  /**
    * Feature flags and debug settings
    */
   features: {

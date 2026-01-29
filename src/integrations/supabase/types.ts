@@ -44,14 +44,17 @@ export type Database = {
         Row: {
           prompt_id: string
           tag_id: string
+          created_at: string | null
         }
         Insert: {
           prompt_id: string
           tag_id: string
+          created_at?: string | null
         }
         Update: {
           prompt_id?: string
           tag_id?: string
+          created_at?: string | null
         }
         Relationships: [
           {
@@ -109,27 +112,16 @@ export type Database = {
         Row: {
           id: string
           name: string
-          user_id: string | null
         }
         Insert: {
           id?: string
           name: string
-          user_id?: string | null
         }
         Update: {
           id?: string
           name?: string
-          user_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "tags_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       users: {
         Row: {

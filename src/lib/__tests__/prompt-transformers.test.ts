@@ -27,7 +27,7 @@ describe('prompt-transformers', () => {
         users: { username: 'testuser', display_name: 'Test User' },
       };
 
-      const result = transformSupabasePromptToUI(mockRow as any, mockT);
+      const result = transformSupabasePromptToUI(mockRow as Parameters<typeof transformSupabasePromptToUI>[0], mockT);
 
       expect(result.id).toBe('123');
       expect(result.title).toBe('Test Prompt');
@@ -51,7 +51,7 @@ describe('prompt-transformers', () => {
         users: null,
       };
 
-      const result = transformSupabasePromptToUI(mockRow as any, mockT);
+      const result = transformSupabasePromptToUI(mockRow as Parameters<typeof transformSupabasePromptToUI>[0], mockT);
 
       expect(result.title).toBe('prompt.untitled');
       expect(result.content).toBe('');

@@ -33,8 +33,8 @@ export function testPluralization(key: string, counts: number[] = [0, 1, 2, 100]
  * @param testCases Array of interpolation objects to test
  * @returns Object with test results
  */
-export function testInterpolation(key: string, testCases: Array<Record<string, any>>) {
-    const results: Array<{ input: Record<string, any>; output: string; error?: string }> = [];
+export function testInterpolation(key: string, testCases: Array<Record<string, unknown>>) {
+    const results: Array<{ input: Record<string, unknown>; output: string; error?: string }> = [];
     
     for (const testCase of testCases) {
         try {
@@ -58,7 +58,7 @@ export function testInterpolation(key: string, testCases: Array<Record<string, a
  * @param values Interpolation values
  * @returns Array of missing placeholder names
  */
-export function validatePlaceholders(translation: string, values: Record<string, any>): string[] {
+export function validatePlaceholders(translation: string, values: Record<string, unknown>): string[] {
     const placeholderRegex = /\{\{(\w+)\}\}/g;
     const placeholders: string[] = [];
     let match;
@@ -109,15 +109,14 @@ export function keyExists(key: string): boolean {
  * @param prefix Prefix for nested keys
  * @returns Array of all keys (including nested)
  */
-export function getAllKeys(obj: any, prefix = ''): string[] {
+export function getAllKeys(obj: Record<string, unknown>, prefix = ''): string[] {
     const keys: string[] = [];
     
     for (const key in obj) {
         const fullKey = prefix ? `${prefix}.${key}` : key;
         
         if (typeof obj[key] === 'object' && obj[key] !== null && !Array.isArray(obj[key])) {
-            // Recursively get nested keys
-            keys.push(...getAllKeys(obj[key], fullKey));
+            keys.push(...getAllKeys(obj[key] as Record<string, unknown>, fullKey));
         } else {
             keys.push(fullKey);
         }

@@ -1,11 +1,12 @@
 {
     "app": {
         "title": "prompedia.app",
-        "tagline": "Catatan prompt sederhana",
-        "description": "Catatan prompt sederhana. Pribadi secara default. Dibuat untuk komunitas."
+        "tagline": "Catatan prompt AI",
+        "description": "Catatan prompt AI. Pribadi secara default. Dibuat untuk komunitas.",
+        "loading": "Memuat..."
     },
     "geo": {
-        "semantic_description": "prompedia.app adalah aplikasi catatan pribadi sederhana untuk menyimpan dan berbagi prompt AI. Pribadi secara default. Aman. Dibuat untuk komunitas.",
+        "semantic_description": "prompedia.app adalah aplikasi catatan prompt AI untuk menyimpan, mengorganisir, dan berbagi prompt. Pribadi secara default. Aman. Dibuat untuk komunitas.",
         "keywords": "catatan prompt, catatan prompt AI, penyimpanan prompt, berbagi prompt, sistem tag, manajemen prompt, perpustakaan prompt, prompt engineering, tool prompt AI"
     },
     "auth": {
@@ -30,6 +31,10 @@
         "name": "Nama",
         "error": {
             "generic": "Terjadi kesalahan saat masuk",
+            "generic_try_again": "Terjadi kesalahan. Silakan coba lagi.",
+            "invalid_credentials": "Email atau password salah",
+            "user_exists": "Akun dengan email ini sudah terdaftar",
+            "email_not_confirmed": "Silakan konfirmasi alamat email Anda",
             "password_min_length": "Password minimal 8 karakter",
             "password_weak": "Password terlalu lemah. Tambahkan angka atau simbol.",
             "rate_limited": "Terlalu banyak percobaan. Silakan coba lagi nanti."
@@ -51,12 +56,16 @@
         "created_by": "Dibuat oleh {{author}}",
         "by": "oleh {{author}}",
         "untitled": "Tanpa Judul",
-        "unknown_author": "Tidak Diketahui"
+        "unknown_author": "Tidak Diketahui",
+        "error": {
+            "content_required": "Tambahkan konten sebelum menyimpan.",
+            "validation_failed": "Data tidak valid. Periksa kembali dan coba lagi."
+        }
     },
     "list": {
         "title": "Semua Prompt ({{count}})",
         "all": "Semua",
-        "empty": "Belum ada prompt tersimpan",
+        "empty": "Belum ada prompt. Buat prompt pertama Anda untuk memulai.",
         "no_match": "Tidak ada prompt yang cocok",
         "showing": "Menampilkan {{start}} - {{end}} dari {{total}} prompt",
         "show": "Tampilkan:",
@@ -93,7 +102,8 @@
     },
     "toast": {
         "saved": "Tersimpan",
-        "save_failed": "Gagal menyimpan",
+        "save_failed": "Gagal menyimpan. Periksa koneksi Anda dan coba lagi.",
+        "delete_failed": "Gagal menghapus prompt. Periksa koneksi Anda dan coba lagi.",
         "deleted": "Dihapus",
         "copied": "Disalin",
         "link_copied": "Tautan disalin ke papan klip",
@@ -135,7 +145,7 @@
     },
     "footer": {
         "brand": "prompedia.app",
-        "tagline": "Catatan prompt sederhana",
+        "tagline": "Catatan prompt AI",
         "made_with": "Dibuat dengan",
         "for_community": "untuk komunitas",
         "navigation_title": "Navigasi",
@@ -148,15 +158,15 @@
     },
     "about": {
         "title": "Tentang prompedia.app",
-        "description": "Pelajari lebih lanjut tentang prompedia.app, catatan pribadi sederhana untuk menyimpan dan berbagi prompt.",
+        "description": "Pelajari lebih lanjut tentang prompedia.app, aplikasi catatan prompt AI untuk menyimpan dan berbagi prompt.",
         "what_is": "Apa itu prompedia.app?",
-        "what_is_desc": "prompedia.app adalah aplikasi catatan pribadi sederhana untuk menyimpan dan berbagi prompt. Aplikasi ini dirancang khusus untuk membantu Anda mengelola library prompt AI dengan mudah, aman, dan terorganisir. Dengan prompedia.app, Anda dapat menyimpan prompt favorit, mengorganisir dengan sistem tag, dan berbagi dengan komunitas jika diinginkan.",
+        "what_is_desc": "prompedia.app adalah aplikasi catatan prompt AI untuk menyimpan dan berbagi prompt. Aplikasi ini dirancang khusus untuk membantu Anda mengelola library prompt AI dengan mudah, aman, dan terorganisir. Dengan prompedia.app, Anda dapat menyimpan prompt favorit, mengorganisir dengan sistem tag, dan berbagi dengan komunitas jika diinginkan.",
         "features_title": "Fitur Utama",
         "features": {
             "storage": "Penyimpanan Prompt",
             "storage_desc": "Simpan semua prompt AI Anda di satu tempat yang aman dan mudah diakses.",
             "tags": "Sistem Tag",
-            "tags_desc": "Organisir prompt dengan sistem tag yang fleksibel untuk pencarian cepat.",
+            "tags_desc": "Mengorganisir prompt dengan sistem tag yang fleksibel untuk pencarian cepat.",
         "sharing": "Berbagi Publik/Pribadi",
         "sharing_desc": "Pilih apakah prompt Anda bersifat publik untuk dibagikan atau tetap pribadi.",
             "editor": "Editor Markdown",
@@ -165,7 +175,7 @@
             "search_desc": "Cari prompt berdasarkan judul, konten, atau tag dengan pencarian instan."
         },
         "security_title": "Keamanan & Privasi",
-        "security_desc": "prompedia.app memprioritaskan privasi dan keamanan data Anda. Semua prompt secara default bersifat pribadi, hanya Anda yang dapat mengaksesnya. Data disimpan dengan aman menggunakan enkripsi dan Row Level Security (RLS) di tingkat database. Anda memiliki kontrol penuh atas data Anda.",
+        "security_desc": "prompedia.app memprioritaskan privasi dan keamanan data Anda. Semua prompt secara default bersifat pribadi, hanya Anda yang dapat mengaksesnya. Data disimpan dengan aman menggunakan enkripsi dan kontrol akses di tingkat database. Anda memiliki kontrol penuh atas data Anda.",
         "target_title": "Untuk Siapa?",
         "target_desc": "prompedia.app cocok untuk prompt engineers, AI developers, content creators, dan siapa saja yang bekerja dengan AI setiap hari. Aplikasi ini dirancang untuk siapa pun yang ingin mengelola dan mengorganisir prompt AI mereka dengan lebih baik.",
         "related_title": "Pelajari Lebih Lanjut",
@@ -175,9 +185,9 @@
         "title": "Pertanyaan yang Sering Diajukan",
         "description": "Pertanyaan umum tentang prompedia.app dan cara menggunakannya.",
         "q1": "Apa itu prompedia.app?",
-        "a1": "prompedia.app adalah aplikasi catatan pribadi sederhana untuk menyimpan dan berbagi prompt. Aplikasi ini membantu Anda mengelola library prompt AI dengan sistem tag, pencarian real-time, dan kemampuan berbagi publik atau pribadi.",
+        "a1": "prompedia.app adalah aplikasi catatan prompt AI untuk menyimpan dan berbagi prompt. Aplikasi ini membantu Anda mengelola library prompt AI dengan sistem tag, pencarian real-time, dan kemampuan berbagi publik atau pribadi.",
         "q2": "Apakah data saya aman?",
-        "a2": "Ya, keamanan data adalah prioritas utama. Semua prompt secara default bersifat pribadi dan hanya dapat diakses oleh Anda. Data disimpan dengan aman menggunakan enkripsi dan Row Level Security (RLS) di tingkat database.",
+        "a2": "Ya, keamanan data adalah prioritas utama. Semua prompt secara default bersifat pribadi dan hanya dapat diakses oleh Anda. Data disimpan dengan aman menggunakan enkripsi dan kontrol akses di tingkat database.",
         "q3": "Bagaimana cara berbagi prompt?",
         "a3": "Anda dapat mengatur prompt menjadi publik saat membuat atau mengedit. Prompt publik akan mendapatkan tautan unik yang dapat dibagikan. Tautan ini dapat diakses oleh siapa saja tanpa perlu masuk.",
         "q4": "Apakah ada batasan penggunaan?",
@@ -196,7 +206,7 @@
         "engineers_title": "Untuk Prompt Engineers",
         "engineers_desc": "Prompt engineers dapat menggunakan prompedia.app untuk menyimpan dan mengorganisir library prompt mereka. Dengan sistem tag, Anda dapat mengkategorikan prompt berdasarkan use case, model AI, atau teknik yang digunakan. Fitur pencarian real-time membantu menemukan prompt yang tepat dengan cepat.",
         "engineers_use_case_1": "Simpan prompt template untuk berbagai skenario dan gunakan kembali saat diperlukan.",
-        "engineers_use_case_2": "Organisir prompt berdasarkan teknik (few-shot, chain-of-thought, dll) dengan sistem tag.",
+        "engineers_use_case_2": "Mengorganisir prompt berdasarkan teknik (few-shot, chain-of-thought, dll) dengan sistem tag.",
         "developers_title": "Untuk AI Developers",
         "developers_desc": "AI developers dapat menggunakan prompedia.app untuk menyimpan system prompt dan konfigurasi AI. Aplikasi ini membantu menjaga konsistensi prompt di berbagai proyek dan memudahkan kolaborasi dengan tim.",
         "developers_use_case_1": "Simpan system prompt untuk berbagai aplikasi AI dan akses dengan mudah saat development.",
@@ -204,13 +214,28 @@
         "creators_title": "Untuk Content Creators",
         "creators_desc": "Content creators dapat menggunakan prompedia.app untuk menyimpan prompt yang membantu proses kreatif. Dengan editor markdown, Anda dapat menyimpan prompt yang kompleks dengan formatting yang rapi.",
         "creators_use_case_1": "Simpan prompt untuk berbagai jenis konten (artikel, social media, dll) dan gunakan kembali.",
-        "creators_use_case_2": "Organisir prompt berdasarkan platform atau jenis konten dengan sistem tag.",
+        "creators_use_case_2": "Mengorganisir prompt berdasarkan platform atau jenis konten dengan sistem tag.",
         "learners_title": "Untuk Pelajar & Hobiis",
         "learners_desc": "Pelajar dan hobiis dapat menggunakan prompedia.app untuk bereksperimen dengan berbagai prompt AI. Aplikasi ini membantu belajar prompt engineering dengan menyimpan dan membandingkan berbagai variasi prompt.",
         "learners_use_case_1": "Simpan prompt yang berhasil dan pelajari pola yang efektif untuk berbagai use case.",
         "learners_use_case_2": "Jelajahi prompt publik dari komunitas untuk belajar teknik prompt engineering.",
         "related_title": "Mulai Menggunakan",
         "related_desc": "Siap untuk mulai menggunakan prompedia.app? Pelajari lebih lanjut di halaman Tentang atau lihat FAQ untuk pertanyaan umum."
+    },
+    "error": {
+        "boundary": {
+            "title": "Terjadi kesalahan",
+            "description": "Terjadi galat tak terduga. Silakan coba lagi.",
+            "retry": "Coba Lagi",
+            "home": "Ke Beranda"
+        }
+    },
+    "language": {
+        "switch_to_en": "Ganti ke Bahasa Inggris",
+        "switch_to_id": "Ganti ke Bahasa Indonesia"
+    },
+    "seo": {
+        "default_title_suffix": "Catatan prompt AI"
     },
     "theme": {
         "toggle": "Ubah tema",
@@ -227,6 +252,39 @@
             "navigation": "Navigasi",
             "view": "Tampilan",
             "search": "Pencarian"
+        },
+        "commands": {
+            "new_prompt_label": "Prompt Baru",
+            "new_prompt_description": "Buat prompt baru",
+            "save_prompt_label": "Simpan Prompt",
+            "save_prompt_description": "Simpan prompt saat ini",
+            "copy_prompt_label": "Salin Prompt",
+            "copy_prompt_description": "Salin konten prompt ke papan klip",
+            "share_prompt_label": "Bagikan Prompt",
+            "share_prompt_description": "Salin tautan berbagi",
+            "go_home_label": "Ke Beranda",
+            "go_home_description": "Buka halaman beranda",
+            "go_about_label": "Ke Tentang",
+            "go_about_description": "Lihat halaman tentang",
+            "go_faq_label": "Ke FAQ",
+            "go_faq_description": "Lihat pertanyaan yang sering diajukan",
+            "go_use_cases_label": "Ke Contoh Penggunaan",
+            "go_use_cases_description": "Lihat contoh penggunaan",
+            "toggle_theme_label": "Ubah Tema",
+            "toggle_theme_description": "Beralih antara mode terang dan gelap",
+            "show_shortcuts_label": "Tampilkan Pintasan Keyboard",
+            "show_shortcuts_description": "Lihat semua pintasan keyboard",
+            "filter_by_tag_label": "Filter menurut {{tag}}",
+            "filter_by_tag_description": "Tampilkan prompt dengan tag: {{tag}}",
+            "filter_all_label": "Tampilkan Semua Prompt",
+            "filter_all_description": "Tampilkan semua prompt",
+            "filter_public_label": "Tampilkan Prompt Publik",
+            "filter_public_description": "Hanya prompt publik",
+            "filter_private_label": "Tampilkan Prompt Pribadi",
+            "filter_private_description": "Hanya prompt pribadi",
+            "focus_search_label": "Fokus ke Pencarian",
+            "focus_search_description": "Fokus ke kolom pencarian",
+            "open_prompt_description": "Buka: {{title}}"
         }
     },
     "shortcuts": {

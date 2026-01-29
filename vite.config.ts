@@ -1,4 +1,4 @@
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import { VitePWA } from 'vite-plugin-pwa';
 import path from "path";
@@ -7,13 +7,61 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+/** Derive origin (e.g. https://xxx.supabase.co) from full URL for CSP */
+function getOrigin(url: string | undefined): string {
+  if (!url?.trim()) return '';
+  try {
+    const u = new URL(url);
+    return u.origin;
+  } catch {
+    return '';
+  }
+}
+
+/** Build CSP directive values from env (Supabase URL, analytics script URL) */
+function buildCspDirectives(env: Record<string, string>): string {
+  const supabaseUrl = env.VITE_SUPABASE_URL || '';
+  const analyticsScriptUrl = env.VITE_ANALYTICS_SCRIPT_URL || '';
+  const supabaseOrigin = getOrigin(supabaseUrl);
+  const analyticsOrigin = getOrigin(analyticsScriptUrl);
+
+  const scriptSrc = [
+    "'self'",
+    "'unsafe-inline'",
+    "'unsafe-eval'",
+    ...(supabaseOrigin ? [supabaseOrigin] : []),
+    ...(analyticsOrigin ? [analyticsOrigin] : []),
+  ].join(' ');
+
+  const connectSrc = [
+    "'self'",
+    ...(supabaseOrigin ? [supabaseOrigin, supabaseOrigin.replace('https:', 'wss:')] : []),
+    ...(analyticsOrigin ? [analyticsOrigin] : []),
+  ].join(' ');
+
+  return [
+    "default-src 'self'",
+    `script-src ${scriptSrc}`,
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: https: blob:",
+    "font-src 'self' data:",
+    `connect-src ${connectSrc}`,
+    "frame-ancestors 'none'",
+    "base-uri 'self'",
+    "form-action 'self'"
+  ].join('; ');
+}
+
 // Konfigurasi Vite - https://vitejs.dev/config/
 export default defineConfig(async ({ mode }) => {
   const isProduction = mode === 'production';
   const isDevelopment = mode === 'development';
-  
+
+  const env = loadEnv(mode, process.cwd(), '');
+  const csp = buildCspDirectives(env);
+
   let componentTagger;
-  
+
   if (isDevelopment) {
     try {
       const lovable = await import("lovable-tagger");
@@ -28,18 +76,7 @@ export default defineConfig(async ({ mode }) => {
       host: "::",
       port: 8080,
       headers: isDevelopment ? {} : {
-        // Header Content Security Policy untuk production
-        'Content-Security-Policy': [
-          "default-src 'self'",
-          "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://kecpjbrlvaoujdnerhwe.supabase.co https://analytics.mgadib.cloud",
-          "style-src 'self' 'unsafe-inline'",
-          "img-src 'self' data: https: blob:",
-          "font-src 'self' data:",
-          "connect-src 'self' https://kecpjbrlvaoujdnerhwe.supabase.co wss://kecpjbrlvaoujdnerhwe.supabase.co https://analytics.mgadib.cloud",
-          "frame-ancestors 'none'",
-          "base-uri 'self'",
-          "form-action 'self'"
-        ].join('; '),
+        'Content-Security-Policy': csp,
         'X-Frame-Options': 'DENY',
         'X-Content-Type-Options': 'nosniff',
         'Referrer-Policy': 'strict-origin-when-cross-origin',
@@ -118,10 +155,8 @@ export default defineConfig(async ({ mode }) => {
           manualChunks: {
             'vendor-react': ['react', 'react-dom', 'react-router-dom'],
             'vendor-ui': [
-              '@radix-ui/react-dialog',
-              '@radix-ui/react-select',
+              '@radix-ui/react-dropdown-menu',
               '@radix-ui/react-slot',
-              '@radix-ui/react-toast',
               '@radix-ui/react-tooltip',
               'lucide-react',
               'class-variance-authority',
@@ -129,7 +164,7 @@ export default defineConfig(async ({ mode }) => {
               'tailwind-merge'
             ],
             'vendor-supabase': ['@supabase/supabase-js'],
-            'vendor-utils': ['date-fns', 'zod', 'react-hook-form', '@tanstack/react-query']
+            'vendor-utils': ['date-fns', '@tanstack/react-query']
           }
         },
         // Exclude dev dependencies from bundle
@@ -142,10 +177,13 @@ export default defineConfig(async ({ mode }) => {
         polyfill: false,
       },
     },
-    // Define environment variables
+    // Define environment variables (explicit production defines aid tree-shaking)
     define: {
-      // Ensure NODE_ENV is set correctly
       'process.env.NODE_ENV': JSON.stringify(isProduction ? 'production' : 'development'),
+      ...(isProduction && {
+        'import.meta.env.DEV': 'false',
+        'import.meta.env.PROD': 'true',
+      }),
     },
     // Optimize dependencies
     optimizeDeps: {
