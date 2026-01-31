@@ -22,70 +22,35 @@ out/
 .env.*
 !.env.example
 !.env.template
-# Local environment files
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-# API Keys and Secrets
 *.key
 *.pem
 *.crt
-*.p12
-*.pfx
 secrets.json
 .secrets/
-auth.json
-api-keys.json
-tokens.json
-# Sentry CLI config (may contain auth)
-.sentryclirc
 
 # ============================================
-# Testing & Coverage
+# Testing & Logs
 # ============================================
 coverage/
-*.lcov
-test-results/
 playwright-report/
+test-results/
 .vitest/
-# Optional: not used (project uses Vitest + v8)
-# .jest/
-# .nyc_output/
-
-# ============================================
-# Logs
-# ============================================
 logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
-yarn-error.log*
 pnpm-debug.log*
-lerna-debug.log*
 
 # ============================================
 # Runtime & Cache
 # ============================================
 .cache/
-.parcel-cache/
 .npm/
-.pnpm-store/
 .eslintcache
 .stylelintcache
-.tscache/
-.turbo/
-.swc/
-# TypeScript
 *.tsbuildinfo
-.tsbuildinfo
-# Vite
 .vite/
 .vite-ssr-cache/
-vite.config.*.timestamp-*
-vite.config.timestamp-*
-vite.config.*.tsbuildinfo
-*.vite-*
 
 # ============================================
 # Supabase
@@ -97,238 +62,57 @@ supabase/.branches/
 # ============================================
 # IDE & Editor Files
 # ============================================
-# Visual Studio Code (whitelist: extensions, settings, tasks, launch, snippets)
+# Visual Studio Code
 .vscode/*
 !.vscode/extensions.json
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/*.code-snippets
-.vscode-test/
-*.code-workspace.local
-# Local History (VS Code extension)
 .history/
-# JetBrains (WebStorm, IntelliJ IDEA, etc.)
+
+# JetBrains
 .idea/
-.idea_modules/
 *.iml
-*.iws
-*.ipr
-# Sublime Text
-*.sublime-workspace
-*.sublime-project
-# Vim swap/backup (detailed patterns)
-[._]*.s[a-v][a-z]
-[._]*.sw[a-p]
-[._]s[a-rt-v][a-z]
-[._]ss[a-gi-z]
-[._]sw[a-p]
-# Emacs
-\#*\#
-/.emacs.desktop
-/.emacs.desktop.lock
-*.elc
-auto-save-list
-tramp
-.\#*
+
 # Cursor
 .cursor/
 .cursorrules
 .cursor-tutor/
 .cursor-history/
-# Other editors
-.fleet/
-.nova/
-.zed/
-.helix/
 
 # ============================================
 # OS Generated Files
 # ============================================
-# macOS
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-.AppleDouble
-.LSOverride
-Icon
-.VolumeIcon.icns
-.com.apple.timemachine.donotpresent
-.AppleDB
-.AppleDesktop
-Network Trash Folder
-Temporary Items
-.apdisk
-# Windows
 Thumbs.db
-Thumbs.db:encryptable
-ehthumbs.db
-ehthumbs_vista.db
-*.stackdump
 [Dd]esktop.ini
-$RECYCLE.BIN/
-*.cab
-*.msi
-*.msix
-*.msm
-*.msp
-*.lnk
-# Linux
-.directory
-.Trash-*
-.nfs*
 
 # ============================================
-# Node & Package Managers
+# Package Managers
 # ============================================
-# .nvmrc and .node-version are NOT ignored for consistent Node version
-.npmrc.local
-.npmrc.*.local
-# Lock files: keep package-lock.json (npm); ignore others if not used
+# Strictly use npm, ignore others to avoid confusion
 bun.lockb
-# Yarn v2
-.yarn/cache
-.yarn/unplugged
-.yarn/build-state.yml
-.yarn/install-state.gz
+.yarn/
 
 # ============================================
-# Database Files
+# Database & Temp
 # ============================================
 *.db
 *.sqlite
 *.sqlite3
-*.db-journal
-*.db-wal
-*.db-shm
-
-# ============================================
-# Temporary & Swap Files
-# ============================================
 tmp/
 temp/
-.tmp/
-.temp/
 *.tmp
-*.temp
-*.swp
-*.swo
-*~
 *.bak
-*.backup
-*.orig
-
-# ============================================
-# Build Artifacts
-# ============================================
-*.map
-*.min.js
-*.min.css
-bundle-analyzer-report.html
-stats.html
-
-# ============================================
-# Deployment & CI/CD (optional caches)
-# ============================================
-.vercel/
-.netlify/
-.railway/
-.serverless/
-.fusebox/
-.dynamodb/
-
-# ============================================
-# Cloud Provider Configs
-# ============================================
-.aws/
-.gcp/
-.azure/
-
-# ============================================
-# Docker
-# ============================================
-docker-compose.override.yml
-.docker/
-
-# ============================================
-# Kubernetes
-# ============================================
-*.kubeconfig
-k8s-secrets/
-
-# ============================================
-# Terraform (optional; uncomment if used)
-# ============================================
-# *.tfstate
-# *.tfstate.*
-# .terraform/
-# .terraform.lock.hcl
-
-# ============================================
-# Storybook (optional; uncomment if added)
-# ============================================
-# storybook-static/
-# .storybook-out/
-
-# ============================================
-# Performance & Profiling
-# ============================================
-*.cpuprofile
-*.heapprofile
-*.heapsnapshot
-.flamegraph.html
-.clinic/
-.perf/
-*.perf
-*.0x/
-*.trace
-*.trace.json
-
-# ============================================
-# AI/ML Models (optional; avoid large binaries)
-# ============================================
-*.model
-*.pkl
-*.h5
-*.pb
-models/
-datasets/
-*.weights
-
-# ============================================
-# Misc
-# ============================================
-*.tgz
-*.tar.gz
-.yarn-integrity
-.node_repl_history
-.rpt2_cache/
-.rts2_cache/
-.rts2_cache_cjs/
-.rts2_cache_es/
-.rts2_cache_umd/
-
-# ============================================
-# Security & Compliance
-# ============================================
-security-report.json
-dependency-check-report.json
-*.security-audit.json
-compliance-report/
-*.audit.json
+*.swp
 
 # ============================================
 # Project Specific - Prompedia AI
 # ============================================
-# Lovable/GPT Engineer artifacts
 .lovable/
 .gptengineer/
-# Local development notes/scratchpad
 *.local.md
 SCRATCHPAD.md
 TODO.local.md
 NOTES.local.md
-# Generated Supabase types: keep in repo; uncomment to ignore if regenerated
-# src/integrations/supabase/types.ts

@@ -60,15 +60,8 @@ export default defineConfig(async ({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   const csp = buildCspDirectives(env);
 
-  let componentTagger;
-
   if (isDevelopment) {
-    try {
-      const lovable = await import("lovable-tagger");
-      componentTagger = lovable.componentTagger;
-    } catch (e) {
-      // Silent fail in development - lovable-tagger is optional
-    }
+    // Development specific setup
   }
 
   return {
@@ -85,7 +78,7 @@ export default defineConfig(async ({ mode }) => {
     },
     plugins: [
       react(),
-      isDevelopment && componentTagger && componentTagger(),
+
       // PWA plugin for service worker and offline caching
       VitePWA({
         registerType: 'autoUpdate',
@@ -187,7 +180,7 @@ export default defineConfig(async ({ mode }) => {
     },
     // Optimize dependencies
     optimizeDeps: {
-      exclude: isProduction ? ['lovable-tagger'] : [],
+      exclude: [],
     },
   };
 });

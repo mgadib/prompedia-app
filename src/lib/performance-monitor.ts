@@ -84,19 +84,8 @@ export function initWebVitalsTracking(): void {
     return;
   }
 
-  // Dynamically import web-vitals to avoid adding to bundle if not needed
-  import('web-vitals').then(({ onCLS, onFID, onFCP, onLCP, onTTFB, onINP }) => {
-    onCLS(trackWebVitals);
-    onFID(trackWebVitals);
-    onFCP(trackWebVitals);
-    onLCP(trackWebVitals);
-    onTTFB(trackWebVitals);
-    onINP(trackWebVitals);
-  }).catch(() => {
-    if (config.features.enableDebugLogging) {
-      logWarning('web-vitals not installed. Performance tracking disabled.', {
-        context: 'initWebVitalsTracking',
-      });
-    }
-  });
+  // Performance tracking via web-vitals has been removed
+  if (config.features.enableDebugLogging) {
+    logger.log('Performance tracking disabled.');
+  }
 }
