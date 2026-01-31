@@ -53,27 +53,44 @@
     /* ========================================
        RADIUS TOKENS - Smooth & Modern
        ======================================== */
-    --radius-sm: 0.25rem;   /* 4px - small elements (buttons, badges) */
-    --radius: 0.5rem;       /* 8px - cards, containers */
-    --radius-md: 0.75rem;    /* 12px - larger cards */
-    --radius-lg: 1rem;      /* 16px - modals, dialogs */
-    --radius-xl: 1.5rem;    /* 24px - special cases */
+    --radius-sm: 0.25rem;
+    /* 4px - small elements (buttons, badges) */
+    --radius: 0.5rem;
+    /* 8px - cards, containers */
+    --radius-md: 0.75rem;
+    /* 12px - larger cards */
+    --radius-lg: 1rem;
+    /* 16px - modals, dialogs */
+    --radius-xl: 1.5rem;
+    /* 24px - special cases */
 
     /* ========================================
        SPACING TOKENS - Extended Scale
        ======================================== */
-    --space-0.5: 0.125rem;  /* 2px */
-    --space-1: 0.25rem;     /* 4px */
-    --space-1.5: 0.375rem;  /* 6px */
-    --space-2: 0.5rem;      /* 8px */
-    --space-2.5: 0.625rem; /* 10px */
-    --space-3: 0.75rem;     /* 12px */
-    --space-4: 1rem;        /* 16px */
-    --space-5: 1.25rem;    /* 20px */
-    --space-6: 1.5rem;      /* 24px */
-    --space-8: 2rem;        /* 32px */
-    --space-10: 2.5rem;     /* 40px */
-    --space-12: 3rem;       /* 48px */
+    --space-0.5: 0.125rem;
+    /* 2px */
+    --space-1: 0.25rem;
+    /* 4px */
+    --space-1.5: 0.375rem;
+    /* 6px */
+    --space-2: 0.5rem;
+    /* 8px */
+    --space-2.5: 0.625rem;
+    /* 10px */
+    --space-3: 0.75rem;
+    /* 12px */
+    --space-4: 1rem;
+    /* 16px */
+    --space-5: 1.25rem;
+    /* 20px */
+    --space-6: 1.5rem;
+    /* 24px */
+    --space-8: 2rem;
+    /* 32px */
+    --space-10: 2.5rem;
+    /* 40px */
+    --space-12: 3rem;
+    /* 48px */
 
     /* ========================================
        BRAND TOKENS
@@ -147,16 +164,21 @@
     /* ========================================
        TRANSITION TOKENS - Smooth & Natural
        ======================================== */
-    --duration-instant: 100ms;  /* micro-interactions */
-    --duration-fast: 150ms;     /* hover states */
-    --duration-normal: 200ms;   /* default transitions */
-    --duration-slow: 300ms;     /* complex animations */
-    --duration-slower: 400ms;   /* page transitions */
-    --ease-default: cubic-bezier(0.4, 0, 0.2, 1);        /* Material Design ease */
-    --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);        /* smooth in-out */
-    --ease-out: cubic-bezier(0, 0, 0.2, 1);            /* smooth out */
-    --ease-in: cubic-bezier(0.4, 0, 1, 1);             /* smooth in */
-    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);  /* playful interactions */
+    --duration-instant: 0ms;
+    --duration-fast: 0ms;
+    --duration-normal: 0ms;
+    --duration-slow: 0ms;
+    --duration-slower: 0ms;
+    --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+    /* Material Design ease */
+    --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+    /* smooth in-out */
+    --ease-out: cubic-bezier(0, 0, 0.2, 1);
+    /* smooth out */
+    --ease-in: cubic-bezier(0.4, 0, 1, 1);
+    /* smooth in */
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    /* playful interactions */
 
     /* ========================================
        SYNTAX HIGHLIGHTING TOKENS
@@ -207,11 +229,16 @@
     /* ========================================
        RADIUS TOKENS - Smooth & Modern (same as light)
        ======================================== */
-    --radius-sm: 0.25rem;   /* 4px */
-    --radius: 0.5rem;       /* 8px */
-    --radius-md: 0.75rem;    /* 12px */
-    --radius-lg: 1rem;      /* 16px */
-    --radius-xl: 1.5rem;    /* 24px */
+    --radius-sm: 0.25rem;
+    /* 4px */
+    --radius: 0.5rem;
+    /* 8px */
+    --radius-md: 0.75rem;
+    /* 12px */
+    --radius-lg: 1rem;
+    /* 16px */
+    --radius-xl: 1.5rem;
+    /* 24px */
 
     /* ========================================
        SPACING TOKENS - Extended Scale (same as light)
@@ -377,7 +404,7 @@
     border: 2px solid transparent;
     background-clip: padding-box;
     transition: background-color var(--duration-normal) var(--ease-default),
-                border-color var(--duration-normal) var(--ease-default);
+      border-color var(--duration-normal) var(--ease-default);
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
@@ -411,7 +438,7 @@
     border: 2px solid transparent;
     background-clip: padding-box;
     transition: background-color var(--duration-normal) var(--ease-default),
-                border-color var(--duration-normal) var(--ease-default);
+      border-color var(--duration-normal) var(--ease-default);
   }
 
   body::-webkit-scrollbar-thumb:hover {
@@ -466,8 +493,8 @@
   select {
     border-radius: var(--radius);
     transition: border-color var(--duration-fast) var(--ease-default),
-                box-shadow var(--duration-fast) var(--ease-default),
-                background-color var(--duration-fast) var(--ease-default);
+      box-shadow var(--duration-fast) var(--ease-default),
+      background-color var(--duration-fast) var(--ease-default);
   }
 
   input[type="text"]:focus,
@@ -490,8 +517,8 @@
 
   /* Prompt list item hover - with smooth transition */
   .prompt-item {
-    transition: background-color var(--duration-fast) var(--ease-default), 
-                transform var(--duration-fast) var(--ease-default);
+    transition: background-color var(--duration-fast) var(--ease-default),
+      transform var(--duration-fast) var(--ease-default);
   }
 
   .prompt-item:hover {
@@ -550,7 +577,7 @@
   textarea,
   select {
     transition: border-color var(--duration-fast) var(--ease-default),
-                box-shadow var(--duration-fast) var(--ease-default);
+      box-shadow var(--duration-fast) var(--ease-default);
   }
 
   input[type="text"]:focus,
@@ -586,9 +613,7 @@
     }
   }
 
-  .toast-enter {
-    animation: toast-in 0.2s ease-out;
-  }
+  .toast-enter {}
 
   @keyframes toast-out {
     from {
@@ -602,15 +627,14 @@
     }
   }
 
-  .toast-exit {
-    animation: toast-out 0.15s ease-in forwards;
-  }
+  .toast-exit {}
 
   /* Modal animations */
   @keyframes modal-backdrop-in {
     from {
       opacity: 0;
     }
+
     to {
       opacity: 1;
     }
@@ -621,6 +645,7 @@
       opacity: 0;
       transform: scale(0.95) translateY(-10px);
     }
+
     to {
       opacity: 1;
       transform: scale(1) translateY(0);
@@ -632,37 +657,31 @@
       opacity: 1;
       transform: scale(1) translateY(0);
     }
+
     to {
       opacity: 0;
       transform: scale(0.95) translateY(-10px);
     }
   }
 
-  .modal-backdrop {
-    animation: modal-backdrop-in var(--duration-normal) var(--ease-out);
-  }
+  .modal-backdrop {}
 
-  .modal-content {
-    animation: modal-content-in var(--duration-normal) var(--ease-out);
-  }
+  .modal-content {}
 
-  .modal-content-exit {
-    animation: modal-content-out var(--duration-fast) var(--ease-in) forwards;
-  }
+  .modal-content-exit {}
 
   /* Loading spinner fade-in */
   @keyframes spinner-fade-in {
     from {
       opacity: 0;
     }
+
     to {
       opacity: 1;
     }
   }
 
-  .loading-spinner {
-    animation: spinner-fade-in var(--duration-fast) var(--ease-out);
-  }
+  .loading-spinner {}
 
   /* List item transitions */
   @keyframes list-item-in {
@@ -670,6 +689,7 @@
       opacity: 0;
       transform: translateY(10px);
     }
+
     to {
       opacity: 1;
       transform: translateY(0);
@@ -681,33 +701,29 @@
       opacity: 1;
       transform: translateY(0);
     }
+
     to {
       opacity: 0;
       transform: translateY(-10px);
     }
   }
 
-  .list-item-enter {
-    animation: list-item-in var(--duration-normal) var(--ease-out);
-  }
+  .list-item-enter {}
 
-  .list-item-exit {
-    animation: list-item-out var(--duration-fast) var(--ease-in) forwards;
-  }
+  .list-item-exit {}
 
   /* Page transitions */
   @keyframes page-fade-in {
     from {
       opacity: 0;
     }
+
     to {
       opacity: 1;
     }
   }
 
-  .page-transition {
-    animation: page-fade-in var(--duration-normal) var(--ease-out);
-  }
+  .page-transition {}
 
   .page-transition-entering {
     opacity: 0;

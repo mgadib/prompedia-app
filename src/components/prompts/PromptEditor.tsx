@@ -2,7 +2,7 @@ import React, { memo, lazy, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 
 const MarkdownEditor = lazy(() =>
-  import('@/components/editor').then((m) => ({ default: m.MarkdownEditor }))
+    import('@/components/editor').then((m) => ({ default: m.MarkdownEditor }))
 );
 import { StatusBadge } from '@/components/ui/status-badge';
 import { useTranslation } from 'react-i18next';
@@ -75,7 +75,7 @@ const PromptEditorComponent: React.FC<PromptEditorProps> = ({
                             value={tagsInput}
                             onChange={e => setTagsInput(e.target.value)}
                             placeholder={t('prompt.tags_placeholder')}
-                            className="w-full px-3 py-2 bg-transparent border border-border rounded text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 transition-all duration-fast"
+                            className="w-full px-3 py-2 bg-transparent border border-border rounded text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
                         />
                     </div>
                     <div className="flex items-center gap-4 flex-shrink-0">
@@ -85,12 +85,12 @@ const PromptEditorComponent: React.FC<PromptEditorProps> = ({
                                 id="isPublic"
                                 checked={isPublic}
                                 onChange={(e) => setIsPublic(e.target.checked)}
-                                className="rounded border-border text-green-600 focus:ring-2 focus:ring-green-600 focus:ring-offset-1 h-4 w-4 accent-green-600 cursor-pointer transition-all duration-fast"
+                                className="rounded border-border text-green-600 focus:ring-2 focus:ring-green-600 focus:ring-offset-1 h-4 w-4 accent-green-600 cursor-pointer"
                             />
                             {isPublic ? (
                                 <StatusBadge variant="public" size="sm" className="cursor-pointer">{t('prompt.public')}</StatusBadge>
                             ) : (
-                                <span className="text-body text-muted-foreground select-none whitespace-nowrap group-hover:text-foreground transition-colors duration-fast">
+                                <span className="text-body text-muted-foreground select-none whitespace-nowrap group-hover:text-foreground">
                                     {t('prompt.public')}
                                 </span>
                             )}

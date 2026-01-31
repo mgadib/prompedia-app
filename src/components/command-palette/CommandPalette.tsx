@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { Command as CmdkCommand } from 'cmdk';
 import { useTranslation } from 'react-i18next';
-import { 
-    FileText, 
-    Home, 
-    Info, 
-    HelpCircle, 
-    Lightbulb, 
-    Moon, 
-    Sun, 
+import {
+    FileText,
+    Home,
+    Info,
+    HelpCircle,
+    Lightbulb,
+    Moon,
+    Sun,
     Keyboard,
     Search,
     Tag,
@@ -110,7 +110,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                         />
                         <button
                             onClick={onClose}
-                            className="ml-2 h-8 w-8 flex items-center justify-center rounded-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                            className="ml-2 h-8 w-8 flex items-center justify-center rounded-sm text-muted-foreground hover:text-foreground hover:bg-secondary"
                             aria-label={t('actions.close', 'Close')}
                         >
                             <X className="h-4 w-4" />
@@ -150,7 +150,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                                                 }}
                                                 disabled={command.disabled}
                                                 className={cn(
-                                                    "relative flex cursor-pointer select-none items-center rounded-sm px-2 py-2.5 text-sm outline-none transition-colors",
+                                                    "relative flex cursor-pointer select-none items-center rounded-sm px-2 py-2.5 text-sm outline-none",
                                                     "aria-selected:bg-accent aria-selected:text-accent-foreground",
                                                     "data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
                                                 )}

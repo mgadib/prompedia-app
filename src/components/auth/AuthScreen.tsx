@@ -77,7 +77,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
                                 placeholder={t('auth.placeholders.name')}
                                 disabled={authSubmitting}
                                 autoComplete="name"
-                                className="w-full px-3 py-2.5 sm:py-2 bg-background border border-border rounded text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 disabled:opacity-50 transition-all duration-fast min-h-[44px] sm:min-h-0"
+                                className="w-full px-3 py-2.5 sm:py-2 bg-background border border-border rounded text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 disabled:opacity-50 min-h-[44px] sm:min-h-0"
                                 aria-label={t('auth.name')}
                             />
                         </div>
@@ -92,7 +92,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
                             placeholder={t('auth.placeholders.email')}
                             disabled={authSubmitting}
                             autoComplete="email"
-                            className="w-full px-3 py-2.5 sm:py-2 bg-background border border-border rounded text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 disabled:opacity-50 transition-all duration-fast min-h-[44px] sm:min-h-0"
+                            className="w-full px-3 py-2.5 sm:py-2 bg-background border border-border rounded text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 disabled:opacity-50 min-h-[44px] sm:min-h-0"
                             aria-label={t('auth.email')}
                         />
                     </div>
@@ -107,7 +107,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
                             placeholder={t('auth.placeholders.password')}
                             disabled={authSubmitting}
                             autoComplete={authMode === 'register' ? 'new-password' : 'current-password'}
-                            className="w-full px-3 py-2.5 sm:py-2 bg-background border border-border rounded text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 disabled:opacity-50 transition-all duration-fast min-h-[44px] sm:min-h-0"
+                            className="w-full px-3 py-2.5 sm:py-2 bg-background border border-border rounded text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 disabled:opacity-50 min-h-[44px] sm:min-h-0"
                             aria-label={t('auth.password')}
                         />
                         {/* Password strength indicator for registration */}
@@ -117,7 +117,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
                                     {[1, 2, 3, 4].map((level) => (
                                         <div
                                             key={level}
-                                            className={`h-1 flex-1 rounded-full transition-colors ${passwordStrength.score >= level ? passwordStrength.color : 'bg-muted'
+                                            className={`h-1 flex-1 rounded-full ${passwordStrength.score >= level ? passwordStrength.color : 'bg-muted'
                                                 }`}
                                         />
                                     ))}
@@ -170,8 +170,8 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
                             <TagChip
                                 key={tag.name}
                                 variant={
-                                    selectedPublicTag?.toLowerCase() === tag.name.toLowerCase() 
-                                        ? 'active' 
+                                    selectedPublicTag?.toLowerCase() === tag.name.toLowerCase()
+                                        ? 'active'
                                         : 'default'
                                 }
                                 size="default"
