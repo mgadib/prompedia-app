@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { PromptUI, UsePromptsOptions } from '@/types/prompts';
+import { UsePromptsOptions } from '@/types/prompts';
 import { queryKeys } from '@/lib/query-keys';
 import { usePromptRepository } from './use-prompt-repository';
 
@@ -39,5 +39,6 @@ export const usePrompts = ({
         enabled: enabled && !!userId,
         staleTime: 60 * 1000, // 1 minute
         gcTime: 5 * 60 * 1000, // Clean up after 5 minutes of inactivity
+        placeholderData: keepPreviousData,
     });
 };

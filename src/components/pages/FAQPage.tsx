@@ -68,10 +68,10 @@ const FAQPage = () => {
                             <HelpCircle className="w-3.5 h-3.5" />
                             {t('faq.badge', 'Support Center')}
                         </div>
-                        <h1 className="text-4xl sm:text-5xl font-black text-foreground mb-4 italic uppercase tracking-tight">
+                        <h1 className="text-page-title font-bold text-foreground mb-4 italic uppercase tracking-tight font-heading">
                             {t('faq.title')}
                         </h1>
-                        <p className="text-lg text-muted-foreground leading-relaxed">
+                        <p className="text-body-lg text-muted-foreground leading-relaxed">
                             {t('faq.description')}
                         </p>
                     </div>
@@ -90,10 +90,10 @@ const FAQPage = () => {
                                         <MessageCircle className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
                                     </div>
                                     <div className="flex-1">
-                                        <h2 className="text-lg font-bold text-foreground mb-3 group-hover:text-primary transition-colors">
+                                        <h2 className="text-card-title font-bold text-foreground mb-3 group-hover:text-primary transition-colors font-heading">
                                             {faq.q}
                                         </h2>
-                                        <p className="text-base text-muted-foreground leading-relaxed">
+                                        <p className="text-body text-muted-foreground leading-relaxed">
                                             {faq.a}
                                         </p>
                                     </div>
@@ -105,8 +105,8 @@ const FAQPage = () => {
                     <section className="mt-20 p-10 bg-linear-to-br from-secondary/40 to-muted/20 rounded-3xl border border-border animate-fade-in">
                         <div className="flex flex-col md:flex-row justify-between items-center gap-8 text-center md:text-left">
                             <div>
-                                <h2 className="text-2xl font-black text-foreground mb-2 italic uppercase">{t('faq.related_title')}</h2>
-                                <p className="text-muted-foreground">{t('faq.related_desc')}</p>
+                                <h2 className="text-xl font-bold text-foreground mb-2 italic uppercase font-heading">{t('faq.related_title')}</h2>
+                                <p className="text-body text-muted-foreground">{t('faq.related_desc')}</p>
                             </div>
                             <div className="flex gap-4">
                                 <Button variant="outline" asChild className="rounded-full px-8 font-bold">

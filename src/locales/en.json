@@ -140,6 +140,7 @@
         }
     },
     "landing": {
+        "hero_title": "Store, Organize, & Share Your AI Prompts Instantly",
         "public_tags_title": "Explore Tags",
         "recent_prompts_title": "Recent Public Prompts",
         "no_public_prompts": "No public prompts yet",

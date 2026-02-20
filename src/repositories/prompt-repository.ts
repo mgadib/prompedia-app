@@ -6,8 +6,8 @@
  */
 
 import { supabase } from '@/integrations/supabase/client';
-import { PromptUI, Prompt, UsePromptsOptions } from '@/types/prompts';
-import { transformSupabasePromptToUI } from '@/lib/prompt-transformers';
+import { PromptUI, Prompt } from '@/types/prompts';
+import { transformSupabasePromptToUI, SupabaseRPCRow } from '@/lib/prompt-transformers';
 import { TFunction } from 'i18next';
 import { trackApiResponseTime } from '@/lib/performance-monitor';
 import { logError } from '@/lib/logger';
@@ -57,30 +57,34 @@ export class SupabasePromptRepository implements PromptRepository {
         const startTime = performance.now();
         const sanitizedSearch = sanitizeSearchInput(filterText);
         const sanitizedTag = sanitizeTagInput(filterTag);
-        const { data, error } = await supabase.rpc('search_prompts', {
+
+        // Use type assertion for RPC name because generated types may be missing these functions
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data, error } = await (supabase.rpc as any)('search_prompts', {
             p_user_id: userId,
             p_search_text: sanitizedSearch || null,
             p_tag_filter: sanitizedTag || null,
             p_visibility: visibility,
             p_page: page,
             p_page_size: pageSize
-        });
+        }) as { data: SupabaseRPCRow[] | null; error: unknown };
+
         const duration = performance.now() - startTime;
 
         trackApiResponseTime('search_prompts', 'RPC', duration, error ? undefined : 200);
 
-        if (error) throw error;
+        if (error) {
+            logError(error, { context: 'searchPrompts', filters });
+            throw error;
+        }
 
         if (!data || data.length === 0) {
             return { prompts: [], total: 0 };
         }
 
-        interface RPCRowWithCount {
-            total_count?: number;
-        }
-        const totalCount = (data[0] as RPCRowWithCount)?.total_count || 0;
+        const totalCount = isRPCRowWithCount(data[0]) ? Number((data[0] as { total_count?: number | string }).total_count ?? 0) : 0;
 
-        const formattedPrompts: PromptUI[] = data.map((row) => 
+        const formattedPrompts: PromptUI[] = data.map((row) =>
             transformSupabasePromptToUI(row, t)
         );
 
@@ -95,24 +99,30 @@ export class SupabasePromptRepository implements PromptRepository {
 
         const startTime = performance.now();
         const sanitizedTag = sanitizeTagInput(tag);
-        const { data: rpcData, error: rpcError } = await supabase.rpc('search_public_prompts', {
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data: rpcData, error: rpcError } = await (supabase.rpc as any)('search_public_prompts', {
             p_tag_filter: sanitizedTag || null,
             p_page: page,
             p_page_size: pageSize
-        });
+        }) as { data: SupabaseRPCRow[] | null; error: unknown };
+
         const duration = performance.now() - startTime;
 
         trackApiResponseTime('search_public_prompts', 'RPC', duration, rpcError ? undefined : 200);
 
-        if (rpcError) throw rpcError;
+        if (rpcError) {
+            logError(rpcError, { context: 'searchPublicPrompts', filters });
+            throw rpcError;
+        }
 
         if (!rpcData || rpcData.length === 0) {
             return { prompts: [], total: 0 };
         }
 
-        const totalCount = isRPCRowWithCount(rpcData[0]) ? (rpcData[0].total_count ?? 0) : 0;
+        const totalCount = isRPCRowWithCount(rpcData[0]) ? Number((rpcData[0] as { total_count?: number | string }).total_count ?? 0) : 0;
 
-        const formattedPrompts: PromptUI[] = rpcData.map((row) => 
+        const formattedPrompts: PromptUI[] = rpcData.map((row) =>
             transformSupabasePromptToUI(row, t)
         );
 
@@ -121,7 +131,8 @@ export class SupabasePromptRepository implements PromptRepository {
 
     async getPublicTagCounts(): Promise<Array<{ name: string; count: number }>> {
         const startTime = performance.now();
-        const { data, error } = await supabase.rpc('get_public_tag_counts');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data, error } = await (supabase.rpc as any)('get_public_tag_counts') as { data: Array<{ name: string; count: number | string }> | null; error: unknown };
         const duration = performance.now() - startTime;
 
         trackApiResponseTime('get_public_tag_counts', 'RPC', duration, error ? undefined : 200);
@@ -133,9 +144,9 @@ export class SupabasePromptRepository implements PromptRepository {
 
         if (!data || !Array.isArray(data)) return [];
 
-        return data.map((row: { name: string; count: number | string }) => ({
-            name: row.name,
-            count: typeof row.count === 'number' ? row.count : Number(row.count),
+        return data.map((row) => ({
+            name: String(row.name || ''),
+            count: typeof row.count === 'number' ? row.count : Number(row.count || 0),
         }));
     }
 
@@ -150,7 +161,10 @@ export class SupabasePromptRepository implements PromptRepository {
             .order('created_at', { ascending: false })
             .limit(limit);
 
-        if (queryError) throw queryError;
+        if (queryError) {
+            logError(queryError, { context: 'getRecentPublicPrompts', limit });
+            throw queryError;
+        }
         if (!promptsData) return [];
 
         return promptsData.map(p => ({
@@ -167,7 +181,10 @@ export class SupabasePromptRepository implements PromptRepository {
             .eq('id', id)
             .single();
 
-        if (error) throw error;
+        if (error) {
+            logError(error, { context: 'getPromptById', id });
+            throw error;
+        }
         if (!data) return null;
 
         if (!isPromptShape(data)) {
@@ -178,8 +195,7 @@ export class SupabasePromptRepository implements PromptRepository {
             return null;
         }
 
-        const { transformPromptToUI } = await import('@/lib/prompt-transformers');
-        return transformPromptToUI(data, t);
+        return transformSupabasePromptToUI(data, t);
     }
 }
 

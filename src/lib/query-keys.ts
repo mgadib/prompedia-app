@@ -92,12 +92,14 @@ export const queryKeys = {
 export function invalidatePromptsQueries(userId?: string) {
   if (userId) {
     return {
-      queryKey: queryKeys.prompts.list(userId),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      queryKey: queryKeys.prompts.list(userId) as any,
       exact: false, // Invalidate all queries that start with this key
     };
   }
   return {
-    queryKey: queryKeys.prompts.all,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    queryKey: queryKeys.prompts.all as any,
     exact: false,
   };
 }
@@ -107,7 +109,8 @@ export function invalidatePromptsQueries(userId?: string) {
  */
 export function invalidatePublicPromptsQueries() {
   return {
-    queryKey: queryKeys.publicPrompts.all,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    queryKey: queryKeys.publicPrompts.all as any,
     exact: false,
   };
 }
@@ -117,7 +120,8 @@ export function invalidatePublicPromptsQueries() {
  */
 export function invalidateTagsQueries(_userId?: string) {
   return {
-    queryKey: queryKeys.tags.all,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    queryKey: queryKeys.tags.all as any,
     exact: false,
   };
 }

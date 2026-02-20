@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PromptUI } from '@/types/prompts';
 import { Header } from '@/components/layout/Header';
@@ -16,6 +16,7 @@ interface LandingPageProps {
     selectedPublicTag: string | null;
     publicCurrentPage: number;
     publicItemsPerPage: number;
+    publicTotal: number;
     selectedPrompt: PromptUI | null;
     onSelectPrompt: (prompt: PromptUI | null) => void;
     onCopy: (text: string) => void;
@@ -38,13 +39,15 @@ interface LandingPageProps {
     currentUserId?: string;
 }
 
-export const LandingPage: React.FC<LandingPageProps> = ({
+// LandingPage is memoized to prevent unnecessary re-renders when parent states change
+export const LandingPage: React.FC<LandingPageProps> = memo(({
     publicPrompts,
     publicTags,
     publicLoading,
     selectedPublicTag,
     publicCurrentPage,
     publicItemsPerPage,
+    publicTotal, // Added this prop to interface in a bit
     selectedPrompt,
     onSelectPrompt,
     onCopy,
@@ -67,16 +70,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 }) => {
     const { t } = useTranslation();
 
-    // Case-insensitive tag filtering
-    const filteredPublicPrompts = selectedPublicTag
-        ? publicPrompts.filter(p =>
-            p.tags.some(t => t.name.toLowerCase() === selectedPublicTag.toLowerCase())
-        )
-        : publicPrompts;
-    const paginatedPublicPrompts = filteredPublicPrompts.slice(
-        (publicCurrentPage - 1) * publicItemsPerPage,
-        publicCurrentPage * publicItemsPerPage
-    );
+    // The filtering and pagination is now handled by the repository/hook (server-side)
+    // for significantly better performance with large datasets.
 
     return (
         <div className="min-h-screen bg-background font-sans flex flex-col">
@@ -94,12 +89,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                                 <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-violet-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
 
                                 <div className="relative z-10 max-w-2xl">
-                                    <h2 className="text-5xl sm:text-7xl font-black text-foreground tracking-tight leading-none mb-8 animate-fade-in-up font-heading">
+                                    <h2 className="text-display sm:text-display font-black text-foreground tracking-tight leading-none mb-8 animate-fade-in-up font-heading">
                                         <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary via-orange-500 to-violet-500">
-                                            {t('landing.hero_title', 'Elevate Your AI Conversations')}
+                                            {t('landing.hero_title')}
                                         </span>
                                     </h2>
-                                    <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed mb-10 animate-fade-in-up delay-100 max-w-xl">
+                                    <p className="text-body-lg sm:text-body-lg text-muted-foreground leading-relaxed mb-10 animate-fade-in-up delay-100 max-w-xl">
                                         {t('app.description')}
                                     </p>
                                     <div className="flex flex-wrap gap-4 animate-fade-in-up delay-200">
@@ -122,22 +117,22 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                                 <div className="w-12 h-12 rounded-2xl bg-primary/20 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform shadow-sm group-hover:shadow-primary/20">
                                     <FileText className="w-6 h-6 text-primary" />
                                 </div>
-                                <h3 className="text-lg font-black text-foreground mb-3 tracking-tight uppercase">{t('landing.feature_1_title', 'Centralized')}</h3>
-                                <p className="text-sm text-muted-foreground leading-relaxed">{t('landing.feature_1_desc', 'One place for all your prompts across ChatGPT, Claude, and Gemini.')}</p>
+                                <h3 className="text-card-title font-bold text-foreground mb-3 tracking-tight">{t('landing.feature_1_title', 'Centralized')}</h3>
+                                <p className="text-body text-muted-foreground leading-relaxed">{t('landing.feature_1_desc', 'One place for all your prompts across ChatGPT, Claude, and Gemini.')}</p>
                             </div>
                             <div className="glass-card rounded-2xl p-7 group hover:-translate-y-2" style={{ transitionDelay: '50ms' }}>
                                 <div className="w-12 h-12 rounded-2xl bg-violet-500/20 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform shadow-sm group-hover:shadow-violet-500/20">
                                     <Search className="w-6 h-6 text-violet-500" />
                                 </div>
-                                <h3 className="text-lg font-black text-foreground mb-3 tracking-tight uppercase">{t('landing.feature_2_title', 'Structured')}</h3>
-                                <p className="text-sm text-muted-foreground leading-relaxed">{t('landing.feature_2_desc', 'Organize with powerful tagging and find anything instantly with real-time search.')}</p>
+                                <h3 className="text-card-title font-bold text-foreground mb-3 tracking-tight">{t('landing.feature_2_title', 'Structured')}</h3>
+                                <p className="text-body text-muted-foreground leading-relaxed">{t('landing.feature_2_desc', 'Organize with powerful tagging and find anything instantly with real-time search.')}</p>
                             </div>
                             <div className="glass-card rounded-2xl p-7 group hover:-translate-y-2" style={{ transitionDelay: '100ms' }}>
                                 <div className="w-12 h-12 rounded-2xl bg-green-500/20 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform shadow-sm group-hover:shadow-green-500/20">
                                     <Share2 className="w-6 h-6 text-green-500" />
                                 </div>
-                                <h3 className="text-lg font-black text-foreground mb-3 tracking-tight uppercase">{t('landing.feature_3_title', 'Shareable')}</h3>
-                                <p className="text-sm text-muted-foreground leading-relaxed">{t('landing.feature_3_desc', 'Easily share your best prompts with the community via public links.')}</p>
+                                <h3 className="text-card-title font-bold text-foreground mb-3 tracking-tight">{t('landing.feature_3_title', 'Shareable')}</h3>
+                                <p className="text-body text-muted-foreground leading-relaxed">{t('landing.feature_3_desc', 'Easily share your best prompts with the community via public links.')}</p>
                             </div>
                         </div>
 
@@ -149,7 +144,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                                 </h2>
                             </div>
                             <PromptList
-                                prompts={paginatedPublicPrompts}
+                                prompts={publicPrompts}
                                 isLoading={publicLoading}
                                 onSelectPrompt={onSelectPrompt}
                                 onCopy={onCopy}
@@ -158,7 +153,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                                 editingId={null}
                                 currentPage={publicCurrentPage}
                                 itemsPerPage={publicItemsPerPage}
-                                totalItems={filteredPublicPrompts.length}
+                                totalItems={publicTotal}
                                 onPageChange={onSetPublicPage}
                                 onItemsPerPageChange={() => { }}
                                 currentUserId={currentUserId}
@@ -197,4 +192,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <Footer />
         </div>
     );
-};
+});
+
+LandingPage.displayName = 'LandingPage';

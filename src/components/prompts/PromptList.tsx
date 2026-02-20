@@ -1,4 +1,5 @@
 import React, { memo } from 'react';
+import { TFunction } from 'i18next';
 import { PromptCard, PromptCardHeader, PromptCardTitle, PromptCardDescription, PromptCardFooter, PromptCardActions } from '@/components/ui/prompt-card';
 import { TagChipStatic } from '@/components/ui/tag-chip';
 import { Button } from '@/components/ui/button';
@@ -28,6 +29,188 @@ interface PromptListProps {
     copiedId?: string | null;
     sharedId?: string | null;
 }
+
+/**
+ * Optimized Individual Prompt Item to prevent unnecessary re-renders in the list
+ */
+const PromptItem = memo(({
+    prompt,
+    index,
+    editingId,
+    onSelectPrompt,
+    onCopy,
+    onDeleteClick,
+    onShare,
+    currentUserId,
+    copiedId,
+    sharedId,
+    itemsPerPage,
+    t,
+    language
+}: {
+    prompt: PromptUI;
+    index: number;
+    editingId: string | null;
+    onSelectPrompt: (prompt: PromptUI) => void;
+    onCopy: (text: string, id?: string) => void;
+    onDeleteClick: (id: string) => void;
+    onShare: (id: string) => void;
+    currentUserId?: string;
+    copiedId?: string | null;
+    sharedId?: string | null;
+    itemsPerPage: number;
+    t: TFunction;
+    language: string;
+}) => {
+    const handleClick = React.useCallback(() => {
+        onSelectPrompt(prompt);
+    }, [onSelectPrompt, prompt]);
+
+    const handleKeyDown = React.useCallback((e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onSelectPrompt(prompt);
+        }
+    }, [onSelectPrompt, prompt]);
+
+    const handleShareClick = React.useCallback((e: React.MouseEvent) => {
+        e.stopPropagation();
+        onShare(prompt.id);
+    }, [onShare, prompt.id]);
+
+    const handleCopyClick = React.useCallback((e: React.MouseEvent) => {
+        e.stopPropagation();
+        onCopy(prompt.content, prompt.id);
+    }, [onCopy, prompt.content, prompt.id]);
+
+    const handleDeleteClickAction = React.useCallback((e: React.MouseEvent) => {
+        e.stopPropagation();
+        onDeleteClick(prompt.id);
+    }, [onDeleteClick, prompt.id]);
+
+    const stopProgation = React.useCallback((e: React.MouseEvent) => {
+        e.stopPropagation();
+    }, []);
+
+    const style = React.useMemo(() => ({
+        animationDelay: `${(index % itemsPerPage) * 60}ms`,
+        opacity: 0,
+        animationFillMode: 'forwards'
+    } as React.CSSProperties), [index, itemsPerPage]);
+
+    return (
+        <PromptCard
+            variant={editingId === prompt.id ? 'selected' : prompt.is_public ? 'public' : 'private'}
+            onClick={handleClick}
+            role="button"
+            tabIndex={0}
+            onKeyDown={handleKeyDown}
+            aria-label={`${prompt.title} - ${prompt.is_public ? t('prompt.public') : t('prompt.private')}`}
+            className="animate-fade-in-up"
+            style={style}
+        >
+            <PromptCardHeader>
+                <div className="flex-1 flex items-center gap-2.5 min-w-0">
+                    <div className={`flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center ${editingId === prompt.id
+                        ? 'bg-primary/15'
+                        : prompt.is_public
+                            ? 'bg-green-500/10'
+                            : 'bg-muted'
+                        }`}>
+                        {prompt.is_public
+                            ? <Globe className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
+                            : <Lock className="w-3.5 h-3.5 text-muted-foreground" />
+                        }
+                    </div>
+                    <PromptCardTitle className="truncate">{prompt.title}</PromptCardTitle>
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="flex items-center gap-1 text-muted-foreground/50">
+                        <Clock className="w-3 h-3" />
+                        <span className="text-[13px] font-medium whitespace-nowrap">
+                            {formatDate(prompt.created_at, language)}
+                        </span>
+                    </div>
+                </div>
+            </PromptCardHeader>
+
+            <PromptCardDescription className="mb-1 line-clamp-2">
+                {stripMarkdownToPlainText(prompt.content)}
+            </PromptCardDescription>
+
+            <PromptCardFooter>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                    {prompt.tags.length > 0 ? (
+                        prompt.tags.slice(0, 4).map((tag, i) => (
+                            <TagChipStatic key={i} variant="muted" size="default">
+                                {tag.name}
+                            </TagChipStatic>
+                        ))
+                    ) : (
+                        <span className="text-xs text-muted-foreground/40 italic">No tags</span>
+                    )}
+                    {prompt.tags.length > 4 && (
+                        <span className="text-[13px] text-muted-foreground/50 font-medium">+{prompt.tags.length - 4}</span>
+                    )}
+                </div>
+
+                <PromptCardActions onClick={stopProgation}>
+                    {prompt.is_public && (
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className={`h-7 px-2.5 rounded-lg gap-1.5 text-xs transition-all ${sharedId === prompt.id
+                                ? 'bg-green-500/10 text-green-600 dark:text-green-400'
+                                : 'text-muted-foreground hover:bg-accent/10 hover:text-accent'
+                                }`}
+                            onClick={handleShareClick}
+                            title={t('actions.share', 'Share')}
+                            aria-label={t('actions.share', 'Share')}
+                        >
+                            {sharedId === prompt.id ? (
+                                <Check className="w-3 h-3" aria-hidden="true" />
+                            ) : (
+                                <Share2 className="w-3 h-3" aria-hidden="true" />
+                            )}
+                            <span>{t('actions.share', 'Share')}</span>
+                        </Button>
+                    )}
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className={`h-7 px-2.5 rounded-lg gap-1.5 text-xs transition-all ${copiedId === prompt.id
+                            ? 'bg-primary/10 text-primary'
+                            : 'text-muted-foreground hover:bg-primary/10 hover:text-primary'
+                            }`}
+                        onClick={handleCopyClick}
+                        title={t('actions.copy')}
+                        aria-label={t('actions.copy')}
+                    >
+                        {copiedId === prompt.id ? (
+                            <Check className="w-3 h-3" aria-hidden="true" />
+                        ) : (
+                            <Copy className="w-3 h-3" aria-hidden="true" />
+                        )}
+                        <span>{t('actions.copy')}</span>
+                    </Button>
+                    {currentUserId === prompt.user_id && (
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 px-2.5 rounded-lg gap-1.5 text-xs text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all"
+                            onClick={handleDeleteClickAction}
+                            title={t('actions.delete')}
+                            aria-label={t('actions.delete')}
+                        >
+                            <Trash2 className="w-3 h-3" aria-hidden="true" />
+                            <span>{t('actions.delete')}</span>
+                        </Button>
+                    )}
+                </PromptCardActions>
+            </PromptCardFooter>
+        </PromptCard>
+    );
+});
 
 export const PromptList: React.FC<PromptListProps> = memo(({
     prompts,
@@ -79,123 +262,22 @@ export const PromptList: React.FC<PromptListProps> = memo(({
     return (
         <div className="flex flex-col gap-3">
             {prompts.map((prompt, index) => (
-                <PromptCard
+                <PromptItem
                     key={prompt.id}
-                    variant={editingId === prompt.id ? 'selected' : prompt.is_public ? 'public' : 'private'}
-                    onClick={() => onSelectPrompt(prompt)}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            onSelectPrompt(prompt);
-                        }
-                    }}
-                    aria-label={`${prompt.title} - ${prompt.is_public ? t('prompt.public') : t('prompt.private')}`}
-                    className="animate-fade-in-up"
-                    style={{ animationDelay: `${(index % itemsPerPage) * 60}ms`, opacity: 0, animationFillMode: 'forwards' } as React.CSSProperties}
-                >
-                    <PromptCardHeader>
-                        <div className="flex-1 flex items-center gap-2.5 min-w-0">
-                            {/* Public/Private indicator icon */}
-                            <div className={`flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center ${editingId === prompt.id
-                                ? 'bg-primary/15'
-                                : prompt.is_public
-                                    ? 'bg-green-500/10'
-                                    : 'bg-muted'
-                                }`}>
-                                {prompt.is_public
-                                    ? <Globe className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
-                                    : <Lock className="w-3.5 h-3.5 text-muted-foreground" />
-                                }
-                            </div>
-                            <PromptCardTitle className="truncate">{prompt.title}</PromptCardTitle>
-                        </div>
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                            <div className="flex items-center gap-1 text-muted-foreground/50">
-                                <Clock className="w-3 h-3" />
-                                <span className="text-[13px] font-medium whitespace-nowrap">
-                                    {formatDate(prompt.created_at, i18n.language)}
-                                </span>
-                            </div>
-                        </div>
-                    </PromptCardHeader>
-
-                    <PromptCardDescription className="mb-1 line-clamp-2">
-                        {stripMarkdownToPlainText(prompt.content)}
-                    </PromptCardDescription>
-
-                    <PromptCardFooter>
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                            {prompt.tags.length > 0 ? (
-                                prompt.tags.slice(0, 4).map((tag, i) => (
-                                    <TagChipStatic key={i} variant="muted" size="default">
-                                        {tag.name}
-                                    </TagChipStatic>
-                                ))
-                            ) : (
-                                <span className="text-xs text-muted-foreground/40 italic">No tags</span>
-                            )}
-                            {prompt.tags.length > 4 && (
-                                <span className="text-[13px] text-muted-foreground/50 font-medium">+{prompt.tags.length - 4}</span>
-                            )}
-                        </div>
-
-                        <PromptCardActions onClick={e => e.stopPropagation()}>
-                            {prompt.is_public && (
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className={`h-7 px-2.5 rounded-lg gap-1.5 text-xs transition-all ${sharedId === prompt.id
-                                        ? 'bg-green-500/10 text-green-600 dark:text-green-400'
-                                        : 'text-muted-foreground hover:bg-accent/10 hover:text-accent'
-                                        }`}
-                                    onClick={() => onShare(prompt.id)}
-                                    title={t('actions.share', 'Share')}
-                                    aria-label={t('actions.share', 'Share')}
-                                >
-                                    {sharedId === prompt.id ? (
-                                        <Check className="w-3 h-3" aria-hidden="true" />
-                                    ) : (
-                                        <Share2 className="w-3 h-3" aria-hidden="true" />
-                                    )}
-                                    <span>{t('actions.share', 'Share')}</span>
-                                </Button>
-                            )}
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className={`h-7 px-2.5 rounded-lg gap-1.5 text-xs transition-all ${copiedId === prompt.id
-                                    ? 'bg-primary/10 text-primary'
-                                    : 'text-muted-foreground hover:bg-primary/10 hover:text-primary'
-                                    }`}
-                                onClick={() => onCopy(prompt.content, prompt.id)}
-                                title={t('actions.copy')}
-                                aria-label={t('actions.copy')}
-                            >
-                                {copiedId === prompt.id ? (
-                                    <Check className="w-3 h-3" aria-hidden="true" />
-                                ) : (
-                                    <Copy className="w-3 h-3" aria-hidden="true" />
-                                )}
-                                <span>{t('actions.copy')}</span>
-                            </Button>
-                            {currentUserId === prompt.user_id && (
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-7 px-2.5 rounded-lg gap-1.5 text-xs text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all"
-                                    onClick={() => onDeleteClick(prompt.id)}
-                                    title={t('actions.delete')}
-                                    aria-label={t('actions.delete')}
-                                >
-                                    <Trash2 className="w-3 h-3" aria-hidden="true" />
-                                    <span>{t('actions.delete')}</span>
-                                </Button>
-                            )}
-                        </PromptCardActions>
-                    </PromptCardFooter>
-                </PromptCard>
+                    prompt={prompt}
+                    index={index}
+                    editingId={editingId}
+                    onSelectPrompt={onSelectPrompt}
+                    onCopy={onCopy}
+                    onDeleteClick={onDeleteClick}
+                    onShare={onShare}
+                    currentUserId={currentUserId}
+                    copiedId={copiedId}
+                    sharedId={sharedId}
+                    itemsPerPage={itemsPerPage}
+                    t={t}
+                    language={i18n.language}
+                />
             ))}
 
             {/* Pagination Controls */}

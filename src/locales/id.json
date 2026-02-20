@@ -137,6 +137,7 @@
         }
     },
     "landing": {
+        "hero_title": "Simpan, Atur, & Bagikan Prompt AI Anda secara Instan",
         "public_tags_title": "Jelajahi Tag",
         "recent_prompts_title": "Prompt Publik Terbaru",
         "no_public_prompts": "Belum ada prompt publik",
@@ -167,8 +168,8 @@
             "storage_desc": "Simpan semua prompt AI Anda di satu tempat yang aman dan mudah diakses.",
             "tags": "Sistem Tag",
             "tags_desc": "Mengorganisir prompt dengan sistem tag yang fleksibel untuk pencarian cepat.",
-        "sharing": "Berbagi Publik/Pribadi",
-        "sharing_desc": "Pilih apakah prompt Anda bersifat publik untuk dibagikan atau tetap pribadi.",
+            "sharing": "Berbagi Publik/Pribadi",
+            "sharing_desc": "Pilih apakah prompt Anda bersifat publik untuk dibagikan atau tetap pribadi.",
             "editor": "Editor Markdown",
             "editor_desc": "Editor markdown yang powerful dengan preview mode untuk penulisan prompt yang rapi.",
             "search": "Pencarian Real-time",

@@ -81,10 +81,10 @@ const UseCasesPage = () => {
                             <Target className="w-3.5 h-3.5" />
                             {t('use_cases.badge', 'Value Proposition')}
                         </div>
-                        <h1 className="text-4xl sm:text-6xl font-black text-foreground mb-8 italic uppercase tracking-tight">
+                        <h1 className="text-page-title font-bold text-foreground mb-8 italic uppercase tracking-tight font-heading">
                             {t('use_cases.title')}
                         </h1>
-                        <p className="text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto font-medium">
+                        <p className="text-body-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto font-medium">
                             {t('use_cases.intro')}
                         </p>
                     </div>
@@ -103,10 +103,10 @@ const UseCasesPage = () => {
                                         <uc.icon className="w-7 h-7" />
                                     </div>
                                     <div className="flex-1">
-                                        <h2 className="text-2xl font-black text-foreground mb-4 uppercase italic tracking-tight">
+                                        <h2 className="text-xl font-bold text-foreground mb-4 uppercase italic tracking-tight font-heading">
                                             {uc.title}
                                         </h2>
-                                        <p className="text-base text-muted-foreground mb-6 leading-relaxed font-medium">
+                                        <p className="text-body text-muted-foreground mb-6 leading-relaxed font-medium">
                                             {uc.desc}
                                         </p>
                                         <ul className="space-y-3">
@@ -128,9 +128,9 @@ const UseCasesPage = () => {
                         <Zap className="absolute -top-10 -right-10 w-40 h-40 opacity-10 rotate-12" />
 
                         <div className="relative z-10 flex flex-col items-center">
-                            <h2 className="text-3xl font-black mb-4 italic uppercase tracking-tight">Ready to boost your productivity?</h2>
-                            <p className="text-primary-foreground/80 mb-8 max-w-xl mx-auto font-bold tracking-tight">Join thousands of users who are already saving and sharing their perfect prompts.</p>
-                            <Button variant="secondary" size="lg" asChild className="rounded-full px-12 font-black transition-transform hover:scale-105 active:scale-95 shadow-xl h-14 text-lg">
+                            <h2 className="text-2xl font-bold mb-4 italic uppercase tracking-tight font-heading">Ready to boost your productivity?</h2>
+                            <p className="text-primary-foreground/80 mb-8 max-w-xl mx-auto font-semibold tracking-tight text-body-lg">Join thousands of users who are already saving and sharing their perfect prompts.</p>
+                            <Button variant="secondary" size="lg" asChild className="rounded-full px-12 font-bold transition-transform hover:scale-105 active:scale-95 shadow-xl h-14 text-lg">
                                 <Link to="/">Get Started Now</Link>
                             </Button>
                         </div>
@@ -139,8 +139,8 @@ const UseCasesPage = () => {
                     <section className="mt-24 pt-12 border-t border-border animate-fade-in">
                         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
                             <div className="text-center md:text-left">
-                                <h2 className="text-xl font-black text-foreground mb-1 italic uppercase tracking-tight">{t('use_cases.related_title')}</h2>
-                                <p className="text-sm text-muted-foreground font-medium">{t('use_cases.related_desc')}</p>
+                                <h2 className="text-lg font-bold text-foreground mb-1 italic uppercase tracking-tight font-heading">{t('use_cases.related_title')}</h2>
+                                <p className="text-meta text-muted-foreground font-medium">{t('use_cases.related_desc')}</p>
                             </div>
                             <div className="flex flex-wrap gap-4">
                                 <Button variant="outline" asChild className="rounded-full px-6 font-bold h-10">

@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PromptUI, Tag } from '@/types/prompts';
 import { Command } from '@/lib/commands';
@@ -128,6 +128,28 @@ const AuthenticatedViewComponent: React.FC<AuthenticatedViewProps> = ({
 }) => {
     const { t } = useTranslation();
 
+    const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        onSearchChange(e.target.value);
+    }, [onSearchChange]);
+
+    const handleTagFilterChange = useCallback((tag: string | null) => {
+        onTagFilterChange(tag);
+    }, [onTagFilterChange]);
+
+    const handleVisibilityFilterAll = useCallback(() => onVisibilityFilterChange('all'), [onVisibilityFilterChange]);
+    const handleVisibilityFilterPublic = useCallback(() => onVisibilityFilterChange('public'), [onVisibilityFilterChange]);
+    const handleVisibilityFilterPrivate = useCallback(() => onVisibilityFilterChange('private'), [onVisibilityFilterChange]);
+
+    const handlePromptDetailClose = useCallback(() => onSelectPrompt(null), [onSelectPrompt]);
+
+    const handleLogoutConfirmModal = useCallback(() => onLogout(), [onLogout]);
+    const handleLogoutCancel = useCallback(() => onCloseModals(), [onCloseModals]);
+
+    const handleDeleteConfirmAction = useCallback(() => onDeleteConfirm(confirmDeleteId), [onDeleteConfirm, confirmDeleteId]);
+    const handleDeleteCancel = useCallback(() => onCloseModals(), [onCloseModals]);
+
+    const handleShortcutsHelpClose = useCallback(() => onCloseShortcutsHelp(), [onCloseShortcutsHelp]);
+
     return (
         <div className="min-h-screen bg-background flex flex-col relative font-sans">
             <SEO structuredData={websiteSchema} />
@@ -145,7 +167,7 @@ const AuthenticatedViewComponent: React.FC<AuthenticatedViewProps> = ({
                                 ref={searchInputRef}
                                 type="text"
                                 value={searchText}
-                                onChange={e => onSearchChange(e.target.value)}
+                                onChange={handleSearchChange}
                                 placeholder={t('prompt.search_placeholder')}
                                 className="w-full pl-11 pr-10 py-3.5 sm:py-3 bg-card/60 backdrop-blur-sm border border-border rounded-xl text-base sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/40 transition-all shadow-sm group-hover:shadow-md"
                                 aria-label={t('prompt.search_placeholder')}
@@ -179,7 +201,7 @@ const AuthenticatedViewComponent: React.FC<AuthenticatedViewProps> = ({
                     <MobileFilterButton
                         tags={allUserTags}
                         currentFilter={selectedTag || ''}
-                        onFilterChange={(tag) => onTagFilterChange(tag || null)}
+                        onFilterChange={handleTagFilterChange}
                     />
 
                     <div className="min-h-[50vh] mt-12">
@@ -193,7 +215,7 @@ const AuthenticatedViewComponent: React.FC<AuthenticatedViewProps> = ({
                                         "px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all",
                                         visibilityFilter === 'all' ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-white/5"
                                     )}
-                                    onClick={() => onVisibilityFilterChange('all')}
+                                    onClick={handleVisibilityFilterAll}
                                 >
                                     {t('list.all')}
                                 </button>
@@ -202,7 +224,7 @@ const AuthenticatedViewComponent: React.FC<AuthenticatedViewProps> = ({
                                         "px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all",
                                         visibilityFilter === 'public' ? "bg-primary text-white shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-white/5"
                                     )}
-                                    onClick={() => onVisibilityFilterChange('public')}
+                                    onClick={handleVisibilityFilterPublic}
                                 >
                                     {t('prompt.public')}
                                 </button>
@@ -211,7 +233,7 @@ const AuthenticatedViewComponent: React.FC<AuthenticatedViewProps> = ({
                                         "px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all",
                                         visibilityFilter === 'private' ? "bg-foreground text-background shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-white/5"
                                     )}
-                                    onClick={() => onVisibilityFilterChange('private')}
+                                    onClick={handleVisibilityFilterPrivate}
                                 >
                                     {t('prompt.private')}
                                 </button>
@@ -241,7 +263,7 @@ const AuthenticatedViewComponent: React.FC<AuthenticatedViewProps> = ({
                 <FilterBar
                     tags={allUserTags}
                     currentFilter={selectedTag || ''}
-                    onFilterChange={(tag) => onTagFilterChange(tag || null)}
+                    onFilterChange={handleTagFilterChange}
                 />
             </div>
 
@@ -251,7 +273,7 @@ const AuthenticatedViewComponent: React.FC<AuthenticatedViewProps> = ({
                 <PromptDetailModal
                     prompt={selectedPrompt}
                     currentUserId={currentUserId}
-                    onClose={() => onSelectPrompt(null)}
+                    onClose={handlePromptDetailClose}
                     onEdit={onEdit}
                     onCopy={onCopy}
                     onShare={onShare}
@@ -261,14 +283,14 @@ const AuthenticatedViewComponent: React.FC<AuthenticatedViewProps> = ({
 
             <LogoutConfirmModal
                 isOpen={showLogoutConfirm}
-                onConfirm={onLogout}
-                onCancel={onCloseModals}
+                onConfirm={handleLogoutConfirmModal}
+                onCancel={handleLogoutCancel}
             />
 
             <DeleteConfirmModal
                 isOpen={!!confirmDeleteId}
-                onConfirm={() => onDeleteConfirm(confirmDeleteId)}
-                onCancel={onCloseModals}
+                onConfirm={handleDeleteConfirmAction}
+                onCancel={handleDeleteCancel}
             />
 
             {/* Command Palette */}
@@ -281,7 +303,7 @@ const AuthenticatedViewComponent: React.FC<AuthenticatedViewProps> = ({
             {/* Shortcuts Help Dialog */}
             <ShortcutsHelpDialog
                 isOpen={showShortcutsHelp}
-                onClose={onCloseShortcutsHelp}
+                onClose={handleShortcutsHelpClose}
             />
         </div>
     );

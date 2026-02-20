@@ -102,6 +102,7 @@ const PromptNotes = () => {
                 selectedPublicTag={selectedPublicTag}
                 publicCurrentPage={publicCurrentPage}
                 publicItemsPerPage={publicItemsPerPage}
+                publicTotal={state.publicTotal}
                 selectedPrompt={selectedPrompt}
                 onSelectPrompt={setSelectedPrompt}
                 onCopy={handleCopy}

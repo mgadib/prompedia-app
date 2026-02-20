@@ -1,5 +1,6 @@
-import { useEffect, useCallback } from 'react';
-import { ShortcutDefinition, matchesShortcut, shouldHandleShortcut } from '@/lib/keyboard-shortcuts';
+import { useEffect } from 'react';
+import { type ShortcutDefinition, matchesShortcut, shouldHandleShortcut } from '@/lib/keyboard-shortcuts';
+export type { ShortcutDefinition };
 
 /**
  * Hook for managing keyboard shortcuts.
@@ -23,7 +24,7 @@ export function useKeyboardShortcuts(
                 : shortcuts.filter(s => !s.context || s.context === 'global');
 
             // Check if we should handle this shortcut
-            const shouldHandle = contextShortcuts.some(s => 
+            const shouldHandle = contextShortcuts.some(s =>
                 s.context === 'editor' || shouldHandleShortcut(e)
             );
 

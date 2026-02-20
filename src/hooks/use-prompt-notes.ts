@@ -1,269 +1,86 @@
 /**
  * Composite hook for PromptNotes page.
- * Encapsulates auth, editor, list, and modal state plus handlers.
+ * Acts as a coordinator for specialized sub-hooks.
  */
 
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
-import { useIdleLogout } from '@/hooks/use-idle-logout';
-import { useDebounce } from '@/hooks/use-debounce';
-import { usePreventDoubleClick } from '@/hooks/use-prevent-double-click';
-import { useFormPersistence } from '@/hooks/use-form-persistence';
-import { toast } from 'sonner';
+import { useCallback, useRef, useEffect, useMemo } from 'react';
 import { useTheme } from 'next-themes';
-import { useAuth } from '@/hooks/use-auth';
-import { usePublicPrompts, usePublicTagCounts } from '@/hooks/use-public-prompts';
-import { usePromptMutations } from '@/hooks/use-prompt-mutations';
-import { usePrompts } from '@/hooks/use-prompts';
 import { useTags } from '@/hooks/use-tags';
-import { useCommandPalette } from '@/hooks/use-command-palette';
-import { useGlobalShortcuts, ShortcutDefinition } from '@/hooks/use-keyboard-shortcuts';
-import { PromptUI, Tag } from '@/types/prompts';
-import { extractErrorMessage, isErrorCode, ERROR_CODES } from '@/lib/error-handler';
-import { logError } from '@/lib/logger';
-
-type VisibilityFilter = 'all' | 'public' | 'private';
+import { useAuthManager } from './use-auth-manager';
+import { usePromptEditor } from './use-prompt-editor';
+import { usePromptListManager } from './use-prompt-list-manager';
+import { useCommandPaletteManager } from './use-command-palette-manager';
+import { Tag, PromptUI } from '@/types/prompts';
 
 export function usePromptNotes() {
-    const { t } = useTranslation();
-    const navigate = useNavigate();
     const { theme, setTheme } = useTheme();
     const searchInputRef = useRef<HTMLInputElement>(null);
-    const [showShortcutsHelp, setShowShortcutsHelp] = useState(false);
 
-    const {
-        user,
-        loading: authLoading,
-        error: authError,
-        login,
-        register,
-        logout,
-        clearError: clearAuthError,
-    } = useAuth();
+    // 1. Auth Management
+    const auth = useAuthManager();
 
-    const [showAuth, setShowAuth] = useState(false);
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [displayName, setDisplayName] = useState('');
-    const [authSubmitting, setAuthSubmitting] = useState(false);
-    const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
-    const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+    // 2. List & Data Management
+    const list = usePromptListManager(auth.user);
 
-    const [selectedPublicTag, setSelectedPublicTag] = useState<string | null>(null);
-    const [publicCurrentPage, setPublicCurrentPage] = useState(1);
-    const [publicItemsPerPage, setPublicItemsPerPage] = useState(10);
+    // 3. Editor Management
+    const editor = usePromptEditor(auth.user, searchInputRef);
 
-    const {
-        prompts: publicPrompts,
-        isLoading: publicLoading,
-    } = usePublicPrompts({
-        tag: selectedPublicTag,
-        page: publicCurrentPage,
-        pageSize: publicItemsPerPage,
-        enabled: !user && showAuth,
-    });
-    const { tagCounts: publicTags } = usePublicTagCounts();
-
-    const [searchText, setSearchText] = useState('');
-    const debouncedSearchText = useDebounce(searchText, 300);
-    const [selectedTag, setSelectedTag] = useState<string | null>(null);
-    const [visibilityFilter, setVisibilityFilter] = useState<VisibilityFilter>('all');
-    const [itemsPerPage, setItemsPerPage] = useState(10);
-    const [currentPage, setCurrentPage] = useState(1);
-
-    const [title, setTitle] = useState('');
-    const [content, setContent] = useState('');
-    const [tagsInput, setTagsInput] = useState('');
-    const [isPublic, setIsPublic] = useState(false);
-    const [editingId, setEditingId] = useState<string | null>(null);
-
-    const { clearDraft } = useFormPersistence(
-        title,
-        content,
-        tagsInput,
-        isPublic,
-        (draft) => {
-            if (!editingId) {
-                setTitle(draft.title);
-                setContent(draft.content);
-                setTagsInput(draft.tagsInput);
-                setIsPublic(draft.isPublic);
-            }
-        },
-        !editingId && !!user
-    );
-
-    const [selectedPrompt, setSelectedPrompt] = useState<PromptUI | null>(null);
-    const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
-    const [copiedId, setCopiedId] = useState<string | null>(null);
-    const [sharedId, setSharedId] = useState<string | null>(null);
-
-    const { data: allUserTags = [] } = useTags(user?.id);
-    const {
-        data: promptsData,
-        isLoading: isPromptsLoading,
-    } = usePrompts({
-        userId: user?.id,
-        page: currentPage,
-        pageSize: itemsPerPage,
-        filterText: debouncedSearchText,
-        filterTag: selectedTag || '',
-        visibility: visibilityFilter,
-        enabled: !!user,
-    });
-
-    const prompts = promptsData?.prompts || [];
-    const totalItems = promptsData?.total || 0;
-    const { savePrompt, deletePrompt } = usePromptMutations();
-
-    useEffect(() => {
-        if (!user) setShowAuth(true);
-        else setShowAuth(false);
-    }, [user]);
-
-    useIdleLogout({
-        timeoutMs: 27 * 60 * 1000,
-        onLogout: () => setShowAuth(true),
-        enabled: !!user,
-    });
-
-    const handleSave = usePreventDoubleClick(
-        useCallback(async () => {
-            if (!user || !content.trim()) return;
-            try {
-                await savePrompt.mutateAsync({
-                    id: editingId,
-                    title,
-                    content,
-                    tagsInput,
-                    isPublic,
-                    userId: user.id,
-                });
-                toast.success(t('toast.saved'));
-                clearDraft();
-                setTitle('');
-                setContent('');
-                setTagsInput('');
-                setIsPublic(false);
-                setEditingId(null);
-            } catch (err) {
-                logError(err instanceof Error ? err : new Error(extractErrorMessage(err)), {
-                    context: 'savePrompt',
-                    userId: user?.id,
-                    editingId,
-                });
-                if (isErrorCode(err, ERROR_CODES.CONTENT_REQUIRED)) {
-                    toast.error(t('prompt.error.content_required'));
-                } else if (isErrorCode(err, ERROR_CODES.VALIDATION_FAILED)) {
-                    toast.error(t('prompt.error.validation_failed'));
-                } else {
-                    toast.error(t('toast.save_failed'));
-                }
-            }
-        }, [user, title, content, tagsInput, isPublic, editingId, savePrompt.mutateAsync, t]),
-        1000
-    );
-
-    const handleCopy = usePreventDoubleClick(
-        useCallback(async (text: string, id?: string) => {
-            await navigator.clipboard.writeText(text);
-            toast.success(t('toast.copied'));
-            if (id) {
-                setCopiedId(id);
-                setTimeout(() => setCopiedId(null), 2000);
-            }
-        }, [t]),
-        500
-    );
-
-    const handleShare = usePreventDoubleClick(
-        useCallback(async (id: string) => {
-            const url = `${window.location.origin}/share/${id}`;
-            await navigator.clipboard.writeText(url);
-            toast.success(t('toast.link_copied', 'Link copied to clipboard'));
-            setSharedId(id);
-            setTimeout(() => setSharedId(null), 2000);
-        }, [t]),
-        500
-    );
-
+    // 4. Combined Handlers for coordinating between hooks
     const handleEdit = useCallback((prompt: PromptUI) => {
-        setTitle(prompt.title);
-        setContent(prompt.content);
-        setTagsInput(prompt.tags.map(t => t.name).join(', '));
-        setIsPublic(Boolean(prompt.is_public));
-        setEditingId(prompt.id);
-        setSelectedPrompt(null);
-    }, []);
+        editor.handleEdit(prompt);
+        list.setSelectedPrompt(null);
+    }, [editor.handleEdit, list.setSelectedPrompt]);
 
-    const handleNewPrompt = useCallback(() => {
-        setTitle('');
-        setContent('');
-        setTagsInput('');
-        setIsPublic(false);
-        setEditingId(null);
-        searchInputRef.current?.focus();
-    }, []);
+    const handleSave = useCallback(async () => {
+        await editor.handleSave();
+    }, [editor.handleSave]);
 
     const handleToggleTheme = useCallback(() => {
         setTheme(theme === 'dark' ? 'light' : theme === 'light' ? 'system' : 'dark');
     }, [theme, setTheme]);
 
-    const handleShowShortcuts = useCallback(() => setShowShortcutsHelp(true), []);
-
-    const handleFilterByTag = useCallback((tag: string) => {
-        const normalizedTag = tag.toLowerCase();
-        const normalizedSelectedTag = selectedTag?.toLowerCase();
-        setSelectedTag(normalizedTag === normalizedSelectedTag ? null : tag);
-    }, [selectedTag]);
-
-    const handleFilterByVisibility = useCallback((visibility: 'all' | 'public' | 'private') => {
-        setVisibilityFilter(visibility);
-    }, []);
-
     const handleFocusSearch = useCallback(() => {
         searchInputRef.current?.focus();
     }, []);
 
-    const commandPalette = useCommandPalette({
-        navigate: (path: string) => navigate(path),
-        onNewPrompt: handleNewPrompt,
-        onSavePrompt: handleSave,
-        onCopyPrompt: handleCopy,
-        onSharePrompt: handleShare,
-        onToggleTheme: handleToggleTheme,
-        onShowShortcuts: handleShowShortcuts,
-        onFilterByTag: handleFilterByTag,
-        onFilterByVisibility: handleFilterByVisibility,
-        onFocusSearch: handleFocusSearch,
-        isEditing: !!editingId,
-        currentPrompt: selectedPrompt,
-        tags: allUserTags as Tag[],
-        recentPrompts: prompts.slice(0, 5),
+    const { data: allUserTags = [] } = useTags(auth.user?.id);
+
+    // 5. Command Palette & Shortcuts
+    const { commandPalette, showShortcutsHelp, setShowShortcutsHelp } = useCommandPaletteManager({
+        user: auth.user,
+        editingId: editor.editingId,
+        selectedPrompt: list.selectedPrompt,
+        allUserTags: allUserTags as Tag[],
+        prompts: list.prompts,
+        handleNewPrompt: editor.handleNewPrompt,
+        handleSave,
+        handleCopy: list.handleCopy,
+        handleShare: list.handleShare,
+        handleToggleTheme,
+        handleShowShortcuts: () => setShowShortcutsHelp(true),
+        handleFilterByTag: list.handleFilterByTag,
+        handleFilterByVisibility: list.setVisibilityFilter,
+        handleFocusSearch,
+        handleCloseModals: () => {
+            list.setSelectedPrompt(null);
+            list.setConfirmDeleteId(null);
+            auth.setShowLogoutConfirm(false);
+            setShowShortcutsHelp(false);
+            if (commandPalette.isOpen) commandPalette.close();
+        }
     });
 
     const handleCloseModals = useCallback(() => {
-        if (selectedPrompt) setSelectedPrompt(null);
-        if (confirmDeleteId) setConfirmDeleteId(null);
-        if (showLogoutConfirm) setShowLogoutConfirm(false);
+        if (list.selectedPrompt) list.setSelectedPrompt(null);
+        if (list.confirmDeleteId) list.setConfirmDeleteId(null);
+        if (auth.showLogoutConfirm) auth.setShowLogoutConfirm(false);
         if (showShortcutsHelp) setShowShortcutsHelp(false);
         if (commandPalette.isOpen) commandPalette.close();
-    }, [selectedPrompt, confirmDeleteId, showLogoutConfirm, showShortcutsHelp, commandPalette.isOpen, commandPalette.close]);
+    }, [list, auth, showShortcutsHelp, commandPalette]);
 
-    const globalShortcuts: ShortcutDefinition[] = useMemo(() => [
-        { id: 'open-command-palette', keys: ['Ctrl', 'K'], description: 'Open command palette', action: () => commandPalette.open(), context: 'global' },
-        { id: 'new-prompt', keys: ['Ctrl', 'N'], description: 'Create new prompt', action: handleNewPrompt, context: 'global' },
-        { id: 'focus-search', keys: ['Ctrl', 'F'], description: 'Focus search input', action: handleFocusSearch, context: 'global' },
-        { id: 'save-prompt', keys: ['Ctrl', 'S'], description: 'Save prompt', action: handleSave, context: 'global' },
-        { id: 'show-shortcuts', keys: ['Ctrl', '/'], description: 'Show keyboard shortcuts', action: handleShowShortcuts, context: 'global' },
-        { id: 'close-modals', keys: ['Escape'], description: 'Close modals', action: handleCloseModals, context: 'global' },
-    ], [commandPalette.open, handleNewPrompt, handleFocusSearch, handleSave, handleShowShortcuts, handleCloseModals]);
-
-    useGlobalShortcuts(globalShortcuts, !!user);
-
+    // Body overflow management
     useEffect(() => {
-        const isModalOpen = !!selectedPrompt || !!confirmDeleteId || showLogoutConfirm || commandPalette.isOpen || showShortcutsHelp;
+        const isModalOpen = !!list.selectedPrompt || !!list.confirmDeleteId || auth.showLogoutConfirm || commandPalette.isOpen || showShortcutsHelp;
         if (isModalOpen) {
             document.body.style.overflow = 'hidden';
             const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
@@ -278,74 +95,15 @@ export function usePromptNotes() {
             document.body.style.overflow = '';
             document.body.style.paddingRight = '';
         };
-    }, [selectedPrompt, confirmDeleteId, showLogoutConfirm, commandPalette.isOpen, showShortcutsHelp]);
-
-    const handleAuth = useCallback(async (e: React.FormEvent) => {
-        e.preventDefault();
-        clearAuthError();
-        setAuthSubmitting(true);
-        try {
-            if (authMode === 'login') {
-                const result = await login(email, password);
-                if (result.success) {
-                    setEmail('');
-                    setPassword('');
-                }
-            } else {
-                const result = await register(email, password, displayName);
-                if (result.success) {
-                    toast.success(t('toast.registration_success'));
-                    setAuthMode('login');
-                }
-            }
-        } finally {
-            setAuthSubmitting(false);
-        }
-    }, [authMode, email, password, displayName, login, register, clearAuthError, t]);
-
-    const handleLogout = useCallback(async () => {
-        await logout();
-        setShowAuth(true);
-    }, [logout]);
-
-    const handleLogoutClick = useCallback(() => setShowLogoutConfirm(true), []);
-
-    const handleLogoutConfirm = useCallback(async () => {
-        await handleLogout();
-        setShowLogoutConfirm(false);
-    }, [handleLogout]);
-
-    const handleDeleteClick = useCallback((id: string) => setConfirmDeleteId(id), []);
-
-    const performDelete = useCallback(async (id: string | null) => {
-        if (!user || !id) return;
-        try {
-            await deletePrompt.mutateAsync({ id, userId: user.id });
-            toast.success(t('toast.deleted'));
-            if (editingId === id) {
-                setTitle('');
-                setContent('');
-                setTagsInput('');
-                setIsPublic(false);
-                setEditingId(null);
-            }
-            if (selectedPrompt?.id === id) setSelectedPrompt(null);
-        } catch (err) {
-            logError(err instanceof Error ? err : new Error(extractErrorMessage(err)), {
-                context: 'deletePrompt',
-                promptId: id,
-                userId: user?.id,
-            });
-            toast.error(t('toast.delete_failed'));
-        }
-    }, [user, editingId, selectedPrompt?.id, deletePrompt.mutateAsync, t]);
+    }, [list.selectedPrompt, list.confirmDeleteId, auth.showLogoutConfirm, commandPalette.isOpen, showShortcutsHelp]);
 
     const handleDeleteConfirm = useCallback((id: string | null) => {
-        performDelete(id);
-        setConfirmDeleteId(null);
-    }, [performDelete]);
-
-    const handleCloseShortcutsHelp = useCallback(() => setShowShortcutsHelp(false), []);
+        list.performDelete(id);
+        list.setConfirmDeleteId(null);
+        if (editor.editingId === id) {
+            editor.onCancelEdit();
+        }
+    }, [list.performDelete, list.setConfirmDeleteId, editor.editingId, editor.onCancelEdit]);
 
     const websiteSchema = useMemo(() => ({
         '@context': 'https://schema.org',
@@ -354,85 +112,87 @@ export function usePromptNotes() {
         url: 'https://prompedia.app/',
     }), []);
 
-    const onCancelEdit = useCallback(() => {
-        if (!editingId) clearDraft();
-        setTitle('');
-        setContent('');
-        setTagsInput('');
-        setIsPublic(false);
-        setEditingId(null);
-    }, [editingId, clearDraft]);
-
     return {
-        authLoading,
-        showAuth,
-        user,
-        authError,
-        clearAuthError,
-        email,
-        setEmail,
-        password,
-        setPassword,
-        displayName,
-        setDisplayName,
-        authSubmitting,
-        authMode,
-        setAuthMode,
-        showLogoutConfirm,
-        publicPrompts,
-        publicTags,
-        publicLoading,
-        selectedPublicTag,
-        setSelectedPublicTag,
-        publicCurrentPage,
-        setPublicCurrentPage,
-        publicItemsPerPage,
-        setPublicItemsPerPage,
-        selectedPrompt,
-        setSelectedPrompt,
-        handleAuth,
-        handleCopy,
-        handleShare,
-        handleLogoutClick,
-        handleLogoutConfirm,
-        searchText,
-        setSearchText,
-        searchInputRef,
-        title,
-        setTitle,
-        content,
-        setContent,
-        tagsInput,
-        setTagsInput,
-        isPublic,
-        setIsPublic,
-        handleSave,
-        onCancelEdit,
-        editingId,
-        savePrompt,
-        allUserTags,
-        selectedTag,
-        setSelectedTag,
-        visibilityFilter,
-        setVisibilityFilter,
-        prompts,
-        isPromptsLoading,
-        totalItems,
-        currentPage,
-        setCurrentPage,
-        itemsPerPage,
-        setItemsPerPage,
-        handleDeleteClick,
-        handleShare: handleShare,
+        // Auth
+        authLoading: auth.authLoading,
+        showAuth: auth.showAuth,
+        user: auth.user,
+        authError: auth.authError,
+        clearAuthError: auth.clearAuthError,
+        email: auth.email,
+        setEmail: auth.setEmail,
+        password: auth.password,
+        setPassword: auth.setPassword,
+        displayName: auth.displayName,
+        setDisplayName: auth.setDisplayName,
+        authSubmitting: auth.authSubmitting,
+        authMode: auth.authMode,
+        setAuthMode: auth.setAuthMode,
+        showLogoutConfirm: auth.showLogoutConfirm,
+
+        // Public List
+        publicPrompts: list.publicPrompts,
+        publicTags: list.publicTags,
+        publicLoading: list.publicLoading,
+        selectedPublicTag: list.selectedPublicTag,
+        setSelectedPublicTag: list.setSelectedPublicTag,
+        publicCurrentPage: list.publicCurrentPage,
+        setPublicCurrentPage: list.setPublicCurrentPage,
+        publicItemsPerPage: list.publicItemsPerPage,
+        setPublicItemsPerPage: list.setPublicItemsPerPage,
+        publicTotal: list.publicTotal,
+
+        // Private List
+        searchText: list.searchText,
+        setSearchText: list.setSearchText,
+        selectedTag: list.selectedTag,
+        setSelectedTag: list.setSelectedTag,
+        visibilityFilter: list.visibilityFilter,
+        setVisibilityFilter: list.setVisibilityFilter,
+        prompts: list.prompts,
+        isPromptsLoading: list.isPromptsLoading,
+        totalItems: list.totalItems,
+        currentPage: list.currentPage,
+        setCurrentPage: list.setCurrentPage,
+        itemsPerPage: list.itemsPerPage,
+        setItemsPerPage: list.setItemsPerPage,
+
+        // Selection & Actions
+        selectedPrompt: list.selectedPrompt,
+        setSelectedPrompt: list.setSelectedPrompt,
+        confirmDeleteId: list.confirmDeleteId,
+        copiedId: list.copiedId,
+        sharedId: list.sharedId,
+        handleCopy: list.handleCopy,
+        handleShare: list.handleShare,
+        handleDeleteClick: list.setConfirmDeleteId,
+        handleDeleteConfirm,
         handleEdit,
-        copiedId,
-        sharedId,
-        confirmDeleteId,
+
+        // Editor
+        title: editor.title,
+        setTitle: editor.setTitle,
+        content: editor.content,
+        setContent: editor.setContent,
+        tagsInput: editor.tagsInput,
+        setTagsInput: editor.setTagsInput,
+        isPublic: editor.isPublic,
+        setIsPublic: editor.setIsPublic,
+        editingId: editor.editingId,
+        handleSave,
+        onCancelEdit: editor.onCancelEdit,
+        savePrompt: editor.savePrompt,
+
+        // Misc
+        searchInputRef,
+        handleAuth: auth.handleAuth,
+        handleLogoutClick: () => auth.setShowLogoutConfirm(true),
+        handleLogoutConfirm: auth.handleLogoutConfirm,
         showShortcutsHelp,
         handleCloseModals,
-        handleDeleteConfirm,
-        handleCloseShortcutsHelp,
+        handleCloseShortcutsHelp: () => setShowShortcutsHelp(false),
         commandPalette,
+        allUserTags,
         websiteSchema,
     };
 }

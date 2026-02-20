@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { logError } from '@/lib/logger';
 import { PromptUI } from '@/types/prompts';
 import { queryKeys, invalidatePromptsQueries, invalidatePublicPromptsQueries, invalidateTagsQueries } from '@/lib/query-keys';
 import { ERROR_CODES } from '@/lib/error-handler';
@@ -108,7 +109,7 @@ async function findOrCreateTags(
         .select('id, name');
 
     if (error) {
-        console.error('Error in findOrCreateTags:', error);
+        logError(error, { context: 'findOrCreateTags', uniqueTagNames });
         throw error;
     }
 

@@ -4,7 +4,11 @@ import { useRef, useCallback, useState } from 'react';
  * Hook to prevent double-click on async actions
  * Returns a wrapped function that prevents multiple simultaneous calls
  */
-export function usePreventDoubleClick<T extends (...args: unknown[]) => Promise<unknown>>(
+/**
+ * Hook to prevent double-click on async actions
+ * Returns a wrapped function that prevents multiple simultaneous calls
+ */
+export function usePreventDoubleClick<T extends (...args: never[]) => Promise<unknown>>(
     fn: T,
     delay: number = 500
 ): T {
@@ -33,7 +37,7 @@ export function usePreventDoubleClick<T extends (...args: unknown[]) => Promise<
  * Hook to prevent double-click with immediate visual feedback
  * Returns a state indicating if action is executing
  */
-export function useAsyncAction<T extends (...args: unknown[]) => Promise<unknown>>(
+export function useAsyncAction<T extends (...args: never[]) => Promise<unknown>>(
     fn: T,
     delay: number = 500
 ): [T, boolean] {

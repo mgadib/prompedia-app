@@ -70,7 +70,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
                 <form onSubmit={handleAuth} className="space-y-4">
                     {authMode === 'register' && (
                         <div>
-                            <label className="block text-caption font-bold text-foreground mb-2 px-1 tracking-tight">{t('auth.name')}</label>
+                            <label className="block text-meta font-semibold text-foreground mb-1.5 px-0.5 tracking-tight">{t('auth.name')}</label>
                             <input
                                 type="text"
                                 value={displayName}
@@ -85,7 +85,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
                         </div>
                     )}
                     <div>
-                        <label className="block text-caption font-bold text-foreground mb-2 px-1 tracking-tight">{t('auth.email')}</label>
+                        <label className="block text-meta font-semibold text-foreground mb-1.5 px-0.5 tracking-tight">{t('auth.email')}</label>
                         <input
                             type="email"
                             value={email}
@@ -99,7 +99,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
                         />
                     </div>
                     <div className="relative group">
-                        <label className="block text-caption font-bold text-foreground mb-2 px-1 tracking-tight">{t('auth.password')}</label>
+                        <label className="block text-meta font-semibold text-foreground mb-1.5 px-0.5 tracking-tight">{t('auth.password')}</label>
                         <div className="relative">
                             <input
                                 type={showPassword ? "text" : "password"}
@@ -149,7 +149,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
                     <Button
                         type="submit"
                         variant="brand"
-                        className="w-full h-11 rounded-xl font-black italic uppercase tracking-wider shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                        className="w-full h-11 rounded-xl font-bold uppercase tracking-wide shadow-lg shadow-primary/20 transition-all hover:scale-[1.01] active:scale-[0.99]"
                         disabled={authSubmitting || (authMode === 'register' && !isPasswordValid)}
                     >
                         {authSubmitting ? t('auth.processing') : (authMode === 'login' ? t('auth.login') : t('auth.register'))}
@@ -172,7 +172,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
             <div className="bg-card border border-border rounded-2xl shadow-xl shadow-black/5 p-6 mt-6">
                 <div className="flex items-center gap-2 mb-6 pb-4 border-b border-border/50">
                     <Hash className="w-4 h-4 text-primary" />
-                    <h2 className="text-sm font-black text-foreground uppercase tracking-wider">{t('landing.public_tags_title')}</h2>
+                    <h2 className="text-sm font-bold text-foreground tracking-tight">{t('landing.public_tags_title')}</h2>
                 </div>
                 {publicTags.length > 0 ? (
                     <div className="flex flex-wrap gap-2">

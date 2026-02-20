@@ -10,7 +10,7 @@ import { truncateDescription } from '@/lib/text-utils';
 /**
  * Supabase RPC row type (from search_prompts function)
  */
-interface SupabaseRPCRow {
+export interface SupabaseRPCRow {
     id: string;
     user_id: string;
     title: string;
@@ -27,7 +27,7 @@ interface SupabaseRPCRow {
  */
 function parseJsonbValue<T>(value: unknown): T | null {
     if (!value) return null;
-    
+
     if (typeof value === 'string') {
         if (value === 'null') return null;
         try {
@@ -36,11 +36,11 @@ function parseJsonbValue<T>(value: unknown): T | null {
             return null;
         }
     }
-    
+
     if (typeof value === 'object' && value !== null) {
         return value as T;
     }
-    
+
     return null;
 }
 
@@ -57,7 +57,7 @@ function extractPromptContent(row: SupabaseRPCRow): string {
  */
 function extractTags(row: SupabaseRPCRow): Pick<Tag, 'id' | 'name'>[] {
     let promptTags: Array<{ tags?: Pick<Tag, 'id' | 'name'> | null }> = [];
-    
+
     if (row.prompt_tags) {
         if (Array.isArray(row.prompt_tags)) {
             promptTags = row.prompt_tags as Array<{ tags?: Pick<Tag, 'id' | 'name'> | null }>;
@@ -68,7 +68,7 @@ function extractTags(row: SupabaseRPCRow): Pick<Tag, 'id' | 'name'>[] {
             }
         }
     }
-    
+
     return promptTags
         .map((pt) => pt?.tags)
         .filter((t): t is Pick<Tag, 'id' | 'name'> => t !== null && t !== undefined);
@@ -96,7 +96,7 @@ export function transformSupabasePromptToUI(
     const content = extractPromptContent(row);
     const tags = extractTags(row);
     const author = extractAuthor(row, t);
-    
+
     return {
         id: row.id,
         user_id: row.user_id || '',
@@ -144,7 +144,7 @@ export function transformSupabaseSelectToUI(
             .filter((t): t is Pick<Tag, 'id' | 'name'> => t !== null && t !== undefined)
         : [];
     const author = data.users?.display_name || data.users?.username || t('prompt.unknown_author');
-    
+
     return {
         id: data.id,
         user_id: data.user_id || '',
@@ -174,7 +174,7 @@ export function transformPromptToUI(
             .filter((t): t is Pick<Tag, 'id' | 'name'> => t !== null)
         : [];
     const author = prompt.users?.display_name || prompt.users?.username || t('prompt.unknown_author');
-    
+
     return {
         id: prompt.id,
         user_id: prompt.user_id,
@@ -196,13 +196,13 @@ export function calculateTagCounts(
     prompts: PromptUI[]
 ): Array<{ name: string; count: number }> {
     const tagCounts: Record<string, number> = {};
-    
+
     prompts.forEach(prompt => {
         prompt.tags.forEach(tag => {
             tagCounts[tag.name] = (tagCounts[tag.name] || 0) + 1;
         });
     });
-    
+
     return Object.entries(tagCounts)
         .map(([name, count]) => ({ name, count }))
         .sort((a, b) => b.count - a.count);

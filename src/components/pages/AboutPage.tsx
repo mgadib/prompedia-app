@@ -46,10 +46,10 @@ const AboutPage = () => {
                             <Sparkles className="w-3 h-3" />
                             {t('about.badge', 'Inside Prompedia')}
                         </div>
-                        <h1 className="text-4xl sm:text-6xl font-black text-foreground mb-6 leading-tight tracking-tight">
+                        <h1 className="text-page-title font-bold text-foreground mb-6 leading-tight tracking-tight font-heading">
                             {t('about.title')}
                         </h1>
-                        <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+                        <p className="text-body-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
                             {t('about.what_is_desc')}
                         </p>
                     </div>
@@ -60,7 +60,7 @@ const AboutPage = () => {
                     <section className="mb-24">
                         <div className="flex items-center gap-3 mb-10">
                             <div className="h-8 w-1 bg-primary rounded-full" />
-                            <h2 className="text-3xl font-black text-foreground italic uppercase tracking-tight">
+                            <h2 className="text-section-title font-bold text-foreground tracking-tight font-heading">
                                 {t('about.features_title')}
                             </h2>
                         </div>
@@ -94,10 +94,10 @@ const AboutPage = () => {
                         <section className="animate-fade-in" style={{ animationDelay: '600ms' }}>
                             <div className="flex items-center gap-3 mb-6">
                                 <ShieldCheck className="w-6 h-6 text-status-public" />
-                                <h2 className="text-2xl font-black text-foreground">{t('about.security_title')}</h2>
+                                <h2 className="text-xl font-bold text-foreground font-heading">{t('about.security_title')}</h2>
                             </div>
                             <div className="p-8 bg-status-public/5 border border-status-public/10 rounded-3xl">
-                                <p className="text-base text-muted-foreground leading-relaxed italic">
+                                <p className="text-body text-muted-foreground leading-relaxed italic">
                                     "{t('about.security_desc')}"
                                 </p>
                             </div>
@@ -106,10 +106,10 @@ const AboutPage = () => {
                         <section className="animate-fade-in" style={{ animationDelay: '800ms' }}>
                             <div className="flex items-center gap-3 mb-6">
                                 <Ghost className="w-6 h-6 text-violet-500" />
-                                <h2 className="text-2xl font-black text-foreground">{t('about.target_title')}</h2>
+                                <h2 className="text-xl font-bold text-foreground font-heading">{t('about.target_title')}</h2>
                             </div>
                             <div className="p-8 bg-violet-500/5 border border-violet-500/10 rounded-3xl">
-                                <p className="text-base text-muted-foreground leading-relaxed">
+                                <p className="text-body text-muted-foreground leading-relaxed">
                                     {t('about.target_desc')}
                                 </p>
                             </div>
@@ -118,10 +118,10 @@ const AboutPage = () => {
 
                     {/* Related Links */}
                     <section className="mt-24 pt-12 border-t border-border animate-fade-in" style={{ animationDelay: '1s' }}>
-                        <div className="bg-muted/30 p-8 rounded-3xl flex flex-col md:flex-row justify-between items-center gap-8">
+                        <div className="bg-muted/30 p-8 rounded-3xl flex flex-col md:flex-row justify-between items-center gap-8 border border-border/50">
                             <div>
-                                <h2 className="text-2xl font-black text-foreground mb-2 italic uppercase">{t('about.related_title')}</h2>
-                                <p className="text-muted-foreground">{t('about.related_desc')}</p>
+                                <h2 className="text-xl font-bold text-foreground mb-2 font-heading">{t('about.related_title')}</h2>
+                                <p className="text-muted-foreground text-body">{t('about.related_desc')}</p>
                             </div>
                             <div className="flex gap-4">
                                 <Button variant="outline" asChild className="rounded-full px-6 font-bold h-12">

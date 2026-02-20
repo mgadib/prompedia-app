@@ -92,7 +92,7 @@ const PromptCardTitle = React.forwardRef<
   <h3
     ref={ref}
     className={cn(
-      "text-base font-black text-foreground leading-snug tracking-tight group-hover:text-primary transition-colors duration-normal font-heading",
+      "text-card-title font-bold text-foreground leading-snug tracking-tight group-hover:text-primary transition-colors duration-normal font-heading",
       className
     )}
     {...props}
@@ -106,7 +106,7 @@ const PromptCardDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <p
     ref={ref}
-    className={cn("text-sm text-muted-foreground line-clamp-2 leading-relaxed", className)}
+    className={cn("text-body text-muted-foreground line-clamp-2 leading-relaxed font-sans", className)}
     {...props}
   />
 ));
