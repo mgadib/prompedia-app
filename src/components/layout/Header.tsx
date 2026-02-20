@@ -14,7 +14,7 @@ export const Header = ({ variant = 'default', userEmail, onLogout }: HeaderProps
     const { t, i18n } = useTranslation();
 
     return (
-        <header className="border-b border-border bg-card/95 backdrop-blur-sm sticky top-0 z-40 shadow-xs">
+        <header className="glass-header shadow-sm">
             <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
                 {/* Brand Section */}
                 <Link to="/" className="flex items-center gap-3 group">

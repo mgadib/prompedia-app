@@ -153,22 +153,22 @@
     --font-editor: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
 
     /* ========================================
-       SHADOW TOKENS - Softer & Natural
+       SHADOW TOKENS - Deep & Layered
        ======================================== */
-    --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.03), 0 1px 1px rgb(0 0 0 / 0.02);
-    --shadow-sm: 0 1px 3px rgb(0 0 0 / 0.05), 0 1px 2px rgb(0 0 0 / 0.03);
-    --shadow-md: 0 4px 6px rgb(0 0 0 / 0.06), 0 2px 4px rgb(0 0 0 / 0.04);
-    --shadow-lg: 0 10px 15px rgb(0 0 0 / 0.08), 0 4px 6px rgb(0 0 0 / 0.05);
-    --shadow-xl: 0 20px 25px rgb(0 0 0 / 0.1), 0 8px 10px rgb(0 0 0 / 0.06);
+    --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
 
     /* ========================================
-       TRANSITION TOKENS - Smooth & Natural
+       TRANSITION TOKENS - Smooth & Professional
        ======================================== */
-    --duration-instant: 0ms;
-    --duration-fast: 0ms;
-    --duration-normal: 0ms;
-    --duration-slow: 0ms;
-    --duration-slower: 0ms;
+    --duration-instant: 75ms;
+    --duration-fast: 150ms;
+    --duration-normal: 250ms;
+    --duration-slow: 400ms;
+    --duration-slower: 600ms;
     --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
     /* Material Design ease */
     --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
@@ -318,12 +318,14 @@
     --code-border: 217 33% 22%;
     --font-editor: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
 
-    /* Shadow Tokens - Dark (softer) */
-    --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.25), 0 1px 1px rgb(0 0 0 / 0.15);
-    --shadow-sm: 0 1px 3px rgb(0 0 0 / 0.3), 0 1px 2px rgb(0 0 0 / 0.2);
-    --shadow-md: 0 4px 6px rgb(0 0 0 / 0.35), 0 2px 4px rgb(0 0 0 / 0.25);
-    --shadow-lg: 0 10px 15px rgb(0 0 0 / 0.4), 0 4px 6px rgb(0 0 0 / 0.3);
-    --shadow-xl: 0 20px 25px rgb(0 0 0 / 0.45), 0 8px 10px rgb(0 0 0 / 0.35);
+    /* ========================================
+       SHADOW TOKENS - Dark Deep Layered
+       ======================================== */
+    --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+    --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.4);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.5);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.6), 0 4px 6px -4px rgb(0 0 0 / 0.6);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.7), 0 8px 10px -6px rgb(0 0 0 / 0.7);
 
     /* Syntax Highlighting Tokens - Dark */
     --syntax-keyword: 262 80% 75%;
@@ -457,8 +459,25 @@
 
   /* Selection */
   ::selection {
-    background: hsl(var(--primary) / 0.15);
+    background: hsl(var(--primary) / 0.2);
     color: hsl(var(--foreground));
+  }
+
+  /* Glassmorphism Classes */
+  .glass {
+    @apply bg-background/70 backdrop-blur-md border border-border/50;
+  }
+
+  .glass-dark {
+    @apply bg-background/40 backdrop-blur-lg border border-white/10;
+  }
+
+  .glass-card {
+    @apply bg-card/60 backdrop-blur-sm border border-border shadow-sm hover:shadow-md transition-all;
+  }
+
+  .glass-header {
+    @apply sticky top-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border/50;
   }
 
   /* Textarea auto-expand helper */
@@ -910,4 +929,86 @@
   .hljs-params {
     color: hsl(var(--syntax-type));
   }
+}
+
+/* ========================================
+   ANIMATIONS & TRANSITIONS
+   ======================================== */
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in-from-right {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes zoom-in-subtle {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in var(--duration-normal) var(--ease-default) forwards;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up var(--duration-normal) var(--ease-default) forwards;
+}
+
+.animate-slide-in-right {
+  animation: slide-in-from-right var(--duration-normal) var(--ease-default) forwards;
+}
+
+.animate-zoom-in {
+  animation: zoom-in-subtle var(--duration-normal) var(--ease-spring) forwards;
+}
+
+.delay-100 {
+  animation-delay: 100ms;
+}
+
+.delay-200 {
+  animation-delay: 200ms;
+}
+
+.delay-300 {
+  animation-delay: 300ms;
+}
+
+.delay-500 {
+  animation-delay: 500ms;
 }

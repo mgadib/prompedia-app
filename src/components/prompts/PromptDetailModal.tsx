@@ -1,12 +1,13 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Copy, Share2, Trash2 } from 'lucide-react';
+import { Copy, Share2, Trash2, Edit3, X, Clock, User, Calendar, Globe } from 'lucide-react';
 import { PromptUI } from '@/types/prompts';
 import { Button } from '@/components/ui/button';
 import { TagChipStatic } from '@/components/ui/tag-chip';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { MarkdownPreview } from '@/components/editor/MarkdownPreview';
 import { formatDate } from '@/lib/date-utils';
+import { stripMarkdownToPlainText } from '@/lib/utils';
 
 interface PromptDetailModalProps {
     prompt: PromptUI;
@@ -32,12 +33,15 @@ export const PromptDetailModal: React.FC<PromptDetailModalProps> = ({
     const modalRef = useRef<HTMLDivElement>(null);
     const previousFocusRef = useRef<HTMLElement | null>(null);
 
+    const readingTime = useMemo(() => {
+        const words = stripMarkdownToPlainText(prompt.content).split(/\s+/).length;
+        const minutes = Math.ceil(words / 200);
+        return minutes;
+    }, [prompt.content]);
+
     // Focus management
     useEffect(() => {
-        // Store the previously focused element
         previousFocusRef.current = document.activeElement as HTMLElement;
-        
-        // Focus the modal content
         if (modalRef.current) {
             const firstFocusable = modalRef.current.querySelector(
                 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
@@ -45,18 +49,16 @@ export const PromptDetailModal: React.FC<PromptDetailModalProps> = ({
             firstFocusable?.focus();
         }
 
-        // Handle Escape key
         const handleEscape = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') {
-                onClose();
-            }
+            if (e.key === 'Escape') onClose();
         };
 
         document.addEventListener('keydown', handleEscape);
+        document.body.style.overflow = 'hidden';
 
         return () => {
             document.removeEventListener('keydown', handleEscape);
-            // Restore focus to previously focused element
+            document.body.style.overflow = 'unset';
             previousFocusRef.current?.focus();
         };
     }, [onClose]);
@@ -72,109 +74,127 @@ export const PromptDetailModal: React.FC<PromptDetailModalProps> = ({
     };
 
     return (
-        <div 
-            className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-background/80 backdrop-blur-sm modal-backdrop" 
+        <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-background/80 backdrop-blur-sm animate-fade-in"
             onClick={onClose}
         >
-            <div 
+            <div
                 ref={modalRef}
-                className="w-full max-w-[42rem] bg-card border border-border rounded shadow-lg flex flex-col max-h-[85vh] modal-content" 
+                className="w-full max-w-3xl bg-card border border-border rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden animate-zoom-in"
                 onClick={e => e.stopPropagation()}
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="modal-title"
             >
-                {/* Header */}
-                <div className="p-4 sm:p-5 border-b border-border">
-                    <div className="flex items-start justify-between gap-3 mb-3">
-                        <h3 id="modal-title" className="text-base font-semibold text-foreground flex-1">{prompt.title}</h3>
-                        <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="flex-shrink-0" 
-                            onClick={onClose}
-                            aria-label={t('actions.close')}
-                        >
-                            {t('actions.close')}
-                        </Button>
-                    </div>
-                    <div className="flex items-center gap-2 flex-wrap">
+                {/* Header with Title & Meta */}
+                <div className="relative p-6 sm:p-8 border-b border-border bg-gradient-to-b from-secondary/30 to-card">
+                    <button
+                        onClick={onClose}
+                        className="absolute top-4 right-4 p-2 rounded-full hover:bg-secondary transition-colors"
+                        aria-label={t('actions.close')}
+                    >
+                        <X className="w-5 h-5 text-muted-foreground" />
+                    </button>
+
+                    <div className="pr-10">
+                        <div className="flex items-center gap-2 mb-3">
+                            <StatusBadge variant={prompt.is_public ? 'public' : 'private'} size="sm">
+                                {prompt.is_public ? t('prompt.public') : t('prompt.private')}
+                            </StatusBadge>
+                            {prompt.is_public && (
+                                <div className="flex items-center gap-1 text-[11px] font-bold text-violet-500 uppercase tracking-wider">
+                                    <Globe className="w-3 h-3" />
+                                    {t('prompt.community', 'Community')}
+                                </div>
+                            )}
+                        </div>
+                        <h3 id="modal-title" className="text-2xl sm:text-3xl font-black text-foreground mb-4 leading-tight">
+                            {prompt.title}
+                        </h3>
+
+                        <div className="flex flex-wrap items-center gap-y-2 gap-x-4 text-xs text-muted-foreground">
+                            <div className="flex items-center gap-1.5 font-medium">
+                                <User className="w-3.5 h-3.5" />
+                                <span className="text-foreground">@{prompt.author}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5 font-medium">
+                                <Calendar className="w-3.5 h-3.5" />
+                                {formatDate(prompt.created_at, i18n.language)}
+                            </div>
+                            <div className="flex items-center gap-1.5 font-medium">
+                                <Clock className="w-3.5 h-3.5" />
+                                {readingTime} min read
+                            </div>
+                        </div>
+
                         {prompt.tags && prompt.tags.length > 0 && (
-                            <>
+                            <div className="flex flex-wrap gap-2 mt-5">
                                 {prompt.tags.map(tag => (
-                                    <TagChipStatic key={tag.id} variant="default" size="sm">
-                                        {tag.name}
+                                    <TagChipStatic key={tag.id} variant="muted" size="sm" className="bg-muted/50 font-medium">
+                                        #{tag.name}
                                     </TagChipStatic>
                                 ))}
-                                <span className="text-xs text-muted-foreground/40">•</span>
-                            </>
+                            </div>
                         )}
-                        <StatusBadge variant={prompt.is_public ? 'public' : 'private'} size="sm">
-                            {prompt.is_public ? t('prompt.public') : t('prompt.private')}
-                        </StatusBadge>
-                        <span className="text-xs text-muted-foreground/40">•</span>
-                        <span className="text-xs text-muted-foreground">
-                            {formatDate(prompt.created_at, i18n.language)}
-                        </span>
-                        <span className="text-xs text-muted-foreground/40">•</span>
-                        <StatusBadge variant="date" size="sm">
-                            @{prompt.author}
-                        </StatusBadge>
                     </div>
                 </div>
 
-                {/* Content */}
-                <div className="flex-1 overflow-y-auto p-4 sm:p-5 custom-scrollbar">
-                    <MarkdownPreview content={prompt.content} className="text-sm" />
+                {/* Content Area */}
+                <div className="flex-1 overflow-y-auto p-6 sm:p-8 custom-scrollbar bg-card">
+                    <div className="prose prose-sm dark:prose-invert max-w-none">
+                        <MarkdownPreview content={prompt.content} className="text-sm text-card-foreground leading-relaxed" />
+                    </div>
                 </div>
 
-                {/* Actions */}
-                <div className="px-4 sm:px-5 py-3 sm:py-4 border-t border-border flex justify-end gap-2">
-                    {isOwner && onEdit && (
-                        <Button 
-                            variant="outline" 
-                            size="sm" 
-                            onClick={() => onEdit(prompt)}
-                            className="hover:bg-secondary hover:border-primary/20"
-                            aria-label={t('actions.edit')}
+                {/* Footer Actions */}
+                <div className="px-6 py-4 sm:px-8 sm:py-6 border-t border-border bg-secondary/20 flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <div className="flex items-center gap-3 w-full sm:w-auto">
+                        {isOwner && onDelete && (
+                            <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => onDelete(prompt.id)}
+                                className="h-10 px-4 gap-2 opacity-80 hover:opacity-100"
+                            >
+                                <Trash2 className="w-4 h-4" />
+                                <span className="hidden sm:inline">{t('actions.delete')}</span>
+                            </Button>
+                        )}
+                    </div>
+
+                    <div className="flex items-center gap-3 w-full sm:w-auto h-10">
+                        {isOwner && onEdit && (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => onEdit(prompt)}
+                                className="flex-1 sm:flex-none h-full px-5 gap-2 font-bold hover:bg-secondary"
+                            >
+                                <Edit3 className="w-4 h-4" />
+                                {t('actions.edit')}
+                            </Button>
+                        )}
+                        {prompt.is_public && (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={handleShare}
+                                className="flex-1 sm:flex-none h-full px-5 gap-2 font-bold transition-all border-violet-500/20 text-violet-600 hover:bg-violet-500 hover:text-white hover:border-violet-500"
+                            >
+                                <Share2 className="w-4 h-4" />
+                                {t('actions.share', 'Share')}
+                            </Button>
+                        )}
+                        <Button
+                            variant="brand"
+                            size="sm"
+                            onClick={() => onCopy(prompt.content)}
+                            className="flex-[2] sm:flex-none h-full px-6 gap-2 font-black shadow-lg shadow-primary/20"
                         >
-                            {t('actions.edit')}
+                            <Copy className="w-4 h-4" />
+                            {t('actions.copy')}
                         </Button>
-                    )}
-                    {prompt.is_public && (
-                        <Button 
-                            variant="outline" 
-                            size="sm" 
-                            onClick={handleShare}
-                            className="gap-2 hover:bg-accent/10 hover:text-accent hover:border-accent/30"
-                            aria-label={t('actions.share', 'Share')}
-                        >
-                            <Share2 className="w-4 h-4" aria-hidden="true" />
-                            <span>{t('actions.share', 'Share')}</span>
-                        </Button>
-                    )}
-                    <Button 
-                        variant="brand" 
-                        size="sm" 
-                        onClick={() => onCopy(prompt.content)}
-                        className="gap-2 hover:bg-action-hover"
-                        aria-label={t('actions.copy')}
-                    >
-                        <Copy className="w-4 h-4" aria-hidden="true" />
-                        <span>{t('actions.copy')}</span>
-                    </Button>
-                    {isOwner && onDelete && (
-                        <Button 
-                            variant="destructive" 
-                            size="sm" 
-                            onClick={() => onDelete(prompt.id)}
-                            className="gap-2 hover:bg-destructive/90"
-                            aria-label={t('actions.delete')}
-                        >
-                            <Trash2 className="w-4 h-4" aria-hidden="true" />
-                            <span>{t('actions.delete')}</span>
-                        </Button>
-                    )}
+                    </div>
                 </div>
             </div>
         </div>

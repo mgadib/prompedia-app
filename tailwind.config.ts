@@ -16,6 +16,7 @@ export default {
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
         mono: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+        heading: ['Outfit', 'Space Grotesk', 'Inter', 'system-ui', 'sans-serif'],
       },
       fontSize: {
         // Legacy tokens
@@ -167,6 +168,25 @@ export default {
         'normal': 'var(--letter-spacing-normal)',
         'wide': 'var(--letter-spacing-wide)',
         'wider': 'var(--letter-spacing-wider)',
+      },
+      keyframes: {
+        shimmer: {
+          '0%': { backgroundPosition: '200% 0' },
+          '100%': { backgroundPosition: '-200% 0' },
+        },
+        'fade-in': {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        'fade-in-up': {
+          '0%': { opacity: '0', transform: 'translateY(10px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+      },
+      animation: {
+        shimmer: 'shimmer 2s linear infinite',
+        'fade-in': 'fade-in 0.3s ease-out forwards',
+        'fade-in-up': 'fade-in-up 0.4s ease-out forwards',
       },
     },
   },

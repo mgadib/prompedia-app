@@ -30,9 +30,8 @@ const PromptNotes = () => {
         selectedPublicTag,
         setSelectedPublicTag,
         publicCurrentPage,
-        setPublicCurrentPage,
         publicItemsPerPage,
-        setPublicItemsPerPage,
+        setPublicCurrentPage,
         selectedPrompt,
         setSelectedPrompt,
         handleAuth,
@@ -82,10 +81,13 @@ const PromptNotes = () => {
 
     if (authLoading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-background">
-                <div className="flex flex-col items-center gap-4">
-                    <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
-                    <p className="text-sm text-muted-foreground">{t('app.loading')}</p>
+            <div className="min-h-screen flex items-center justify-center bg-background animate-fade-in">
+                <div className="flex flex-col items-center gap-6">
+                    <div className="relative w-16 h-16">
+                        <div className="absolute inset-0 border-4 border-primary/20 rounded-full" />
+                        <div className="absolute inset-0 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+                    </div>
+                    <p className="text-base font-black text-foreground uppercase tracking-widest animate-pulse font-heading">{t('app.loading')}</p>
                 </div>
             </div>
         );
@@ -116,7 +118,7 @@ const PromptNotes = () => {
                 password={password}
                 setPassword={setPassword}
                 authError={authError}
-                setAuthError={clearAuthError}
+                setAuthError={(_err) => clearAuthError()}
                 authSubmitting={authSubmitting}
                 currentUserId={user?.id}
             />

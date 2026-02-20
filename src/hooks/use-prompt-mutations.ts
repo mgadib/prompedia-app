@@ -36,14 +36,14 @@ async function upsertPrompt(
         // Update existing prompt
         const { error } = await supabase
             .from('prompts')
-            .update({ 
-                title: promptTitle, 
-                is_public: isPublic, 
-                updated_at: now 
+            .update({
+                title: promptTitle,
+                is_public: isPublic,
+                updated_at: now
             })
             .eq('id', promptId)
             .eq('user_id', userId);
-        
+
         if (error) throw error;
         return promptId;
     } else {
@@ -51,13 +51,13 @@ async function upsertPrompt(
         const newId = crypto.randomUUID();
         const { error } = await supabase
             .from('prompts')
-            .insert({ 
-                id: newId, 
-                user_id: userId, 
-                title: promptTitle, 
-                is_public: isPublic 
+            .insert({
+                id: newId,
+                user_id: userId,
+                title: promptTitle,
+                is_public: isPublic
             });
-        
+
         if (error) throw error;
         return newId;
     }
@@ -69,11 +69,11 @@ async function upsertPrompt(
 async function syncPromptContent(promptId: string, content: string): Promise<void> {
     const { error } = await supabase
         .from('prompt_contents')
-        .upsert({ 
-            prompt_id: promptId, 
-            body: content.trim() 
+        .upsert({
+            prompt_id: promptId,
+            body: content.trim()
         });
-    
+
     if (error) throw error;
 }
 
@@ -88,46 +88,31 @@ function normalizeTags(tagsInput: string): string[] {
     return [...new Set(tagNames)];
 }
 
-/**
- * Get existing tags as a case-insensitive map (lowercase name -> tag id)
- */
-async function getExistingTagMap(): Promise<Map<string, string>> {
-    const { data: allTags } = await supabase
-        .from('tags')
-        .select('id, name');
-    const map = new Map<string, string>();
-    allTags?.forEach(tag => {
-        const lowerName = tag.name.toLowerCase();
-        if (!map.has(lowerName)) {
-            map.set(lowerName, tag.id);
-        }
-    });
-    return map;
-}
 
 /**
  * Create missing tags and return all tag IDs for the given names (case-insensitive)
  */
 async function findOrCreateTags(
-    uniqueTagNames: string[],
-    existingMap: Map<string, string>
+    uniqueTagNames: string[]
 ): Promise<string[]> {
-    const missingTags = uniqueTagNames.filter(name => !existingMap.has(name));
+    if (uniqueTagNames.length === 0) return [];
 
-    for (const name of missingTags) {
-        const { data: created } = await supabase
-            .from('tags')
-            .insert({ name: name.toLowerCase() })
-            .select('id, name')
-            .single();
-        if (created) {
-            existingMap.set(name, created.id);
-        }
+    // Use upsert to handle "find or create" in a single or fewer steps
+    // This is more robust against race conditions and more efficient than a loop
+    const { data: tags, error } = await supabase
+        .from('tags')
+        .upsert(
+            uniqueTagNames.map(name => ({ name })),
+            { onConflict: 'name' }
+        )
+        .select('id, name');
+
+    if (error) {
+        console.error('Error in findOrCreateTags:', error);
+        throw error;
     }
 
-    return uniqueTagNames
-        .map(lowerName => existingMap.get(lowerName))
-        .filter((id): id is string => id !== undefined);
+    return tags?.map(t => t.id) || [];
 }
 
 /**
@@ -159,8 +144,7 @@ async function syncPromptTags(
 
     if (uniqueTagNames.length === 0) return;
 
-    const existingMap = await getExistingTagMap();
-    const tagIds = await findOrCreateTags(uniqueTagNames, existingMap);
+    const tagIds = await findOrCreateTags(uniqueTagNames);
     await linkTagsToPrompt(promptId, tagIds);
 }
 
@@ -202,13 +186,13 @@ export function usePromptMutations() {
             // Sync tags
             await syncPromptTags(promptId, tagsInput, userId);
 
-            return { 
-                id: promptId, 
-                userId, 
-                title: promptTitle, 
-                content: content.trim(), 
-                tagsInput, 
-                isPublic 
+            return {
+                id: promptId,
+                userId,
+                title: promptTitle,
+                content: content.trim(),
+                tagsInput,
+                isPublic
             };
         },
         onMutate: async (data) => {
@@ -232,17 +216,17 @@ export function usePromptMutations() {
                             prompts: old.prompts.map((p) =>
                                 p.id === data.id
                                     ? {
-                                          ...p,
-                                          title: data.title.trim() || data.content.trim().slice(0, 50),
-                                          content: data.content.trim(),
-                                          is_public: data.isPublic,
-                                          updated_at: new Date().toISOString(),
-                                          tags: data.tagsInput
-                                              .split(',')
-                                              .map((t) => t.trim())
-                                              .filter(Boolean)
-                                              .map((name) => ({ id: '', name })),
-                                      }
+                                        ...p,
+                                        title: data.title.trim() || data.content.trim().slice(0, 50),
+                                        content: data.content.trim(),
+                                        is_public: data.isPublic,
+                                        updated_at: new Date().toISOString(),
+                                        tags: data.tagsInput
+                                            .split(',')
+                                            .map((t) => t.trim())
+                                            .filter(Boolean)
+                                            .map((name) => ({ id: '', name })),
+                                    }
                                     : p
                             ),
                         };
@@ -281,7 +265,7 @@ export function usePromptMutations() {
 
             return { previousQueries };
         },
-        onError: (err, mutationData, context) => {
+        onError: (_err, _mutationData, context) => {
             // Rollback on error
             if (context?.previousQueries) {
                 context.previousQueries.forEach(([queryKey, previousData]) => {
@@ -316,7 +300,7 @@ export function usePromptMutations() {
                 .delete()
                 .eq('id', id)
                 .eq('user_id', userId);
-            
+
             if (error) throw error;
             return { id, userId };
         },
@@ -343,7 +327,7 @@ export function usePromptMutations() {
 
             return { previousQueries };
         },
-        onError: (err, mutationData, context) => {
+        onError: (_err, _mutationData, context) => {
             // Rollback on error
             if (context?.previousQueries) {
                 context.previousQueries.forEach(([queryKey, previousData]) => {

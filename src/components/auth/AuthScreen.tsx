@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { TagChip } from '@/components/ui/tag-chip';
 import { useTranslation } from 'react-i18next';
+import { Eye, EyeOff, Hash } from 'lucide-react';
 
 // Password strength calculation
 const getPasswordStrength = (password: string): { score: number; label: string; color: string } => {
@@ -28,7 +29,7 @@ interface AuthScreenProps {
     setEmail: (email: string) => void;
     password: string;
     setPassword: (password: string) => void;
-    authError: string;
+    authError: string | null;
     setAuthError: (error: string) => void;
     authSubmitting: boolean;
     publicTags: { name: string; count: number }[];
@@ -56,6 +57,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
     setPublicCurrentPage,
 }) => {
     const { t } = useTranslation();
+    const [showPassword, setShowPassword] = React.useState(false);
 
     // Password validation for registration
     const passwordStrength = useMemo(() => getPasswordStrength(password), [password]);
@@ -63,12 +65,12 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
     const showPasswordWarning = authMode === 'register' && password.length > 0 && !isPasswordValid;
 
     return (
-        <aside className="w-full lg:w-72 flex-shrink-0 lg:sticky lg:top-16">
-            <div className="bg-card border border-border rounded shadow-sm p-4 sm:p-5">
+        <aside className="w-full lg:w-72 flex-shrink-0 lg:sticky lg:top-16 animate-fade-in delay-200">
+            <div className="bg-card border border-border rounded-2xl shadow-xl shadow-black/5 p-6 sm:p-7 md:p-6 lg:p-7">
                 <form onSubmit={handleAuth} className="space-y-4">
                     {authMode === 'register' && (
                         <div>
-                            <label className="block text-caption font-medium text-foreground mb-2">{t('auth.name')}</label>
+                            <label className="block text-caption font-bold text-foreground mb-2 px-1 tracking-tight">{t('auth.name')}</label>
                             <input
                                 type="text"
                                 value={displayName}
@@ -77,13 +79,13 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
                                 placeholder={t('auth.placeholders.name')}
                                 disabled={authSubmitting}
                                 autoComplete="name"
-                                className="w-full px-3 py-2.5 sm:py-2 bg-background border border-border rounded text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 disabled:opacity-50 min-h-[44px] sm:min-h-0"
+                                className="w-full px-3 py-3 sm:py-2 bg-background border border-border rounded-xl text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary/40 disabled:opacity-50 transition-all font-medium"
                                 aria-label={t('auth.name')}
                             />
                         </div>
                     )}
                     <div>
-                        <label className="block text-caption font-medium text-foreground mb-2">{t('auth.email')}</label>
+                        <label className="block text-caption font-bold text-foreground mb-2 px-1 tracking-tight">{t('auth.email')}</label>
                         <input
                             type="email"
                             value={email}
@@ -92,61 +94,73 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
                             placeholder={t('auth.placeholders.email')}
                             disabled={authSubmitting}
                             autoComplete="email"
-                            className="w-full px-3 py-2.5 sm:py-2 bg-background border border-border rounded text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 disabled:opacity-50 min-h-[44px] sm:min-h-0"
+                            className="w-full px-3 py-3 sm:py-2 bg-background border border-border rounded-xl text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary/40 disabled:opacity-50 transition-all font-medium"
                             aria-label={t('auth.email')}
                         />
                     </div>
-                    <div>
-                        <label className="block text-caption font-medium text-foreground mb-2">{t('auth.password')}</label>
-                        <input
-                            type="password"
-                            value={password}
-                            onChange={e => setPassword(e.target.value)}
-                            required
-                            minLength={8}
-                            placeholder={t('auth.placeholders.password')}
-                            disabled={authSubmitting}
-                            autoComplete={authMode === 'register' ? 'new-password' : 'current-password'}
-                            className="w-full px-3 py-2.5 sm:py-2 bg-background border border-border rounded text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 disabled:opacity-50 min-h-[44px] sm:min-h-0"
-                            aria-label={t('auth.password')}
-                        />
-                        {/* Password strength indicator for registration */}
-                        {authMode === 'register' && password.length > 0 && (
-                            <div className="mt-2">
-                                <div className="flex gap-1 mb-1">
-                                    {[1, 2, 3, 4].map((level) => (
-                                        <div
-                                            key={level}
-                                            className={`h-1 flex-1 rounded-full ${passwordStrength.score >= level ? passwordStrength.color : 'bg-muted'
-                                                }`}
-                                        />
-                                    ))}
-                                </div>
-                                <p className={`text-2xs ${showPasswordWarning ? 'text-destructive' : 'text-muted-foreground'}`}>
-                                    {showPasswordWarning
-                                        ? t('auth.error.password_min_length')
-                                        : `Password strength: ${passwordStrength.label}`
-                                    }
-                                </p>
-                            </div>
-                        )}
+                    <div className="relative group">
+                        <label className="block text-caption font-bold text-foreground mb-2 px-1 tracking-tight">{t('auth.password')}</label>
+                        <div className="relative">
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                value={password}
+                                onChange={e => setPassword(e.target.value)}
+                                required
+                                minLength={8}
+                                placeholder={t('auth.placeholders.password')}
+                                disabled={authSubmitting}
+                                autoComplete={authMode === 'register' ? 'new-password' : 'current-password'}
+                                className="w-full pl-3 pr-10 py-3 sm:py-2 bg-background border border-border rounded-xl text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary/40 disabled:opacity-50 transition-all font-medium"
+                                aria-label={t('auth.password')}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1 rounded-full hover:bg-muted"
+                                tabIndex={-1}
+                            >
+                                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            </button>
+                        </div>
                     </div>
+
+                    {/* Password strength indicator for registration */}
+                    {authMode === 'register' && password.length > 0 && (
+                        <div className="mt-2">
+                            <div className="flex gap-1 mb-1">
+                                {[1, 2, 3, 4].map((level) => (
+                                    <div
+                                        key={level}
+                                        className={`h-1 flex-1 rounded-full ${passwordStrength.score >= level ? passwordStrength.color : 'bg-muted'
+                                            }`}
+                                    />
+                                ))}
+                            </div>
+                            <p className={`text-2xs ${showPasswordWarning ? 'text-destructive' : 'text-muted-foreground'}`}>
+                                {showPasswordWarning
+                                    ? t('auth.error.password_min_length')
+                                    : `Password strength: ${passwordStrength.label}`
+                                }
+                            </p>
+                        </div>
+                    )}
+
                     {authError && <p className="text-caption text-destructive">{authError}</p>}
                     <Button
                         type="submit"
                         variant="brand"
-                        className="w-full"
+                        className="w-full h-11 rounded-xl font-black italic uppercase tracking-wider shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
                         disabled={authSubmitting || (authMode === 'register' && !isPasswordValid)}
                     >
                         {authSubmitting ? t('auth.processing') : (authMode === 'login' ? t('auth.login') : t('auth.register'))}
                     </Button>
                 </form>
-                <div className="mt-3 text-center">
+                <div className="mt-6 text-center">
                     <p className="text-caption text-muted-foreground">
                         {authMode === 'login' ? t('auth.no_account') : t('auth.have_account')}{' '}
                         <button
                             onClick={() => { setAuthMode(authMode === 'login' ? 'register' : 'login'); setAuthError(''); }}
-                            className="text-brand hover:underline font-medium"
+                            className="text-brand hover:underline font-bold"
                         >
                             {authMode === 'login' ? t('auth.switch_to_register') : t('auth.switch_to_login')}
                         </button>
@@ -155,12 +169,15 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
             </div>
 
             {/* Public Tags Section */}
-            <div className="bg-card border border-border rounded shadow-sm p-4 sm:p-5 mt-4 sm:mt-6">
-                <h2 className="text-sm font-semibold text-foreground mb-4 pb-3 border-b border-border">{t('landing.public_tags_title')}</h2>
+            <div className="bg-card border border-border rounded-2xl shadow-xl shadow-black/5 p-6 mt-6">
+                <div className="flex items-center gap-2 mb-6 pb-4 border-b border-border/50">
+                    <Hash className="w-4 h-4 text-primary" />
+                    <h2 className="text-sm font-black text-foreground uppercase tracking-wider">{t('landing.public_tags_title')}</h2>
+                </div>
                 {publicTags.length > 0 ? (
                     <div className="flex flex-wrap gap-2">
                         <TagChip
-                            variant={selectedPublicTag === null ? 'active' : 'default'}
+                            variant={selectedPublicTag === null ? 'active' : 'outline'}
                             size="default"
                             onClick={() => { setSelectedPublicTag(null); setPublicCurrentPage(1); }}
                         >
@@ -172,7 +189,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
                                 variant={
                                     selectedPublicTag?.toLowerCase() === tag.name.toLowerCase()
                                         ? 'active'
-                                        : 'default'
+                                        : 'outline'
                                 }
                                 size="default"
                                 onClick={() => { setSelectedPublicTag(tag.name); setPublicCurrentPage(1); }}
@@ -183,7 +200,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
                     </div>
                 ) : (
                     <div className="py-4 text-center">
-                        <p className="text-sm text-muted-foreground">{t('landing.no_public_tags')}</p>
+                        <p className="text-sm text-muted-foreground font-medium">{t('landing.no_public_tags')}</p>
                     </div>
                 )}
             </div>

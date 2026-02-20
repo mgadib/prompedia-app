@@ -11,9 +11,9 @@ import { PromptDetailModal } from '@/components/prompts/PromptDetailModal';
 import { DeleteConfirmModal, LogoutConfirmModal } from '@/components/prompts/ConfirmModals';
 import { CommandPalette } from '@/components/command-palette/CommandPalette';
 import { ShortcutsHelpDialog } from '@/components/command-palette/ShortcutsHelpDialog';
-import { TagChip } from '@/components/ui/tag-chip';
 import { SEO } from '@/components/SEO';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Search } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface AuthenticatedViewProps {
     userEmail?: string;
@@ -131,29 +131,34 @@ const AuthenticatedViewComponent: React.FC<AuthenticatedViewProps> = ({
     return (
         <div className="min-h-screen bg-background flex flex-col relative font-sans">
             <SEO structuredData={websiteSchema} />
-            <Header 
-                variant="authenticated" 
-                userEmail={userEmail} 
-                onLogout={onLogoutClick} 
+            <Header
+                variant="authenticated"
+                userEmail={userEmail}
+                onLogout={onLogoutClick}
             />
 
             <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6 flex-1 w-full flex flex-col md:flex-row gap-4 md:gap-6">
                 <main className="flex-1 min-w-0">
-                    <div className="mb-4 sm:mb-6 relative">
-                        <input 
-                            ref={searchInputRef}
-                            type="text" 
-                            value={searchText} 
-                            onChange={e => onSearchChange(e.target.value)} 
-                            placeholder={t('prompt.search_placeholder')} 
-                            className="w-full px-3 py-2.5 sm:py-2 bg-card border border-border rounded text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 transition-all duration-fast min-h-[44px] sm:min-h-0 pr-10"
-                            aria-label={t('prompt.search_placeholder')}
-                        />
-                        {isLoading && (
-                            <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                                <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                    <div className="mb-6 sm:mb-8 transition-all duration-300 group">
+                        <div className="relative">
+                            <input
+                                ref={searchInputRef}
+                                type="text"
+                                value={searchText}
+                                onChange={e => onSearchChange(e.target.value)}
+                                placeholder={t('prompt.search_placeholder')}
+                                className="w-full pl-11 pr-10 py-3.5 sm:py-3 bg-card/60 backdrop-blur-sm border border-border rounded-xl text-base sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/40 transition-all shadow-sm group-hover:shadow-md"
+                                aria-label={t('prompt.search_placeholder')}
+                            />
+                            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors">
+                                <Search className="w-5 h-5 sm:w-4 h-4" />
                             </div>
-                        )}
+                            {isLoading && (
+                                <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                                    <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     <PromptEditor
@@ -177,33 +182,39 @@ const AuthenticatedViewComponent: React.FC<AuthenticatedViewProps> = ({
                         onFilterChange={(tag) => onTagFilterChange(tag || null)}
                     />
 
-                    <div className="min-h-[50vh]">
-                        <div className="flex items-center justify-between mb-4">
-                            <h2 className="text-section-title text-foreground">
+                    <div className="min-h-[50vh] mt-12">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                            <h2 className="text-2xl font-black text-foreground italic uppercase tracking-tight">
                                 {t('list.title', { count: totalItems })}
                             </h2>
-                            <div className="flex gap-2 items-center">
-                                <TagChip
-                                    variant={visibilityFilter === 'all' ? 'active' : 'outline'}
-                                    size="default"
+                            <div className="flex bg-secondary/50 p-1 rounded-xl w-fit border border-border/50 glass">
+                                <button
+                                    className={cn(
+                                        "px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all",
+                                        visibilityFilter === 'all' ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+                                    )}
                                     onClick={() => onVisibilityFilterChange('all')}
                                 >
                                     {t('list.all')}
-                                </TagChip>
-                                <TagChip
-                                    variant={visibilityFilter === 'public' ? 'active' : 'outline'}
-                                    size="default"
+                                </button>
+                                <button
+                                    className={cn(
+                                        "px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all",
+                                        visibilityFilter === 'public' ? "bg-primary text-white shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+                                    )}
                                     onClick={() => onVisibilityFilterChange('public')}
                                 >
                                     {t('prompt.public')}
-                                </TagChip>
-                                <TagChip
-                                    variant={visibilityFilter === 'private' ? 'active' : 'outline'}
-                                    size="default"
+                                </button>
+                                <button
+                                    className={cn(
+                                        "px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all",
+                                        visibilityFilter === 'private' ? "bg-foreground text-background shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+                                    )}
                                     onClick={() => onVisibilityFilterChange('private')}
                                 >
                                     {t('prompt.private')}
-                                </TagChip>
+                                </button>
                             </div>
                         </div>
 
