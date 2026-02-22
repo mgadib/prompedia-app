@@ -136,7 +136,8 @@
             "list_ordered": "Numbered List",
             "quote": "Blockquote",
             "code_block": "Code Block",
-            "horizontal_rule": "Horizontal Rule"
+            "horizontal_rule": "Horizontal Rule",
+            "table": "Insert Table"
         }
     },
     "landing": {

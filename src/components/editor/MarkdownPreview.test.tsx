@@ -77,4 +77,18 @@ describe('MarkdownPreview', () => {
         const textContent = container.textContent || '';
         expect(textContent).toContain('line1');
     });
+
+    it('renders LaTeX math correctly', () => {
+        const { container } = render(<MarkdownPreview content="Inline: $x^2$ and block: $$E = mc^2$$" />);
+        const katex = container.querySelector('.katex');
+        expect(katex).toBeInTheDocument();
+    });
+
+    it('renders GFM table correctly', () => {
+        const { container } = render(
+            <MarkdownPreview content={'| A | B |\n| --- | --- |\n| 1 | 2 |'} />
+        );
+        const table = container.querySelector('table');
+        expect(table).toBeTruthy();
+    });
 });

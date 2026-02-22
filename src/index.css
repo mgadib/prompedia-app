@@ -1,3 +1,5 @@
+@import 'katex/dist/katex.min.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -839,6 +841,18 @@
     @apply block text-2xs text-muted-foreground mb-2 uppercase tracking-wide;
   }
 
+  /* TipTap table */
+  .prose-editor table {
+    @apply border-collapse w-full my-4;
+  }
+  .prose-editor th,
+  .prose-editor td {
+    @apply border border-border px-3 py-2 text-left;
+  }
+  .prose-editor th {
+    @apply bg-secondary/50 font-semibold;
+  }
+
   /* TipTap placeholder */
   .prose-editor p.is-editor-empty:first-child::before {
     content: attr(data-placeholder);
@@ -855,6 +869,9 @@
   .prose-preview {
     @apply text-sm-md text-foreground leading-relaxed;
     font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  }
+  .prose-preview .katex-display {
+    @apply overflow-x-auto overflow-y-hidden;
   }
 
   /* Code block utility class */

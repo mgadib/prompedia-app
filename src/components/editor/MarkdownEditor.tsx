@@ -2,6 +2,13 @@ import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import { useTranslation } from 'react-i18next';
 import { Eye, Edit3 } from 'lucide-react';
+import { unified } from 'unified';
+import remarkParse from 'remark-parse';
+import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import remarkRehype from 'remark-rehype';
+import rehypeKatex from 'rehype-katex';
+import rehypeStringify from 'rehype-stringify';
 import { createExtensions } from './extensions';
 import { EditorToolbar } from './EditorToolbar';
 import { MarkdownPreview } from './MarkdownPreview';
@@ -99,68 +106,53 @@ const jsonToMarkdown = (node: Record<string, unknown>): string => {
         case 'hardBreak':
             return '\n';
 
+        case 'table': {
+            const rows = content || [];
+            const mdRows: string[] = [];
+            rows.forEach((row, rowIdx) => {
+                const cells = (row.content as Record<string, unknown>[]) || [];
+                const cellTexts = cells.map(cell => {
+                    const text = jsonToMarkdown(cell).trim();
+                    return text.replace(/\|/g, '\\|').replace(/\n/g, ' ');
+                });
+                mdRows.push('| ' + cellTexts.join(' | ') + ' |');
+                if (rowIdx === 0) {
+                    mdRows.push('| ' + cellTexts.map(() => '---').join(' | ') + ' |');
+                }
+            });
+            return mdRows.join('\n');
+        }
+
+        case 'tableHeader':
+        case 'tableCell':
+            return content?.map(jsonToMarkdown).join('') || '';
+
         default:
             return content?.map(jsonToMarkdown).join('') || '';
     }
 };
 
+const markdownProcessor = unified()
+    .use(remarkParse)
+    .use(remarkGfm)
+    .use(remarkMath)
+    .use(remarkRehype, { allowDangerousHtml: false })
+    .use(rehypeKatex)
+    .use(rehypeStringify);
+
 /**
- * Converts Markdown string to TipTap-compatible HTML
- * Uses a simple approach - TipTap will handle the parsing via StarterKit
+ * Converts Markdown string to TipTap-compatible HTML using unified pipeline.
+ * Supports GFM (tables, etc.), LaTeX math, code blocks with language.
  */
-const markdownToHtml = (markdown: string): string => {
-    if (!markdown) return '<p></p>';
+const markdownToHtml = async (markdown: string): Promise<string> => {
+    if (!markdown || !markdown.trim()) return '<p></p>';
 
-    // Simple conversion for initial content
-    // TipTap's paste handler will do more sophisticated parsing
-    const html = markdown
-        // Code blocks (must be before other patterns)
-        .replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) =>
-            `<pre><code class="language-${lang || 'plaintext'}">${escapeHtml(code.trim())}</code></pre>`
-        )
-        // Headings
-        .replace(/^###### (.+)$/gm, '<h6>$1</h6>')
-        .replace(/^##### (.+)$/gm, '<h5>$1</h5>')
-        .replace(/^#### (.+)$/gm, '<h4>$1</h4>')
-        .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-        .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-        .replace(/^# (.+)$/gm, '<h1>$1</h1>')
-        // Blockquotes
-        .replace(/^> (.+)$/gm, '<blockquote><p>$1</p></blockquote>')
-        // Horizontal rules
-        .replace(/^---$/gm, '<hr>')
-        // Bold
-        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-        // Italic
-        .replace(/\*(.+?)\*/g, '<em>$1</em>')
-        // Strikethrough
-        .replace(/~~(.+?)~~/g, '<s>$1</s>')
-        // Inline code
-        .replace(/`([^`]+)`/g, '<code>$1</code>')
-        // Unordered lists
-        .replace(/^- (.+)$/gm, '<li>$1</li>')
-        // Ordered lists
-        .replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
-
-    // Wrap loose text in paragraphs
-    const lines = html.split('\n');
-    const wrapped = lines.map(line => {
-        const trimmed = line.trim();
-        if (!trimmed) return '';
-        if (trimmed.startsWith('<')) return trimmed;
-        return `<p>${trimmed}</p>`;
-    });
-
-    return wrapped.filter(Boolean).join('');
-};
-
-const escapeHtml = (text: string): string => {
-    return text
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
+    try {
+        const result = await markdownProcessor.process(markdown);
+        return String(result);
+    } catch {
+        return '<p></p>';
+    }
 };
 
 export const MarkdownEditor = ({
@@ -194,9 +186,10 @@ export const MarkdownEditor = ({
     // Create editor instance with stable configuration
     // useEditor handles its own memoization internally based on extensions array reference
     // Setting immediatelyRender: false helps prevent duplicate extension warnings in React StrictMode
+    // Content is set asynchronously via useEffect (markdownToHtml is async)
     const editor = useEditor({
         extensions,
-        content: markdownToHtml(value),
+        content: '<p></p>',
         editable: !disabled,
         immediatelyRender: false, // Defer rendering to prevent duplicate extensions in StrictMode
         onUpdate: handleUpdate,
@@ -224,17 +217,27 @@ export const MarkdownEditor = ({
     });
 
     // Sync external value changes (only when editor is not focused to avoid conflicts)
+    // Use cancelled flag to prevent race condition when value changes rapidly
     useEffect(() => {
         if (!editor) return;
-        
-        // Only update if editor is not focused to prevent interrupting user input
-        if (!editor.isFocused) {
-            const currentMarkdown = editorToMarkdown(editor);
-            // Prevent unnecessary updates by comparing markdown strings
-            if (currentMarkdown !== value) {
-                editor.commands.setContent(markdownToHtml(value));
+        let cancelled = false;
+
+        const applyContent = async () => {
+            if (!editor.isFocused) {
+                const currentMarkdown = editorToMarkdown(editor);
+                if (currentMarkdown !== value) {
+                    const html = await markdownToHtml(value);
+                    if (!cancelled && !editor.isDestroyed) {
+                        editor.commands.setContent(html);
+                    }
+                }
             }
-        }
+        };
+
+        applyContent();
+        return () => {
+            cancelled = true;
+        };
     }, [value, editor]);
 
     // Cleanup editor on unmount to prevent memory leaks

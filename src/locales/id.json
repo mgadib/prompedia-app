@@ -133,7 +133,8 @@
             "list_ordered": "Daftar Nomor",
             "quote": "Kutipan",
             "code_block": "Blok Kode",
-            "horizontal_rule": "Garis Horizontal"
+            "horizontal_rule": "Garis Horizontal",
+            "table": "Sisipkan Tabel"
         }
     },
     "landing": {

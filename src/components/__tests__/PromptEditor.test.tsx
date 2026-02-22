@@ -56,13 +56,13 @@ describe('PromptEditor', () => {
 
   it('should disable save button when content is empty', () => {
     render(<PromptEditor {...defaultProps} content="" />);
-    const saveButton = screen.getByText('prompt.save');
+    const saveButton = screen.getByRole('button', { name: 'prompt.save' });
     expect(saveButton).toBeDisabled();
   });
 
   it('should enable save button when content is provided', () => {
     render(<PromptEditor {...defaultProps} content="Test content" />);
-    const saveButton = screen.getByText('prompt.save');
+    const saveButton = screen.getByRole('button', { name: 'prompt.save' });
     expect(saveButton).not.toBeDisabled();
   });
 

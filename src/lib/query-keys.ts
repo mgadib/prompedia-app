@@ -62,6 +62,7 @@ export const queryKeys = {
       'recent',
       limit || 7,
     ] as const,
+    detail: (id: string) => [...queryKeys.publicPrompts.all, 'detail', id] as const,
   },
 
   /**

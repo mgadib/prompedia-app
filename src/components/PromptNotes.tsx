@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePromptNotes } from '@/hooks/use-prompt-notes';
 import { LandingPage } from '@/components/prompts/LandingPage';
@@ -79,6 +80,117 @@ const PromptNotes = () => {
         websiteSchema,
     } = state;
 
+    const authenticatedViewProps = useMemo(
+        () => ({
+            userEmail: user?.email,
+            currentUserId: user?.id,
+            editor: {
+                title,
+                setTitle,
+                content,
+                setContent,
+                tagsInput,
+                setTagsInput,
+                isPublic,
+                setIsPublic,
+                onSave: handleSave,
+                onCancel: onCancelEdit,
+                isEditing: !!editingId,
+                saving: savePrompt.isPending,
+            },
+            filters: {
+                allUserTags: allUserTags as Tag[],
+                selectedTag,
+                onTagFilterChange: setSelectedTag,
+                visibilityFilter,
+                onVisibilityFilterChange: setVisibilityFilter,
+            },
+            list: {
+                prompts,
+                isLoading: isPromptsLoading,
+                totalItems,
+                currentPage,
+                itemsPerPage,
+                onPageChange: setCurrentPage,
+                onItemsPerPageChange: setItemsPerPage,
+                editingId,
+                searchText,
+                onSearchChange: setSearchText,
+                searchInputRef,
+            },
+            modals: {
+                selectedPrompt,
+                onSelectPrompt: setSelectedPrompt,
+                confirmDeleteId,
+                showLogoutConfirm,
+                showShortcutsHelp,
+                onCloseModals: handleCloseModals,
+                onLogoutClick: handleLogoutClick,
+                onLogout: handleLogoutConfirm,
+                onDeleteConfirm: handleDeleteConfirm,
+                onCloseShortcutsHelp: handleCloseShortcutsHelp,
+            },
+            listActions: {
+                onCopy: handleCopy,
+                onShare: handleShare,
+                onDeleteClick: handleDeleteClick,
+                onEdit: handleEdit,
+                copiedId,
+                sharedId,
+            },
+            commandPalette,
+            websiteSchema,
+        }),
+        [
+            user?.email,
+            user?.id,
+            title,
+            setTitle,
+            content,
+            setContent,
+            tagsInput,
+            setTagsInput,
+            isPublic,
+            setIsPublic,
+            handleSave,
+            onCancelEdit,
+            editingId,
+            savePrompt.isPending,
+            allUserTags,
+            selectedTag,
+            setSelectedTag,
+            visibilityFilter,
+            setVisibilityFilter,
+            prompts,
+            isPromptsLoading,
+            totalItems,
+            currentPage,
+            itemsPerPage,
+            setCurrentPage,
+            setItemsPerPage,
+            selectedPrompt,
+            setSelectedPrompt,
+            confirmDeleteId,
+            showLogoutConfirm,
+            showShortcutsHelp,
+            handleCloseModals,
+            handleLogoutClick,
+            handleLogoutConfirm,
+            handleDeleteConfirm,
+            handleCloseShortcutsHelp,
+            handleCopy,
+            handleShare,
+            handleDeleteClick,
+            handleEdit,
+            copiedId,
+            sharedId,
+            commandPalette,
+            websiteSchema,
+            searchText,
+            setSearchText,
+        ]
+    );
+
     if (authLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-background animate-fade-in">
@@ -126,58 +238,7 @@ const PromptNotes = () => {
         );
     }
 
-    return (
-        <AuthenticatedView
-            userEmail={user?.email}
-            searchText={searchText}
-            onSearchChange={setSearchText}
-            searchInputRef={searchInputRef}
-            title={title}
-            setTitle={setTitle}
-            content={content}
-            setContent={setContent}
-            tagsInput={tagsInput}
-            setTagsInput={setTagsInput}
-            isPublic={isPublic}
-            setIsPublic={setIsPublic}
-            onSave={handleSave}
-            onCancel={onCancelEdit}
-            isEditing={!!editingId}
-            saving={savePrompt.isPending}
-            allUserTags={allUserTags as Tag[]}
-            selectedTag={selectedTag}
-            onTagFilterChange={setSelectedTag}
-            visibilityFilter={visibilityFilter}
-            onVisibilityFilterChange={setVisibilityFilter}
-            prompts={prompts}
-            isLoading={isPromptsLoading}
-            totalItems={totalItems}
-            currentPage={currentPage}
-            itemsPerPage={itemsPerPage}
-            onPageChange={setCurrentPage}
-            onItemsPerPageChange={setItemsPerPage}
-            editingId={editingId}
-            onSelectPrompt={setSelectedPrompt}
-            onCopy={handleCopy}
-            onDeleteClick={handleDeleteClick}
-            onShare={handleShare}
-            onEdit={handleEdit}
-            copiedId={copiedId}
-            sharedId={sharedId}
-            selectedPrompt={selectedPrompt}
-            confirmDeleteId={confirmDeleteId}
-            showLogoutConfirm={showLogoutConfirm}
-            showShortcutsHelp={showShortcutsHelp}
-            onCloseModals={handleCloseModals}
-            onLogoutClick={handleLogoutClick}
-            onLogout={handleLogoutConfirm}
-            onDeleteConfirm={handleDeleteConfirm}
-            onCloseShortcutsHelp={handleCloseShortcutsHelp}
-            commandPalette={commandPalette}
-            websiteSchema={websiteSchema}
-            currentUserId={user?.id}
-        />
-    );
+    return <AuthenticatedView {...authenticatedViewProps} />;
 };
 
 export default PromptNotes;

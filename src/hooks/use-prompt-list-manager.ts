@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { useDebounce } from '@/hooks/use-debounce';
@@ -59,16 +59,26 @@ export function usePromptListManager(user: User | null) {
     const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
     const [copiedId, setCopiedId] = useState<string | null>(null);
     const [sharedId, setSharedId] = useState<string | null>(null);
+    const copiedTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+    const sharedTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
     const { deletePrompt } = usePromptMutations();
+
+    useEffect(() => {
+        return () => {
+            if (copiedTimeoutRef.current) clearTimeout(copiedTimeoutRef.current);
+            if (sharedTimeoutRef.current) clearTimeout(sharedTimeoutRef.current);
+        };
+    }, []);
 
     const handleCopy = usePreventDoubleClick(
         useCallback(async (text: string, id?: string) => {
             await navigator.clipboard.writeText(text);
             toast.success(t('toast.copied'));
             if (id) {
+                if (copiedTimeoutRef.current) clearTimeout(copiedTimeoutRef.current);
                 setCopiedId(id);
-                setTimeout(() => setCopiedId(null), 2000);
+                copiedTimeoutRef.current = setTimeout(() => setCopiedId(null), 2000);
             }
         }, [t]),
         500
@@ -79,8 +89,9 @@ export function usePromptListManager(user: User | null) {
             const url = `${window.location.origin}/share/${id}`;
             await navigator.clipboard.writeText(url);
             toast.success(t('toast.link_copied', 'Link copied to clipboard'));
+            if (sharedTimeoutRef.current) clearTimeout(sharedTimeoutRef.current);
             setSharedId(id);
-            setTimeout(() => setSharedId(null), 2000);
+            sharedTimeoutRef.current = setTimeout(() => setSharedId(null), 2000);
         }, [t]),
         500
     ) as (id: string) => Promise<void>;

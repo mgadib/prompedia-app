@@ -1,7 +1,7 @@
 import React, { memo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { PromptUI, Tag } from '@/types/prompts';
-import { Command } from '@/lib/commands';
+import { PromptUI } from '@/types/prompts';
+import type { AuthenticatedViewPropsGrouped } from '@/types/authenticated-view';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { PromptEditor } from '@/components/prompts/PromptEditor';
@@ -15,117 +15,44 @@ import { SEO } from '@/components/SEO';
 import { Loader2, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-interface AuthenticatedViewProps {
-    userEmail?: string;
-    searchText: string;
-    onSearchChange: (text: string) => void;
-    searchInputRef: React.RefObject<HTMLInputElement>;
-    // Editor state
-    title: string;
-    setTitle: (title: string) => void;
-    content: string;
-    setContent: (content: string) => void;
-    tagsInput: string;
-    setTagsInput: (tags: string) => void;
-    isPublic: boolean;
-    setIsPublic: (isPublic: boolean) => void;
-    onSave: () => void;
-    onCancel: () => void;
-    isEditing: boolean;
-    saving: boolean;
-    // Filter state
-    allUserTags: Tag[];
-    selectedTag: string | null;
-    onTagFilterChange: (tag: string | null) => void;
-    visibilityFilter: 'all' | 'public' | 'private';
-    onVisibilityFilterChange: (filter: 'all' | 'public' | 'private') => void;
-    // Prompt list
-    prompts: PromptUI[];
-    isLoading: boolean;
-    totalItems: number;
-    currentPage: number;
-    itemsPerPage: number;
-    onPageChange: (page: number) => void;
-    onItemsPerPageChange: (items: number) => void;
-    editingId: string | null;
-    onSelectPrompt: (prompt: PromptUI | null) => void;
-    onCopy: (text: string, id?: string) => void;
-    onDeleteClick: (id: string) => void;
-    onShare: (id: string) => void;
-    copiedId?: string | null;
-    sharedId?: string | null;
-    onEdit: (prompt: PromptUI) => void;
-    // Modals
-    selectedPrompt: PromptUI | null;
-    confirmDeleteId: string | null;
-    showLogoutConfirm: boolean;
-    showShortcutsHelp: boolean;
-    onCloseModals: () => void;
-    onLogoutClick: () => void;
-    onLogout: () => void;
-    onDeleteConfirm: (id: string | null) => void;
-    onCloseShortcutsHelp: () => void;
-    // Command palette
-    commandPalette: {
-        isOpen: boolean;
-        close: () => void;
-        commands: Command[];
-    };
-    // SEO
-    websiteSchema: object;
-    currentUserId?: string;
-}
-
-const AuthenticatedViewComponent: React.FC<AuthenticatedViewProps> = ({
+const AuthenticatedViewComponent: React.FC<AuthenticatedViewPropsGrouped> = ({
     userEmail,
-    searchText,
-    onSearchChange,
-    searchInputRef,
-    title,
-    setTitle,
-    content,
-    setContent,
-    tagsInput,
-    setTagsInput,
-    isPublic,
-    setIsPublic,
-    onSave,
-    onCancel,
-    isEditing,
-    saving,
-    allUserTags,
-    selectedTag,
-    onTagFilterChange,
-    visibilityFilter,
-    onVisibilityFilterChange,
-    prompts,
-    isLoading,
-    totalItems,
-    currentPage,
-    itemsPerPage,
-    onPageChange,
-    onItemsPerPageChange,
-    editingId,
-    onSelectPrompt,
-    onCopy,
-    onDeleteClick,
-    onShare,
-    onEdit,
-    selectedPrompt,
-    confirmDeleteId,
-    showLogoutConfirm,
-    showShortcutsHelp,
-    onCloseModals,
-    onLogoutClick,
-    onLogout,
-    onDeleteConfirm,
-    onCloseShortcutsHelp,
+    currentUserId,
+    editor,
+    filters,
+    list,
+    modals,
+    listActions,
     commandPalette,
     websiteSchema,
-    currentUserId,
-    copiedId,
-    sharedId,
 }) => {
+    const {
+        searchText,
+        onSearchChange,
+        searchInputRef,
+        prompts,
+        isLoading,
+        totalItems,
+        currentPage,
+        itemsPerPage,
+        onPageChange,
+        onItemsPerPageChange,
+        editingId,
+    } = list;
+    const { allUserTags, selectedTag, onTagFilterChange, visibilityFilter, onVisibilityFilterChange } = filters;
+    const {
+        selectedPrompt,
+        onSelectPrompt,
+        confirmDeleteId,
+        showLogoutConfirm,
+        showShortcutsHelp,
+        onCloseModals,
+        onLogoutClick,
+        onLogout,
+        onDeleteConfirm,
+        onCloseShortcutsHelp,
+    } = modals;
+    const { onCopy, onShare, onDeleteClick, onEdit, copiedId, sharedId } = listActions;
     const { t } = useTranslation();
 
     const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -184,18 +111,18 @@ const AuthenticatedViewComponent: React.FC<AuthenticatedViewProps> = ({
                     </div>
 
                     <PromptEditor
-                        title={title}
-                        setTitle={setTitle}
-                        content={content}
-                        setContent={setContent}
-                        tagsInput={tagsInput}
-                        setTagsInput={setTagsInput}
-                        isPublic={isPublic}
-                        setIsPublic={setIsPublic}
-                        onSave={onSave}
-                        onCancel={onCancel}
-                        isEditing={isEditing}
-                        saving={saving}
+                        title={editor.title}
+                        setTitle={editor.setTitle}
+                        content={editor.content}
+                        setContent={editor.setContent}
+                        tagsInput={editor.tagsInput}
+                        setTagsInput={editor.setTagsInput}
+                        isPublic={editor.isPublic}
+                        setIsPublic={editor.setIsPublic}
+                        onSave={editor.onSave}
+                        onCancel={editor.onCancel}
+                        isEditing={editor.isEditing}
+                        saving={editor.saving}
                     />
 
                     <MobileFilterButton

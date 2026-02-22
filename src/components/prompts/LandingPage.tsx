@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PromptUI } from '@/types/prompts';
 import { Header } from '@/components/layout/Header';
@@ -69,6 +69,9 @@ export const LandingPage: React.FC<LandingPageProps> = memo(({
     currentUserId,
 }) => {
     const { t } = useTranslation();
+
+    const handleCloseDetail = useCallback(() => onSelectPrompt(null), [onSelectPrompt]);
+    const noop = useCallback(() => {}, []);
 
     // The filtering and pagination is now handled by the repository/hook (server-side)
     // for significantly better performance with large datasets.
@@ -148,14 +151,14 @@ export const LandingPage: React.FC<LandingPageProps> = memo(({
                                 isLoading={publicLoading}
                                 onSelectPrompt={onSelectPrompt}
                                 onCopy={onCopy}
-                                onDeleteClick={() => { }}
+                                onDeleteClick={noop}
                                 onShare={onShare}
                                 editingId={null}
                                 currentPage={publicCurrentPage}
                                 itemsPerPage={publicItemsPerPage}
                                 totalItems={publicTotal}
                                 onPageChange={onSetPublicPage}
-                                onItemsPerPageChange={() => { }}
+                                onItemsPerPageChange={noop}
                                 currentUserId={currentUserId}
                             />
                         </section>
@@ -184,7 +187,7 @@ export const LandingPage: React.FC<LandingPageProps> = memo(({
                 <PromptDetailModal
                     prompt={selectedPrompt}
                     currentUserId={currentUserId}
-                    onClose={() => onSelectPrompt(null)}
+                    onClose={handleCloseDetail}
                     onCopy={onCopy}
                     onShare={onShare}
                 />

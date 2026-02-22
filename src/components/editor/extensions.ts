@@ -3,6 +3,7 @@ import Placeholder from '@tiptap/extension-placeholder';
 import Typography from '@tiptap/extension-typography';
 // Note: Underline is included in StarterKit v3+, so we don't need to import it separately
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
+import { Table, TableRow, TableCell, TableHeader } from '@tiptap/extension-table';
 import { common, createLowlight } from 'lowlight';
 import type { AnyExtension } from '@tiptap/core';
 
@@ -60,12 +61,16 @@ export const createExtensions = (options: EditorExtensionsOptions = {}): AnyExte
 
     // Return extensions array with singleton instances
     // Order matters: StarterKit first (includes underline), then custom extensions
+    // Table extensions must be in order: Table, TableRow, TableHeader, TableCell
     return [
         starterKitExtension, // Includes underline in v3+
         placeholderExtension,
         typographyExtension,
-        // underlineExtension removed - already in StarterKit v3+
         codeBlockExtension,
+        Table.configure({ resizable: true }),
+        TableRow,
+        TableHeader,
+        TableCell,
     ];
 };
 

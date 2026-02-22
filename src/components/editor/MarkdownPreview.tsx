@@ -1,5 +1,8 @@
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import rehypeHighlight from 'rehype-highlight';
 import type { Components } from 'react-markdown';
 import DOMPurify from 'isomorphic-dompurify';
 
@@ -167,7 +170,11 @@ export const MarkdownPreview = ({ content, className = '' }: MarkdownPreviewProp
 
     return (
         <div className={`prose-preview ${className}`}>
-            <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
+            <ReactMarkdown
+                remarkPlugins={[remarkGfm, remarkMath]}
+                rehypePlugins={[rehypeKatex, rehypeHighlight]}
+                components={components}
+            >
                 {sanitizedContent}
             </ReactMarkdown>
         </div>

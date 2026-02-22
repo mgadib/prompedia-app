@@ -2,6 +2,7 @@ import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { queryKeys } from '@/lib/query-keys';
 import { usePromptRepository } from './use-prompt-repository';
+import { isValidUUID } from '@/lib/utils';
 
 interface UsePublicPromptsOptions {
     tag?: string | null;
@@ -81,6 +82,48 @@ export function usePublicTagCounts() {
         tagCounts: data || [],
         isLoading,
         error,
+    };
+}
+
+/**
+ * Hook for fetching a single public prompt by ID.
+ * Uses React Query for caching and avoids race conditions.
+ * Validates UUID before fetching.
+ */
+export function usePublicPromptById(id: string | undefined) {
+    const { t } = useTranslation();
+    const repository = usePromptRepository();
+
+    const { data, isLoading, error, isError } = useQuery({
+        queryKey: queryKeys.publicPrompts.detail(id ?? ''),
+        queryFn: async () => {
+            if (!id || !isValidUUID(id)) {
+                throw new Error(t('public_view.not_found_title'));
+            }
+            try {
+                const prompt = await repository.getPromptById(id, t);
+                if (!prompt) throw new Error(t('public_view.not_found_title'));
+                if (!prompt.is_public) throw new Error(t('public_view.private_error'));
+                return prompt;
+            } catch (err) {
+                const msg = err instanceof Error ? err.message : String(err);
+                if (msg === t('public_view.private_error')) throw err;
+                if (msg.includes('PGRST116') || msg.includes('no rows') || msg.includes('JSON object requested')) {
+                    throw new Error(t('public_view.not_found_title'));
+                }
+                throw err;
+            }
+        },
+        enabled: !!id && isValidUUID(id),
+        staleTime: 60 * 1000, // 1 minute
+        gcTime: 5 * 60 * 1000, // 5 minutes
+    });
+
+    return {
+        prompt: data ?? null,
+        isLoading,
+        error: isError ? (error instanceof Error ? error.message : String(error)) : null,
+        isError,
     };
 }
 

@@ -1,5 +1,4 @@
-import React, { memo } from 'react';
-import { TFunction } from 'i18next';
+import React, { memo, useMemo } from 'react';
 import { PromptCard, PromptCardHeader, PromptCardTitle, PromptCardDescription, PromptCardFooter, PromptCardActions } from '@/components/ui/prompt-card';
 import { TagChipStatic } from '@/components/ui/tag-chip';
 import { Button } from '@/components/ui/button';
@@ -10,6 +9,15 @@ import { useTranslation } from 'react-i18next';
 import { formatDate } from '@/lib/date-utils';
 import { PromptUI } from '@/types/prompts';
 import { stripMarkdownToPlainText } from '@/lib/utils';
+
+/** Translation strings passed to PromptItem to avoid passing t() and breaking memo */
+interface PromptItemLabels {
+    publicLabel: string;
+    privateLabel: string;
+    shareLabel: string;
+    copyLabel: string;
+    deleteLabel: string;
+}
 
 interface PromptListProps {
     prompts: PromptUI[];
@@ -31,7 +39,8 @@ interface PromptListProps {
 }
 
 /**
- * Optimized Individual Prompt Item to prevent unnecessary re-renders in the list
+ * Optimized Individual Prompt Item to prevent unnecessary re-renders in the list.
+ * Receives translation strings (labels) instead of t() to keep props stable for memo.
  */
 const PromptItem = memo(({
     prompt,
@@ -45,7 +54,7 @@ const PromptItem = memo(({
     copiedId,
     sharedId,
     itemsPerPage,
-    t,
+    labels,
     language
 }: {
     prompt: PromptUI;
@@ -59,7 +68,7 @@ const PromptItem = memo(({
     copiedId?: string | null;
     sharedId?: string | null;
     itemsPerPage: number;
-    t: TFunction;
+    labels: PromptItemLabels;
     language: string;
 }) => {
     const handleClick = React.useCallback(() => {
@@ -88,7 +97,7 @@ const PromptItem = memo(({
         onDeleteClick(prompt.id);
     }, [onDeleteClick, prompt.id]);
 
-    const stopProgation = React.useCallback((e: React.MouseEvent) => {
+    const stopPropagation = React.useCallback((e: React.MouseEvent) => {
         e.stopPropagation();
     }, []);
 
@@ -105,7 +114,7 @@ const PromptItem = memo(({
             role="button"
             tabIndex={0}
             onKeyDown={handleKeyDown}
-            aria-label={`${prompt.title} - ${prompt.is_public ? t('prompt.public') : t('prompt.private')}`}
+            aria-label={`${prompt.title} - ${prompt.is_public ? labels.publicLabel : labels.privateLabel}`}
             className="animate-fade-in-up"
             style={style}
         >
@@ -141,8 +150,8 @@ const PromptItem = memo(({
             <PromptCardFooter>
                 <div className="flex items-center gap-1.5 flex-wrap">
                     {prompt.tags.length > 0 ? (
-                        prompt.tags.slice(0, 4).map((tag, i) => (
-                            <TagChipStatic key={i} variant="muted" size="default">
+                        prompt.tags.slice(0, 4).map((tag) => (
+                            <TagChipStatic key={tag.id} variant="muted" size="default">
                                 {tag.name}
                             </TagChipStatic>
                         ))
@@ -154,7 +163,7 @@ const PromptItem = memo(({
                     )}
                 </div>
 
-                <PromptCardActions onClick={stopProgation}>
+                <PromptCardActions onClick={stopPropagation}>
                     {prompt.is_public && (
                         <Button
                             variant="ghost"
@@ -164,15 +173,15 @@ const PromptItem = memo(({
                                 : 'text-muted-foreground hover:bg-accent/10 hover:text-accent'
                                 }`}
                             onClick={handleShareClick}
-                            title={t('actions.share', 'Share')}
-                            aria-label={t('actions.share', 'Share')}
+                            title={labels.shareLabel}
+                            aria-label={labels.shareLabel}
                         >
                             {sharedId === prompt.id ? (
                                 <Check className="w-3 h-3" aria-hidden="true" />
                             ) : (
                                 <Share2 className="w-3 h-3" aria-hidden="true" />
                             )}
-                            <span>{t('actions.share', 'Share')}</span>
+                            <span>{labels.shareLabel}</span>
                         </Button>
                     )}
                     <Button
@@ -183,15 +192,15 @@ const PromptItem = memo(({
                             : 'text-muted-foreground hover:bg-primary/10 hover:text-primary'
                             }`}
                         onClick={handleCopyClick}
-                        title={t('actions.copy')}
-                        aria-label={t('actions.copy')}
+                        title={labels.copyLabel}
+                        aria-label={labels.copyLabel}
                     >
                         {copiedId === prompt.id ? (
                             <Check className="w-3 h-3" aria-hidden="true" />
                         ) : (
                             <Copy className="w-3 h-3" aria-hidden="true" />
                         )}
-                        <span>{t('actions.copy')}</span>
+                        <span>{labels.copyLabel}</span>
                     </Button>
                     {currentUserId === prompt.user_id && (
                         <Button
@@ -199,11 +208,11 @@ const PromptItem = memo(({
                             size="sm"
                             className="h-7 px-2.5 rounded-lg gap-1.5 text-xs text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all"
                             onClick={handleDeleteClickAction}
-                            title={t('actions.delete')}
-                            aria-label={t('actions.delete')}
+                            title={labels.deleteLabel}
+                            aria-label={labels.deleteLabel}
                         >
                             <Trash2 className="w-3 h-3" aria-hidden="true" />
-                            <span>{t('actions.delete')}</span>
+                            <span>{labels.deleteLabel}</span>
                         </Button>
                     )}
                 </PromptCardActions>
@@ -231,10 +240,19 @@ export const PromptList: React.FC<PromptListProps> = memo(({
 }) => {
     const { t, i18n } = useTranslation();
 
+    const labels = useMemo<PromptItemLabels>(() => ({
+        publicLabel: t('prompt.public'),
+        privateLabel: t('prompt.private'),
+        shareLabel: t('actions.share', 'Share'),
+        copyLabel: t('actions.copy'),
+        deleteLabel: t('actions.delete'),
+    }), [i18n.language]);
+
     if (isLoading) {
+        const skeletonCount = Math.max(5, Math.min(itemsPerPage, 10));
         return (
-            <div className="grid gap-5">
-                {[1, 2, 3].map((i) => (
+            <div className="grid gap-5 min-h-[400px]">
+                {Array.from({ length: skeletonCount }, (_, i) => (
                     <PromptCardSkeleton key={i} />
                 ))}
             </div>
@@ -275,7 +293,7 @@ export const PromptList: React.FC<PromptListProps> = memo(({
                     copiedId={copiedId}
                     sharedId={sharedId}
                     itemsPerPage={itemsPerPage}
-                    t={t}
+                    labels={labels}
                     language={i18n.language}
                 />
             ))}

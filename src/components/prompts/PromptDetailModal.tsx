@@ -14,7 +14,7 @@ interface PromptDetailModalProps {
     currentUserId?: string | null;
     onClose: () => void;
     onEdit?: (prompt: PromptUI) => void;
-    onCopy: (text: string) => void;
+    onCopy: (text: string, id?: string) => void;
     onShare?: (id: string) => void;
     onDelete?: (id: string) => void;
 }
@@ -59,7 +59,9 @@ export const PromptDetailModal: React.FC<PromptDetailModalProps> = ({
         return () => {
             document.removeEventListener('keydown', handleEscape);
             document.body.style.overflow = 'unset';
-            previousFocusRef.current?.focus();
+            if (previousFocusRef.current && document.contains(previousFocusRef.current)) {
+                previousFocusRef.current.focus();
+            }
         };
     }, [onClose]);
 
@@ -68,8 +70,7 @@ export const PromptDetailModal: React.FC<PromptDetailModalProps> = ({
             onShare(prompt.id);
         } else {
             const url = `${window.location.origin}/share/${prompt.id}`;
-            await navigator.clipboard.writeText(url);
-            onCopy(t('toast.link_copied', 'Link copied to clipboard'));
+            onCopy(url, prompt.id);
         }
     };
 

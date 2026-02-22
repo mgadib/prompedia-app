@@ -7,7 +7,7 @@ node_modules/
 .pnp.*
 
 # ============================================
-# Build Outputs
+# Build Outputs & Local Overrides
 # ============================================
 dist/
 dist-ssr/
@@ -39,7 +39,9 @@ logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
+yarn-error.log*
 pnpm-debug.log*
+pnpm-error.log*
 
 # ============================================
 # Runtime & Cache
@@ -93,6 +95,7 @@ Thumbs.db
 # ============================================
 # Strictly use npm, ignore others to avoid confusion
 bun.lockb
+pnpm-lock.yaml
 .yarn/
 
 # ============================================
@@ -105,7 +108,20 @@ tmp/
 temp/
 *.tmp
 *.bak
+*.backup
 *.swp
+
+# ============================================
+# Deployment Platforms
+# ============================================
+.vercel/
+.netlify/
+.firebase/
+
+# ============================================
+# Sentry CLI (dapat berisi auth token)
+# ============================================
+.sentryclirc
 
 # ============================================
 # Project Specific - Prompedia AI

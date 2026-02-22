@@ -1,11 +1,10 @@
-import React, { memo, lazy, Suspense, useMemo } from 'react';
+import React, { memo, lazy, Suspense, useMemo, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { stripMarkdownToPlainText } from '@/lib/utils';
 
 const MarkdownEditor = lazy(() =>
     import('@/components/editor').then((m) => ({ default: m.MarkdownEditor }))
 );
-// import { StatusBadge } from '@/components/ui/status-badge';
 import { useTranslation } from 'react-i18next';
 import { Loader2, Plus, Edit3, Globe, Lock } from 'lucide-react';
 
@@ -47,6 +46,10 @@ const PromptEditorComponent: React.FC<PromptEditorProps> = ({
         return { words, chars };
     }, [content]);
 
+    const handleTitleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value), [setTitle]);
+    const handleTagsChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setTagsInput(e.target.value), [setTagsInput]);
+    const handleTogglePublic = useCallback(() => setIsPublic(prev => !prev), [setIsPublic]);
+
     return (
         <div className={`mb-6 bg-card border ${isEditing ? 'border-primary/40 shadow-md' : 'border-border shadow-sm'} rounded-xl p-4 sm:p-6 animate-fade-in`}>
             {/* Editor Header */}
@@ -75,7 +78,7 @@ const PromptEditorComponent: React.FC<PromptEditorProps> = ({
                 <input
                     type="text"
                     value={title}
-                    onChange={e => setTitle(e.target.value)}
+                    onChange={handleTitleChange}
                     placeholder={t('prompt.title_placeholder')}
                     className="flex-1 py-1.5 bg-transparent text-lg font-bold text-foreground placeholder:text-muted-foreground/40 focus:outline-none"
                     autoFocus={!isEditing}
@@ -103,7 +106,7 @@ const PromptEditorComponent: React.FC<PromptEditorProps> = ({
                         <input
                             type="text"
                             value={tagsInput}
-                            onChange={e => setTagsInput(e.target.value)}
+                            onChange={handleTagsChange}
                             placeholder={t('prompt.tags_placeholder')}
                             className="w-full px-4 py-2.5 bg-muted/30 border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                         />
@@ -111,7 +114,7 @@ const PromptEditorComponent: React.FC<PromptEditorProps> = ({
                     <div className="flex items-center gap-4 flex-shrink-0">
                         <div
                             className="flex items-center gap-2 p-1.5 bg-muted/40 rounded-lg border border-border/50 cursor-pointer group hover:bg-muted/60 transition-colors"
-                            onClick={() => setIsPublic(!isPublic)}
+                            onClick={handleTogglePublic}
                         >
                             <div className={`w-8 h-8 rounded-md flex items-center justify-center transition-all ${isPublic ? 'bg-green-500 text-white shadow-sm' : 'bg-background text-muted-foreground shadow-none'}`}>
                                 {isPublic ? <Globe className="w-4 h-4" /> : <Lock className="w-4 h-4" />}

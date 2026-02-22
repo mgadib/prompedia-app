@@ -5,6 +5,12 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/** UUID v4 validation for route params and IDs */
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+export function isValidUUID(value: string | null | undefined): boolean {
+  return typeof value === 'string' && UUID_REGEX.test(value);
+}
+
 /**
  * Strip markdown syntax to plain text for meta descriptions and snippets.
  * Removes headers, bold/italic, code blocks, links, lists, blockquotes.

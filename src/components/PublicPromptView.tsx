@@ -1,6 +1,4 @@
-import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
 import { Copy, FileText } from "lucide-react";
 import { useTranslation } from 'react-i18next';
 import { toast } from "sonner";
@@ -8,9 +6,7 @@ import { MarkdownPreview } from '@/components/editor';
 import { formatDate } from '@/lib/date-utils';
 import { stripMarkdownToPlainText, truncateForMeta } from '@/lib/utils';
 import { SEO } from './SEO';
-import { PromptUI, Prompt } from '@/types/prompts';
-import { transformPromptToUI } from '@/lib/prompt-transformers';
-import { logError } from '@/lib/logger';
+import { usePublicPromptById, useRecentPublicPrompts } from '@/hooks/use-public-prompts';
 
 // UI Components
 import { Button } from '@/components/ui/button';
@@ -22,86 +18,8 @@ import { Header } from '@/components/layout/Header';
 const PublicPromptView = () => {
     const { id } = useParams<{ id: string }>();
     const { t, i18n } = useTranslation();
-    const [prompt, setPrompt] = useState<PromptUI | null>(null);
-    const [recentPrompts, setRecentPrompts] = useState<{ id: string; title: string; author: string }[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
-    useEffect(() => {
-        const fetchRecentPrompts = async () => {
-            try {
-                const { data, error } = await supabase
-                    .from('prompts')
-                    .select('id, title, users(username, display_name)')
-                    .eq('is_public', true)
-                    .order('created_at', { ascending: false })
-                    .limit(7);
-
-                if (error) throw error;
-                if (data) {
-                    setRecentPrompts(data.map(p => ({
-                        id: p.id,
-                        title: p.title || t('prompt.untitled'),
-                        author: (p.users as { display_name?: string | null; username?: string })?.display_name
-                            || (p.users as { display_name?: string | null; username?: string })?.username
-                            || t('prompt.unknown_author')
-                    })));
-                }
-            } catch (err) {
-                // Structured error logging
-                logError(err instanceof Error ? err : new Error(String(err)), {
-                    context: 'fetchRecentPrompts',
-                });
-            }
-        };
-
-        fetchRecentPrompts();
-    }, [t]);
-
-    useEffect(() => {
-        const fetchPrompt = async () => {
-            if (!id) return;
-            setLoading(true);
-
-            try {
-                const { data, error } = await supabase
-                    .from('prompts')
-                    .select('*, prompt_contents(body), prompt_tags(tags(id, name)), users(username, display_name)')
-                    .eq('id', id)
-                    .single();
-
-                if (error) throw error;
-                if (!data) throw new Error(t('public_view.not_found_title'));
-
-                if (!data.is_public) {
-                    throw new Error(t('public_view.private_error'));
-                }
-
-                // Safe cast and transform
-                const p = data as unknown as Prompt;
-                const formattedPrompt = transformPromptToUI(p, t);
-                setPrompt(formattedPrompt);
-            } catch (err) {
-                // Structured error logging
-                const errorMessage = err instanceof Error 
-                    ? err.message 
-                    : (err && typeof err === 'object' && 'message' in err)
-                        ? String((err as { message: unknown }).message)
-                        : t('public_view.not_found_title');
-                
-                logError(err instanceof Error ? err : new Error(String(err)), {
-                    context: 'fetchPrompt',
-                    promptId: id,
-                    errorMessage,
-                });
-                setError(errorMessage);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchPrompt();
-    }, [id, t]);
+    const { prompt, isLoading: promptLoading, error: promptError } = usePublicPromptById(id);
+    const { prompts: recentPrompts } = useRecentPublicPrompts(7);
 
     const handleCopy = async () => {
         if (!prompt) return;
@@ -133,7 +51,7 @@ const PublicPromptView = () => {
         }
     } : null;
 
-    if (loading) {
+    if (promptLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-background">
                 <div className="flex flex-col items-center gap-4">
@@ -144,12 +62,12 @@ const PublicPromptView = () => {
         );
     }
 
-    if (error || !prompt) {
+    if (promptError || !prompt) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4 text-center">
                 <SEO title={t('public_view.not_found_title')} noIndex={true} />
                 <h1 className="text-xl font-semibold mb-2 text-foreground">
-                    {error || t('public_view.not_found_title')}
+                    {promptError || t('public_view.not_found_title')}
                 </h1>
                 <p className="text-muted-foreground mb-6">
                     {t('public_view.not_found_desc')}
@@ -161,8 +79,7 @@ const PublicPromptView = () => {
         );
     }
 
-    // Format date: 15 Januari 2025
-    const formattedDate = prompt ? formatDate(prompt.created_at, i18n.language) : '';
+    const formattedDate = formatDate(prompt.created_at, i18n.language);
 
     return (
         <div className="min-h-screen bg-background font-sans flex flex-col">
